@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 
 import static org.jepria.oauth.authorization.AuthorizationFieldNames.AUTH_REQUEST_ID;
 import static org.jepria.oauth.sdk.OAuthConstants.*;
-import static org.jepria.oauth.sdk.OAuthConstants.STATE;
 
 public class AuthenticationService {
 
@@ -41,7 +40,7 @@ public class AuthenticationService {
     }
   }
 
-  public Response authenticate(String host, String responseType, String authCode, String state, String redirectUriEncoded, String clientName, String username, String password) {
+  public Response authenticate(String responseType, String authCode, String state, String redirectUriEncoded, String clientName, String username, String password) {
     String redirectUri = new String(Base64.getUrlDecoder().decode(redirectUriEncoded));
     Response response = null;
     try {
@@ -58,7 +57,7 @@ public class AuthenticationService {
       Integer operatorId = loginByPassword(username, password);
       setOperatorId(authRequest.getAuthRequestId(), operatorId);
       if (CODE.equalsIgnoreCase(responseType)) {
-        response = Response.temporaryRedirect(URI.create(redirectUri + getSeparator(redirectUri) + "code=" + authCode + (state != null ? "&state=" + state : ""))).build();
+        response = Response.temporaryRedirect(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + authCode + (state != null ? STATE + "=" + state : ""))).build();
       } else if (TOKEN.equalsIgnoreCase(responseType)) {
         response = Response.temporaryRedirect(URI.create(redirectUri + getSeparator(redirectUri) + ERROR + UNSUPPORTED_RESPONSE_TYPE)).build();
       } else {

@@ -1,26 +1,18 @@
 package org.jepria.oauth.client.dto;
 
 public class ClientSearchDto {
-  Integer clientId;
-  String clientCode;
+
+  String clientId;
   String clientName;
   String clientNameEn;
-  Boolean isDeleted;
+  Integer maxRowCount;
 
-  public Integer getClientId() {
+  public String getClientId() {
     return clientId;
   }
 
-  public void setClientId(Integer clientId) {
+  public void setClientId(String clientId) {
     this.clientId = clientId;
-  }
-
-  public String getClientCode() {
-    return clientCode;
-  }
-
-  public void setClientCode(String clientCode) {
-    this.clientCode = clientCode;
   }
 
   public String getClientName() {
@@ -39,11 +31,11 @@ public class ClientSearchDto {
     this.clientNameEn = clientNameEn;
   }
 
-  public Boolean getDeleted() {
-    return isDeleted;
+  public Integer getMaxRowCount() {
+    return maxRowCount;
   }
 
-  public void setDeleted(Boolean deleted) {
-    isDeleted = deleted;
+  public void setMaxRowCount(Integer maxRowCount) {
+    this.maxRowCount = maxRowCount;
   }
 }

@@ -1,27 +1,28 @@
 package org.jepria.oauth.client.dto;
 
+import org.jepria.server.data.OptionDto;
+import org.jepria.server.data.PrimaryKey;
+
+import java.util.List;
+
 public class ClientDto {
-  Integer clientId;
-  String clientCode;
+
+  @PrimaryKey
+  String clientId;
   String clientSecret;
   String clientName;
   String clientNameEn;
-  Boolean isDeleted;
+  OptionDto<String> applicationType;
+  OptionDto<String> tokenAuthMethod;
+  List<OptionDto<String>> grantTypes;
+  List<OptionDto<String>> responseTypes;
 
-  public Integer getClientId() {
+  public String getClientId() {
     return clientId;
   }
 
-  public void setClientId(Integer clientId) {
+  public void setClientId(String clientId) {
     this.clientId = clientId;
-  }
-
-  public String getClientCode() {
-    return clientCode;
-  }
-
-  public void setClientCode(String clientCode) {
-    this.clientCode = clientCode;
   }
 
   public String getClientSecret() {
@@ -48,12 +49,35 @@ public class ClientDto {
     this.clientNameEn = clientNameEn;
   }
 
-  public Boolean getDeleted() {
-    return isDeleted;
+  public OptionDto<String> getApplicationType() {
+    return applicationType;
   }
 
-  public void setDeleted(Boolean deleted) {
-    isDeleted = deleted;
+  public void setApplicationType(OptionDto<String> applicationType) {
+    this.applicationType = applicationType;
   }
 
+  public OptionDto<String> getTokenAuthMethod() {
+    return tokenAuthMethod;
+  }
+
+  public void setTokenAuthMethod(OptionDto<String> tokenAuthMethod) {
+    this.tokenAuthMethod = tokenAuthMethod;
+  }
+
+  public List<OptionDto<String>> getGrantTypes() {
+    return grantTypes;
+  }
+
+  public void setGrantTypes(List<OptionDto<String>> grantTypes) {
+    this.grantTypes = grantTypes;
+  }
+
+  public List<OptionDto<String>> getResponseTypes() {
+    return responseTypes;
+  }
+
+  public void setResponseTypes(List<OptionDto<String>> responseTypes) {
+    this.responseTypes = responseTypes;
+  }
 }

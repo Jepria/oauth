@@ -4,9 +4,10 @@ import com.technology.jep.jepria.server.dao.ResultSetMapper;
 import com.technology.jep.jepria.server.db.Db;
 import org.jepria.oauth.authorization.dto.AuthRequestCreateDto;
 import org.jepria.oauth.authorization.dto.AuthRequestDto;
-import org.jepria.oauth.authorization.dto.AuthRequestSearchDto;
+import org.jepria.oauth.authorization.dto.AuthRequestSearchDtoLocal;
 import org.jepria.oauth.authorization.dto.AuthRequestUpdateDto;
 import org.jepria.server.data.OptionDto;
+import org.jepria.server.data.RuntimeSQLException;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -17,28 +18,24 @@ import static org.jepria.oauth.authorization.AuthorizationFieldNames.*;
 
 public class AuthorizationDaoImpl implements AuthorizationDao {
 
-  private Db db;
-
   protected Db getDb() {
-    if (db == null) {
-      db = new Db("jdbc/RFInfoDS");
-    }
-    return db;
+    return new Db("jdbc/RFInfoDS");
   }
 
   //language=Oracle
   private String findSqlQuery =
-    "select ar.AUTH_REQUEST_ID, ar.CLIENT_CODE, cl.CLIENT_NAME, ar.REDIRECT_URI, ar.AUTHORIZATION_CODE, ar.DATE_INS, ar.TOKEN_ID," +
+    "select ar.AUTH_REQUEST_ID, ar.CLIENT_CODE as CLIENT_ID, cl.CLIENT_NAME, ar.REDIRECT_URI, ar.AUTHORIZATION_CODE, ar.DATE_INS, ar.TOKEN_ID," +
       "ar.TOKEN_DATE_INS, ar.OPERATOR_ID, op.OPERATOR_NAME, op.LOGIN as OPERATOR_LOGIN, ar.IS_BLOCKED " +
     "from OA_AUTH_REQUEST ar left join OP_OPERATOR op on ar.OPERATOR_ID = op.OPERATOR_ID " +
       "inner join OA_CLIENT cl on ar.CLIENT_CODE = cl.CLIENT_CODE";
-  String authRequestIdClause = "ar.AUTH_REQUEST_ID = ?";
-  String authCodeClause = "ar.AUTHORIZATION_CODE like ?";
-  String operatorClause =  "ar.OPERATOR_ID = ?";
-  String clientCodeClause = "ar.CLIENT_CODE like ?";
-  String redirectUriClause = "ar.REDIRECT_URI like ?";
-  String tokenIdClause = "ar.TOKEN_ID like ?";
-  String isBlockedClause = "ar.IS_BLOCKED = ?";
+  String authRequestIdConstraint = "ar.AUTH_REQUEST_ID = ?";
+  String authCodeConstraint = "ar.AUTHORIZATION_CODE like ?";
+  String operatorConstraint =  "ar.OPERATOR_ID = ?";
+  String clientCodeConstraint = "ar.CLIENT_CODE like ?";
+  String redirectUriConstraint = "ar.REDIRECT_URI like ?";
+  String tokenIdConstraint = "ar.TOKEN_ID like ?";
+  String isBlockedConstraint = "ar.IS_BLOCKED = ?";
+  String finishedConstraint = "ar.TOKEN_ID is not null";
 
 
   private ResultSetMapper mapper = new ResultSetMapper<AuthRequestDto>() {
@@ -54,7 +51,7 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
       dto.setOperator(operator);
       dto.setOperatorLogin(rs.getString(OPERATOR_LOGIN));
       OptionDto<String> client = new OptionDto<>();
-      client.setValue(rs.getString(CLIENT_CODE));
+      client.setValue(rs.getString(CLIENT_ID));
       client.setName(rs.getString(CLIENT_NAME));
       dto.setClient(client);
       dto.setTokenId(rs.getString(TOKEN_ID));
@@ -65,16 +62,17 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
 
   @Override
   public List<AuthRequestDto> find(Object template, Integer operatorId) {
-    AuthRequestSearchDto dto = (AuthRequestSearchDto) template;
+    AuthRequestSearchDtoLocal dto = (AuthRequestSearchDtoLocal) template;
     Db db = getDb();
     ArrayList<String> clauses = new ArrayList<>();
-    if (dto.getAuthRequestId() != null) clauses.add(authRequestIdClause);
-    if (dto.getAuthorizationCode() != null) clauses.add(authCodeClause);
-    if (dto.getOperatorId() != null) clauses.add(operatorClause);
-    if (dto.getClientCode() != null) clauses.add(clientCodeClause);
-    if (dto.getTokenId() != null) clauses.add(tokenIdClause);
-    if (dto.getBlocked() != null) clauses.add(isBlockedClause);
-    if (dto.getRedirectUri() != null) clauses.add(redirectUriClause);
+    if (dto.getAuthRequestId() != null) clauses.add(authRequestIdConstraint);
+    if (dto.getAuthorizationCode() != null) clauses.add(authCodeConstraint);
+    if (dto.getOperatorId() != null) clauses.add(operatorConstraint);
+    if (dto.getClientId() != null) clauses.add(clientCodeConstraint);
+    if (dto.getTokenId() != null) clauses.add(tokenIdConstraint);
+    if (dto.getBlocked() != null) clauses.add(isBlockedConstraint);
+    if (dto.getRedirectUri() != null) clauses.add(redirectUriConstraint);
+    if (dto.getFinished() != null && dto.getFinished()) clauses.add(finishedConstraint);
     CallableStatement statement = null;
     List<AuthRequestDto> result = null;
     String findSqlQuery = this.findSqlQuery;
@@ -89,7 +87,7 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
         if (dto.getAuthRequestId() != null) statement.setInt(index++, dto.getAuthRequestId());
         if (dto.getAuthorizationCode() != null) statement.setString(index++, dto.getAuthorizationCode());
         if (dto.getOperatorId() != null) statement.setInt(index++, dto.getOperatorId());
-        if (dto.getClientCode() != null) statement.setString(index++, dto.getClientCode());
+        if (dto.getClientId() != null) statement.setString(index++, dto.getClientId());
         if (dto.getTokenId() != null) statement.setString(index++, dto.getTokenId());
         if (dto.getBlocked() != null) statement.setInt(index++, dto.getBlocked() ? 1 : 0);
         if (dto.getRedirectUri() != null) statement.setString(index++, dto.getRedirectUri());
@@ -106,6 +104,10 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
       }
     } catch (SQLException e) {
       e.printStackTrace();
+      throw new RuntimeSQLException(e);
+    } catch (Throwable th) {
+      th.printStackTrace();
+      throw th;
     } finally {
       db.closeAll();
     }
@@ -115,7 +117,7 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
   @Override
   public List<AuthRequestDto> findByPrimaryKey(Map<String, ?> primaryKeyMap, Integer operatorId) {
     Db db = getDb();
-    findSqlQuery += " where " + authRequestIdClause;
+    findSqlQuery += " where " + authRequestIdConstraint;
     CallableStatement statement = db.prepare(findSqlQuery);
     List<AuthRequestDto> result = null;
     try {
@@ -130,6 +132,10 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
       }
     } catch (SQLException e) {
       e.printStackTrace();
+      throw new RuntimeSQLException(e);
+    } catch (Throwable th) {
+      th.printStackTrace();
+      throw th;
     } finally {
       db.closeAll();
     }
@@ -148,7 +154,7 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
     try {
       insertStatement.setString(1, dto.getAuthorizationCode());
       insertStatement.setString(2, dto.getRedirectUri());
-      insertStatement.setString(3, dto.getClientCode());
+      insertStatement.setString(3, dto.getClientId());
       if (dto.getOperatorId() != null) {
         insertStatement.setInt(4, dto.getOperatorId());
       } else {
@@ -174,6 +180,11 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
     } catch (SQLException e) {
       e.printStackTrace();
       db.rollback();
+      throw new RuntimeSQLException(e);
+    } catch (Throwable th) {
+      th.printStackTrace();
+      db.rollback();
+      throw th;
     } finally {
       db.closeAll();
     }
@@ -210,6 +221,11 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
     } catch (SQLException e) {
       e.printStackTrace();
       db.rollback();
+      throw new RuntimeSQLException(e);
+    } catch (Throwable th) {
+      th.printStackTrace();
+      db.rollback();
+      throw th;
     } finally {
       db.closeAll();
     }
@@ -233,6 +249,11 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
     } catch (SQLException e) {
       e.printStackTrace();
       db.rollback();
+      throw new RuntimeSQLException(e);
+    } catch (Throwable th) {
+      th.printStackTrace();
+      db.rollback();
+      throw th;
     } finally {
       db.closeAll();
     }

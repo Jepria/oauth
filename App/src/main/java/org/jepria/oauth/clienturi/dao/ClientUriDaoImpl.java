@@ -5,6 +5,7 @@ import com.technology.jep.jepria.server.db.Db;
 import org.jepria.oauth.clienturi.dto.ClientUriCreateDto;
 import org.jepria.oauth.clienturi.dto.ClientUriDto;
 import org.jepria.oauth.clienturi.dto.ClientUriSearchDtoLocal;
+import org.jepria.server.data.RuntimeSQLException;
 
 import java.sql.CallableStatement;
 import java.sql.ResultSet;
@@ -13,42 +14,41 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.jepria.oauth.client.ClientFieldNames.CLIENT_CODE;
 import static org.jepria.oauth.clienturi.ClientUriFieldNames.*;
 
 public class ClientUriDaoImpl implements ClientUriDao {
 
-  private Db db;
 
   private Db getDb() {
-    if (db == null) {
-      db = new Db("jdbc/RFInfoDS");
-    }
-    return db;
+    return new Db("jdbc/RFInfoDS");
   }
-
-  //language=Oracle
-  private String findSqlQuery =
-    "select oclu.CLIENT_URI_ID, oclu.CLIENT_ID, oclu.CLIENT_URI " +
-      "from OA_CLIENT_URI oclu";
 
   private ResultSetMapper mapper = new ResultSetMapper<ClientUriDto>() {
     @Override
     public void map(ResultSet rs, ClientUriDto dto) throws SQLException {
       dto.setClientUriId(getInteger(rs, CLIENT_URI_ID));
-      dto.setClientId(getInteger(rs, CLIENT_ID));
       dto.setClientUri(rs.getString(CLIENT_URI));
+      dto.setClientId(rs.getString(CLIENT_ID));
     }
   };
 
 
   @Override
   public List<ClientUriDto> find(Object template, Integer operatorId) {
+    //language=Oracle
+    String findSqlQuery =
+      "select ct.CLIENT_CODE as CLIENT_ID, cu.client_uri_id, cu.client_uri " +
+        "from OA_CLIENT_URI cu " +
+          "inner join OA_CLIENT ct " +
+            "on cu.client_id = ct.client_id " +
+        "where ct.client_code like ?";
     ClientUriSearchDtoLocal dto = (ClientUriSearchDtoLocal) template;
     Db db = getDb();
-    CallableStatement statement = db.prepare(findSqlQuery + " where oclu.CLIENT_ID = ?");
+    CallableStatement statement = db.prepare(findSqlQuery);
     List<ClientUriDto> result = null;
     try {
-      statement.setInt(1, dto.getClientId());
+      statement.setString(1, dto.getClientId());
       statement.executeQuery();
       ResultSet rs = statement.getResultSet();
       result = new ArrayList<>();
@@ -59,6 +59,10 @@ public class ClientUriDaoImpl implements ClientUriDao {
       }
     } catch (SQLException e) {
       e.printStackTrace();
+      throw new RuntimeSQLException(e);
+    } catch (Throwable th) {
+      th.printStackTrace();
+      throw th;
     } finally {
       db.closeAll();
     }
@@ -68,10 +72,18 @@ public class ClientUriDaoImpl implements ClientUriDao {
   @Override
   public List<ClientUriDto> findByPrimaryKey(Map<String, ?> primaryKeyMap, Integer operatorId) {
     Db db = getDb();
-    CallableStatement statement = db.prepare(findSqlQuery + " where oclu.CLIENT_URI_ID = ?");
+    //language=Oracle
+    String findSqlQuery =
+      "select cu.client_uri_id, cu.client_uri " +
+        "from OA_CLIENT_URI cu " +
+        "inner join OA_CLIENT ct " +
+        "      on cu.client_id = ct.client_id " +
+        "where ct.client_code = ? and cu.client_uri_id = ?";
+    CallableStatement statement = db.prepare(findSqlQuery);
     List<ClientUriDto> result = null;
     try {
-      statement.setInt(1, (Integer) primaryKeyMap.get(CLIENT_URI_ID));
+      statement.setString(1, (String) primaryKeyMap.get(CLIENT_ID));
+      statement.setInt(2, (Integer) primaryKeyMap.get(CLIENT_URI_ID));
       statement.executeQuery();
       ResultSet rs = statement.getResultSet();
       result = new ArrayList<>();
@@ -82,6 +94,10 @@ public class ClientUriDaoImpl implements ClientUriDao {
       }
     } catch (SQLException e) {
       e.printStackTrace();
+      throw new RuntimeSQLException(e);
+    } catch (Throwable th) {
+      th.printStackTrace();
+      throw th;
     } finally {
       db.closeAll();
     }
@@ -94,13 +110,17 @@ public class ClientUriDaoImpl implements ClientUriDao {
     ClientUriCreateDto dto = (ClientUriCreateDto) record;
     //language=Oracle
     String insertSqlQuery = "insert into OA_CLIENT_URI(CLIENT_ID, CLIENT_URI, OPERATOR_ID) " +
-      "values (?, ?, ?)";
+      "values ((" +
+        "select ct.client_id " +
+        "from OA_CLIENT ct " +
+        "where ct.client_code = ?" +
+      "), ?, ?)";
     CallableStatement insertStatement = db.prepare(insertSqlQuery);
     Integer result = null;
     try {
-      insertStatement.setInt(1, dto.getClientId());
+      insertStatement.setString(1, dto.getClientId());
       insertStatement.setString(2, dto.getClientUri());
-      insertStatement.setInt(3, 1);
+      insertStatement.setInt(3, operatorId);
       if (insertStatement.executeUpdate() == 1) {
         //language=Oracle
         String sqlGetIndex = "SELECT OA_CLIENT_URI_SEQ.currval FROM dual";
@@ -114,6 +134,10 @@ public class ClientUriDaoImpl implements ClientUriDao {
     } catch (SQLException e) {
       e.printStackTrace();
       db.rollback();
+    } catch (Throwable th) {
+      th.printStackTrace();
+      db.rollback();
+      throw th;
     } finally {
       db.closeAll();
     }
@@ -139,6 +163,10 @@ public class ClientUriDaoImpl implements ClientUriDao {
     } catch (SQLException e) {
       e.printStackTrace();
       db.rollback();
+    } catch (Throwable th) {
+      th.printStackTrace();
+      db.rollback();
+      throw th;
     } finally {
       db.closeAll();
     }

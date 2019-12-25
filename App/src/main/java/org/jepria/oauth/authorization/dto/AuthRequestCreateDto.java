@@ -6,7 +6,7 @@ public class AuthRequestCreateDto {
 
   String authorizationCode;
   String redirectUri;
-  String clientCode;
+  String clientId;
   Integer operatorId;
   String tokenId;
   Date tokenDateIns;
@@ -27,12 +27,12 @@ public class AuthRequestCreateDto {
     this.redirectUri = redirectUri;
   }
 
-  public String getClientCode() {
-    return clientCode;
+  public String getClientId() {
+    return clientId;
   }
 
-  public void setClientCode(String clientCode) {
-    this.clientCode = clientCode;
+  public void setClientId(String clientId) {
+    this.clientId = clientId;
   }
 
   public Integer getOperatorId() {

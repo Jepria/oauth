@@ -6,12 +6,12 @@ import java.util.List;
 
 public class ClientService {
 
-  public List<OptionDto<Integer>> getGrantType() {
-    return null;
+  public List<OptionDto<String>> getGrantType() {
+    return ClientServerFactory.getInstance().getDao().getGrantType();
   }
 
-  public List<OptionDto<Integer>> getResponseType() {
-    return null;
+  public List<OptionDto<String>> getGrantResponseType(List<String> grantTypeCodes) {
+    return ClientServerFactory.getInstance().getDao().getGrantResponseType(grantTypeCodes);
   }
 
 }

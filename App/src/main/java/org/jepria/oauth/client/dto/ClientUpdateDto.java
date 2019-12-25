@@ -1,9 +1,18 @@
 package org.jepria.oauth.client.dto;
 
+import org.hibernate.validator.constraints.NotBlank;
+import java.util.List;
+
 public class ClientUpdateDto {
+
+  @NotBlank
   String clientName;
   String clientNameEn;
-  String isDeleted;
+  @NotBlank
+  String applicationType;
+  List<String> grantTypes;
+  @NotBlank
+  String tokenAuthMethod;
 
   public String getClientName() {
     return clientName;
@@ -21,11 +30,27 @@ public class ClientUpdateDto {
     this.clientNameEn = clientNameEn;
   }
 
-  public String getIsDeleted() {
-    return isDeleted;
+  public String getApplicationType() {
+    return applicationType;
   }
 
-  public void setIsDeleted(String isDeleted) {
-    this.isDeleted = isDeleted;
+  public void setApplicationTypeC(String applicationType) {
+    this.applicationType = applicationType;
+  }
+
+  public List<String> getGrantTypes() {
+    return grantTypes;
+  }
+
+  public void setGrantTypes(List<String> grantTypes) {
+    this.grantTypes = grantTypes;
+  }
+
+  public String getTokenAuthMethod() {
+    return tokenAuthMethod;
+  }
+
+  public void setTokenAuthMethod(String tokenEndpointAuthMethod) {
+    this.tokenAuthMethod = tokenAuthMethod;
   }
 }

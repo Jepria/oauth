@@ -1,14 +1,15 @@
 package org.jepria.oauth.clienturi.dto;
 
 public class ClientUriCreateDto {
-  Integer clientId;
+
+  String clientId;
   String clientUri;
 
-  public Integer getClientId() {
+  public String getClientId() {
     return clientId;
   }
 
-  public void setClientId(Integer clientId) {
+  public void setClientId(String clientId) {
     this.clientId = clientId;
   }
 

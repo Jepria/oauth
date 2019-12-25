@@ -1,10 +1,13 @@
 package org.jepria.oauth.authorization.dto;
 
 import org.jepria.server.data.OptionDto;
+import org.jepria.server.data.PrimaryKey;
 
 import java.util.Date;
 
 public class AuthRequestDto {
+
+  @PrimaryKey
   Integer authRequestId;
   String authorizationCode;
   Date dateIns;

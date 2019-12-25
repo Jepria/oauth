@@ -2,7 +2,7 @@ package org.jepria.oauth.authentication;
 
 import org.jepria.oauth.authorization.AuthorizationServerFactory;
 import org.jepria.oauth.authorization.dto.AuthRequestDto;
-import org.jepria.oauth.authorization.dto.AuthRequestSearchDto;
+import org.jepria.oauth.authorization.dto.AuthRequestSearchDtoLocal;
 import org.jepria.oauth.authorization.dto.AuthRequestUpdateDto;
 
 import javax.security.auth.login.LoginException;
@@ -30,7 +30,7 @@ public class AuthenticationService {
 
   private AuthRequestDto getAuthRequest(String authCode, String redirectUri) {
     try {
-      AuthRequestSearchDto searchTemplate = new AuthRequestSearchDto();
+      AuthRequestSearchDtoLocal searchTemplate = new AuthRequestSearchDtoLocal();
       searchTemplate.setAuthorizationCode(authCode);
       searchTemplate.setRedirectUri(redirectUri);
       AuthRequestDto authRequest = AuthorizationServerFactory.getInstance().getService().find(searchTemplate).get(0);
@@ -57,22 +57,22 @@ public class AuthenticationService {
       Integer operatorId = loginByPassword(username, password);
       setOperatorId(authRequest.getAuthRequestId(), operatorId);
       if (CODE.equalsIgnoreCase(responseType)) {
-        response = Response.temporaryRedirect(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + authCode + (state != null ? STATE + "=" + state : ""))).build();
+        response = Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + authCode + "&" + (state != null ? STATE + "=" + state : ""))).build();
       } else if (TOKEN.equalsIgnoreCase(responseType)) {
-        response = Response.temporaryRedirect(URI.create(redirectUri + getSeparator(redirectUri) + ERROR + UNSUPPORTED_RESPONSE_TYPE)).build();
+        response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR + UNSUPPORTED_RESPONSE_TYPE)).build();
       } else {
-        response = Response.temporaryRedirect(URI.create(redirectUri + getSeparator(redirectUri) + ERROR + UNSUPPORTED_RESPONSE_TYPE)).build();
+        response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR + UNSUPPORTED_RESPONSE_TYPE)).build();
       }
     } catch (IllegalStateException | IllegalArgumentException e) {
       e.printStackTrace();
-      response = Response.temporaryRedirect(URI.create(redirectUri + getSeparator(redirectUri) + ERROR + ACCESS_DENIED + "&" + ERROR_DESCRIPTION + URLEncoder.encode(e.getMessage(), "UTF-8"))).build();
+      response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR + ACCESS_DENIED + "&" + ERROR_DESCRIPTION + URLEncoder.encode(e.getMessage(), "UTF-8"))).entity(null).build();
     } catch (LoginException e) {
       e.printStackTrace();
-      response = Response.temporaryRedirect(new URI("/oauth/login/?" + RESPONSE_TYPE + "=" + CODE + "&" + CODE + "=" + authCode
+      response =  Response.status(302).location(new URI("/oauth/login/?" + RESPONSE_TYPE + "=" + CODE + "&" + CODE + "=" + authCode
         + "&" + REDIRECT_URI + "=" + redirectUriEncoded + "&" + CLIENT_NAME + "=" + clientName + "&" + STATE + "=" + state + "&error-code=" + 401)).build();
     } catch (Exception e) {
       e.printStackTrace();
-      response = Response.temporaryRedirect(URI.create(redirectUri + getSeparator(redirectUri) + ERROR + "&" + SERVER_ERROR)).build();
+      response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR + "&" + SERVER_ERROR)).build();
     } finally {
       return response;
     }

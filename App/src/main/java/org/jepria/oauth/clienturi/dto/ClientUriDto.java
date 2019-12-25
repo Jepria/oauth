@@ -1,9 +1,22 @@
 package org.jepria.oauth.clienturi.dto;
 
+import org.jepria.server.data.PrimaryKey;
+
 public class ClientUriDto {
+
+  @PrimaryKey
+  String clientId;
+  @PrimaryKey
   Integer clientUriId;
-  Integer clientId;
   String clientUri;
+
+  public String getClientId() {
+    return clientId;
+  }
+
+  public void setClientId(String clientId) {
+    this.clientId = clientId;
+  }
 
   public Integer getClientUriId() {
     return clientUriId;
@@ -11,14 +24,6 @@ public class ClientUriDto {
 
   public void setClientUriId(Integer clientUriId) {
     this.clientUriId = clientUriId;
-  }
-
-  public Integer getClientId() {
-    return clientId;
-  }
-
-  public void setClientId(Integer clientId) {
-    this.clientId = clientId;
   }
 
   public String getClientUri() {

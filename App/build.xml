@@ -47,7 +47,13 @@
     <pathelement location="${JERSEY-JAKARTA-ANNOTATION-API_LIB}" />
     <pathelement location="${JERSEY-JAKARTA-SERVLET-API_LIB}" />
 
+    <!-- Javax validation -->
+    <pathelement location="${JERSEY-VALIDATION-API_LIB}" />
+    <pathelement location="${HIBERNATE-VALIDATOR_LIB}" />
+    <pathelement location="${SLF4J_LIB}" />
+    <pathelement location="${JERSEY-AOPALLIANCE-REPACKAGED_LIB}" />
 
+    <pathelement location="${OJDBC6DMS_LIB}" />
     <pathelement location="${SERVLET-API_LIB}" />
     <pathelement location="${OAUTH_SDK}" />
   </path>
@@ -248,6 +254,11 @@
           <fileset file="${JERSEY-JAKARTA-INJECT_LIB}" />
           <fileset file="${JERSEY-JAKARTA-ANNOTATION-API_LIB}" />
           <fileset file="${JERSEY-JAVASSIST_LIB}" />
+
+          <!-- Javax/Hibernate validator runtime dependencies -->
+          <fileset file="${HIBERNATE-VALIDATOR_LIB}" />
+          <fileset file="${SLF4J_LIB}" />
+          <fileset file="${JERSEY-AOPALLIANCE-REPACKAGED_LIB}" />
 
           <fileset file="${OAUTH_SDK}" />
           <fileset file="${NIMBUS_JOSE_JWT}" />

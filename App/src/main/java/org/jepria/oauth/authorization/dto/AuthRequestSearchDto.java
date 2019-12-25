@@ -1,13 +1,11 @@
 package org.jepria.oauth.authorization.dto;
 
 public class AuthRequestSearchDto {
+
   Integer authRequestId;
-  String authorizationCode;
   Integer operatorId;
-  String clientCode;
-  String tokenId;
+  String clientId;
   Boolean isBlocked;
-  String redirectUri;
 
   public Integer getAuthRequestId() {
     return authRequestId;
@@ -15,14 +13,6 @@ public class AuthRequestSearchDto {
 
   public void setAuthRequestId(Integer authRequestId) {
     this.authRequestId = authRequestId;
-  }
-
-  public String getAuthorizationCode() {
-    return authorizationCode;
-  }
-
-  public void setAuthorizationCode(String authorizationCode) {
-    this.authorizationCode = authorizationCode;
   }
 
   public Integer getOperatorId() {
@@ -33,20 +23,12 @@ public class AuthRequestSearchDto {
     this.operatorId = operatorId;
   }
 
-  public String getClientCode() {
-    return clientCode;
+  public String getClientId() {
+    return clientId;
   }
 
-  public void setClientCode(String clientCode) {
-    this.clientCode = clientCode;
-  }
-
-  public String getTokenId() {
-    return tokenId;
-  }
-
-  public void setTokenId(String tokenId) {
-    this.tokenId = tokenId;
+  public void setClientId(String clientId) {
+    this.clientId = clientId;
   }
 
   public Boolean getBlocked() {
@@ -55,13 +37,5 @@ public class AuthRequestSearchDto {
 
   public void setBlocked(Boolean blocked) {
     isBlocked = blocked;
-  }
-
-  public String getRedirectUri() {
-    return redirectUri;
-  }
-
-  public void setRedirectUri(String redirectUri) {
-    this.redirectUri = redirectUri;
   }
 }

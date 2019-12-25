@@ -36,7 +36,7 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
     @QueryParam("state") String state,
     @FormParam("username") String username,
     @FormParam("password") String password) {
-    return AuthenticationServerFactory.getInstance().getService().authenticate(request.getServletContext().getContextPath(), responseType, authCode, state, redirectUri, clientName, username, password);
+    return AuthenticationServerFactory.getInstance().getService().authenticate(responseType, authCode, state, redirectUri, clientName, username, password);
   }
 
 }

@@ -2,7 +2,7 @@ package org.jepria.oauth.token;
 
 import org.jepria.oauth.authorization.AuthorizationServerFactory;
 import org.jepria.oauth.authorization.dto.AuthRequestDto;
-import org.jepria.oauth.authorization.dto.AuthRequestSearchDto;
+import org.jepria.oauth.authorization.dto.AuthRequestSearchDtoLocal;
 import org.jepria.oauth.authorization.dto.AuthRequestUpdateDto;
 import org.jepria.oauth.client.ClientServerFactory;
 import org.jepria.oauth.client.dto.ClientDto;
@@ -27,10 +27,10 @@ import java.util.concurrent.TimeUnit;
 
 public class TokenService {
 
-  private AuthRequestDto getAuthRequest(String authCode, String clientCode, String redirectUri, String tokenId)  {
-    AuthRequestSearchDto searchTemplate = new AuthRequestSearchDto();
+  private AuthRequestDto getAuthRequest(String authCode, String clientId, String redirectUri, String tokenId)  {
+    AuthRequestSearchDtoLocal searchTemplate = new AuthRequestSearchDtoLocal();
     searchTemplate.setAuthorizationCode(authCode);
-    searchTemplate.setClientCode(clientCode);
+    searchTemplate.setClientId(clientId);
     searchTemplate.setRedirectUri(redirectUri);
     searchTemplate.setTokenId(tokenId);
     List<AuthRequestDto> result = (List<AuthRequestDto>) AuthorizationServerFactory.getInstance().getDao().find(searchTemplate, 1);
@@ -51,9 +51,9 @@ public class TokenService {
   }
 
 
-  private ClientDto getClient(String clientCode) throws IllegalArgumentException {
+  private ClientDto getClient(String clientId) throws IllegalArgumentException {
     ClientSearchDto clientSearchTemplate = new ClientSearchDto();
-    clientSearchTemplate.setClientCode(clientCode);
+    clientSearchTemplate.setClientId(clientId);
     List<ClientDto> result = (List<ClientDto>) ClientServerFactory.getInstance().getDao().find(clientSearchTemplate, 1);
     if (result.size() == 1) {
       return result.get(0);
@@ -135,7 +135,7 @@ public class TokenService {
     if (redirectUri != null) {
       try {
         URI redirectionURI = URI.create(new String(Base64.getUrlDecoder().decode(redirectUri)));
-        return Response.temporaryRedirect(redirectionURI).build();
+        return  Response.status(302).location(redirectionURI).build();
       } catch (IllegalArgumentException ex) {
         ex.printStackTrace();
       }

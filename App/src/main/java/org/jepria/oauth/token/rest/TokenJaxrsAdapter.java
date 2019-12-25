@@ -45,6 +45,7 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
 
   @POST
   @Path("/token")
+  @WithClientCredentials
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   public Response createToken(
     @FormParam("grant_type") String grantType,

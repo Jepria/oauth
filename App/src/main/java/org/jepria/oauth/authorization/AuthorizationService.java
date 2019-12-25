@@ -2,7 +2,7 @@ package org.jepria.oauth.authorization;
 
 import org.jepria.oauth.authorization.dto.AuthRequestCreateDto;
 import org.jepria.oauth.authorization.dto.AuthRequestDto;
-import org.jepria.oauth.authorization.dto.AuthRequestSearchDto;
+import org.jepria.oauth.authorization.dto.AuthRequestSearchDtoLocal;
 import org.jepria.oauth.authorization.dto.AuthRequestUpdateDto;
 import org.jepria.oauth.client.ClientServerFactory;
 import org.jepria.oauth.client.dto.ClientDto;
@@ -15,6 +15,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.util.*;
 
 import static org.jepria.oauth.authorization.AuthorizationFieldNames.AUTH_REQUEST_ID;
@@ -32,35 +33,35 @@ public class AuthorizationService {
     try {
       if (CODE.equalsIgnoreCase(responseType)) {
         AuthRequestDto authRequest = initializeAuthorizationRequest(clientId, redirectUri);
-        response = Response.temporaryRedirect(new URI("/oauth/login/?"
+        response =  Response.status(302).location(new URI("/oauth/login/?"
           + RESPONSE_TYPE + "=" + CODE
           + "&" + CODE + "=" + authRequest.getAuthorizationCode()
           + "&" + REDIRECT_URI + "=" + redirectUriEncoded
           + "&" + CLIENT_NAME + "=" + authRequest.getClient().getName()
           + "&" + STATE + "=" + state)).build();
       } else if (TOKEN.equalsIgnoreCase(responseType)) {
-        response = Response.temporaryRedirect(URI.create(redirectUri + getSeparator(redirectUri) + ERROR + UNSUPPORTED_RESPONSE_TYPE)).build();
+        response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR + UNSUPPORTED_RESPONSE_TYPE)).build();
       } else {
-        response = Response.temporaryRedirect(URI.create(redirectUri + getSeparator(redirectUri) + ERROR + UNSUPPORTED_RESPONSE_TYPE)).build();
+        response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR + UNSUPPORTED_RESPONSE_TYPE)).build();
       }
     } catch (IllegalArgumentException | NoSuchElementException e) {
       e.printStackTrace();
-      response = Response.temporaryRedirect(URI.create(redirectUri + getSeparator(redirectUri) + ERROR + INVALID_REQUEST + "&" + ERROR_DESCRIPTION + URLEncoder.encode(e.getMessage(), "UTF-8"))).build();
+      response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR + INVALID_REQUEST + "&" + ERROR_DESCRIPTION + URLEncoder.encode(e.getMessage(), "UTF-8"))).build();
     } catch (Throwable e) {
       e.printStackTrace();
-      response = Response.temporaryRedirect(URI.create(redirectUri + getSeparator(redirectUri) + ERROR + "&" + SERVER_ERROR)).build();
+      response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR + "&" + SERVER_ERROR)).build();
     } finally {
       return response;
     }
   }
 
-  public AuthRequestDto initializeAuthorizationRequest(String clientCode, String redirectUri) throws IllegalArgumentException {
+  public AuthRequestDto initializeAuthorizationRequest(String clientId, String redirectUri) throws IllegalArgumentException {
     AuthRequestDto result;
     ClientSearchDto clientSearchTemplate = new ClientSearchDto();
-    clientSearchTemplate.setClientCode(clientCode);
+    clientSearchTemplate.setClientId(clientId);
     List<ClientDto> clientList = (List<ClientDto>) ClientServerFactory.getInstance().getDao().find(clientSearchTemplate, 1);
     if (clientList.isEmpty() || clientList.size() > 1) {
-      throw new NoSuchElementException("client_id not found");
+      throw new NoSuchElementException("client not found");
     }
     ClientUriSearchDtoLocal clientUriSearchTemplate = new ClientUriSearchDtoLocal();
     clientUriSearchTemplate.setClientId(clientList.get(0).getClientId());
@@ -68,7 +69,7 @@ public class AuthorizationService {
     if (clientUriList.stream().anyMatch(clientUri -> clientUri.getClientUri().equals(redirectUri) || redirectUri.startsWith(clientUri.getClientUri()))) {
       AuthRequestCreateDto authRequestDto = new AuthRequestCreateDto();
       authRequestDto.setAuthorizationCode(generateCode());
-      authRequestDto.setClientCode(clientCode);
+      authRequestDto.setClientId(clientId);
       authRequestDto.setRedirectUri(redirectUri);
       List<AuthRequestDto> authRequestList = (List<AuthRequestDto>) AuthorizationServerFactory.getInstance().getDao().findByPrimaryKey(new HashMap<String, Integer>() {{
         put(AUTH_REQUEST_ID, (create(authRequestDto)));
@@ -84,22 +85,23 @@ public class AuthorizationService {
     return result;
   }
 
-  public List<AuthRequestDto> find(AuthRequestSearchDto template) {
-    List<AuthRequestDto> result = (List<AuthRequestDto>) AuthorizationServerFactory.getInstance().getDao().find(template, null);
+  public List<AuthRequestDto> find(AuthRequestSearchDtoLocal template) {
+    template.setFinished(false);
+    List<AuthRequestDto> result = (List<AuthRequestDto>) AuthorizationServerFactory.getInstance().getDao().find(template, 1);
     return result;
   }
 
-  public Integer create(AuthRequestCreateDto record) {
+  private Integer create(AuthRequestCreateDto record) {
     if (record.getAuthorizationCode() == null) {
       throw new IllegalArgumentException("Authorization code must be not null");
     }
     if (record.getRedirectUri() == null) {
       throw new IllegalArgumentException("Redirect URI must be not null");
     }
-    if (record.getClientCode() == null) {
+    if (record.getClientId() == null) {
       throw new IllegalArgumentException("Client ID must be not null");
     }
-    Integer result = (Integer) AuthorizationServerFactory.getInstance().getDao().create(record, null);
+    Integer result = (Integer) AuthorizationServerFactory.getInstance().getDao().create(record, 1);
     if (result == null) {
       throw new RuntimeException("Record was not created.");
     }
@@ -115,12 +117,19 @@ public class AuthorizationService {
     }}, record, null);
   }
 
+  public void block(Integer authRequestId) {
+    AuthorizationServerFactory.getInstance().getDao().blockAuthRequest(authRequestId);
+  }
+
   private String generateCode() {
     try {
-      MessageDigest cryptoProvider = MessageDigest.getInstance("SHA-256");
       UUID randomUuid = UUID.randomUUID();
-      cryptoProvider.update(randomUuid.toString().getBytes());
-      return Base64.getUrlEncoder().withoutPadding().encodeToString(cryptoProvider.digest());
+      MessageDigest md = MessageDigest.getInstance("SHA-256");
+      SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
+      byte[] salt = new byte[16];
+      random.nextBytes(salt);
+      md.update(salt);
+      return Base64.getUrlEncoder().withoutPadding().encodeToString(md.digest(randomUuid.toString().getBytes()));
     } catch (Throwable e) {
       throw new RuntimeException(e);
     }

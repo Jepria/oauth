@@ -22,7 +22,12 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
-import java.util.List;
+import javax.xml.bind.DatatypeConverter;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SecureRandom;
+import java.util.*;
 
 @Path("/client")
 @HttpBasic(passwordType = HttpBasic.PASSWORD)
@@ -36,14 +41,19 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
   @GET
   @Path("/option/grant-type")
   public Response getGrantType() {
-    List<OptionDto<Integer>> result = ClientServerFactory.getInstance().getService().getGrantType();
+    List<OptionDto<String>> result = ClientServerFactory.getInstance().getService().getGrantType();
     return Response.ok(result).build();
   }
 
   @GET
-  @Path("/option/response-type")
-  public Response getResponseType() {
-    List<OptionDto<Integer>> result = ClientServerFactory.getInstance().getService().getResponseType();
+  @Path("/option/grant-response-type")
+  public Response getResponseType(@QueryParam("grantTypes") List<String> grantTypeCodes) {
+    if (grantTypeCodes.size() == 1 && grantTypeCodes.get(0).contains(",")) {
+      grantTypeCodes = Arrays.asList(grantTypeCodes.get(0).split(","));
+    } else if (grantTypeCodes.size() == 1 && grantTypeCodes.get(0).contains(";")) {
+      grantTypeCodes = Arrays.asList(grantTypeCodes.get(0).split(";"));
+    }
+    List<OptionDto<String>> result = ClientServerFactory.getInstance().getService().getGrantResponseType(grantTypeCodes);
     return Response.ok(result).build();
   }
 
@@ -58,6 +68,22 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
 
   @POST
   public Response create(ClientCreateDto record) {
+    String randomUuid = UUID.randomUUID().toString().replaceAll("-", "");
+    record.setClientId(randomUuid);
+    MessageDigest md = null;
+    try {
+      SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
+      md = MessageDigest.getInstance("SHA-256");
+      byte[] salt = new byte[16];
+      random.nextBytes(salt);
+      md.update(salt);
+      byte[] secret = new byte[32];
+      random.nextBytes(secret);
+      record.setClientSecret(DatatypeConverter.printHexBinary(md.digest(secret)));
+    } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+      e.printStackTrace();
+      throw new IllegalStateException(e);
+    }
     return entityEndpointAdapter.create(record);
   }
 

@@ -37,12 +37,12 @@ function refreshFormParameters() {
         var responseType = parameters['response_type'] !== undefined ? parameters['response_type'] : '';
         var authCode = parameters['code'] !== undefined ? parameters['code'] : '';
         var redirectUri = parameters['redirect_uri'] !== undefined ? parameters['redirect_uri'] : '';
-        //var clientId = parameters['client_id'] !== undefined ? parameters['client_id'] : '';
+        var clientId = parameters['client_id'] !== undefined ? parameters['client_id'] : '';
         var clientName = parameters['client_name'] !== undefined ? parameters['client_name'] : '';
         var state = parameters['state'] !== undefined ? parameters['state'] : '';
         var hash = window.location.hash.slice(0);
         window.location.hash = '';
-        form.action = form.action + '?response_type=' + responseType + '&code=' + authCode + '&redirect_uri=' + redirectUri + "&client_name=" + clientName + '&state=' + state + hash;
+        form.action = form.action + '?response_type=' + responseType + '&code=' + authCode + '&redirect_uri=' + redirectUri + '&client_id=' + clientId + "&client_name=" + clientName + '&state=' + state + hash;
         form[0].focus();
     }
 }

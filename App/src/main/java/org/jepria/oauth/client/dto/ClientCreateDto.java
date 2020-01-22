@@ -1,7 +1,10 @@
 package org.jepria.oauth.client.dto;
 
 import org.hibernate.validator.constraints.NotBlank;
+import org.jepria.oauth.client.constraint.TokenAuthMethodConstraint;
 
+import javax.validation.Valid;
+import javax.validation.executable.ValidateOnExecution;
 import java.util.List;
 
 public class ClientCreateDto {

@@ -10,12 +10,15 @@ import org.jepria.oauth.client.dto.ClientSearchDto;
 import org.jepria.oauth.clienturi.ClientUriServerFactory;
 import org.jepria.oauth.clienturi.dto.ClientUriDto;
 import org.jepria.oauth.clienturi.dto.ClientUriSearchDtoLocal;
+import org.jepria.server.data.RuntimeSQLException;
+
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
+import java.sql.SQLException;
 import java.util.*;
 
 import static org.jepria.oauth.authorization.AuthorizationFieldNames.AUTH_REQUEST_ID;
@@ -23,12 +26,11 @@ import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 public class AuthorizationService {
 
-  public Response authorize(String responseType, String clientId, String redirectUriEncoded, String state, String host) {
+  public Response authorize(String responseType, String clientId, String redirectUriEncoded, String state) {
     String redirectUri = new String(Base64.getUrlDecoder().decode(redirectUriEncoded));
     if (!isValidUri(redirectUri)) {
-      return Response.status(400).entity("redirect_uri is invalid or not avaliable").build();
+      return Response.status(400).entity("redirect_uri is invalid or not available").build();
     }
-
     Response response = null;
     try {
       if (CODE.equalsIgnoreCase(responseType)) {
@@ -37,40 +39,43 @@ public class AuthorizationService {
           + RESPONSE_TYPE + "=" + CODE
           + "&" + CODE + "=" + authRequest.getAuthorizationCode()
           + "&" + REDIRECT_URI + "=" + redirectUriEncoded
+          + "&" + CLIENT_ID + "=" + authRequest.getClient().getValue()
           + "&" + CLIENT_NAME + "=" + authRequest.getClient().getName()
           + "&" + STATE + "=" + state)).build();
       } else if (TOKEN.equalsIgnoreCase(responseType)) {
-        response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR + UNSUPPORTED_RESPONSE_TYPE)).build();
+        AuthRequestDto authRequest = initializeAuthorizationRequest(clientId, redirectUri);
+        response =  Response.status(302).location(new URI("/oauth/login/?"
+          + RESPONSE_TYPE + "=" + TOKEN
+          + "&" + CODE + "=" + authRequest.getAuthorizationCode()
+          + "&" + REDIRECT_URI + "=" + redirectUriEncoded
+          + "&" + CLIENT_ID + "=" + authRequest.getClient().getValue()
+          + "&" + CLIENT_NAME + "=" + authRequest.getClient().getName()
+          + "&" + STATE + "=" + state)).build();
       } else {
-        response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR + UNSUPPORTED_RESPONSE_TYPE)).build();
+        response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR_QUERY_PARAM + UNSUPPORTED_RESPONSE_TYPE)).build();
       }
     } catch (IllegalArgumentException | NoSuchElementException e) {
       e.printStackTrace();
-      response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR + INVALID_REQUEST + "&" + ERROR_DESCRIPTION + URLEncoder.encode(e.getMessage(), "UTF-8"))).build();
+      response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR_QUERY_PARAM + INVALID_REQUEST + "&" + ERROR_DESCRIPTION_QUERY_PARAM + URLEncoder.encode(e.getMessage(), "UTF-8"))).build();
     } catch (Throwable e) {
       e.printStackTrace();
-      response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR + "&" + SERVER_ERROR)).build();
+      response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR_QUERY_PARAM + "&" + SERVER_ERROR )).build();
     } finally {
       return response;
     }
   }
 
   public AuthRequestDto initializeAuthorizationRequest(String clientId, String redirectUri) throws IllegalArgumentException {
-    AuthRequestDto result;
-    ClientSearchDto clientSearchTemplate = new ClientSearchDto();
-    clientSearchTemplate.setClientId(clientId);
-    List<ClientDto> clientList = (List<ClientDto>) ClientServerFactory.getInstance().getDao().find(clientSearchTemplate, 1);
-    if (clientList.isEmpty() || clientList.size() > 1) {
-      throw new NoSuchElementException("client not found");
+    if (redirectUri == null) {
+      throw new IllegalArgumentException("Redirect URI must be not null");
     }
-    ClientUriSearchDtoLocal clientUriSearchTemplate = new ClientUriSearchDtoLocal();
-    clientUriSearchTemplate.setClientId(clientList.get(0).getClientId());
-    List<ClientUriDto> clientUriList = (List<ClientUriDto>) ClientUriServerFactory.getInstance().getDao().find(clientUriSearchTemplate, 1);
-    if (clientUriList.stream().anyMatch(clientUri -> clientUri.getClientUri().equals(redirectUri) || redirectUri.startsWith(clientUri.getClientUri()))) {
-      AuthRequestCreateDto authRequestDto = new AuthRequestCreateDto();
-      authRequestDto.setAuthorizationCode(generateCode());
-      authRequestDto.setClientId(clientId);
-      authRequestDto.setRedirectUri(redirectUri);
+
+    AuthRequestDto result = null;
+    AuthRequestCreateDto authRequestDto = new AuthRequestCreateDto();
+    authRequestDto.setAuthorizationCode(generateCode());
+    authRequestDto.setClientId(clientId);
+    authRequestDto.setRedirectUri(redirectUri);
+    try {
       List<AuthRequestDto> authRequestList = (List<AuthRequestDto>) AuthorizationServerFactory.getInstance().getDao().findByPrimaryKey(new HashMap<String, Integer>() {{
         put(AUTH_REQUEST_ID, (create(authRequestDto)));
       }}, 1);
@@ -79,28 +84,35 @@ public class AuthorizationService {
       } else {
         throw new NoSuchElementException("authorization request not found");
       }
-    } else {
-      throw new IllegalArgumentException("redirect_uri doesn't match to Client URI whitelist");
+    } catch (RuntimeSQLException ex) {
+      SQLException sqlException = ex.getSQLException();
+      if (sqlException.getErrorCode() == 20001) {
+        throw new IllegalArgumentException("client_id is not valid");
+      }
+      if (sqlException.getErrorCode() == 20002) {
+        throw new IllegalArgumentException("redirect_uri mismatch");
+      }
     }
     return result;
   }
 
+  /**
+   *
+   * @param template
+   * @return
+   */
   public List<AuthRequestDto> find(AuthRequestSearchDtoLocal template) {
-    template.setFinished(false);
+    template.setHasToken(false);
     List<AuthRequestDto> result = (List<AuthRequestDto>) AuthorizationServerFactory.getInstance().getDao().find(template, 1);
     return result;
   }
 
-  private Integer create(AuthRequestCreateDto record) {
-    if (record.getAuthorizationCode() == null) {
-      throw new IllegalArgumentException("Authorization code must be not null");
-    }
-    if (record.getRedirectUri() == null) {
-      throw new IllegalArgumentException("Redirect URI must be not null");
-    }
-    if (record.getClientId() == null) {
-      throw new IllegalArgumentException("Client ID must be not null");
-    }
+  /**
+   *
+   * @param record
+   * @return
+   */
+  public Integer create(AuthRequestCreateDto record) {
     Integer result = (Integer) AuthorizationServerFactory.getInstance().getDao().create(record, 1);
     if (result == null) {
       throw new RuntimeException("Record was not created.");
@@ -108,6 +120,10 @@ public class AuthorizationService {
     return result;
   }
 
+  /**
+   *
+   * @param record
+   */
   public void update(AuthRequestUpdateDto record) {
     if (record.getAuthRequestId() == null) {
       throw new IllegalArgumentException("Primary key must be not null");
@@ -117,11 +133,19 @@ public class AuthorizationService {
     }}, record, null);
   }
 
+  /**
+   *
+   * @param authRequestId
+   */
   public void block(Integer authRequestId) {
     AuthorizationServerFactory.getInstance().getDao().blockAuthRequest(authRequestId);
   }
 
-  private String generateCode() {
+  /**
+   *
+   * @return
+   */
+  public String generateCode() {
     try {
       UUID randomUuid = UUID.randomUUID();
       MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -135,11 +159,16 @@ public class AuthorizationService {
     }
   }
 
+  /**
+   *
+   * @param redirectUri
+   * @return
+   */
   private boolean isValidUri(String redirectUri)  {
     try {
       new URI(redirectUri);
       return true;
-    } catch (URISyntaxException e) {
+    } catch (URISyntaxException | NullPointerException e) {
       e.printStackTrace();
       return false;
     }

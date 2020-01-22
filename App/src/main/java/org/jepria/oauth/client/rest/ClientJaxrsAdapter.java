@@ -10,6 +10,7 @@ import org.jepria.server.data.SearchRequestDto;
 import org.jepria.server.service.rest.ExtendedResponse;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
 import org.jepria.server.service.security.HttpBasic;
+import org.jepria.server.service.security.JepSecurityContext;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
@@ -21,8 +22,10 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.DatatypeConverter;
+import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -32,6 +35,8 @@ import java.util.*;
 @Path("/client")
 @HttpBasic(passwordType = HttpBasic.PASSWORD)
 public class ClientJaxrsAdapter extends JaxrsAdapterBase {
+  @Context
+  JepSecurityContext securityContext;
 
   protected final EntityEndpointAdapter entityEndpointAdapter = new EntityEndpointAdapter(() -> ClientServerFactory.getInstance().getEntityService());
 
@@ -68,12 +73,11 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
 
   @POST
   public Response create(ClientCreateDto record) {
-    String randomUuid = UUID.randomUUID().toString().replaceAll("-", "");
-    record.setClientId(randomUuid);
-    MessageDigest md = null;
     try {
+      String randomUuid = UUID.randomUUID().toString().replaceAll("-", "");
+      record.setClientId(randomUuid);
       SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
-      md = MessageDigest.getInstance("SHA-256");
+      MessageDigest md = MessageDigest.getInstance("SHA-256");
       byte[] salt = new byte[16];
       random.nextBytes(salt);
       md.update(salt);
@@ -85,6 +89,7 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
       throw new IllegalStateException(e);
     }
     return entityEndpointAdapter.create(record);
+   // return ClientServerFactory.getInstance().getService().create(request.getRequestURL().toString(), record, securityContext.getCredential());
   }
 
   @DELETE

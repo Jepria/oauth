@@ -3,6 +3,7 @@ package org.jepria.oauth.client.dao;
 import com.technology.jep.jepria.server.dao.ResultSetMapper;
 import com.technology.jep.jepria.server.db.Db;
 import oracle.jdbc.OracleConnection;
+import oracle.jdbc.OracleTypes;
 import oracle.sql.ArrayDescriptor;
 import org.jepria.oauth.client.ClientConstants;
 import org.jepria.oauth.client.dto.*;
@@ -20,8 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.jepria.oauth.client.ClientFieldNames.*;
-import static org.jepria.oauth.sdk.GrantType.AUTHORIZATION_CODE;
-import static org.jepria.oauth.sdk.GrantType.IMPLICIT;
+import static org.jepria.oauth.sdk.GrantType.*;
 
 public class ClientDaoImpl implements ClientDao {
 
@@ -30,18 +30,31 @@ public class ClientDaoImpl implements ClientDao {
   }
 
   //language=Oracle
-  private String findSqlQuery =
-      "select ct.client_id, ct.client_code, ct.client_secret, ct.client_name, ct.client_name_en, " +
-        "ct.application_type_code, apt.application_type_name, ct.token_auth_method_code, tm.token_auth_method_name " +
-      "from OA_CLIENT ct " +
-        "inner join OA_APPLICATION_TYPE apt " +
-          "on ct.application_type_code = apt.application_type_code " +
-        "inner join OA_TOKEN_AUTH_METHOD tm " +
-          "on ct.token_auth_method_code = tm.token_auth_method_code " +
-      "where ct.is_deleted = 0 ";
-  String clientCodeClause = "and ct.CLIENT_CODE = ? ";
-  String clientNameClause = "and ct.CLIENT_NAME like ? ";
-  String clientNameEnClause = "and ct.CLIENT_NAME_EN like ? ";
+  private String findSqlQuery = "declare " +
+      "rc sys_refcursor;" +
+      "clientCode varchar(64) := ?;" +
+      "clientName varchar(100) := ?;" +
+      "clientNameEn varchar(100) := ?;" +
+    "begin " +
+      "open rc for select " +
+        "ct.client_id," +
+        "ct.client_code," +
+        "ct.client_secret," +
+        "ct.client_name," +
+        "ct.client_name_en," +
+        "ct.application_type_code," +
+        "apt.application_type_name," +
+        "ct.token_auth_method_code," +
+        "tm.token_auth_method_name " +
+        "from OA_CLIENT ct " +
+          "inner join OA_APPLICATION_TYPE apt on ct.application_type_code = apt.application_type_code " +
+          "inner join OA_TOKEN_AUTH_METHOD tm on ct.token_auth_method_code = tm.token_auth_method_code " +
+        "where ct.is_deleted = 0 " +
+          "and (ct.client_code like clientCode or clientCode is null) " +
+          "and (ct.client_name like clientName or clientName is null) " +
+          "and (ct.client_name_en like clientNameEn or clientNameEn is null);" +
+      "? := rc; " +
+    "end;";
 
   private ResultSetMapper mapper = new ResultSetMapper<ClientDto>() {
     @Override
@@ -68,32 +81,29 @@ public class ClientDaoImpl implements ClientDao {
   public List<?> find(Object template, Integer operatorId) {
     ClientSearchDto dto = (ClientSearchDto) template;
     Db db = getDb();
-    ArrayList<String> clauses = new ArrayList<>();
-    if (dto.getClientId() != null) clauses.add(clientCodeClause);
-    if (dto.getClientName() != null) clauses.add(clientNameClause);
-    if (dto.getClientNameEn() != null) clauses.add(clientNameEnClause);
-    CallableStatement statement = null;
+    CallableStatement statement = db.prepare(findSqlQuery);
     List<ClientDto> result = null;
-    String findSqlQuery = this.findSqlQuery;
     try {
-      if (!clauses.isEmpty()) {
-        for(String clause : clauses) {
-          findSqlQuery += clause;
-        }
-        statement = db.prepare(findSqlQuery);
-        int index = 1;
-        if (dto.getClientId() != null) statement.setString(index++, dto.getClientId());
-        if (dto.getClientName() != null) statement.setString(index++, dto.getClientName() + "%");
-        if (dto.getClientNameEn() != null) statement.setString(index++, dto.getClientNameEn() + "%");
+      statement.setString(1, dto.getClientId());
+      if (dto.getClientName() != null) {
+        statement.setString(2, dto.getClientName() + "%");
+      } else {
+        statement.setNull(2, OracleTypes.VARCHAR);
       }
-      if (statement == null) db.prepare(findSqlQuery);
+      if (dto.getClientNameEn() != null) {
+        statement.setString(3, dto.getClientNameEn() + "%");
+      } else {
+        statement.setNull(3, OracleTypes.VARCHAR);
+      }
+      statement.registerOutParameter(4, OracleTypes.CURSOR);
       statement.executeQuery();
-      ResultSet rs = statement.getResultSet();
-      result = new ArrayList<>();
-      while (rs.next()) {
-        ClientDto resultDto = new ClientDto();
-        mapper.map(rs, resultDto);
-        result.add(resultDto);
+      try (ResultSet rs = (ResultSet) statement.getObject(4)) {
+        result = new ArrayList<>();
+        while (rs.next()) {
+          ClientDto resultDto = new ClientDto();
+          mapper.map(rs, resultDto);
+          result.add(resultDto);
+        }
       }
     } catch (SQLException e) {
       e.printStackTrace();
@@ -110,18 +120,20 @@ public class ClientDaoImpl implements ClientDao {
   @Override
   public List<ClientDto> findByPrimaryKey(Map<String, ?> primaryKeyMap, Integer operatorId) {
     Db db = getDb();
-    String findSqlQuery = this.findSqlQuery + clientCodeClause;
     CallableStatement statement = db.prepare(findSqlQuery);
-    List<ClientDto> result = null;
+    List<ClientDto> result = new ArrayList<>();
     try {
       statement.setString(1, (String) primaryKeyMap.get(CLIENT_ID));
+      statement.setNull(2, OracleTypes.VARCHAR);
+      statement.setNull(3, OracleTypes.VARCHAR);
+      statement.registerOutParameter(4, OracleTypes.CURSOR);
       statement.executeQuery();
-      ResultSet rs = statement.getResultSet();
-      result = new ArrayList<>();
-      while (rs.next()) {
-        ClientDto resultDto = new ClientDto();
-        mapper.map(rs, resultDto);
-        result.add(resultDto);
+      try (ResultSet rs = (ResultSet) statement.getObject(4)) {
+        while (rs.next()) {
+          ClientDto resultDto = new ClientDto();
+          mapper.map(rs, resultDto);
+          result.add(resultDto);
+        }
       }
     } catch (SQLException e) {
       e.printStackTrace();
@@ -165,18 +177,39 @@ public class ClientDaoImpl implements ClientDao {
          Add grantTypes
          */
         //language=Oracle
-        String insertGrantSqlString = "insert into OA_CLIENT_GRANT_TYPE (CLIENT_ID, GRANT_TYPE_CODE) values (?,?)";
+        String insertGrantSqlString = "insert into OA_CLIENT_GRANT_TYPE (CLIENT_ID, APPLICATION_TYPE_CODE, GRANT_TYPE_CODE) values (?,?,?)";
         CallableStatement insertGrantTypeStatement = db.prepare(insertGrantSqlString);
         if (dto.getGrantTypes() != null && dto.getGrantTypes().size() != 0) {
           for (String grantType : dto.getGrantTypes()) {
             insertGrantTypeStatement.setInt(1, clientId);
-            insertGrantTypeStatement.setString(2, grantType);
+            insertGrantTypeStatement.setString(2, dto.getApplicationType());
+            insertGrantTypeStatement.setString(3, grantType);
             insertGrantTypeStatement.addBatch();
           }
           insertGrantTypeStatement.executeBatch();
         } else {
           insertGrantTypeStatement.setInt(1, clientId);
-          insertGrantTypeStatement.setString(2, dto.getApplicationType().equalsIgnoreCase(ClientConstants.WEB) ? AUTHORIZATION_CODE : IMPLICIT);
+          switch (dto.getApplicationType()) {
+            case ClientConstants.WEB : {
+              insertGrantTypeStatement.setString(2,  AUTHORIZATION_CODE);
+              break;
+            }
+            case ClientConstants.NATIVE : {
+              insertGrantTypeStatement.setString(2, IMPLICIT);
+              break;
+            }
+            case ClientConstants.BROWSER : {
+              insertGrantTypeStatement.setString(2, AUTHORIZATION_CODE);
+              break;
+            }
+            case ClientConstants.SERVICE : {
+              insertGrantTypeStatement.setString(2, CLIENT_CREDENTIALS);
+              break;
+            }
+            default: {
+              throw new IllegalStateException("Wrong application type");
+            }
+          }
           insertGrantTypeStatement.executeQuery();
         }
         db.commit();
@@ -199,12 +232,27 @@ public class ClientDaoImpl implements ClientDao {
   public void update(Map<String, ?> primaryKey, Object record, Integer operatorId) {
     Db db = getDb();
     ClientUpdateDto dto = (ClientUpdateDto) record;
-    //language=Oracle
-    String updateSqlQuery = "UPDATE OA_CLIENT t " +
-      "SET CLIENT_NAME = ?, CLIENT_NAME_EN = ?, APPLICATION_TYPE_CODE = ?, TOKEN_AUTH_METHOD_CODE = ? " +
-      "WHERE t.CLIENT_CODE = ?";
-    CallableStatement updateStatement = db.prepare(updateSqlQuery);
     try {
+      /*
+      check applicationTypeCode diff.
+      if incoming value is new, clear client grant types
+       */
+      ClientDto old = findByPrimaryKey(primaryKey, operatorId).get(0);
+      if (!old.getApplicationType().equals(dto.getApplicationType())) {
+        //language=Oracle
+        String deleteGrantsSqlString = "delete from OA_CLIENT_GRANT_TYPE cgt " +
+          "where cgt.client_id = (select ct.client_id from OA_CLIENT ct where ct.client_code like ?)";
+        CallableStatement deleteGrantTypeStatement = db.prepare(deleteGrantsSqlString);
+        deleteGrantTypeStatement.setString(1, (String) primaryKey.get(CLIENT_ID));
+        deleteGrantTypeStatement.executeQuery();
+      }
+
+      //language=Oracle
+      String updateSqlQuery = "UPDATE OA_CLIENT t " +
+        "SET CLIENT_NAME = ?, CLIENT_NAME_EN = ?, APPLICATION_TYPE_CODE = ?, TOKEN_AUTH_METHOD_CODE = ? " +
+        "WHERE t.CLIENT_CODE = ?";
+      CallableStatement updateStatement = db.prepare(updateSqlQuery);
+
       updateStatement.setString(1, dto.getClientName());
       updateStatement.setString(2, dto.getClientNameEn());
       updateStatement.setString(3, dto.getApplicationType());
@@ -220,6 +268,7 @@ public class ClientDaoImpl implements ClientDao {
           arrayParams += ",?";
         }
         arrayParams = arrayParams.replaceFirst(",", "");
+        //language=Oracle
         String deleteGrantsSqlString = "delete from OA_CLIENT_GRANT_TYPE cgt " +
           "where cgt.client_id in (" +
               "select ct.client_id " +
@@ -233,15 +282,16 @@ public class ClientDaoImpl implements ClientDao {
           deleteGrantTypeStatement.setString(index++, grantType);
         }
         deleteGrantTypeStatement.executeQuery();
+        //language=Oracle
         String mergeGrantsSqlQuery = "merge into OA_CLIENT_GRANT_TYPE cgt " +
-          "using (select ct.client_id, gt.grant_type_code " +
+          "using (select ct.client_id, ct.application_type_code, gt.grant_type_code " +
             "from OA_CLIENT ct " +
               "cross join OA_GRANT_TYPE gt " +
               "where gt.grant_type_code in (" + arrayParams + ") and ct.client_code = ?) src " +
             "on (cgt.client_id = src.client_id and cgt.grant_type_code = src.grant_type_code) " +
           "when not matched then " +
-            "insert (cgt.client_id, cgt.grant_type_code) " +
-            "values (src.client_id, src.grant_type_code) ";
+            "insert (cgt.client_id, cgt.application_type_code, cgt.grant_type_code) " +
+            "values (src.client_id, src.application_type_code, src.grant_type_code) ";
         CallableStatement mergeGrantsStatement = db.prepare(mergeGrantsSqlQuery);
         index = 1;
         for (String grantType: dto.getGrantTypes()) {
@@ -268,7 +318,27 @@ public class ClientDaoImpl implements ClientDao {
           "), ?)";
         CallableStatement insertGrantTypeStatement = db.prepare(insertGrantSqlString);
         insertGrantTypeStatement.setString(1, (String) primaryKey.get(CLIENT_ID));
-        insertGrantTypeStatement.setString(2, dto.getApplicationType().equalsIgnoreCase(ClientConstants.WEB) ? AUTHORIZATION_CODE : IMPLICIT);
+        switch (dto.getApplicationType()) {
+          case ClientConstants.WEB : {
+            insertGrantTypeStatement.setString(2,  AUTHORIZATION_CODE);
+            break;
+          }
+          case ClientConstants.NATIVE : {
+            insertGrantTypeStatement.setString(2, IMPLICIT);
+            break;
+          }
+          case ClientConstants.BROWSER : {
+            insertGrantTypeStatement.setString(2, AUTHORIZATION_CODE);
+            break;
+          }
+          case ClientConstants.SERVICE : {
+            insertGrantTypeStatement.setString(2, CLIENT_CREDENTIALS);
+            break;
+          }
+          default: {
+            throw new IllegalStateException("Wrong application type");
+          }
+        }
         insertGrantTypeStatement.executeQuery();
       }
       db.commit();
@@ -358,6 +428,36 @@ public class ClientDaoImpl implements ClientDao {
     List<OptionDto<String>> result = null;
     try {
       statement.setInt(1, clientId);
+      statement.executeQuery();
+      ResultSet rs = statement.getResultSet();
+      result = new ArrayList<>();
+      while (rs.next()) {
+        OptionDto<String> grantTypeDto = new OptionDto<String>();
+        grantTypeDto.setValue(rs.getString(GRANT_TYPE_CODE));
+        grantTypeDto.setName(rs.getString(GRANT_TYPE_NAME));
+        result.add(grantTypeDto);
+      }
+    } catch (SQLException e) {
+      e.printStackTrace();
+      throw new RuntimeSQLException(e);
+    } catch (Throwable th) {
+      th.printStackTrace();
+      throw th;
+    } finally {
+      db.closeAll();
+    }
+    return result;
+  }
+
+  @Override
+  public List<OptionDto<String>> getApplicationGrantType(String applicationTypeCode) {
+    //language=Oracle
+    String sqlString = "select * from OA_APPLICATION_GRANT_TYPE t where t.APPLICATION_TYPE_CODE like ?";
+    Db db = getDb();
+    CallableStatement statement = db.prepare(sqlString);
+    List<OptionDto<String>> result = null;
+    try {
+      statement.setString(1, applicationTypeCode);
       statement.executeQuery();
       ResultSet rs = statement.getResultSet();
       result = new ArrayList<>();

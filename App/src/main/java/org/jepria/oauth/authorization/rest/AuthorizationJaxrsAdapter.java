@@ -4,7 +4,6 @@ import org.jepria.oauth.authorization.AuthorizationServerFactory;
 import org.jepria.oauth.authorization.dto.AuthRequestDto;
 import org.jepria.oauth.authorization.dto.AuthRequestSearchDto;
 import org.jepria.oauth.authorization.dto.AuthRequestSearchDtoLocal;
-import org.jepria.oauth.client.dto.ClientDto;
 import org.jepria.server.data.SearchRequestDto;
 import org.jepria.server.service.rest.ExtendedResponse;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
@@ -46,7 +45,7 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
                             @QueryParam("client_id") String clientId,
                             @QueryParam("redirect_uri") String redirectUri,
                             @QueryParam("state") String state) {
-    return AuthorizationServerFactory.getInstance().getService().authorize(responseType, clientId, redirectUri, state, request.getServletContext().getContextPath());
+    return AuthorizationServerFactory.getInstance().getService().authorize(responseType, clientId, redirectUri, state);
   }
 
 
@@ -77,7 +76,7 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
                              @HeaderParam(ExtendedResponse.REQUEST_HEADER_NAME) String extendedResponse,
                              @HeaderParam("Cache-Control") String cacheControl) {
     AuthRequestSearchDtoLocal searchRequestDtoLocal = new AuthRequestSearchDtoLocal();
-    searchRequestDtoLocal.setFinished(true);
+    searchRequestDtoLocal.setHasToken(true);
     searchRequestDtoLocal.setAuthRequestId(searchRequestDto.getTemplate().getAuthRequestId());
     searchRequestDtoLocal.setOperatorId(searchRequestDto.getTemplate().getOperatorId());
     searchRequestDtoLocal.setBlocked(searchRequestDto.getTemplate().getBlocked());

@@ -9,6 +9,7 @@ public class AuthRequestSearchDtoLocal {
   String tokenId;
   Boolean isBlocked;
   String redirectUri;
+  Boolean hasToken;
 
   public Integer getAuthRequestId() {
     return authRequestId;
@@ -66,13 +67,11 @@ public class AuthRequestSearchDtoLocal {
     this.redirectUri = redirectUri;
   }
 
-  public Boolean getFinished() {
-    return isFinished;
+  public Boolean getHasToken() {
+    return hasToken;
   }
 
-  public void setFinished(Boolean finished) {
-    isFinished = finished;
+  public void setHasToken(Boolean hasToken) {
+    this.hasToken = hasToken;
   }
-
-  Boolean isFinished;
 }

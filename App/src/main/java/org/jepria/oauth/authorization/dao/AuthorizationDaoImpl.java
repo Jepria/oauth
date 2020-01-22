@@ -2,6 +2,7 @@ package org.jepria.oauth.authorization.dao;
 
 import com.technology.jep.jepria.server.dao.ResultSetMapper;
 import com.technology.jep.jepria.server.db.Db;
+import oracle.jdbc.OracleTypes;
 import org.jepria.oauth.authorization.dto.AuthRequestCreateDto;
 import org.jepria.oauth.authorization.dto.AuthRequestDto;
 import org.jepria.oauth.authorization.dto.AuthRequestSearchDtoLocal;
@@ -23,19 +24,44 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
   }
 
   //language=Oracle
-  private String findSqlQuery =
-    "select ar.AUTH_REQUEST_ID, ar.CLIENT_CODE as CLIENT_ID, cl.CLIENT_NAME, ar.REDIRECT_URI, ar.AUTHORIZATION_CODE, ar.DATE_INS, ar.TOKEN_ID," +
-      "ar.TOKEN_DATE_INS, ar.OPERATOR_ID, op.OPERATOR_NAME, op.LOGIN as OPERATOR_LOGIN, ar.IS_BLOCKED " +
-    "from OA_AUTH_REQUEST ar left join OP_OPERATOR op on ar.OPERATOR_ID = op.OPERATOR_ID " +
-      "inner join OA_CLIENT cl on ar.CLIENT_CODE = cl.CLIENT_CODE";
-  String authRequestIdConstraint = "ar.AUTH_REQUEST_ID = ?";
-  String authCodeConstraint = "ar.AUTHORIZATION_CODE like ?";
-  String operatorConstraint =  "ar.OPERATOR_ID = ?";
-  String clientCodeConstraint = "ar.CLIENT_CODE like ?";
-  String redirectUriConstraint = "ar.REDIRECT_URI like ?";
-  String tokenIdConstraint = "ar.TOKEN_ID like ?";
-  String isBlockedConstraint = "ar.IS_BLOCKED = ?";
-  String finishedConstraint = "ar.TOKEN_ID is not null";
+  private String findSqlQuery = "declare " +
+      "rc sys_refcursor;" +
+      "authRequestId integer := ?;" +
+      "authCode varchar2(64) := ?;" +
+      "operatorId integer := ?;" +
+      "clientCode varchar2(32) := ?;" +
+      "redirectUri varchar2(4000) := ?;" +
+      "tokenId varchar2(64) := ?;" +
+      "isBlocked integer := ?;" +
+      "hasToken integer := ?;" +
+    "begin " +
+      "open rc for select " +
+          "ar.AUTH_REQUEST_ID," +
+          "cl.CLIENT_CODE as CLIENT_ID," +
+          "cl.CLIENT_NAME," +
+          "ar.REDIRECT_URI," +
+          "ar.AUTHORIZATION_CODE," +
+          "ar.DATE_INS," +
+          "ar.TOKEN_ID," +
+          "ar.TOKEN_DATE_INS," +
+          "ar.OPERATOR_ID," +
+          "op.OPERATOR_NAME," +
+          "op.LOGIN as OPERATOR_LOGIN," +
+          "ar.IS_BLOCKED " +
+        "from OA_AUTH_REQUEST ar " +
+          "left join OP_OPERATOR op on ar.OPERATOR_ID = op.OPERATOR_ID  " +
+          "inner join OA_CLIENT cl on ar.CLIENT_ID = cl.CLIENT_ID " +
+        "where " +
+          "(ar.AUTH_REQUEST_ID = authRequestId or authRequestId is null) " +
+          "and (ar.AUTHORIZATION_CODE like authCode or authCode is null) " +
+          "and (ar.OPERATOR_ID = operatorId or operatorId is null) " +
+          "and (cl.CLIENT_CODE like clientCode or clientCode is null) " +
+          "and (ar.REDIRECT_URI like redirectUri or redirectUri is null) " +
+          "and ((hasToken = 0 and (ar.TOKEN_ID like tokenId or tokenId is null)) " +
+            "or (hasToken = 1 and ar.TOKEN_ID is not null )) " +
+          "and (ar.IS_BLOCKED = isBlocked or isBlocked is null); " +
+      "? := rc; " +
+    "end;";
 
 
   private ResultSetMapper mapper = new ResultSetMapper<AuthRequestDto>() {
@@ -64,43 +90,30 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
   public List<AuthRequestDto> find(Object template, Integer operatorId) {
     AuthRequestSearchDtoLocal dto = (AuthRequestSearchDtoLocal) template;
     Db db = getDb();
-    ArrayList<String> clauses = new ArrayList<>();
-    if (dto.getAuthRequestId() != null) clauses.add(authRequestIdConstraint);
-    if (dto.getAuthorizationCode() != null) clauses.add(authCodeConstraint);
-    if (dto.getOperatorId() != null) clauses.add(operatorConstraint);
-    if (dto.getClientId() != null) clauses.add(clientCodeConstraint);
-    if (dto.getTokenId() != null) clauses.add(tokenIdConstraint);
-    if (dto.getBlocked() != null) clauses.add(isBlockedConstraint);
-    if (dto.getRedirectUri() != null) clauses.add(redirectUriConstraint);
-    if (dto.getFinished() != null && dto.getFinished()) clauses.add(finishedConstraint);
-    CallableStatement statement = null;
-    List<AuthRequestDto> result = null;
-    String findSqlQuery = this.findSqlQuery;
+    CallableStatement statement = db.prepare(findSqlQuery);
+    List<AuthRequestDto> result = new ArrayList<>();
     try {
-      if (!clauses.isEmpty()) {
-        for(String clause : clauses) {
-          findSqlQuery += " and " + clause;
-        }
-        findSqlQuery = findSqlQuery.replaceFirst("and", "where");
-        statement = db.prepare(findSqlQuery);
-        int index = 1;
-        if (dto.getAuthRequestId() != null) statement.setInt(index++, dto.getAuthRequestId());
-        if (dto.getAuthorizationCode() != null) statement.setString(index++, dto.getAuthorizationCode());
-        if (dto.getOperatorId() != null) statement.setInt(index++, dto.getOperatorId());
-        if (dto.getClientId() != null) statement.setString(index++, dto.getClientId());
-        if (dto.getTokenId() != null) statement.setString(index++, dto.getTokenId());
-        if (dto.getBlocked() != null) statement.setInt(index++, dto.getBlocked() ? 1 : 0);
-        if (dto.getRedirectUri() != null) statement.setString(index++, dto.getRedirectUri());
-      }
-      if (statement == null) db.prepare(findSqlQuery);
+      if (dto.getAuthRequestId() != null) statement.setInt(1, dto.getAuthRequestId());
+      else statement.setNull(1, OracleTypes.INTEGER);
+      statement.setString(2, dto.getAuthorizationCode());
+      if (dto.getOperatorId() != null) statement.setInt(3, dto.getOperatorId());
+      else statement.setNull(3, OracleTypes.INTEGER);
+      statement.setString(4, dto.getClientId());
+      statement.setString(5, dto.getRedirectUri());
+      statement.setString(6, dto.getTokenId());
+      if (dto.getBlocked() != null) statement.setInt(7, dto.getBlocked() ? 1 : 0);
+      else statement.setNull(7, OracleTypes.INTEGER);
+      if (dto.getHasToken() != null) statement.setInt(8, dto.getHasToken() ? 1 : 0);
+      else statement.setInt(8, 0);
+      statement.registerOutParameter(9, OracleTypes.CURSOR);
       statement.executeQuery();
 
-      ResultSet rs = statement.getResultSet();
-      result = new ArrayList<>();
-      while (rs.next()) {
-        AuthRequestDto resultDto = new AuthRequestDto();
-        mapper.map(rs, resultDto);
-        result.add(resultDto);
+      try (ResultSet rs = (ResultSet) statement.getObject(9)) {
+        while (rs.next()) {
+          AuthRequestDto resultDto = new AuthRequestDto();
+          mapper.map(rs, resultDto);
+          result.add(resultDto);
+        }
       }
     } catch (SQLException e) {
       e.printStackTrace();
@@ -117,18 +130,26 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
   @Override
   public List<AuthRequestDto> findByPrimaryKey(Map<String, ?> primaryKeyMap, Integer operatorId) {
     Db db = getDb();
-    findSqlQuery += " where " + authRequestIdConstraint;
     CallableStatement statement = db.prepare(findSqlQuery);
-    List<AuthRequestDto> result = null;
+    List<AuthRequestDto> result = new ArrayList<>();
     try {
       statement.setInt(1, (Integer) primaryKeyMap.get(AUTH_REQUEST_ID));
+      statement.setNull(2, OracleTypes.VARCHAR);
+      statement.setNull(3, OracleTypes.INTEGER);
+      statement.setNull(4, OracleTypes.VARCHAR);
+      statement.setNull(5, OracleTypes.VARCHAR);
+      statement.setNull(6, OracleTypes.VARCHAR);
+      statement.setNull(7, OracleTypes.INTEGER);
+      statement.setInt(8, 0);
+      statement.registerOutParameter(9, OracleTypes.CURSOR);
       statement.executeQuery();
-      ResultSet rs = statement.getResultSet();
-      result = new ArrayList<>();
-      while (rs.next()) {
-        AuthRequestDto resultDto = new AuthRequestDto();
-        mapper.map(rs, resultDto);
-        result.add(resultDto);
+
+      try (ResultSet rs = (ResultSet) statement.getObject(9)) {
+        while (rs.next()) {
+          AuthRequestDto resultDto = new AuthRequestDto();
+          mapper.map(rs, resultDto);
+          result.add(resultDto);
+        }
       }
     } catch (SQLException e) {
       e.printStackTrace();
@@ -145,10 +166,38 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
   @Override
   public Object create(Object record, Integer operatorId) {
     Db db = getDb();
-    //language=Oracle
     AuthRequestCreateDto dto = (AuthRequestCreateDto) record;
-    String insertSqlQuery = "insert into OA_AUTH_REQUEST(AUTHORIZATION_CODE, REDIRECT_URI, CLIENT_CODE, OPERATOR_ID, TOKEN_ID, TOKEN_DATE_INS) " +
-      "values (?, ?, ?, ?, ?, ?)";
+    //language=Oracle
+    String insertSqlQuery = "declare " +
+        "authCode varchar2(64) := ?;" +
+        "redirectUri varchar2(4000) := ?;" +
+        "clientId varchar(32) := ?;" +
+        "operatorId integer := ?;" +
+        "tokenId varchar2(50) := ?;" +
+        "tokenDateIns date := ?;" +
+        "clientCount integer;" +
+        "err_num NUMBER;" +
+        "err_msg VARCHAR2(100);" +
+      "begin " +
+        "select count(*) into clientCount from OA_CLIENT cl where cl.CLIENT_CODE like clientId; " +
+        "if clientCount <> 1 then " +
+          "raise_application_error(-20001, 'Нет клиентского приложения с указанным ID'); " +
+        "end if;" +
+        "insert into OA_AUTH_REQUEST(AUTHORIZATION_CODE, REDIRECT_URI, CLIENT_ID, OPERATOR_ID, TOKEN_ID, TOKEN_DATE_INS)" +
+        "values (authCode, redirectUri, (select cl.CLIENT_ID from OA_CLIENT cl where cl.CLIENT_CODE like clientId), operatorId, tokenId, tokenDateIns); " +
+        "? := OA_AUTH_REQUEST_SEQ.currval;" +
+      "exception " +
+        "when others then " +
+          "err_num := SQLCODE; " +
+          "err_msg := SUBSTR(SQLERRM, 1, 100); " +
+          "if instr(err_msg, 'OA_AUTH_REQUEST_FK_CLIENT_URI') <> 0 then " +
+            "raise_application_error(-20002, concat('Указанный URI не содержится в WHITELIST ', redirectUri)); " +
+          "end if; " +
+          "if instr(err_msg, 'OA_AUTH_REQUEST_FK_CLIENT') <> 0 or err_num = -20001 then " +
+            "raise_application_error(-20001, 'Нет клиентского приложения с указанным ID'); " +
+          "end if; " +
+          "raise_application_error(-20150, err_msg); " +
+      "end ;";
     CallableStatement insertStatement = db.prepare(insertSqlQuery);
     Integer result = null;
     try {
@@ -166,17 +215,9 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
       } else {
         insertStatement.setNull(6, Types.DATE);
       }
-      int addedRecordCount = insertStatement.executeUpdate();
-      if (addedRecordCount == 1) {
-        //language=Oracle
-        String sqlGetIndex = "SELECT OA_AUTH_REQUEST_SEQ.currval FROM dual";
-        CallableStatement getIndexStatement = db.prepare(sqlGetIndex);
-        ResultSet rs = getIndexStatement.executeQuery();
-        if (rs.next()) {
-          result = rs.getInt(1);
-        }
-        db.commit();
-      }
+      insertStatement.registerOutParameter(7, OracleTypes.INTEGER);
+      insertStatement.execute();
+      result = (Integer) insertStatement.getObject(7);
     } catch (SQLException e) {
       e.printStackTrace();
       db.rollback();

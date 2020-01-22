@@ -49,11 +49,12 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   public Response createToken(
     @FormParam("grant_type") String grantType,
-    @FormParam("client_id") String clientCode,
-    @FormParam("client_secret") String clientSecret,
+    @FormParam("client_id") String clientId,
     @FormParam("redirect_uri") String redirectUri,
-    @FormParam("code") String authCode) {
-    return TokenServerFactory.getInstance().getService().create(grantType, getPrivateKey(), getHostContext(), authCode, clientCode, clientSecret, redirectUri);
+    @FormParam("code") String authCode,
+    @FormParam("username") String username,
+    @FormParam("password") String password) {
+    return TokenServerFactory.getInstance().getService().create(grantType, getPrivateKey(), getHostContext(), authCode, clientId, redirectUri, username, password);
   }
 
   @POST

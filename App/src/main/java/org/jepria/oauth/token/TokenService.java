@@ -1,6 +1,9 @@
 package org.jepria.oauth.token;
 
+import org.jepria.oauth.authentication.AuthenticationServerFactory;
+import org.jepria.oauth.authentication.AuthenticationService;
 import org.jepria.oauth.authorization.AuthorizationServerFactory;
+import org.jepria.oauth.authorization.dto.AuthRequestCreateDto;
 import org.jepria.oauth.authorization.dto.AuthRequestDto;
 import org.jepria.oauth.authorization.dto.AuthRequestSearchDtoLocal;
 import org.jepria.oauth.authorization.dto.AuthRequestUpdateDto;
@@ -18,6 +21,7 @@ import org.jepria.oauth.sdk.token.SignerRSA;
 import org.jepria.oauth.sdk.token.TokenImpl;
 import org.jepria.oauth.sdk.token.VerifierRSA;
 
+import javax.security.auth.login.LoginException;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.security.MessageDigest;
@@ -62,46 +66,180 @@ public class TokenService {
     }
   }
 
-  private Date addHours(Date date, int hours) {
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTime(date);
-    calendar.add(Calendar.HOUR_OF_DAY, hours);
-    return calendar.getTime();
+  /**
+   *
+   * @param grantType
+   * @param privateKey
+   * @param host
+   * @param authCode
+   * @param clientId
+   * @param redirectUri
+   * @return
+   */
+  public Response create(
+    String grantType,
+    String privateKey,
+    String host,
+    String authCode,
+    String clientId,
+    String redirectUri,
+    String username,
+    String password) {
+    Response response = null;
+    try {
+      switch (grantType) {
+        case GrantType.AUTHORIZATION_CODE: {
+          TokenDto result = createForAuthCodeGrant(privateKey, host, authCode, clientId, new String(Base64.getUrlDecoder().decode(redirectUri)));
+          response = Response.ok().entity(result).build();
+          break;
+        }
+        case GrantType.CLIENT_CREDENTIALS: {
+          break;
+        }
+        case GrantType.PASSWORD: {
+          TokenDto result = createForUserCredentialsGrant(privateKey, host, clientId, username, password);
+          response = Response.ok().entity(result).build();
+          break;
+        }
+        default: {
+          response = Response.status(Response.Status.BAD_REQUEST).build();
+          break;
+        }
+      }
+    } catch (IllegalArgumentException | IllegalStateException | NoSuchElementException e) {
+      response = Response.status(Response.Status.BAD_REQUEST).build();
+    } catch (Throwable th) {
+      response = Response.serverError().build();
+    } finally {
+      return response;
+    }
   }
 
-  public TokenDto createTokenByGrantCode(String privateKeyString, String hostContext, String authCode, String clientCode, String clientSecret, String redirectUri) {
+  /**
+   *
+   * @param privateKeyString
+   * @param host
+   * @param authCode
+   * @param clientId
+   * @param redirectUri
+   * @return
+   */
+  public TokenDto createForImplicitGrant(String privateKeyString, String host, String authCode, String clientId, String redirectUri) {
     if (authCode == null) {
       throw new IllegalArgumentException("Authorization code is null.");
     }
-    if (clientCode == null) {
+    if (clientId == null) {
       throw new IllegalArgumentException("Client ID is null.");
-    }
-    if (clientSecret == null) {
-      throw new IllegalArgumentException("Client Secret is null.");
     }
     if (redirectUri == null) {
       throw new IllegalArgumentException("Redirect URI is null.");
     }
-    AuthRequestDto authRequest = getAuthRequest(authCode, clientCode, redirectUri, null);
+
+    AuthRequestDto authRequest = getAuthRequest(authCode, clientId, redirectUri, null);
     if (TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - authRequest.getDateIns().getTime()) > 10) {
       throw new IllegalStateException("Authorization code active time has expired.");
     }
     if (authRequest.getTokenId() != null) {
       throw new IllegalStateException("Request is finished.");
     }
-    ClientDto client = getClient(clientCode);
-    if (!client.getClientSecret().equals(clientSecret)) {
-      throw new IllegalArgumentException("Wrong client secret");
-    }
-    Token token = generateToken(authRequest.getOperatorLogin(), authRequest.getOperator().getValue(), hostContext, privateKeyString);
+    Token token = generateToken(authRequest.getOperatorLogin(), null, authRequest.getOperator().getValue(), host, privateKeyString, 1);
     TokenDto tokenDto = new TokenDto();
-    tokenDto.setAccess_token(token.asString());
-    tokenDto.setExpires_in(14400); // 4 hours active time
-    tokenDto.setToken_type("Bearer");
+    tokenDto.setAccessToken(token.asString());
+    tokenDto.setExpiresIn(3600); // 1 hour active time
+    tokenDto.setTokenType("Bearer");
     updateAuthRequest(authRequest.getAuthRequestId(), authRequest.getOperator().getValue(), token.getJti(), new Date());
     return tokenDto;
   }
 
+  /**
+   *
+   * @param privateKeyString
+   * @param host
+   * @param authCode
+   * @param clientId
+   * @param redirectUri
+   * @return
+   */
+  private TokenDto createForAuthCodeGrant(String privateKeyString, String host, String authCode, String clientId, String redirectUri) {
+    if (authCode == null) {
+      throw new IllegalArgumentException("Authorization code is null.");
+    }
+    if (clientId == null) {
+      throw new IllegalArgumentException("Client ID is null.");
+    }
+    if (redirectUri == null) {
+      throw new IllegalArgumentException("Redirect URI is null.");
+    }
+    AuthRequestDto authRequest = getAuthRequest(authCode, clientId, redirectUri, null);
+    if (TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - authRequest.getDateIns().getTime()) > 10) {
+      throw new IllegalStateException("Authorization code active time has expired.");
+    }
+    if (authRequest.getTokenId() != null) {
+      throw new IllegalStateException("Request is finished.");
+    }
+    Token token = generateToken(authRequest.getOperatorLogin(), null, authRequest.getOperator().getValue(), host, privateKeyString, 4);
+    TokenDto tokenDto = new TokenDto();
+    tokenDto.setAccessToken(token.asString());
+    tokenDto.setExpiresIn(14400); // 4 hours active time
+    tokenDto.setTokenType("Bearer");
+    updateAuthRequest(authRequest.getAuthRequestId(), authRequest.getOperator().getValue(), token.getJti(), new Date());
+    return tokenDto;
+  }
+
+  /**
+   *
+   * @param privateKeyString
+   * @param host
+   * @param username
+   * @param password
+   * @return
+   */
+  private TokenDto createForUserCredentialsGrant(String privateKeyString, String host, String clientId, String username, String password) {
+    TokenDto result = null;
+
+    try {
+      Integer operatorId = AuthenticationServerFactory.getInstance().getService().loginByPassword(username, password);
+
+      Token token = generateToken(username, Collections.singletonList(clientId), operatorId, host, privateKeyString, 1);
+      TokenDto tokenDto = new TokenDto();
+      tokenDto.setAccessToken(token.asString());
+      tokenDto.setExpiresIn(3600); // 1 hours active time
+      tokenDto.setTokenType("Bearer");
+
+      AuthRequestCreateDto createDto = new AuthRequestCreateDto();
+      createDto.setAuthorizationCode(AuthorizationServerFactory.getInstance().getService().generateCode());
+      createDto.setClientId(clientId);
+      createDto.setOperatorId(operatorId);
+      createDto.setTokenId(token.getJti());
+      createDto.setTokenDateIns(new Date());
+      AuthorizationServerFactory.getInstance().getService().create(createDto);
+
+      result = tokenDto;
+    } catch (LoginException e) {
+      e.printStackTrace();
+    }
+    return result;
+  }
+
+  /**
+   *
+   * @param privateKeyString
+   * @param host
+   * @param clientId
+   * @param clientSecret
+   * @return
+   */
+  private TokenDto createForClientCredentialsGrant(String privateKeyString, String host, String clientId, String clientSecret) {
+    return null;
+  }
+
+  /**
+   *
+   * @param publicKey
+   * @param hostContext
+   * @param tokenString
+   * @return
+   */
   public TokenInfoDto getTokenInfo(String publicKey, String hostContext, String tokenString) {
     TokenInfoDto result = new TokenInfoDto();
     Token token;
@@ -131,6 +269,13 @@ public class TokenService {
     return result;
   }
 
+  /**
+   *
+   * @param clientId
+   * @param tokenString
+   * @param redirectUri
+   * @return
+   */
   public Response revokeToken(String clientId, String tokenString, String redirectUri) {
     if (redirectUri != null) {
       try {
@@ -154,31 +299,7 @@ public class TokenService {
     }
   }
 
-  public Response create(String grantType, String privateKey, String host, String authCode, String clientCode, String clientSecret, String redirectUri) {
-    Response response = null;
-    try {
-      switch (grantType) {
-        case GrantType.AUTHORIZATION_CODE: {
-          TokenDto result = new TokenService().createTokenByGrantCode(privateKey, host, authCode, clientCode, clientSecret, new String(Base64.getUrlDecoder().decode(redirectUri)));
-          response = Response.ok().entity(result).build();
-          break;
-        }
-        default: {
-          response = Response.status(Response.Status.BAD_REQUEST).build();
-          break;
-        }
-      }
-    } catch (IllegalArgumentException | IllegalStateException | NoSuchElementException e) {
-      response = Response.status(Response.Status.BAD_REQUEST).build();
-    } catch (Throwable th) {
-      response = Response.serverError().build();
-    } finally {
-      return response;
-    }
-
-  }
-
-  public Token generateToken(String operatorLogin, Integer operatorId, String issuer, String privateKeyString) {
+  private Token generateToken(String username, List<String> audience, Integer userId, String issuer, String privateKeyString, Integer expiresIn) {
     try {
       /**
        * Generate uuid for token ID
@@ -190,9 +311,10 @@ public class TokenService {
       /**
        * Create token with JWT lib
        * TODO решить как задавать audience, возможно конкретное приложение, и пересоздавать токен
+       * TODO пересмотреть концепцию передачи данных пользователя
        */
-      Token token = new TokenImpl(tokenId, Collections.singletonList("RFInfo"),operatorLogin + ":" + operatorId,
-        issuer, addHours(new Date(), 4));
+      Token token = new TokenImpl(tokenId, audience != null ? audience : Collections.singletonList("RFInfo"),username + ":" + userId,
+        issuer, addHours(new Date(), expiresIn));
       /**
        * Sign token with private key
        */
@@ -203,5 +325,12 @@ public class TokenService {
       th.printStackTrace();
       throw new RuntimeException(th);
     }
+  }
+
+  private Date addHours(Date date, int hours) {
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(date);
+    calendar.add(Calendar.HOUR_OF_DAY, hours);
+    return calendar.getTime();
   }
 }

@@ -4,6 +4,9 @@ import org.jepria.oauth.authorization.AuthorizationServerFactory;
 import org.jepria.oauth.authorization.dto.AuthRequestDto;
 import org.jepria.oauth.authorization.dto.AuthRequestSearchDtoLocal;
 import org.jepria.oauth.authorization.dto.AuthRequestUpdateDto;
+import org.jepria.oauth.sdk.GrantType;
+import org.jepria.oauth.token.TokenServerFactory;
+import org.jepria.oauth.token.dto.TokenDto;
 
 import javax.security.auth.login.LoginException;
 import javax.ws.rs.core.Response;
@@ -40,7 +43,17 @@ public class AuthenticationService {
     }
   }
 
-  public Response authenticate(String responseType, String authCode, String state, String redirectUriEncoded, String clientName, String username, String password) {
+  public Response authenticate(
+    String privateKey,
+    String host,
+    String responseType,
+    String authCode,
+    String state,
+    String redirectUriEncoded,
+    String clientId,
+    String clientName,
+    String username,
+    String password) {
     String redirectUri = new String(Base64.getUrlDecoder().decode(redirectUriEncoded));
     Response response = null;
     try {
@@ -59,20 +72,25 @@ public class AuthenticationService {
       if (CODE.equalsIgnoreCase(responseType)) {
         response = Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + authCode + "&" + (state != null ? STATE + "=" + state : ""))).build();
       } else if (TOKEN.equalsIgnoreCase(responseType)) {
-        response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR + UNSUPPORTED_RESPONSE_TYPE)).build();
+        TokenDto tokenDto = TokenServerFactory.getInstance().getService().createForImplicitGrant(privateKey, host, authCode, clientId, redirectUri);
+        response = Response.status(302).location(URI.create(redirectUri
+          + "#" + "access_token=" + tokenDto.getAccessToken()
+          + "&token_type=" + tokenDto.getTokenType()
+          + "&expires_in=" + tokenDto.getExpiresIn()
+          + "&" + STATE + "=" + state)).build();
       } else {
-        response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR + UNSUPPORTED_RESPONSE_TYPE)).build();
+        response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR_QUERY_PARAM + UNSUPPORTED_RESPONSE_TYPE)).build();
       }
     } catch (IllegalStateException | IllegalArgumentException e) {
       e.printStackTrace();
-      response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR + ACCESS_DENIED + "&" + ERROR_DESCRIPTION + URLEncoder.encode(e.getMessage(), "UTF-8"))).entity(null).build();
+      response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR_QUERY_PARAM + ACCESS_DENIED + "&" + ERROR_DESCRIPTION_QUERY_PARAM + URLEncoder.encode(e.getMessage(), "UTF-8"))).entity(null).build();
     } catch (LoginException e) {
       e.printStackTrace();
       response =  Response.status(302).location(new URI("/oauth/login/?" + RESPONSE_TYPE + "=" + CODE + "&" + CODE + "=" + authCode
         + "&" + REDIRECT_URI + "=" + redirectUriEncoded + "&" + CLIENT_NAME + "=" + clientName + "&" + STATE + "=" + state + "&error-code=" + 401)).build();
     } catch (Exception e) {
       e.printStackTrace();
-      response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR + "&" + SERVER_ERROR)).build();
+      response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR_QUERY_PARAM + "&" + SERVER_ERROR)).build();
     } finally {
       return response;
     }

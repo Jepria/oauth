@@ -6,6 +6,8 @@ import org.jepria.server.data.OptionDto;
 import java.util.List;
 
 public interface ClientDao extends Dao {
+  List<OptionDto<String>> getApplicationGrantType(String applicationTypeCode);
+
   List<OptionDto<String>> getGrantType();
 
   List<OptionDto<String>> getGrantResponseType(List<String> grantTypeCodes);

@@ -20,7 +20,13 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.util.Base64;
 import java.util.List;
+import java.util.NoSuchElementException;
+
+import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 /**
  * The authorization code grant type is used to obtain both access
@@ -43,9 +49,31 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
   @Consumes({MediaType.TEXT_HTML, "text/x-gwt-rpc"})// TODO delete after getting off GWT (cause GWT send redirect query with 'content-type: text/x-gwt-rpc' in IE
   public Response authorize(@QueryParam("response_type") String responseType,
                             @QueryParam("client_id") String clientId,
-                            @QueryParam("redirect_uri") String redirectUri,
+                            @QueryParam("redirect_uri") String redirectUriEncoded,
                             @QueryParam("state") String state) {
-    return AuthorizationServerFactory.getInstance().getService().authorize(responseType, clientId, redirectUri, state);
+    String redirectUri = new String(Base64.getUrlDecoder().decode(redirectUriEncoded));
+    Response response = null;
+    try {
+      AuthRequestDto authRequest = AuthorizationServerFactory.getInstance().getService().authorize(responseType, clientId, redirectUri);
+      response = Response.status(302).location(new URI("/oauth/login/?"
+        + RESPONSE_TYPE + "=" + CODE
+        + "&" + CODE + "=" + authRequest.getAuthorizationCode()
+        + "&" + REDIRECT_URI + "=" + redirectUriEncoded
+        + "&" + CLIENT_ID + "=" + authRequest.getClient().getValue()
+        + "&" + CLIENT_NAME + "=" + authRequest.getClient().getName()
+        + "&" + STATE + "=" + state)).build();
+    } catch (IllegalStateException e) {
+      e.printStackTrace();
+      response = Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR_QUERY_PARAM + UNSUPPORTED_RESPONSE_TYPE)).build();
+    } catch (IllegalArgumentException | NoSuchElementException e) {
+      e.printStackTrace();
+      response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR_QUERY_PARAM + INVALID_REQUEST + "&" + ERROR_DESCRIPTION_QUERY_PARAM + URLEncoder.encode(e.getMessage(), "UTF-8"))).build();
+    } catch (Throwable e) {
+      e.printStackTrace();
+      response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR_QUERY_PARAM + "&" + SERVER_ERROR )).build();
+    } finally {
+      return response;
+    }
   }
 
 
@@ -136,5 +164,25 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
     @HeaderParam("Cache-Control") String cacheControl) {
     List<AuthRequestDto> result = (List<AuthRequestDto>)searchEndpointAdapter.getResultsetPaged(searchId, pageSize, page, cacheControl);
     return Response.ok(result).build();
+  }
+
+  /**
+   * Get next separator for URI
+   *
+   * @param uri
+   * @return
+   */
+  private static String getSeparator(String uri) {
+    String separator = "";
+    if (uri != null) {
+      if (uri.contains("?")) {
+        separator = "&";
+      } else if (uri.endsWith("/")) {
+        separator = "?";
+      } else {
+        separator = "/?";
+      }
+    }
+    return separator;
   }
 }

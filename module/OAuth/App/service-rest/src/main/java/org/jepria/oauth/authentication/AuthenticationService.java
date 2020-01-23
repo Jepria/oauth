@@ -31,9 +31,10 @@ public class AuthenticationService {
     }
   }
 
-  private AuthRequestDto getAuthRequest(String authCode, String redirectUri) {
+  private AuthRequestDto getAuthRequest(String authCode, String clientId, String redirectUri) {
     try {
       AuthRequestSearchDtoLocal searchTemplate = new AuthRequestSearchDtoLocal();
+      searchTemplate.setClientId(clientId);
       searchTemplate.setAuthorizationCode(authCode);
       searchTemplate.setRedirectUri(redirectUri);
       AuthRequestDto authRequest = AuthorizationServerFactory.getInstance().getService().find(searchTemplate).get(0);
@@ -43,21 +44,13 @@ public class AuthenticationService {
     }
   }
 
-  public Response authenticate(
-    String privateKey,
-    String host,
-    String responseType,
+  public Integer authenticate(
     String authCode,
-    String state,
-    String redirectUriEncoded,
+    String redirectUri,
     String clientId,
-    String clientName,
     String username,
-    String password) {
-    String redirectUri = new String(Base64.getUrlDecoder().decode(redirectUriEncoded));
-    Response response = null;
-    try {
-      AuthRequestDto authRequest = getAuthRequest(authCode, redirectUri);
+    String password) throws LoginException {
+      AuthRequestDto authRequest = getAuthRequest(authCode, clientId, redirectUri);
       if (authRequest == null || TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - authRequest.getDateIns().getTime()) > 10) {
         throw new IllegalStateException("Authorization code not found or has expired");
       }
@@ -69,31 +62,11 @@ public class AuthenticationService {
       }
       Integer operatorId = loginByPassword(username, password);
       setOperatorId(authRequest.getAuthRequestId(), operatorId);
-      if (CODE.equalsIgnoreCase(responseType)) {
-        response = Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + authCode + "&" + (state != null ? STATE + "=" + state : ""))).build();
-      } else if (TOKEN.equalsIgnoreCase(responseType)) {
-        TokenDto tokenDto = TokenServerFactory.getInstance().getService().createForImplicitGrant(privateKey, host, authCode, clientId, redirectUri);
-        response = Response.status(302).location(URI.create(redirectUri
-          + "#" + "access_token=" + tokenDto.getAccessToken()
-          + "&token_type=" + tokenDto.getTokenType()
-          + "&expires_in=" + tokenDto.getExpiresIn()
-          + "&" + STATE + "=" + state)).build();
-      } else {
-        response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR_QUERY_PARAM + UNSUPPORTED_RESPONSE_TYPE)).build();
-      }
-    } catch (IllegalStateException | IllegalArgumentException e) {
-      e.printStackTrace();
-      response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR_QUERY_PARAM + ACCESS_DENIED + "&" + ERROR_DESCRIPTION_QUERY_PARAM + URLEncoder.encode(e.getMessage(), "UTF-8"))).entity(null).build();
-    } catch (LoginException e) {
-      e.printStackTrace();
-      response =  Response.status(302).location(new URI("/oauth/login/?" + RESPONSE_TYPE + "=" + CODE + "&" + CODE + "=" + authCode
-        + "&" + REDIRECT_URI + "=" + redirectUriEncoded + "&" + CLIENT_NAME + "=" + clientName + "&" + STATE + "=" + state + "&error-code=" + 401)).build();
-    } catch (Exception e) {
-      e.printStackTrace();
-      response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR_QUERY_PARAM + "&" + SERVER_ERROR)).build();
-    } finally {
-      return response;
-    }
+      return operatorId;
+  }
+
+  public TokenDto getToken(String privateKey, String host, String authCode, String clientId, String redirectUri) {
+    return TokenServerFactory.getInstance().getService().createTokenForImplicitGrant(privateKey, host, authCode, clientId, redirectUri);
   }
 
   private void setOperatorId(Integer authRequestId, Integer operatorId) {
@@ -102,25 +75,5 @@ public class AuthenticationService {
     AuthorizationServerFactory.getInstance().getDao().update(new HashMap<String, Integer>(){{
       put(AUTH_REQUEST_ID, authRequestId);
     }}, updateDto, 1);
-  }
-
-  /**
-   * Get next separator for URI
-   *
-   * @param uri
-   * @return
-   */
-  public static String getSeparator(String uri) {
-    String separator = "";
-    if (uri != null) {
-      if (uri.contains("?")) {
-        separator = "&";
-      } else if (uri.endsWith("/")) {
-        separator = "?";
-      } else {
-        separator = "/?";
-      }
-    }
-    return separator;
   }
 }

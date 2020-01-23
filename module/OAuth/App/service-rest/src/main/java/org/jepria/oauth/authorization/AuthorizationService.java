@@ -10,6 +10,7 @@ import org.jepria.oauth.client.dto.ClientSearchDto;
 import org.jepria.oauth.clienturi.ClientUriServerFactory;
 import org.jepria.oauth.clienturi.dto.ClientUriDto;
 import org.jepria.oauth.clienturi.dto.ClientUriSearchDtoLocal;
+import org.jepria.oauth.sdk.ResponseType;
 import org.jepria.server.data.RuntimeSQLException;
 
 import javax.ws.rs.core.Response;
@@ -26,50 +27,13 @@ import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 public class AuthorizationService {
 
-  public Response authorize(String responseType, String clientId, String redirectUriEncoded, String state) {
-    String redirectUri = new String(Base64.getUrlDecoder().decode(redirectUriEncoded));
+  public AuthRequestDto authorize(String responseType, String clientId, String redirectUri) {
+    if (!ResponseType.implies(responseType)) {
+      throw new IllegalStateException("Unsupported response_type");
+    }
     if (!isValidUri(redirectUri)) {
-      return Response.status(400).entity("redirect_uri is invalid or not available").build();
+      throw new IllegalArgumentException("redirect_uri is invalid");
     }
-    Response response = null;
-    try {
-      if (CODE.equalsIgnoreCase(responseType)) {
-        AuthRequestDto authRequest = initializeAuthorizationRequest(clientId, redirectUri);
-        response =  Response.status(302).location(new URI("/oauth/login/?"
-          + RESPONSE_TYPE + "=" + CODE
-          + "&" + CODE + "=" + authRequest.getAuthorizationCode()
-          + "&" + REDIRECT_URI + "=" + redirectUriEncoded
-          + "&" + CLIENT_ID + "=" + authRequest.getClient().getValue()
-          + "&" + CLIENT_NAME + "=" + authRequest.getClient().getName()
-          + "&" + STATE + "=" + state)).build();
-      } else if (TOKEN.equalsIgnoreCase(responseType)) {
-        AuthRequestDto authRequest = initializeAuthorizationRequest(clientId, redirectUri);
-        response =  Response.status(302).location(new URI("/oauth/login/?"
-          + RESPONSE_TYPE + "=" + TOKEN
-          + "&" + CODE + "=" + authRequest.getAuthorizationCode()
-          + "&" + REDIRECT_URI + "=" + redirectUriEncoded
-          + "&" + CLIENT_ID + "=" + authRequest.getClient().getValue()
-          + "&" + CLIENT_NAME + "=" + authRequest.getClient().getName()
-          + "&" + STATE + "=" + state)).build();
-      } else {
-        response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR_QUERY_PARAM + UNSUPPORTED_RESPONSE_TYPE)).build();
-      }
-    } catch (IllegalArgumentException | NoSuchElementException e) {
-      e.printStackTrace();
-      response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR_QUERY_PARAM + INVALID_REQUEST + "&" + ERROR_DESCRIPTION_QUERY_PARAM + URLEncoder.encode(e.getMessage(), "UTF-8"))).build();
-    } catch (Throwable e) {
-      e.printStackTrace();
-      response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR_QUERY_PARAM + "&" + SERVER_ERROR )).build();
-    } finally {
-      return response;
-    }
-  }
-
-  public AuthRequestDto initializeAuthorizationRequest(String clientId, String redirectUri) throws IllegalArgumentException {
-    if (redirectUri == null) {
-      throw new IllegalArgumentException("Redirect URI must be not null");
-    }
-
     AuthRequestDto result = null;
     AuthRequestCreateDto authRequestDto = new AuthRequestCreateDto();
     authRequestDto.setAuthorizationCode(generateCode());
@@ -79,11 +43,7 @@ public class AuthorizationService {
       List<AuthRequestDto> authRequestList = (List<AuthRequestDto>) AuthorizationServerFactory.getInstance().getDao().findByPrimaryKey(new HashMap<String, Integer>() {{
         put(AUTH_REQUEST_ID, (create(authRequestDto)));
       }}, 1);
-      if (authRequestList.size() == 1) {
-        result = authRequestList.get(0);
-      } else {
-        throw new NoSuchElementException("authorization request not found");
-      }
+      result = authRequestList.get(0);
     } catch (RuntimeSQLException ex) {
       SQLException sqlException = ex.getSQLException();
       if (sqlException.getErrorCode() == 20001) {
@@ -165,6 +125,9 @@ public class AuthorizationService {
    * @return
    */
   private boolean isValidUri(String redirectUri)  {
+    if (redirectUri == null) {
+      return false;
+    }
     try {
       new URI(redirectUri);
       return true;

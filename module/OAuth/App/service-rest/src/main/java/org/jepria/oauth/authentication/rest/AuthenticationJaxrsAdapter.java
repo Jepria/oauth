@@ -3,8 +3,11 @@ package org.jepria.oauth.authentication.rest;
 import org.jepria.oauth.authentication.AuthenticationServerFactory;
 import org.jepria.oauth.authentication.AuthenticationService;
 import org.jepria.oauth.main.dto.ErrorDto;
+import org.jepria.oauth.token.TokenServerFactory;
+import org.jepria.oauth.token.dto.TokenDto;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
 
+import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
@@ -17,7 +20,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.Base64;
+
+import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 /**
  * Authentication Endpoint takes care of authentication business logic part for Authorization Code Flow and Implicit Flow.
@@ -40,13 +46,69 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
   public Response authenticate(
     @QueryParam("response_type") String responseType,
     @QueryParam("code") String authCode,
-    @QueryParam("redirect_uri") String redirectUri,
+    @QueryParam("redirect_uri") String redirectUriEncoded,
     @QueryParam("client_id") String clientId,
     @QueryParam("client_name") String clientName,
     @QueryParam("state") String state,
     @FormParam("username") String username,
     @FormParam("password") String password) {
-    return AuthenticationServerFactory.getInstance().getService().authenticate(getPrivateKey(), getHostContext(), responseType, authCode, state, redirectUri, clientId, clientName, username, password);
+    String redirectUri = new String(Base64.getUrlDecoder().decode(redirectUriEncoded));
+    Response response = null;
+    try {
+      if (CODE.equalsIgnoreCase(responseType)) {
+        AuthenticationServerFactory.getInstance().getService().authenticate(authCode, redirectUri, clientId, username, password);
+        response = Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + authCode + "&" + (state != null ? STATE + "=" + state : ""))).build();
+      } else if (TOKEN.equalsIgnoreCase(responseType)) {
+        TokenDto tokenDto = AuthenticationServerFactory.getInstance().getService().getToken(getPrivateKey(), getHostContext(), authCode, clientId, redirectUri);
+        response = Response.status(302).location(URI.create(redirectUri
+          + "#" + "access_token=" + tokenDto.getAccessToken()
+          + "&token_type=" + tokenDto.getTokenType()
+          + "&expires_in=" + tokenDto.getExpiresIn()
+          + "&" + STATE + "=" + state)).build();
+      } else {
+        response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR_QUERY_PARAM + UNSUPPORTED_RESPONSE_TYPE)).build();
+      }
+    } catch (IllegalStateException | IllegalArgumentException e) {
+      e.printStackTrace();
+      response =  Response.status(302).location(URI.create(redirectUri +
+        getSeparator(redirectUri)
+        + ERROR_QUERY_PARAM + ACCESS_DENIED + "&"
+        + ERROR_DESCRIPTION_QUERY_PARAM
+        + URLEncoder.encode(e.getMessage(), "UTF-8"))).build();
+    } catch (LoginException e) {
+      e.printStackTrace();
+      response =  Response.status(302).location(new URI("/oauth/login/?"
+        + RESPONSE_TYPE + "=" + CODE + "&"
+        + CODE + "=" + authCode + "&"
+        + REDIRECT_URI + "=" + redirectUriEncoded + "&"
+        + CLIENT_NAME + "=" + clientName + "&"
+        + STATE + "=" + state + "&error-code=" + 401)).build();
+    } catch (Throwable th) {
+      th.printStackTrace();
+      response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR_QUERY_PARAM + "&" + SERVER_ERROR)).build();
+    } finally {
+      return response;
+    }
+  }
+
+  /**
+   * Get next separator for URI
+   *
+   * @param uri
+   * @return
+   */
+  private static String getSeparator(String uri) {
+    String separator = "";
+    if (uri != null) {
+      if (uri.contains("?")) {
+        separator = "&";
+      } else if (uri.endsWith("/")) {
+        separator = "?";
+      } else {
+        separator = "/?";
+      }
+    }
+    return separator;
   }
 
 }

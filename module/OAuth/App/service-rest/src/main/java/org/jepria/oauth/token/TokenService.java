@@ -1,15 +1,11 @@
 package org.jepria.oauth.token;
 
 import org.jepria.oauth.authentication.AuthenticationServerFactory;
-import org.jepria.oauth.authentication.AuthenticationService;
 import org.jepria.oauth.authorization.AuthorizationServerFactory;
 import org.jepria.oauth.authorization.dto.AuthRequestCreateDto;
 import org.jepria.oauth.authorization.dto.AuthRequestDto;
 import org.jepria.oauth.authorization.dto.AuthRequestSearchDtoLocal;
 import org.jepria.oauth.authorization.dto.AuthRequestUpdateDto;
-import org.jepria.oauth.client.ClientServerFactory;
-import org.jepria.oauth.client.dto.ClientDto;
-import org.jepria.oauth.client.dto.ClientSearchDto;
 import org.jepria.oauth.sdk.GrantType;
 import org.jepria.oauth.token.dto.TokenDto;
 import org.jepria.oauth.token.dto.TokenInfoDto;
@@ -54,18 +50,6 @@ public class TokenService {
     AuthorizationServerFactory.getInstance().getService().update(updateDto);
   }
 
-
-  private ClientDto getClient(String clientId) throws IllegalArgumentException {
-    ClientSearchDto clientSearchTemplate = new ClientSearchDto();
-    clientSearchTemplate.setClientId(clientId);
-    List<ClientDto> result = (List<ClientDto>) ClientServerFactory.getInstance().getDao().find(clientSearchTemplate, 1);
-    if (result.size() == 1) {
-      return result.get(0);
-    } else {
-      throw new NoSuchElementException("Client not found");
-    }
-  }
-
   /**
    *
    * @param grantType
@@ -76,7 +60,7 @@ public class TokenService {
    * @param redirectUri
    * @return
    */
-  public Response create(
+  public TokenDto create(
     String grantType,
     String privateKey,
     String host,
@@ -85,34 +69,24 @@ public class TokenService {
     String redirectUri,
     String username,
     String password) {
-    Response response = null;
-    try {
-      switch (grantType) {
-        case GrantType.AUTHORIZATION_CODE: {
-          TokenDto result = createForAuthCodeGrant(privateKey, host, authCode, clientId, new String(Base64.getUrlDecoder().decode(redirectUri)));
-          response = Response.ok().entity(result).build();
-          break;
-        }
-        case GrantType.CLIENT_CREDENTIALS: {
-          break;
-        }
-        case GrantType.PASSWORD: {
-          TokenDto result = createForUserCredentialsGrant(privateKey, host, clientId, username, password);
-          response = Response.ok().entity(result).build();
-          break;
-        }
-        default: {
-          response = Response.status(Response.Status.BAD_REQUEST).build();
-          break;
-        }
+    TokenDto result;
+    switch (grantType) {
+      case GrantType.AUTHORIZATION_CODE: {
+        result = createTokenForAuthCodeGrant(privateKey, host, authCode, clientId, new String(Base64.getUrlDecoder().decode(redirectUri)));
+        break;
       }
-    } catch (IllegalArgumentException | IllegalStateException | NoSuchElementException e) {
-      response = Response.status(Response.Status.BAD_REQUEST).build();
-    } catch (Throwable th) {
-      response = Response.serverError().build();
-    } finally {
-      return response;
+//        case GrantType.CLIENT_CREDENTIALS: {
+//          break;
+//        }
+      case GrantType.PASSWORD: {
+        result = createTokenForUserCredentialsGrant(privateKey, host, clientId, username, password);
+        break;
+      }
+      default: {
+        throw new IllegalArgumentException();
+      }
     }
+    return result;
   }
 
   /**
@@ -124,7 +98,7 @@ public class TokenService {
    * @param redirectUri
    * @return
    */
-  public TokenDto createForImplicitGrant(String privateKeyString, String host, String authCode, String clientId, String redirectUri) {
+  public TokenDto createTokenForImplicitGrant(String privateKeyString, String host, String authCode, String clientId, String redirectUri) {
     if (authCode == null) {
       throw new IllegalArgumentException("Authorization code is null.");
     }
@@ -160,7 +134,7 @@ public class TokenService {
    * @param redirectUri
    * @return
    */
-  private TokenDto createForAuthCodeGrant(String privateKeyString, String host, String authCode, String clientId, String redirectUri) {
+  private TokenDto createTokenForAuthCodeGrant(String privateKeyString, String host, String authCode, String clientId, String redirectUri) {
     if (authCode == null) {
       throw new IllegalArgumentException("Authorization code is null.");
     }
@@ -194,7 +168,7 @@ public class TokenService {
    * @param password
    * @return
    */
-  private TokenDto createForUserCredentialsGrant(String privateKeyString, String host, String clientId, String username, String password) {
+  private TokenDto createTokenForUserCredentialsGrant(String privateKeyString, String host, String clientId, String username, String password) {
     TokenDto result = null;
 
     try {
@@ -229,8 +203,8 @@ public class TokenService {
    * @param clientSecret
    * @return
    */
-  private TokenDto createForClientCredentialsGrant(String privateKeyString, String host, String clientId, String clientSecret) {
-    return null;
+  private TokenDto createTokenForClientCredentialsGrant(String privateKeyString, String host, String clientId, String clientSecret) {
+    throw new UnsupportedOperationException();
   }
 
   /**

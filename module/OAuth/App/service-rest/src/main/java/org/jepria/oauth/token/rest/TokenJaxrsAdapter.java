@@ -18,6 +18,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.net.URI;
 import java.util.Base64;
+import java.util.NoSuchElementException;
 
 /**
  * The token endpoint is used by the client to obtain an access token by
@@ -54,7 +55,17 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
     @FormParam("code") String authCode,
     @FormParam("username") String username,
     @FormParam("password") String password) {
-    return TokenServerFactory.getInstance().getService().create(grantType, getPrivateKey(), getHostContext(), authCode, clientId, redirectUri, username, password);
+    Response response = null;
+    try {
+      TokenDto result = TokenServerFactory.getInstance().getService().create(grantType, getPrivateKey(), getHostContext(), authCode, clientId, redirectUri, username, password);
+      response = Response.ok(result).build();
+    } catch (IllegalArgumentException | IllegalStateException | NoSuchElementException e) {
+      response = Response.status(Response.Status.BAD_REQUEST).build();
+    } catch (Throwable th) {
+      response = Response.serverError().build();
+    } finally {
+      return response;
+    }
   }
 
   @POST

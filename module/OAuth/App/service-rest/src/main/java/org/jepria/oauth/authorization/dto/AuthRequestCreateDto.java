@@ -9,6 +9,7 @@ public class AuthRequestCreateDto {
   String clientId;
   Integer operatorId;
   String tokenId;
+  String sessionId;
   Date tokenDateIns;
 
   public String getAuthorizationCode() {
@@ -49,6 +50,14 @@ public class AuthRequestCreateDto {
 
   public void setTokenId(String tokenId) {
     this.tokenId = tokenId;
+  }
+
+  public String getSessionId() {
+    return sessionId;
+  }
+
+  public void setSessionId(String sessionId) {
+    this.sessionId = sessionId;
   }
 
   public Date getTokenDateIns() {

@@ -5,36 +5,41 @@ import org.jepria.oauth.authorization.dto.AuthRequestDto;
 import org.jepria.oauth.authorization.dto.AuthRequestSearchDtoLocal;
 import org.jepria.oauth.authorization.dto.AuthRequestUpdateDto;
 import org.jepria.oauth.client.ClientServerFactory;
-import org.jepria.oauth.client.dto.ClientDto;
-import org.jepria.oauth.client.dto.ClientSearchDto;
 import org.jepria.oauth.clienturi.ClientUriServerFactory;
 import org.jepria.oauth.clienturi.dto.ClientUriDto;
 import org.jepria.oauth.clienturi.dto.ClientUriSearchDtoLocal;
+import org.jepria.oauth.main.exception.HandledRuntimeException;
 import org.jepria.oauth.sdk.ResponseType;
+import org.jepria.oauth.sdk.token.DecryptorRSA;
+import org.jepria.oauth.sdk.token.SignatureVerifierRSA;
+import org.jepria.oauth.sdk.token.TokenImpl;
+import org.jepria.oauth.sdk.token.VerifierRSA;
+import org.jepria.oauth.sdk.token.interfaces.Token;
+import org.jepria.oauth.sdk.token.interfaces.Verifier;
+import org.jepria.server.data.OptionDto;
 import org.jepria.server.data.RuntimeSQLException;
 
-import javax.ws.rs.core.Response;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.sql.SQLException;
 import java.util.*;
 
 import static org.jepria.oauth.authorization.AuthorizationFieldNames.AUTH_REQUEST_ID;
-import static org.jepria.oauth.sdk.OAuthConstants.*;
+import static org.jepria.oauth.sdk.OAuthConstants.UNAUTHORIZED_CLIENT;
+import static org.jepria.oauth.sdk.OAuthConstants.UNSUPPORTED_RESPONSE_TYPE;
 
 public class AuthorizationService {
 
   public AuthRequestDto authorize(String responseType, String clientId, String redirectUri) {
-    if (!ResponseType.implies(responseType)) {
-      throw new IllegalStateException("Unsupported response_type");
+      if (!ResponseType.implies(responseType)) {
+      throw new HandledRuntimeException(UNSUPPORTED_RESPONSE_TYPE);
     }
-    if (!isValidUri(redirectUri)) {
-      throw new IllegalArgumentException("redirect_uri is invalid");
+
+    List<OptionDto<String>> clientResponseTypes = ClientServerFactory.getInstance().getService().getClientResponseTypes(clientId);
+    if (clientResponseTypes.size() == 0 || !clientResponseTypes.stream().anyMatch(clientResponseType -> clientResponseType.getValue().equals(responseType))) {
+      throw new HandledRuntimeException(UNAUTHORIZED_CLIENT);
     }
-    AuthRequestDto result = null;
+
     AuthRequestCreateDto authRequestDto = new AuthRequestCreateDto();
     authRequestDto.setAuthorizationCode(generateCode());
     authRequestDto.setClientId(clientId);
@@ -43,18 +48,73 @@ public class AuthorizationService {
       List<AuthRequestDto> authRequestList = (List<AuthRequestDto>) AuthorizationServerFactory.getInstance().getDao().findByPrimaryKey(new HashMap<String, Integer>() {{
         put(AUTH_REQUEST_ID, (create(authRequestDto)));
       }}, 1);
-      result = authRequestList.get(0);
+      return authRequestList.get(0);
     } catch (RuntimeSQLException ex) {
       SQLException sqlException = ex.getSQLException();
       if (sqlException.getErrorCode() == 20001) {
-        throw new IllegalArgumentException("client_id is not valid");
+        throw new HandledRuntimeException(UNAUTHORIZED_CLIENT);
       }
       if (sqlException.getErrorCode() == 20002) {
         throw new IllegalArgumentException("redirect_uri mismatch");
       }
+      throw new RuntimeSQLException(sqlException);
     }
-    return result;
   }
+
+  /**
+   *
+   * @param responseType
+   * @param clientId
+   * @param redirectUri
+   * @param sessionToken
+   * @param issuer
+   * @param publicKey
+   * @param privateKey
+   * @return
+   */
+  public AuthRequestDto authorize(String responseType, String clientId, String redirectUri, String sessionToken, String issuer, String publicKey, String privateKey) {
+    if (!ResponseType.implies(responseType)) {
+      throw new HandledRuntimeException(UNSUPPORTED_RESPONSE_TYPE);
+    }
+    List<OptionDto<String>> clientResponseTypes = ClientServerFactory.getInstance().getService().getClientResponseTypes(clientId);
+    if (clientResponseTypes.size() == 0 || !clientResponseTypes.stream().anyMatch(clientResponseType -> clientResponseType.getValue().equals(responseType))) {
+      throw new HandledRuntimeException(UNAUTHORIZED_CLIENT);
+    }
+    try {
+      Token token = TokenImpl.parseFromString(sessionToken);
+      token.decrypt(new DecryptorRSA(privateKey));
+      Verifier verifier = new VerifierRSA(null, issuer, new Date(), publicKey);
+      if (verifier.verify(token)) {
+        String[] subject = token.getSubject().split(":");
+
+        AuthRequestCreateDto authRequestDto = new AuthRequestCreateDto();
+        authRequestDto.setAuthorizationCode(generateCode());
+        authRequestDto.setClientId(clientId);
+        authRequestDto.setRedirectUri(redirectUri);
+        authRequestDto.setOperatorId(Integer.valueOf(subject[1]));
+        authRequestDto.setSessionId(token.getJti());
+        List<AuthRequestDto> authRequestList = (List<AuthRequestDto>) AuthorizationServerFactory.getInstance().getDao().findByPrimaryKey(new HashMap<String, Integer>() {{
+          put(AUTH_REQUEST_ID, (create(authRequestDto)));
+        }}, 1);
+        return authRequestList.get(0);
+      } else {
+        return authorize(responseType, clientId, redirectUri);
+      }
+    } catch (RuntimeSQLException ex) {
+      SQLException sqlException = ex.getSQLException();
+      if (sqlException.getErrorCode() == 20001) {
+        throw new HandledRuntimeException(UNAUTHORIZED_CLIENT);
+      }
+      if (sqlException.getErrorCode() == 20002) {
+        throw new IllegalArgumentException("redirect_uri mismatch");
+      }
+      throw new RuntimeSQLException(sqlException);
+    } catch (Throwable th) {
+      th.printStackTrace();
+      return authorize(responseType, clientId, redirectUri);
+    }
+  }
+
 
   /**
    *
@@ -74,9 +134,6 @@ public class AuthorizationService {
    */
   public Integer create(AuthRequestCreateDto record) {
     Integer result = (Integer) AuthorizationServerFactory.getInstance().getDao().create(record, 1);
-    if (result == null) {
-      throw new RuntimeException("Record was not created.");
-    }
     return result;
   }
 
@@ -119,41 +176,31 @@ public class AuthorizationService {
     }
   }
 
-  /**
-   *
-   * @param redirectUri
-   * @return
-   */
-  private boolean isValidUri(String redirectUri)  {
-    if (redirectUri == null) {
-      return false;
+  public void logout(String clientId, String redirectUri, String sessionToken, String issuer, String publicKey, String privateKey) {
+    ClientUriSearchDtoLocal clientUriSearchTemplate = new ClientUriSearchDtoLocal();
+    clientUriSearchTemplate.setClientId(clientId);
+    List<ClientUriDto> clientUriList = ClientUriServerFactory.getInstance().getService().findClientUri(clientUriSearchTemplate, null);
+    if (!clientUriList.stream().anyMatch(clientUriDto -> clientUriDto.getClientUri().equals(redirectUri))) {
+      throw new IllegalArgumentException("redirect_uri mismatch");
     }
-    try {
-      new URI(redirectUri);
-      return true;
-    } catch (URISyntaxException | NullPointerException e) {
-      e.printStackTrace();
-      return false;
-    }
-  }
 
-  /**
-   * Get next separator for URI
-   *
-   * @param uri
-   * @return
-   */
-  public static String getSeparator(String uri) {
-    String separator = "";
-    if (uri != null) {
-      if (uri.contains("?")) {
-        separator = "&";
-      } else if (uri.endsWith("/")) {
-        separator = "?";
-      } else {
-        separator = "/?";
+    try {
+      Token token = TokenImpl.parseFromString(sessionToken);
+      token.decrypt(new DecryptorRSA(privateKey));
+      Verifier verifier = new SignatureVerifierRSA(publicKey);
+      if (verifier.verify(token) && issuer.equals(token.getIssuer())) {
+        AuthRequestSearchDtoLocal searchTemplate = new AuthRequestSearchDtoLocal();
+        searchTemplate.setSessionId(token.getJti());
+        searchTemplate.setBlocked(false);
+        AuthorizationServerFactory.getInstance()
+          .getDao()
+          .find(searchTemplate, null)
+          .stream()
+          .forEach(authRequestDto -> block(((AuthRequestDto) authRequestDto).getAuthRequestId()));
       }
+    } catch (Throwable th) {
+      th.printStackTrace();
+      throw new RuntimeException(th);
     }
-    return separator;
   }
 }

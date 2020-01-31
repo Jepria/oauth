@@ -37,7 +37,7 @@ public class ClientDaoImpl implements ClientDao {
       "clientNameEn varchar(100) := ?;" +
     "begin " +
       "open rc for select " +
-        "ct.client_id," +
+        //"ct.client_id," +
         "ct.client_code," +
         "ct.client_secret," +
         "ct.client_name," +
@@ -71,8 +71,8 @@ public class ClientDaoImpl implements ClientDao {
       tokenAuthMethod.setName(rs.getString(TOKEN_AUTH_METHOD_NAME));
       tokenAuthMethod.setValue(rs.getString(TOKEN_AUTH_METHOD_CODE));
       dto.setTokenAuthMethod(tokenAuthMethod);
-      dto.setGrantTypes(getClientGrantTypes(getInteger(rs, CLIENT_ID)));
-      dto.setResponseTypes(getClientResponseTypes(getInteger(rs, CLIENT_ID)));
+      dto.setGrantTypes(getClientGrantTypes(dto.getClientId()));
+      dto.setResponseTypes(getClientResponseTypes(dto.getClientId()));
     }
   };
 
@@ -82,7 +82,7 @@ public class ClientDaoImpl implements ClientDao {
     ClientSearchDto dto = (ClientSearchDto) template;
     Db db = getDb();
     CallableStatement statement = db.prepare(findSqlQuery);
-    List<ClientDto> result = null;
+    List<ClientDto> result = new ArrayList<>();
     try {
       statement.setString(1, dto.getClientId());
       if (dto.getClientName() != null) {
@@ -98,7 +98,6 @@ public class ClientDaoImpl implements ClientDao {
       statement.registerOutParameter(4, OracleTypes.CURSOR);
       statement.executeQuery();
       try (ResultSet rs = (ResultSet) statement.getObject(4)) {
-        result = new ArrayList<>();
         while (rs.next()) {
           ClientDto resultDto = new ClientDto();
           mapper.map(rs, resultDto);
@@ -383,22 +382,23 @@ public class ClientDaoImpl implements ClientDao {
     }
   }
 
-  private List<OptionDto<String>> getClientResponseTypes(Integer clientId) {
+  @Override
+  public List<OptionDto<String>> getClientResponseTypes(String clientId) {
     //language=Oracle
     String sqlString = "select grtc.RESPONSE_TYPE_CODE, grtc.RESPONSE_TYPE_NAME " +
       "from OA_CLIENT_GRANT_TYPE cgt " +
       "inner join (select grt.grant_type_code, grt.response_type_code, rt.response_type_name  " +
                  "from OA_GRANT_RESPONSE_TYPE grt " +
                  "inner join OA_RESPONSE_TYPE rt on grt.response_type_code = rt.response_type_code) grtc on cgt.grant_type_code = grtc.grant_type_code " +
-      "where cgt.CLIENT_ID = ?";
+      "inner join OA_CLIENT clt on clt.CLIENT_ID = cgt.CLIENT_ID " +
+      "where clt.CLIENT_CODE like ?";
     Db db = getDb();
     CallableStatement statement = db.prepare(sqlString);
-    List<OptionDto<String>> result = null;
+    List<OptionDto<String>> result = new ArrayList<>();
     try {
-      statement.setInt(1, clientId);
+      statement.setString(1, clientId);
       statement.executeQuery();
       ResultSet rs = statement.getResultSet();
-      result = new ArrayList<>();
       while (rs.next()) {
         OptionDto<String> responseTypeDto = new OptionDto<String>();
         responseTypeDto.setValue(rs.getString(RESPONSE_TYPE_CODE));
@@ -417,20 +417,21 @@ public class ClientDaoImpl implements ClientDao {
     return result;
   }
 
-  private List<OptionDto<String>> getClientGrantTypes(Integer clientId) {
+  @Override
+  public List<OptionDto<String>> getClientGrantTypes(String clientId) {
     //language=Oracle
     String sqlString = "select cgt.grant_type_code, gt.grant_type_name " +
       "from OA_CLIENT_GRANT_TYPE cgt " +
-      "inner join OA_GRANT_TYPE gt on cgt.grant_type_code = gt.grant_type_code " +
-      "where cgt.CLIENT_ID = ?";
+        "inner join OA_GRANT_TYPE gt on cgt.grant_type_code = gt.grant_type_code " +
+        "inner join OA_CLIENT clt on clt.CLIENT_ID = cgt.CLIENT_ID " +
+      "where clt.CLIENT_CODE like ?";
     Db db = getDb();
     CallableStatement statement = db.prepare(sqlString);
-    List<OptionDto<String>> result = null;
+    List<OptionDto<String>> result = new ArrayList<>();
     try {
-      statement.setInt(1, clientId);
+      statement.setString(1, clientId);
       statement.executeQuery();
       ResultSet rs = statement.getResultSet();
-      result = new ArrayList<>();
       while (rs.next()) {
         OptionDto<String> grantTypeDto = new OptionDto<String>();
         grantTypeDto.setValue(rs.getString(GRANT_TYPE_CODE));
@@ -455,12 +456,11 @@ public class ClientDaoImpl implements ClientDao {
     String sqlString = "select * from OA_APPLICATION_GRANT_TYPE t where t.APPLICATION_TYPE_CODE like ?";
     Db db = getDb();
     CallableStatement statement = db.prepare(sqlString);
-    List<OptionDto<String>> result = null;
+    List<OptionDto<String>> result = new ArrayList<>();
     try {
       statement.setString(1, applicationTypeCode);
       statement.executeQuery();
       ResultSet rs = statement.getResultSet();
-      result = new ArrayList<>();
       while (rs.next()) {
         OptionDto<String> grantTypeDto = new OptionDto<String>();
         grantTypeDto.setValue(rs.getString(GRANT_TYPE_CODE));
@@ -485,11 +485,10 @@ public class ClientDaoImpl implements ClientDao {
     String sqlString = "select * from OA_GRANT_TYPE";
     Db db = getDb();
     CallableStatement statement = db.prepare(sqlString);
-    List<OptionDto<String>> result = null;
+    List<OptionDto<String>> result = new ArrayList<>();
     try {
       statement.executeQuery();
       ResultSet rs = statement.getResultSet();
-      result = new ArrayList<>();
       while (rs.next()) {
         OptionDto<String> grantTypeDto = new OptionDto<String>();
         grantTypeDto.setValue(rs.getString(GRANT_TYPE_CODE));
@@ -513,7 +512,7 @@ public class ClientDaoImpl implements ClientDao {
     if (grantTypeCodes == null || grantTypeCodes.size() == 0) {
       return Collections.emptyList();
     }
-    List<OptionDto<String>> result = null;
+    List<OptionDto<String>> result = new ArrayList<>();
     Db db = getDb();
     try {
       String arrayParams = "";
@@ -534,7 +533,6 @@ public class ClientDaoImpl implements ClientDao {
       }
       statement.executeQuery();
       ResultSet rs = statement.getResultSet();
-      result = new ArrayList<>();
       while (rs.next()) {
         OptionDto<String> dto = new OptionDto<String>();
         dto.setValue(rs.getString(RESPONSE_TYPE_CODE));

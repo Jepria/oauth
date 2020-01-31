@@ -41,12 +41,13 @@ public class TokenService {
     }
   }
 
-  private void updateAuthRequest(Integer authRequestId, Integer operatorId, String tokenId, Date tokenDateIns) {
+  private void updateAuthRequest(Integer authRequestId, Integer operatorId, String tokenId, Date tokenDateIns, String sessionId) {
     AuthRequestUpdateDto updateDto = new AuthRequestUpdateDto();
     updateDto.setAuthRequestId(authRequestId);
     updateDto.setOperatorId(operatorId);
     updateDto.setTokenId(tokenId);
     updateDto.setTokenDateIns(tokenDateIns);
+    updateDto.setSessionId(sessionId);
     AuthorizationServerFactory.getInstance().getService().update(updateDto);
   }
 
@@ -121,7 +122,7 @@ public class TokenService {
     tokenDto.setAccessToken(token.asString());
     tokenDto.setExpiresIn(3600); // 1 hour active time
     tokenDto.setTokenType("Bearer");
-    updateAuthRequest(authRequest.getAuthRequestId(), authRequest.getOperator().getValue(), token.getJti(), new Date());
+    updateAuthRequest(authRequest.getAuthRequestId(), authRequest.getOperator().getValue(), token.getJti(), new Date(), authRequest.getSessionId());
     return tokenDto;
   }
 
@@ -156,7 +157,7 @@ public class TokenService {
     tokenDto.setAccessToken(token.asString());
     tokenDto.setExpiresIn(14400); // 4 hours active time
     tokenDto.setTokenType("Bearer");
-    updateAuthRequest(authRequest.getAuthRequestId(), authRequest.getOperator().getValue(), token.getJti(), new Date());
+    updateAuthRequest(authRequest.getAuthRequestId(), authRequest.getOperator().getValue(), token.getJti(), new Date(), authRequest.getSessionId());
     return tokenDto;
   }
 
@@ -238,7 +239,7 @@ public class TokenService {
     result.setJti(token.getJti());
     result.setAud(token.getAudience());
     result.setIss(token.getIssuer());
-    result.setExp(token.getExpiryDate().getTime());
+    result.setExp(token.getExpirationTime().getTime());
     result.setSub(token.getSubject());
     return result;
   }
@@ -288,7 +289,7 @@ public class TokenService {
        * TODO пересмотреть концепцию передачи данных пользователя
        */
       Token token = new TokenImpl(tokenId, audience != null ? audience : Collections.singletonList("RFInfo"),username + ":" + userId,
-        issuer, addHours(new Date(), expiresIn));
+        issuer, addHours(new Date(), expiresIn), new Date());
       /**
        * Sign token with private key
        */

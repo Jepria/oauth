@@ -5,6 +5,12 @@ import org.jepria.oauth.authorization.dto.AuthRequestDto;
 import org.jepria.oauth.authorization.dto.AuthRequestSearchDtoLocal;
 import org.jepria.oauth.authorization.dto.AuthRequestUpdateDto;
 import org.jepria.oauth.sdk.GrantType;
+import org.jepria.oauth.sdk.token.EncryptorRSA;
+import org.jepria.oauth.sdk.token.SignerRSA;
+import org.jepria.oauth.sdk.token.TokenImpl;
+import org.jepria.oauth.sdk.token.interfaces.Encryptor;
+import org.jepria.oauth.sdk.token.interfaces.Signer;
+import org.jepria.oauth.sdk.token.interfaces.Token;
 import org.jepria.oauth.token.TokenServerFactory;
 import org.jepria.oauth.token.dto.TokenDto;
 
@@ -12,15 +18,16 @@ import javax.security.auth.login.LoginException;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URLEncoder;
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashMap;
+import java.security.MessageDigest;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.jepria.oauth.authorization.AuthorizationFieldNames.AUTH_REQUEST_ID;
 import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 public class AuthenticationService {
+
+  public static int DEFAULT_EXPIRE_TIME = 8;
 
   public Integer loginByPassword(String username, String password) throws LoginException {
     Integer operatorId = AuthenticationServerFactory.getInstance().getDao().loginByPassword(username, password);
@@ -44,36 +51,81 @@ public class AuthenticationService {
     }
   }
 
-  public Integer authenticate(
+  public String authenticate(
     String authCode,
     String redirectUri,
     String clientId,
     String username,
-    String password) throws LoginException {
+    String password,
+    String host,
+    String publicKey,
+    String privateKey) throws LoginException {
       AuthRequestDto authRequest = getAuthRequest(authCode, clientId, redirectUri);
       if (authRequest == null || TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - authRequest.getDateIns().getTime()) > 10) {
         throw new IllegalStateException("Authorization code not found or has expired");
       }
       if (authRequest.getOperator().getValue() != null) {
-        throw new IllegalArgumentException("Request has already passed authentication");
+        throw new IllegalStateException("Request has already passed authentication");
       }
       if (authRequest.getTokenId() != null) {
-        throw new IllegalArgumentException("Request is finished");
+        throw new IllegalStateException("Request is finished");
       }
       Integer operatorId = loginByPassword(username, password);
-      setOperatorId(authRequest.getAuthRequestId(), operatorId);
-      return operatorId;
+      final Token sessionToken = generateSessionToken(username, operatorId, host, publicKey, privateKey, null);
+      updateAuthRequest(authRequest.getAuthRequestId(), operatorId, sessionToken.getJti());
+      return sessionToken.asString();
   }
 
   public TokenDto getToken(String privateKey, String host, String authCode, String clientId, String redirectUri) {
     return TokenServerFactory.getInstance().getService().createTokenForImplicitGrant(privateKey, host, authCode, clientId, redirectUri);
   }
 
-  private void setOperatorId(Integer authRequestId, Integer operatorId) {
+  private void updateAuthRequest(Integer authRequestId, Integer operatorId, String sessionId) {
     AuthRequestUpdateDto updateDto = new AuthRequestUpdateDto();
     updateDto.setOperatorId(operatorId);
+    updateDto.setSessionId(sessionId);
     AuthorizationServerFactory.getInstance().getDao().update(new HashMap<String, Integer>(){{
       put(AUTH_REQUEST_ID, authRequestId);
     }}, updateDto, 1);
+  }
+
+  private Token generateSessionToken(String username, Integer operatorId, String issuer, String publicKey, String privateKey, Integer expiresIn) {
+    try {
+      /**
+       * Generate uuid for token ID
+       */
+      MessageDigest cryptoProvider = MessageDigest.getInstance("SHA-256");
+      UUID randomUuid = UUID.randomUUID();
+      cryptoProvider.update(randomUuid.toString().getBytes());
+      String tokenId = Base64.getUrlEncoder().encodeToString(cryptoProvider.digest());
+      /**
+       * Create token with JWT lib
+       * TODO решить как задавать audience, возможно конкретное приложение, и пересоздавать токен
+       * TODO пересмотреть концепцию передачи данных пользователя
+       */
+      Token token = new TokenImpl(tokenId, Collections.EMPTY_LIST,username + ":" + operatorId,
+        issuer, addHours(new Date(), expiresIn == null ? DEFAULT_EXPIRE_TIME : expiresIn), new Date());
+      /**
+       * Sign token with private key
+       */
+      Signer signer = new SignerRSA(privateKey);
+      token.sign(signer);
+      /**
+       * Encrypt token with public key
+       */
+      Encryptor encryptor = new EncryptorRSA(publicKey);
+      token.encrypt(encryptor);
+      return token;
+    } catch (Throwable th) {
+      th.printStackTrace();
+      throw new RuntimeException(th);
+    }
+  }
+
+  private Date addHours(Date date, int hours) {
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(date);
+    calendar.add(Calendar.HOUR_OF_DAY, hours);
+    return calendar.getTime();
   }
 }

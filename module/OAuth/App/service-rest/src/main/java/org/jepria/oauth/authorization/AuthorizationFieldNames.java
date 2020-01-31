@@ -13,4 +13,5 @@ public class AuthorizationFieldNames {
   public static String CLIENT_ID = "client_id";
   public static String CLIENT_NAME = "client_name";
   public static String IS_BLOCKED = "is_blocked";
+  public static String SESSION_ID = "session_id";
 }

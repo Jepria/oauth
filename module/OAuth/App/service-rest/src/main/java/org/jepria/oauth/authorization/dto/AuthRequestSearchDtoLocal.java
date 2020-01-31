@@ -6,6 +6,7 @@ public class AuthRequestSearchDtoLocal {
   String authorizationCode;
   Integer operatorId;
   String clientId;
+  String sessionId;
   String tokenId;
   Boolean isBlocked;
   String redirectUri;
@@ -41,6 +42,14 @@ public class AuthRequestSearchDtoLocal {
 
   public void setClientId(String clientId) {
     this.clientId = clientId;
+  }
+
+  public String getSessionId() {
+    return sessionId;
+  }
+
+  public void setSessionId(String sessionId) {
+    this.sessionId = sessionId;
   }
 
   public String getTokenId() {

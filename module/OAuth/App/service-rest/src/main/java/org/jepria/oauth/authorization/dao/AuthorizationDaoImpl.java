@@ -34,6 +34,7 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
       "tokenId varchar2(64) := ?;" +
       "isBlocked integer := ?;" +
       "hasToken integer := ?;" +
+      "sessionId varchar2(64) := ?;" +
     "begin " +
       "open rc for select " +
           "ar.AUTH_REQUEST_ID," +
@@ -42,6 +43,7 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
           "ar.REDIRECT_URI," +
           "ar.AUTHORIZATION_CODE," +
           "ar.DATE_INS," +
+          "ar.SESSION_ID," +
           "ar.TOKEN_ID," +
           "ar.TOKEN_DATE_INS," +
           "ar.OPERATOR_ID," +
@@ -57,6 +59,7 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
           "and (ar.OPERATOR_ID = operatorId or operatorId is null) " +
           "and (cl.CLIENT_CODE like clientCode or clientCode is null) " +
           "and (ar.REDIRECT_URI like redirectUri or redirectUri is null) " +
+          "and (ar.SESSION_ID like sessionId or sessionId is null) " +
           "and ((hasToken = 0 and (ar.TOKEN_ID like tokenId or tokenId is null)) " +
             "or (hasToken = 1 and ar.TOKEN_ID is not null )) " +
           "and (ar.IS_BLOCKED = isBlocked or isBlocked is null); " +
@@ -83,6 +86,7 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
       dto.setTokenId(rs.getString(TOKEN_ID));
       dto.setTokenDateIns(getTimestamp(rs, TOKEN_DATE_INS));
       dto.setBlocked(getBoolean(rs, IS_BLOCKED));
+      dto.setSessionId(rs.getString(SESSION_ID));
     }
   };
 
@@ -105,10 +109,11 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
       else statement.setNull(7, OracleTypes.INTEGER);
       if (dto.getHasToken() != null) statement.setInt(8, dto.getHasToken() ? 1 : 0);
       else statement.setInt(8, 0);
-      statement.registerOutParameter(9, OracleTypes.CURSOR);
+      statement.setString(9, dto.getSessionId());
+      statement.registerOutParameter(10, OracleTypes.CURSOR);
       statement.executeQuery();
 
-      try (ResultSet rs = (ResultSet) statement.getObject(9)) {
+      try (ResultSet rs = (ResultSet) statement.getObject(10)) {
         while (rs.next()) {
           AuthRequestDto resultDto = new AuthRequestDto();
           mapper.map(rs, resultDto);
@@ -141,10 +146,11 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
       statement.setNull(6, OracleTypes.VARCHAR);
       statement.setNull(7, OracleTypes.INTEGER);
       statement.setInt(8, 0);
-      statement.registerOutParameter(9, OracleTypes.CURSOR);
+      statement.setNull(9, OracleTypes.VARCHAR);
+      statement.registerOutParameter(10, OracleTypes.CURSOR);
       statement.executeQuery();
 
-      try (ResultSet rs = (ResultSet) statement.getObject(9)) {
+      try (ResultSet rs = (ResultSet) statement.getObject(10)) {
         while (rs.next()) {
           AuthRequestDto resultDto = new AuthRequestDto();
           mapper.map(rs, resultDto);
@@ -175,6 +181,7 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
         "operatorId integer := ?;" +
         "tokenId varchar2(50) := ?;" +
         "tokenDateIns date := ?;" +
+        "sessionId varchar2(50) := ?;" +
         "clientCount integer;" +
         "err_num NUMBER;" +
         "err_msg VARCHAR2(100);" +
@@ -183,8 +190,8 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
         "if clientCount <> 1 then " +
           "raise_application_error(-20001, 'Нет клиентского приложения с указанным ID'); " +
         "end if;" +
-        "insert into OA_AUTH_REQUEST(AUTHORIZATION_CODE, REDIRECT_URI, CLIENT_ID, OPERATOR_ID, TOKEN_ID, TOKEN_DATE_INS)" +
-        "values (authCode, redirectUri, (select cl.CLIENT_ID from OA_CLIENT cl where cl.CLIENT_CODE like clientId), operatorId, tokenId, tokenDateIns); " +
+        "insert into OA_AUTH_REQUEST(AUTHORIZATION_CODE, REDIRECT_URI, CLIENT_ID, OPERATOR_ID, TOKEN_ID, TOKEN_DATE_INS, SESSION_ID)" +
+        "values (authCode, redirectUri, (select cl.CLIENT_ID from OA_CLIENT cl where cl.CLIENT_CODE like clientId), operatorId, tokenId, tokenDateIns, sessionId); " +
         "? := OA_AUTH_REQUEST_SEQ.currval;" +
       "exception " +
         "when others then " +
@@ -199,7 +206,7 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
           "raise_application_error(-20150, err_msg); " +
       "end ;";
     CallableStatement insertStatement = db.prepare(insertSqlQuery);
-    Integer result = null;
+    Integer result;
     try {
       insertStatement.setString(1, dto.getAuthorizationCode());
       insertStatement.setString(2, dto.getRedirectUri());
@@ -215,9 +222,10 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
       } else {
         insertStatement.setNull(6, Types.DATE);
       }
-      insertStatement.registerOutParameter(7, OracleTypes.INTEGER);
+      insertStatement.setString(7, dto.getSessionId());
+      insertStatement.registerOutParameter(8, OracleTypes.INTEGER);
       insertStatement.execute();
-      result = (Integer) insertStatement.getObject(7);
+      result = (Integer) insertStatement.getObject(8);
     } catch (SQLException e) {
       e.printStackTrace();
       db.rollback();
@@ -238,7 +246,7 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
     AuthRequestUpdateDto dto = (AuthRequestUpdateDto) record;
     //language=Oracle
     String updateSqlQuery = "UPDATE OA_AUTH_REQUEST t " +
-      "SET OPERATOR_ID = ?, TOKEN_ID = ?, TOKEN_DATE_INS = ?, IS_BLOCKED = ? " +
+      "SET OPERATOR_ID = ?, TOKEN_ID = ?, TOKEN_DATE_INS = ?, IS_BLOCKED = ?, SESSION_ID = ? " +
       "WHERE t.AUTH_REQUEST_ID = ?";
     CallableStatement updateStatement = db.prepare(updateSqlQuery);
     try {
@@ -254,7 +262,8 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
         updateStatement.setNull(3, Types.DATE);
       }
       updateStatement.setInt(4, dto.getBlocked() != null ? (dto.getBlocked() ? 1 : 0) : 0);
-      updateStatement.setInt(5, (Integer) primaryKey.get(AUTH_REQUEST_ID));
+      updateStatement.setString(5, dto.getSessionId());
+      updateStatement.setInt(6, (Integer) primaryKey.get(AUTH_REQUEST_ID));
       int updatedRecordCount = updateStatement.executeUpdate();
       if (updatedRecordCount == 1) {
         db.commit();

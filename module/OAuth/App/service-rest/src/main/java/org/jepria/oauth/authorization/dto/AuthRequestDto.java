@@ -14,6 +14,7 @@ public class AuthRequestDto {
   OptionDto<Integer> operator;
   String operatorLogin;
   String tokenId;
+  String sessionId;
   Date tokenDateIns;
   String redirectUri;
   OptionDto<String> client;
@@ -65,6 +66,14 @@ public class AuthRequestDto {
 
   public void setTokenId(String tokenId) {
     this.tokenId = tokenId;
+  }
+
+  public String getSessionId() {
+    return sessionId;
+  }
+
+  public void setSessionId(String sessionId) {
+    this.sessionId = sessionId;
   }
 
   public Date getTokenDateIns() {

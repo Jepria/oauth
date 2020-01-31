@@ -22,6 +22,15 @@ public class ClientService {
     return ClientServerFactory.getInstance().getDao().getGrantResponseType(grantTypeCodes);
   }
 
+  public List<OptionDto<String>> getClientGrantTypes(String clientId) {
+    return ClientServerFactory.getInstance().getDao().getClientGrantTypes(clientId);
+  }
+
+  public List<OptionDto<String>> getClientResponseTypes(String clientId) {
+    return ClientServerFactory.getInstance().getDao().getClientResponseTypes(clientId);
+  }
+
+  @Deprecated
   public Response create(String requestURL, ClientCreateDto record, Credential credential) {
     if ((ApplicationType.NATIVE.equals(record.getApplicationType())  || ApplicationType.BROWSER.equals(record.getApplicationType())) && !TokenAuthMethod.NONE.equals(record.getTokenAuthMethod())) {
       List<ExceptionMapperValidation.ConstraintViolationDto> violationsDto = new ArrayList<>();

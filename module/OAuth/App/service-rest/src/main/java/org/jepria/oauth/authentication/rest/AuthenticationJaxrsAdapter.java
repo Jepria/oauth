@@ -14,8 +14,10 @@ import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.net.URI;
@@ -31,6 +33,10 @@ import static org.jepria.oauth.sdk.OAuthConstants.*;
 public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
   @Context
   HttpServletRequest request;
+
+  private String getPublicKey() {
+    return request.getServletContext().getInitParameter("org.jepria.auth.jwt.PublicKey");
+  }
 
   private String getPrivateKey() {
     return request.getServletContext().getInitParameter("org.jepria.auth.jwt.PrivateKey");
@@ -56,19 +62,40 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
     Response response = null;
     try {
       if (CODE.equalsIgnoreCase(responseType)) {
-        AuthenticationServerFactory.getInstance().getService().authenticate(authCode, redirectUri, clientId, username, password);
-        response = Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + authCode + "&" + (state != null ? STATE + "=" + state : ""))).build();
+        String sessionToken = AuthenticationServerFactory.getInstance().getService().authenticate(authCode, redirectUri, clientId, username, password, getHostContext(), getPublicKey(), getPrivateKey());
+        response = Response.
+          status(302)
+          .location(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + authCode + "&" + (state != null ? STATE + "=" + state : "")))
+          .cookie(new NewCookie(SESSION_ID,
+            sessionToken,
+            null,
+            null,
+            null,
+            NewCookie.DEFAULT_MAX_AGE,
+            false,
+            true))
+          .build();
       } else if (TOKEN.equalsIgnoreCase(responseType)) {
+        String sessionToken = AuthenticationServerFactory.getInstance().getService().authenticate(authCode, redirectUri, clientId, username, password, getHostContext(), getPublicKey(), getPrivateKey());
         TokenDto tokenDto = AuthenticationServerFactory.getInstance().getService().getToken(getPrivateKey(), getHostContext(), authCode, clientId, redirectUri);
         response = Response.status(302).location(URI.create(redirectUri
-          + "#" + "access_token=" + tokenDto.getAccessToken()
-          + "&token_type=" + tokenDto.getTokenType()
-          + "&expires_in=" + tokenDto.getExpiresIn()
-          + "&" + STATE + "=" + state)).build();
+          + "#" + ACCESS_TOKEN_QUERY_PARAM + tokenDto.getAccessToken()
+          + "&" + TOKEN_TYPE_QUERY_PARAM + tokenDto.getTokenType()
+          + "&" + EXPIRES_IN_QUERY_PARAM + tokenDto.getExpiresIn()
+          + "&" + STATE + "=" + state))
+          .cookie(new NewCookie(SESSION_ID,
+            sessionToken,
+            null,
+            null,
+            null,
+            NewCookie.DEFAULT_MAX_AGE,
+            false,
+            true))
+          .build();
       } else {
         response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR_QUERY_PARAM + UNSUPPORTED_RESPONSE_TYPE)).build();
       }
-    } catch (IllegalStateException | IllegalArgumentException e) {
+    } catch (IllegalStateException e) {
       e.printStackTrace();
       response =  Response.status(302).location(URI.create(redirectUri +
         getSeparator(redirectUri)

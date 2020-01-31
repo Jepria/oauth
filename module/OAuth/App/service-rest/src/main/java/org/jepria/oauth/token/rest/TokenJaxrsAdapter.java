@@ -1,8 +1,8 @@
 package org.jepria.oauth.token.rest;
 
+import org.jepria.oauth.main.security.AllowAllOrigin;
 import org.jepria.oauth.main.security.WithClientCredentials;
 import org.jepria.oauth.token.TokenServerFactory;
-import org.jepria.oauth.token.TokenService;
 import org.jepria.oauth.token.dto.TokenDto;
 import org.jepria.oauth.token.dto.TokenInfoDto;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
@@ -17,7 +17,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.net.URI;
-import java.util.Base64;
 import java.util.NoSuchElementException;
 
 /**
@@ -47,6 +46,7 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
   @POST
   @Path("/token")
   @WithClientCredentials
+  @AllowAllOrigin
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   public Response createToken(
     @FormParam("grant_type") String grantType,
@@ -72,6 +72,7 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
   @Path("/tokeninfo")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   @WithClientCredentials
+  @AllowAllOrigin
   public TokenInfoDto getTokenInfo(@FormParam("token") String token) {
     return TokenServerFactory.getInstance().getService().getTokenInfo(getPublicKey(), getHostContext(), token);
   }
@@ -80,6 +81,7 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
   @Path("/token/revoke")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   @WithClientCredentials
+  @AllowAllOrigin
   public Response revokeToken(@FormParam("token") String token, @FormParam("redirect_uri") String redirectUri) {
     return TokenServerFactory.getInstance().getService().revokeToken(securityContext.getUserPrincipal().getName(), token, redirectUri);
   }

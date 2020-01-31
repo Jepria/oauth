@@ -7,6 +7,7 @@ public class AuthRequestUpdateDto {
   Integer operatorId;
   String tokenId;
   Date tokenDateIns;
+  String sessionId;
   Boolean isBlocked;
 
   public Integer getAuthRequestId() {
@@ -39,6 +40,14 @@ public class AuthRequestUpdateDto {
 
   public void setTokenDateIns(Date tokenDateIns) {
     this.tokenDateIns = tokenDateIns;
+  }
+
+  public String getSessionId() {
+    return sessionId;
+  }
+
+  public void setSessionId(String sessionId) {
+    this.sessionId = sessionId;
   }
 
   public Boolean getBlocked() {

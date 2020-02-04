@@ -41,13 +41,23 @@ public class TokenService {
     }
   }
 
-  private void updateAuthRequest(Integer authRequestId, Integer operatorId, String tokenId, Date tokenDateIns, String sessionId) {
+  private void updateAuthRequest(Integer authRequestId,
+                                 Integer operatorId,
+                                 String accessTokenId,
+                                 Date accessTokenDateIns,
+                                 Date accessTokenDateFinish,
+                                 String sessionTokenId,
+                                 Date sessionTokenDateIns,
+                                 Date sessionTokenDateFinish) {
     AuthRequestUpdateDto updateDto = new AuthRequestUpdateDto();
     updateDto.setAuthRequestId(authRequestId);
     updateDto.setOperatorId(operatorId);
-    updateDto.setTokenId(tokenId);
-    updateDto.setTokenDateIns(tokenDateIns);
-    updateDto.setSessionId(sessionId);
+    updateDto.setAccessTokenId(accessTokenId);
+    updateDto.setAccessTokenDateIns(accessTokenDateIns);
+    updateDto.setAccessTokenDateFinish(accessTokenDateFinish);
+    updateDto.setSessionTokenId(sessionTokenId);
+    updateDto.setSessionTokenDateIns(sessionTokenDateIns);
+    updateDto.setSessionTokenDateFinish(sessionTokenDateFinish);
     AuthorizationServerFactory.getInstance().getService().update(updateDto);
   }
 
@@ -114,7 +124,7 @@ public class TokenService {
     if (TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - authRequest.getDateIns().getTime()) > 10) {
       throw new IllegalStateException("Authorization code active time has expired.");
     }
-    if (authRequest.getTokenId() != null) {
+    if (authRequest.getAccessTokenId() != null) {
       throw new IllegalStateException("Request is finished.");
     }
     Token token = generateToken(authRequest.getOperatorLogin(), null, authRequest.getOperator().getValue(), host, privateKeyString, 1);
@@ -122,7 +132,14 @@ public class TokenService {
     tokenDto.setAccessToken(token.asString());
     tokenDto.setExpiresIn(3600); // 1 hour active time
     tokenDto.setTokenType("Bearer");
-    updateAuthRequest(authRequest.getAuthRequestId(), authRequest.getOperator().getValue(), token.getJti(), new Date(), authRequest.getSessionId());
+    updateAuthRequest(authRequest.getAuthRequestId(),
+      authRequest.getOperator().getValue(),
+      token.getJti(),
+      token.getIssueTime(),
+      token.getExpirationTime(),
+      authRequest.getSessionTokenId(),
+      authRequest.getSessionTokenDateIns(),
+      authRequest.getSessionTokenDateFinish());
     return tokenDto;
   }
 
@@ -149,7 +166,7 @@ public class TokenService {
     if (TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - authRequest.getDateIns().getTime()) > 10) {
       throw new IllegalStateException("Authorization code active time has expired.");
     }
-    if (authRequest.getTokenId() != null) {
+    if (authRequest.getAccessTokenId() != null) {
       throw new IllegalStateException("Request is finished.");
     }
     Token token = generateToken(authRequest.getOperatorLogin(), null, authRequest.getOperator().getValue(), host, privateKeyString, 4);
@@ -157,7 +174,14 @@ public class TokenService {
     tokenDto.setAccessToken(token.asString());
     tokenDto.setExpiresIn(14400); // 4 hours active time
     tokenDto.setTokenType("Bearer");
-    updateAuthRequest(authRequest.getAuthRequestId(), authRequest.getOperator().getValue(), token.getJti(), new Date(), authRequest.getSessionId());
+    updateAuthRequest(authRequest.getAuthRequestId(),
+      authRequest.getOperator().getValue(),
+      token.getJti(),
+      token.getIssueTime(),
+      token.getExpirationTime(),
+      authRequest.getSessionTokenId(),
+      authRequest.getSessionTokenDateIns(),
+      authRequest.getSessionTokenDateFinish());
     return tokenDto;
   }
 
@@ -185,8 +209,9 @@ public class TokenService {
       createDto.setAuthorizationCode(AuthorizationServerFactory.getInstance().getService().generateCode());
       createDto.setClientId(clientId);
       createDto.setOperatorId(operatorId);
-      createDto.setTokenId(token.getJti());
-      createDto.setTokenDateIns(new Date());
+      createDto.setAccessTokenId(token.getJti());
+      createDto.setAccessTokenDateIns(token.getIssueTime());
+      createDto.setAccessTokenDateFinish(token.getExpirationTime());
       AuthorizationServerFactory.getInstance().getService().create(createDto);
 
       result = tokenDto;
@@ -285,7 +310,6 @@ public class TokenService {
       String tokenId = Base64.getUrlEncoder().encodeToString(cryptoProvider.digest());
       /**
        * Create token with JWT lib
-       * TODO решить как задавать audience, возможно конкретное приложение, и пересоздавать токен
        * TODO пересмотреть концепцию передачи данных пользователя
        */
       Token token = new TokenImpl(tokenId, audience != null ? audience : Collections.singletonList("RFInfo"),username + ":" + userId,

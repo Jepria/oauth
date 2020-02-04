@@ -30,7 +30,7 @@ import static org.jepria.oauth.sdk.OAuthConstants.UNSUPPORTED_RESPONSE_TYPE;
 
 public class AuthorizationService {
 
-  public AuthRequestDto authorize(String responseType, String clientId, String redirectUri) {
+  public AuthRequestDto authorize(String responseType, String clientId, String redirectUri, String codeChallenge) {
       if (!ResponseType.implies(responseType)) {
       throw new HandledRuntimeException(UNSUPPORTED_RESPONSE_TYPE);
     }
@@ -44,6 +44,7 @@ public class AuthorizationService {
     authRequestDto.setAuthorizationCode(generateCode());
     authRequestDto.setClientId(clientId);
     authRequestDto.setRedirectUri(redirectUri);
+    authRequestDto.setCodeChallenge(codeChallenge);
     try {
       List<AuthRequestDto> authRequestList = (List<AuthRequestDto>) AuthorizationServerFactory.getInstance().getDao().findByPrimaryKey(new HashMap<String, Integer>() {{
         put(AUTH_REQUEST_ID, (create(authRequestDto)));
@@ -61,18 +62,7 @@ public class AuthorizationService {
     }
   }
 
-  /**
-   *
-   * @param responseType
-   * @param clientId
-   * @param redirectUri
-   * @param sessionToken
-   * @param issuer
-   * @param publicKey
-   * @param privateKey
-   * @return
-   */
-  public AuthRequestDto authorize(String responseType, String clientId, String redirectUri, String sessionToken, String issuer, String publicKey, String privateKey) {
+  public AuthRequestDto authorize(String responseType, String clientId, String redirectUri, String codeChallenge, String sessionToken, String issuer, String publicKey, String privateKey) {
     if (!ResponseType.implies(responseType)) {
       throw new HandledRuntimeException(UNSUPPORTED_RESPONSE_TYPE);
     }
@@ -92,13 +82,16 @@ public class AuthorizationService {
         authRequestDto.setClientId(clientId);
         authRequestDto.setRedirectUri(redirectUri);
         authRequestDto.setOperatorId(Integer.valueOf(subject[1]));
-        authRequestDto.setSessionId(token.getJti());
+        authRequestDto.setSessionTokenId(token.getJti());
+        authRequestDto.setSessionTokenDateIns(token.getIssueTime());
+        authRequestDto.setSessionTokenDateFinish(token.getExpirationTime());
+        authRequestDto.setCodeChallenge(codeChallenge);
         List<AuthRequestDto> authRequestList = (List<AuthRequestDto>) AuthorizationServerFactory.getInstance().getDao().findByPrimaryKey(new HashMap<String, Integer>() {{
           put(AUTH_REQUEST_ID, (create(authRequestDto)));
         }}, 1);
         return authRequestList.get(0);
       } else {
-        return authorize(responseType, clientId, redirectUri);
+        return authorize(responseType, clientId, redirectUri, codeChallenge);
       }
     } catch (RuntimeSQLException ex) {
       SQLException sqlException = ex.getSQLException();
@@ -111,7 +104,7 @@ public class AuthorizationService {
       throw new RuntimeSQLException(sqlException);
     } catch (Throwable th) {
       th.printStackTrace();
-      return authorize(responseType, clientId, redirectUri);
+      return authorize(responseType, clientId, redirectUri, codeChallenge);
     }
   }
 

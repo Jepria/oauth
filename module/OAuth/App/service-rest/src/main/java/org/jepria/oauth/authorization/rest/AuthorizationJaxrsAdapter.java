@@ -73,6 +73,7 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
   public Response authorize(@QueryParam("response_type") String responseType,
                             @QueryParam("client_id") String clientId,
                             @QueryParam("redirect_uri") String redirectUriEncoded,
+                            @QueryParam("code_challenge") String codeChallenge,
                             @QueryParam("state") String state,
                             @CookieParam(SESSION_ID) String sessionToken) {
     String redirectUri = new String(Base64.getUrlDecoder().decode(redirectUriEncoded));
@@ -84,13 +85,23 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
     try {
       AuthRequestDto authRequest;
       if (sessionToken != null) {
-        authRequest = AuthorizationServerFactory.getInstance().getService().authorize(responseType, clientId, redirectUri, sessionToken, getHostContext(), getPublicKey(), getPrivateKey());
-        response = Response.
-          status(302)
-          .location(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + authRequest.getAuthorizationCode() + "&" + (state != null ? STATE + "=" + state : "")))
-          .build();
+        authRequest = AuthorizationServerFactory.getInstance().getService().authorize(responseType, clientId, redirectUri, codeChallenge, sessionToken, getHostContext(), getPublicKey(), getPrivateKey());
+        if (authRequest.getOperator() != null) {
+          response = Response.
+            status(302)
+            .location(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + authRequest.getAuthorizationCode() + "&" + (state != null ? STATE + "=" + state : "")))
+            .build();
+        } else {
+          response = Response.status(302).location(new URI("/oauth/login/?"
+            + RESPONSE_TYPE + "=" + CODE
+            + "&" + CODE + "=" + authRequest.getAuthorizationCode()
+            + "&" + REDIRECT_URI + "=" + redirectUriEncoded
+            + "&" + CLIENT_ID + "=" + authRequest.getClient().getValue()
+            + "&" + CLIENT_NAME + "=" + authRequest.getClient().getName()
+            + "&" + STATE + "=" + state)).build();
+        }
       } else {
-        authRequest = AuthorizationServerFactory.getInstance().getService().authorize(responseType, clientId, redirectUri);
+        authRequest = AuthorizationServerFactory.getInstance().getService().authorize(responseType, clientId, redirectUri, codeChallenge);
         response = Response.status(302).location(new URI("/oauth/login/?"
           + RESPONSE_TYPE + "=" + CODE
           + "&" + CODE + "=" + authRequest.getAuthorizationCode()

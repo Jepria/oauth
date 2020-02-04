@@ -31,7 +31,7 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
       "operatorId integer := ?;" +
       "clientCode varchar2(32) := ?;" +
       "redirectUri varchar2(4000) := ?;" +
-      "tokenId varchar2(64) := ?;" +
+      "accessTokenId varchar2(64) := ?;" +
       "isBlocked integer := ?;" +
       "hasToken integer := ?;" +
       "sessionId varchar2(64) := ?;" +
@@ -43,12 +43,16 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
           "ar.REDIRECT_URI," +
           "ar.AUTHORIZATION_CODE," +
           "ar.DATE_INS," +
-          "ar.SESSION_ID," +
-          "ar.TOKEN_ID," +
-          "ar.TOKEN_DATE_INS," +
+          "ar.SESSION_TOKEN_ID," +
+          "ar.SESSION_TOKEN_DATE_INS," +
+          "ar.ACCESS_TOKEN_ID," +
+          "ar.ACCESS_TOKEN_DATE_INS," +
+          "ar.REFRESH_TOKEN_ID," +
+          "ar.REFRESH_TOKEN_DATE_INS," +
           "ar.OPERATOR_ID," +
           "op.OPERATOR_NAME," +
           "op.LOGIN as OPERATOR_LOGIN," +
+          "ar.CODE_CHALLENGE," +
           "ar.IS_BLOCKED " +
         "from OA_AUTH_REQUEST ar " +
           "left join OP_OPERATOR op on ar.OPERATOR_ID = op.OPERATOR_ID  " +
@@ -59,9 +63,9 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
           "and (ar.OPERATOR_ID = operatorId or operatorId is null) " +
           "and (cl.CLIENT_CODE like clientCode or clientCode is null) " +
           "and (ar.REDIRECT_URI like redirectUri or redirectUri is null) " +
-          "and (ar.SESSION_ID like sessionId or sessionId is null) " +
-          "and ((hasToken = 0 and (ar.TOKEN_ID like tokenId or tokenId is null)) " +
-            "or (hasToken = 1 and ar.TOKEN_ID is not null )) " +
+          "and (ar.SESSION_TOKEN_ID like sessionId or sessionId is null) " +
+          "and ((hasToken = 0 and (ar.ACCESS_TOKEN_ID like accessTokenId or accessTokenId is null)) " +
+            "or (hasToken = 1 and ar.ACCESS_TOKEN_ID is not null)) " +
           "and (ar.IS_BLOCKED = isBlocked or isBlocked is null); " +
       "? := rc; " +
     "end;";
@@ -77,16 +81,20 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
       OptionDto<Integer> operator = new OptionDto<>();
       operator.setName(rs.getString(OPERATOR_NAME));
       operator.setValue(getInteger(rs, OPERATOR_ID));
-      dto.setOperator(operator);
+      dto.setOperator(operator.getValue() != null ? operator : null);
       dto.setOperatorLogin(rs.getString(OPERATOR_LOGIN));
       OptionDto<String> client = new OptionDto<>();
       client.setValue(rs.getString(CLIENT_ID));
       client.setName(rs.getString(CLIENT_NAME));
       dto.setClient(client);
-      dto.setTokenId(rs.getString(TOKEN_ID));
-      dto.setTokenDateIns(getTimestamp(rs, TOKEN_DATE_INS));
+      dto.setAccessTokenId(rs.getString(ACCESS_TOKEN_ID));
+      dto.setAccessTokenDateIns(getTimestamp(rs, ACCESS_TOKEN_DATE_INS));
       dto.setBlocked(getBoolean(rs, IS_BLOCKED));
-      dto.setSessionId(rs.getString(SESSION_ID));
+      dto.setSessionTokenId(rs.getString(SESSION_TOKEN_ID));
+      dto.setSessionTokenDateIns(getTimestamp(rs, SESSION_TOKEN_DATE_INS));
+      dto.setRefreshTokenId(rs.getString(REFRESH_TOKEN_ID));
+      dto.setRefreshTokenDateIns(getTimestamp(rs, REFRESH_TOKEN_DATE_INS));
+      dto.setCodeChallenge(rs.getString(CODE_CHALLENGE));
     }
   };
 
@@ -179,9 +187,16 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
         "redirectUri varchar2(4000) := ?;" +
         "clientId varchar(32) := ?;" +
         "operatorId integer := ?;" +
-        "tokenId varchar2(50) := ?;" +
-        "tokenDateIns date := ?;" +
+        "accessTokenId varchar2(50) := ?;" +
+        "accessTokenDateIns date := ?;" +
+        "accessTokenDateFinish date := ?;" +
         "sessionId varchar2(50) := ?;" +
+        "sessionDateIns date := ?;" +
+        "sessionDateFinish date := ?;" +
+        "refreshTokenId varchar2(50) := ?;" +
+        "refreshTokenDateIns date := ?;" +
+        "refreshTokenDateFinish date := ?;" +
+        "codeChallenge varchar2(128) := ?;" +
         "clientCount integer;" +
         "err_num NUMBER;" +
         "err_msg VARCHAR2(100);" +
@@ -190,8 +205,36 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
         "if clientCount <> 1 then " +
           "raise_application_error(-20001, 'Нет клиентского приложения с указанным ID'); " +
         "end if;" +
-        "insert into OA_AUTH_REQUEST(AUTHORIZATION_CODE, REDIRECT_URI, CLIENT_ID, OPERATOR_ID, TOKEN_ID, TOKEN_DATE_INS, SESSION_ID)" +
-        "values (authCode, redirectUri, (select cl.CLIENT_ID from OA_CLIENT cl where cl.CLIENT_CODE like clientId), operatorId, tokenId, tokenDateIns, sessionId); " +
+        "insert into OA_AUTH_REQUEST(" +
+          "AUTHORIZATION_CODE, " +
+          "REDIRECT_URI, " +
+          "CLIENT_ID, " +
+          "OPERATOR_ID, " +
+          "ACCESS_TOKEN_ID, " +
+          "ACCESS_TOKEN_DATE_INS, " +
+          "ACCESS_TOKEN_DATE_FINISH, " +
+          "SESSION_TOKEN_ID," +
+          "SESSION_TOKEN_DATE_INS, " +
+          "SESSION_TOKEN_DATE_FINISH, " +
+          "REFRESH_TOKEN_ID, " +
+          "REFRESH_TOKEN_DATE_INS, " +
+          "REFRESH_TOKEN_DATE_FINISH, " +
+          "CODE_CHALLENGE)" +
+        "values (" +
+          "authCode, " +
+          "redirectUri, " +
+          "(select cl.CLIENT_ID from OA_CLIENT cl where cl.CLIENT_CODE like clientId), " +
+          "operatorId, " +
+          "accessTokenId, " +
+          "accessTokenDateIns, " +
+          "accessTokenDateFinish, " +
+          "sessionId, " +
+          "sessionDateIns, " +
+          "sessionDateFinish, " +
+          "refreshTokenId, " +
+          "refreshTokenDateIns, " +
+          "refreshTokenDateFinish, " +
+          "codeChallenge); " +
         "? := OA_AUTH_REQUEST_SEQ.currval;" +
       "exception " +
         "when others then " +
@@ -214,18 +257,45 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
       if (dto.getOperatorId() != null) {
         insertStatement.setInt(4, dto.getOperatorId());
       } else {
-        insertStatement.setNull(4, java.sql.Types.INTEGER);
+        insertStatement.setNull(4, Types.INTEGER);
       }
-      insertStatement.setString(5, dto.getTokenId());
-      if (dto.getTokenDateIns() != null) {
-        insertStatement.setDate(6, new Date(dto.getTokenDateIns().getTime()));
+      insertStatement.setString(5, dto.getAccessTokenId());
+      if (dto.getAccessTokenDateIns() != null) {
+        insertStatement.setTimestamp(6, new Timestamp(dto.getAccessTokenDateIns().getTime()));
       } else {
         insertStatement.setNull(6, Types.DATE);
       }
-      insertStatement.setString(7, dto.getSessionId());
-      insertStatement.registerOutParameter(8, OracleTypes.INTEGER);
+      if (dto.getAccessTokenDateFinish() != null) {
+        insertStatement.setTimestamp(7, new Timestamp(dto.getAccessTokenDateFinish().getTime()));
+      } else {
+        insertStatement.setNull(7, Types.DATE);
+      }
+      insertStatement.setString(8, dto.getSessionTokenId());
+      if (dto.getSessionTokenDateIns() != null) {
+        insertStatement.setTimestamp(9, new Timestamp(dto.getSessionTokenDateIns().getTime()));
+      } else {
+        insertStatement.setNull(9, Types.DATE);
+      }
+      if (dto.getSessionTokenDateFinish() != null) {
+        insertStatement.setTimestamp(10, new Timestamp(dto.getSessionTokenDateFinish().getTime()));
+      } else {
+        insertStatement.setNull(10, Types.DATE);
+      }
+      insertStatement.setString(11, dto.getRefreshTokenId());
+      if (dto.getRefreshTokenDateIns() != null) {
+        insertStatement.setTimestamp(12, new Timestamp(dto.getRefreshTokenDateIns().getTime()));
+      } else {
+        insertStatement.setNull(12, Types.DATE);
+      }
+      if (dto.getRefreshTokenDateFinish() != null) {
+        insertStatement.setTimestamp(13, new Timestamp(dto.getRefreshTokenDateFinish().getTime()));
+      } else {
+        insertStatement.setNull(13, Types.DATE);
+      }
+      insertStatement.setString(14, dto.getCodeChallenge());
+      insertStatement.registerOutParameter(15, OracleTypes.INTEGER);
       insertStatement.execute();
-      result = (Integer) insertStatement.getObject(8);
+      result = (Integer) insertStatement.getObject(15);
     } catch (SQLException e) {
       e.printStackTrace();
       db.rollback();
@@ -246,24 +316,61 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
     AuthRequestUpdateDto dto = (AuthRequestUpdateDto) record;
     //language=Oracle
     String updateSqlQuery = "UPDATE OA_AUTH_REQUEST t " +
-      "SET OPERATOR_ID = ?, TOKEN_ID = ?, TOKEN_DATE_INS = ?, IS_BLOCKED = ?, SESSION_ID = ? " +
+      "SET " +
+        "OPERATOR_ID = ?, " +
+        "ACCESS_TOKEN_ID = ?, " +
+        "ACCESS_TOKEN_DATE_INS = ?, " +
+        "ACCESS_TOKEN_DATE_FINISH = ?, " +
+        "SESSION_TOKEN_ID = ?," +
+        "SESSION_TOKEN_DATE_INS = ?, " +
+        "SESSION_TOKEN_DATE_FINISH = ?, " +
+        "REFRESH_TOKEN_ID = ?, " +
+        "REFRESH_TOKEN_DATE_INS = ?, " +
+        "REFRESH_TOKEN_DATE_FINISH = ?, " +
+        "IS_BLOCKED = ? " +
       "WHERE t.AUTH_REQUEST_ID = ?";
     CallableStatement updateStatement = db.prepare(updateSqlQuery);
     try {
       if (dto.getOperatorId() != null) {
         updateStatement.setInt(1, dto.getOperatorId());
       } else {
-        updateStatement.setNull(1, java.sql.Types.INTEGER);
+        updateStatement.setNull(1, Types.INTEGER);
       }
-      updateStatement.setString(2, dto.getTokenId());
-      if (dto.getTokenDateIns() != null) {
-        updateStatement.setDate(3, new Date(dto.getTokenDateIns().getTime()));
+      updateStatement.setString(2, dto.getAccessTokenId());
+      if (dto.getAccessTokenDateIns() != null) {
+        updateStatement.setTimestamp(3, new Timestamp(dto.getAccessTokenDateIns().getTime()));
       } else {
         updateStatement.setNull(3, Types.DATE);
       }
-      updateStatement.setInt(4, dto.getBlocked() != null ? (dto.getBlocked() ? 1 : 0) : 0);
-      updateStatement.setString(5, dto.getSessionId());
-      updateStatement.setInt(6, (Integer) primaryKey.get(AUTH_REQUEST_ID));
+      if (dto.getAccessTokenDateFinish() != null) {
+        updateStatement.setTimestamp(4, new Timestamp(dto.getAccessTokenDateFinish().getTime()));
+      } else {
+        updateStatement.setNull(4, Types.DATE);
+      }
+      updateStatement.setString(5, dto.getSessionTokenId());
+      if (dto.getSessionTokenDateIns() != null) {
+        updateStatement.setTimestamp(6, new Timestamp(dto.getSessionTokenDateIns().getTime()));
+      } else {
+        updateStatement.setNull(6, Types.DATE);
+      }
+      if (dto.getSessionTokenDateFinish() != null) {
+        updateStatement.setTimestamp(7, new Timestamp(dto.getSessionTokenDateFinish().getTime()));
+      } else {
+        updateStatement.setNull(7, Types.DATE);
+      }
+      updateStatement.setString(8, dto.getRefreshTokenId());
+      if (dto.getRefreshTokenDateIns() != null) {
+        updateStatement.setTimestamp(9, new Timestamp(dto.getRefreshTokenDateIns().getTime()));
+      } else {
+        updateStatement.setNull(9, Types.DATE);
+      }
+      if (dto.getRefreshTokenDateFinish() != null) {
+        updateStatement.setTimestamp(10, new Timestamp(dto.getRefreshTokenDateFinish().getTime()));
+      } else {
+        updateStatement.setNull(10, Types.DATE);
+      }
+      updateStatement.setInt(11, dto.getBlocked() != null ? (dto.getBlocked() ? 1 : 0) : 0);
+      updateStatement.setInt(12, (Integer) primaryKey.get(AUTH_REQUEST_ID));
       int updatedRecordCount = updateStatement.executeUpdate();
       if (updatedRecordCount == 1) {
         db.commit();

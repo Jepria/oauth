@@ -54,7 +54,8 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
     @FormParam("redirect_uri") String redirectUri,
     @FormParam("code") String authCode,
     @FormParam("username") String username,
-    @FormParam("password") String password) {
+    @FormParam("password") String password,
+    @FormParam("code_verifier") String codeVerifier) {
     Response response = null;
     try {
       TokenDto result = TokenServerFactory.getInstance().getService().create(grantType, getPrivateKey(), getHostContext(), authCode, clientId, redirectUri, username, password);

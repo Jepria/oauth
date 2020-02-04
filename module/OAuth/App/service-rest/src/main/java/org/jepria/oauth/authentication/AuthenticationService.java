@@ -64,15 +64,15 @@ public class AuthenticationService {
       if (authRequest == null || TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - authRequest.getDateIns().getTime()) > 10) {
         throw new IllegalStateException("Authorization code not found or has expired");
       }
-      if (authRequest.getOperator().getValue() != null) {
+      if (authRequest.getOperator() != null) {
         throw new IllegalStateException("Request has already passed authentication");
       }
-      if (authRequest.getTokenId() != null) {
+      if (authRequest.getAccessTokenId() != null) {
         throw new IllegalStateException("Request is finished");
       }
       Integer operatorId = loginByPassword(username, password);
       final Token sessionToken = generateSessionToken(username, operatorId, host, publicKey, privateKey, null);
-      updateAuthRequest(authRequest.getAuthRequestId(), operatorId, sessionToken.getJti());
+      updateAuthRequest(authRequest.getAuthRequestId(), operatorId, sessionToken.getJti(), sessionToken.getIssueTime(), sessionToken.getExpirationTime());
       return sessionToken.asString();
   }
 
@@ -80,10 +80,12 @@ public class AuthenticationService {
     return TokenServerFactory.getInstance().getService().createTokenForImplicitGrant(privateKey, host, authCode, clientId, redirectUri);
   }
 
-  private void updateAuthRequest(Integer authRequestId, Integer operatorId, String sessionId) {
+  private void updateAuthRequest(Integer authRequestId, Integer operatorId, String sessionId, Date sessionDateIns, Date sessionDateFinish) {
     AuthRequestUpdateDto updateDto = new AuthRequestUpdateDto();
     updateDto.setOperatorId(operatorId);
-    updateDto.setSessionId(sessionId);
+    updateDto.setSessionTokenId(sessionId);
+    updateDto.setSessionTokenDateIns(sessionDateIns);
+    updateDto.setSessionTokenDateFinish(sessionDateFinish);
     AuthorizationServerFactory.getInstance().getDao().update(new HashMap<String, Integer>(){{
       put(AUTH_REQUEST_ID, authRequestId);
     }}, updateDto, 1);

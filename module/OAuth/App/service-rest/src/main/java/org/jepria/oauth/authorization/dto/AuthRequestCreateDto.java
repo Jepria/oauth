@@ -8,9 +8,16 @@ public class AuthRequestCreateDto {
   String redirectUri;
   String clientId;
   Integer operatorId;
-  String tokenId;
-  String sessionId;
-  Date tokenDateIns;
+  String accessTokenId;
+  Date accessTokenDateIns;
+  Date accessTokenDateFinish;
+  String sessionTokenId;
+  Date sessionTokenDateIns;
+  Date sessionTokenDateFinish;
+  String refreshTokenId;
+  Date refreshTokenDateIns;
+  Date refreshTokenDateFinish;
+  String codeChallenge;
 
   public String getAuthorizationCode() {
     return authorizationCode;
@@ -44,27 +51,83 @@ public class AuthRequestCreateDto {
     this.operatorId = operatorId;
   }
 
-  public String getTokenId() {
-    return tokenId;
+  public String getAccessTokenId() {
+    return accessTokenId;
   }
 
-  public void setTokenId(String tokenId) {
-    this.tokenId = tokenId;
+  public void setAccessTokenId(String accessTokenId) {
+    this.accessTokenId = accessTokenId;
   }
 
-  public String getSessionId() {
-    return sessionId;
+  public Date getAccessTokenDateIns() {
+    return accessTokenDateIns;
   }
 
-  public void setSessionId(String sessionId) {
-    this.sessionId = sessionId;
+  public void setAccessTokenDateIns(Date accessTokenDateIns) {
+    this.accessTokenDateIns = accessTokenDateIns;
   }
 
-  public Date getTokenDateIns() {
-    return tokenDateIns;
+  public Date getAccessTokenDateFinish() {
+    return accessTokenDateFinish;
   }
 
-  public void setTokenDateIns(Date tokenDateIns) {
-    this.tokenDateIns = tokenDateIns;
+  public void setAccessTokenDateFinish(Date accessTokenDateFinish) {
+    this.accessTokenDateFinish = accessTokenDateFinish;
+  }
+
+  public String getSessionTokenId() {
+    return sessionTokenId;
+  }
+
+  public void setSessionTokenId(String sessionTokenId) {
+    this.sessionTokenId = sessionTokenId;
+  }
+
+  public Date getSessionTokenDateIns() {
+    return sessionTokenDateIns;
+  }
+
+  public void setSessionTokenDateIns(Date sessionTokenDateIns) {
+    this.sessionTokenDateIns = sessionTokenDateIns;
+  }
+
+  public Date getSessionTokenDateFinish() {
+    return sessionTokenDateFinish;
+  }
+
+  public void setSessionTokenDateFinish(Date sessionTokenDateFinish) {
+    this.sessionTokenDateFinish = sessionTokenDateFinish;
+  }
+
+  public String getRefreshTokenId() {
+    return refreshTokenId;
+  }
+
+  public void setRefreshTokenId(String refreshTokenId) {
+    this.refreshTokenId = refreshTokenId;
+  }
+
+  public Date getRefreshTokenDateIns() {
+    return refreshTokenDateIns;
+  }
+
+  public void setRefreshTokenDateIns(Date refreshTokenDateIns) {
+    this.refreshTokenDateIns = refreshTokenDateIns;
+  }
+
+  public Date getRefreshTokenDateFinish() {
+    return refreshTokenDateFinish;
+  }
+
+  public void setRefreshTokenDateFinish(Date refreshTokenDateFinish) {
+    this.refreshTokenDateFinish = refreshTokenDateFinish;
+  }
+
+  public String getCodeChallenge() {
+    return codeChallenge;
+  }
+
+  public void setCodeChallenge(String codeChallenge) {
+    this.codeChallenge = codeChallenge;
   }
 }

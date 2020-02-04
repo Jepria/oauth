@@ -2,6 +2,9 @@ package org.jepria.oauth.main.security;
 
 import org.glassfish.jersey.message.internal.ReaderWriter;
 import org.glassfish.jersey.server.ContainerException;
+import org.jepria.oauth.authorization.AuthorizationServerFactory;
+import org.jepria.oauth.authorization.dto.AuthRequestDto;
+import org.jepria.oauth.authorization.dto.AuthRequestSearchDtoLocal;
 import org.jepria.oauth.client.ClientServerFactory;
 import org.jepria.oauth.client.dao.ClientDao;
 import org.jepria.oauth.client.dto.ClientDto;
@@ -21,10 +24,14 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+
+import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 /**
  * Client credentials based authentication filter
@@ -52,9 +59,21 @@ public final class ClientCredentialsRequestFilter implements ContainerRequestFil
     }
   }
 
+  private AuthRequestDto getRequestDto(String authCode) {
+    AuthRequestSearchDtoLocal searchDto = new AuthRequestSearchDtoLocal();
+    searchDto.setAuthorizationCode(authCode);
+    List<AuthRequestDto> result = (List<AuthRequestDto>) AuthorizationServerFactory.getInstance().getDao().find(searchDto, 1);
+    if (result.size() == 1) {
+      AuthRequestDto client = result.get(0);
+      return client;
+    } else {
+      return null;
+    }
+  }
+
   private boolean verifyCredentials(ContainerRequestContext requestContext) {
     String authString = requestContext.getHeaderString("authorization");
-    boolean result;
+    boolean result = false;
     if (authString != null) {
       authString = authString.replaceFirst("[Bb]asic ", "");
       String[] credentials = new String(Base64.getUrlDecoder().decode(authString)).split(":");
@@ -73,23 +92,31 @@ public final class ClientCredentialsRequestFilter implements ContainerRequestFil
         ReaderWriter.writeTo(in, out);
         byte[] requestEntity = out.toByteArray();
         Map<String, String> parameters = URIUtil.parseParameters(new String(requestEntity), null);
-        ClientDto client = getClient(parameters.get("client_id"));
-        if (client != null) {
-          if (BODY.equals(client.getTokenAuthMethod().getValue())) {
-            result = client.getClientSecret().equals(parameters.get("client_secret"));
-          } else if (NONE.equals(client.getTokenAuthMethod().getValue())) {
-            result = true;
+        if (parameters.get(CLIENT_ID) != null && parameters.get(CLIENT_SECRET) != null) {
+          ClientDto client = getClient(parameters.get(CLIENT_ID));
+          if (client != null) {
+            if (BODY.equals(client.getTokenAuthMethod().getValue())) {
+              result = client.getClientSecret().equals(parameters.get(CLIENT_SECRET));
+            } else if (NONE.equals(client.getTokenAuthMethod().getValue())) {
+              result = true;
+            }
           } else {
             result = false;
           }
         } else {
-          result = false;
+          AuthRequestDto authRequest = getRequestDto(parameters.get(CODE));
+          if (authRequest == null || authRequest.getCodeChallenge() == null || parameters.get("code_verifier") == null) {
+            result = false;
+          } else {
+            MessageDigest cryptoProvider = MessageDigest.getInstance("SHA-256");
+            result = authRequest.getCodeChallenge().equals(Base64.getUrlEncoder().withoutPadding().encodeToString(cryptoProvider.digest(parameters.get("code_verifier").getBytes())));
+          }
         }
         if (result) {
-          requestContext.setSecurityContext(new ClientSecurityContext(parameters.get("client_id")));
+          requestContext.setSecurityContext(new ClientSecurityContext(parameters.get(CLIENT_ID)));
         }
         requestContext.setEntityStream(new ByteArrayInputStream(requestEntity));
-      } catch (IOException ex) {
+      } catch (IOException | NoSuchAlgorithmException ex) {
         throw new ContainerException(ex);
       }
     }

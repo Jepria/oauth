@@ -4,26 +4,22 @@ import org.jepria.oauth.authorization.AuthorizationServerFactory;
 import org.jepria.oauth.authorization.dto.AuthRequestDto;
 import org.jepria.oauth.authorization.dto.AuthRequestSearchDtoLocal;
 import org.jepria.oauth.authorization.dto.AuthRequestUpdateDto;
-import org.jepria.oauth.sdk.GrantType;
-import org.jepria.oauth.sdk.token.EncryptorRSA;
-import org.jepria.oauth.sdk.token.SignerRSA;
+import org.jepria.oauth.sdk.token.rsa.EncryptorRSA;
+import org.jepria.oauth.sdk.token.rsa.SignerRSA;
 import org.jepria.oauth.sdk.token.TokenImpl;
-import org.jepria.oauth.sdk.token.interfaces.Encryptor;
-import org.jepria.oauth.sdk.token.interfaces.Signer;
-import org.jepria.oauth.sdk.token.interfaces.Token;
+import org.jepria.oauth.sdk.token.Encryptor;
+import org.jepria.oauth.sdk.token.Signer;
+import org.jepria.oauth.sdk.token.Token;
 import org.jepria.oauth.token.TokenServerFactory;
 import org.jepria.oauth.token.dto.TokenDto;
 
 import javax.security.auth.login.LoginException;
-import javax.ws.rs.core.Response;
-import java.net.URI;
-import java.net.URLEncoder;
 import java.security.MessageDigest;
+import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.jepria.oauth.authorization.AuthorizationFieldNames.AUTH_REQUEST_ID;
-import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 public class AuthenticationService {
 
@@ -71,9 +67,19 @@ public class AuthenticationService {
         throw new IllegalStateException("Request is finished");
       }
       Integer operatorId = loginByPassword(username, password);
-      final Token sessionToken = generateSessionToken(username, operatorId, host, publicKey, privateKey, null);
+      Token sessionToken = generateSessionToken(username, operatorId, host, privateKey, null);
       updateAuthRequest(authRequest.getAuthRequestId(), operatorId, sessionToken.getJti(), sessionToken.getIssueTime(), sessionToken.getExpirationTime());
-      return sessionToken.asString();
+      /**
+       * Encrypt token with public key
+       */
+      Encryptor encryptor = new EncryptorRSA(publicKey);
+      try {
+        sessionToken = encryptor.encrypt(sessionToken);
+      } catch (ParseException e) {
+        e.printStackTrace();
+        throw new RuntimeException(e);
+      }
+    return sessionToken.asString();
   }
 
   public TokenDto getToken(String privateKey, String host, String authCode, String clientId, String redirectUri) {
@@ -91,7 +97,7 @@ public class AuthenticationService {
     }}, updateDto, 1);
   }
 
-  private Token generateSessionToken(String username, Integer operatorId, String issuer, String publicKey, String privateKey, Integer expiresIn) {
+  private Token generateSessionToken(String username, Integer operatorId, String issuer, String privateKey, Integer expiresIn) {
     try {
       /**
        * Generate uuid for token ID
@@ -111,12 +117,7 @@ public class AuthenticationService {
        * Sign token with private key
        */
       Signer signer = new SignerRSA(privateKey);
-      token.sign(signer);
-      /**
-       * Encrypt token with public key
-       */
-      Encryptor encryptor = new EncryptorRSA(publicKey);
-      token.encrypt(encryptor);
+      token = signer.sign(token);
       return token;
     } catch (Throwable th) {
       th.printStackTrace();

@@ -59,8 +59,9 @@ public final class ClientCredentialsRequestFilter implements ContainerRequestFil
     }
   }
 
-  private AuthRequestDto getRequestDto(String authCode) {
+  private AuthRequestDto getRequestDto(String clientId, String authCode) {
     AuthRequestSearchDtoLocal searchDto = new AuthRequestSearchDtoLocal();
+    searchDto.setClientId(clientId);
     searchDto.setAuthorizationCode(authCode);
     List<AuthRequestDto> result = (List<AuthRequestDto>) AuthorizationServerFactory.getInstance().getDao().find(searchDto, 1);
     if (result.size() == 1) {
@@ -75,6 +76,9 @@ public final class ClientCredentialsRequestFilter implements ContainerRequestFil
     String authString = requestContext.getHeaderString("authorization");
     boolean result = false;
     if (authString != null) {
+      /*
+      Client credentials in Authorization Header
+       */
       authString = authString.replaceFirst("[Bb]asic ", "");
       String[] credentials = new String(Base64.getUrlDecoder().decode(authString)).split(":");
       ClientDto client = getClient(credentials[0]);
@@ -83,8 +87,6 @@ public final class ClientCredentialsRequestFilter implements ContainerRequestFil
         if (result) {
           requestContext.setSecurityContext(new ClientSecurityContext(credentials[0]));
         }
-      } else {
-        result = false;
       }
     } else {
       ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -93,23 +95,23 @@ public final class ClientCredentialsRequestFilter implements ContainerRequestFil
         byte[] requestEntity = out.toByteArray();
         Map<String, String> parameters = URIUtil.parseParameters(new String(requestEntity), null);
         if (parameters.get(CLIENT_ID) != null && parameters.get(CLIENT_SECRET) != null) {
+          /*
+          Client credentials in Body
+           */
           ClientDto client = getClient(parameters.get(CLIENT_ID));
           if (client != null) {
             if (BODY.equals(client.getTokenAuthMethod().getValue())) {
               result = client.getClientSecret().equals(parameters.get(CLIENT_SECRET));
             } else if (NONE.equals(client.getTokenAuthMethod().getValue())) {
-              result = true;
+              /*
+              PKCE for public clients
+               */
+              AuthRequestDto authRequest = getRequestDto(parameters.get(CLIENT_ID), parameters.get(CODE));
+              if (authRequest != null && authRequest.getCodeChallenge() == null && parameters.get("code_verifier") == null) {
+                MessageDigest cryptoProvider = MessageDigest.getInstance("SHA-256");
+                result = authRequest.getCodeChallenge().equals(Base64.getUrlEncoder().withoutPadding().encodeToString(cryptoProvider.digest(parameters.get("code_verifier").getBytes())));
+              }
             }
-          } else {
-            result = false;
-          }
-        } else {
-          AuthRequestDto authRequest = getRequestDto(parameters.get(CODE));
-          if (authRequest == null || authRequest.getCodeChallenge() == null || parameters.get("code_verifier") == null) {
-            result = false;
-          } else {
-            MessageDigest cryptoProvider = MessageDigest.getInstance("SHA-256");
-            result = authRequest.getCodeChallenge().equals(Base64.getUrlEncoder().withoutPadding().encodeToString(cryptoProvider.digest(parameters.get("code_verifier").getBytes())));
           }
         }
         if (result) {

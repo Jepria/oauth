@@ -10,12 +10,12 @@ import org.jepria.oauth.sdk.GrantType;
 import org.jepria.oauth.token.dto.TokenDto;
 import org.jepria.oauth.token.dto.TokenInfoDto;
 
-import org.jepria.oauth.sdk.token.interfaces.Signer;
-import org.jepria.oauth.sdk.token.interfaces.Token;
-import org.jepria.oauth.sdk.token.interfaces.Verifier;
-import org.jepria.oauth.sdk.token.SignerRSA;
+import org.jepria.oauth.sdk.token.Signer;
+import org.jepria.oauth.sdk.token.Token;
+import org.jepria.oauth.sdk.token.Verifier;
+import org.jepria.oauth.sdk.token.rsa.SignerRSA;
 import org.jepria.oauth.sdk.token.TokenImpl;
-import org.jepria.oauth.sdk.token.VerifierRSA;
+import org.jepria.oauth.sdk.token.rsa.VerifierRSA;
 
 import javax.security.auth.login.LoginException;
 import javax.ws.rs.core.Response;
@@ -318,7 +318,7 @@ public class TokenService {
        * Sign token with private key
        */
       Signer signer = new SignerRSA(privateKeyString);
-      token.sign(signer);
+      token = signer.sign(token);
       return token;
     } catch (Throwable th) {
       th.printStackTrace();

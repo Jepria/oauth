@@ -10,12 +10,13 @@ import org.jepria.oauth.clienturi.dto.ClientUriDto;
 import org.jepria.oauth.clienturi.dto.ClientUriSearchDtoLocal;
 import org.jepria.oauth.main.exception.HandledRuntimeException;
 import org.jepria.oauth.sdk.ResponseType;
-import org.jepria.oauth.sdk.token.DecryptorRSA;
-import org.jepria.oauth.sdk.token.SignatureVerifierRSA;
+import org.jepria.oauth.sdk.token.rsa.DecryptorRSA;
+import org.jepria.oauth.sdk.token.rsa.SignatureVerifierRSA;
 import org.jepria.oauth.sdk.token.TokenImpl;
-import org.jepria.oauth.sdk.token.VerifierRSA;
-import org.jepria.oauth.sdk.token.interfaces.Token;
-import org.jepria.oauth.sdk.token.interfaces.Verifier;
+import org.jepria.oauth.sdk.token.rsa.VerifierRSA;
+import org.jepria.oauth.sdk.token.Decryptor;
+import org.jepria.oauth.sdk.token.Token;
+import org.jepria.oauth.sdk.token.Verifier;
 import org.jepria.server.data.OptionDto;
 import org.jepria.server.data.RuntimeSQLException;
 
@@ -72,7 +73,8 @@ public class AuthorizationService {
     }
     try {
       Token token = TokenImpl.parseFromString(sessionToken);
-      token.decrypt(new DecryptorRSA(privateKey));
+      Decryptor decryptor = new DecryptorRSA(privateKey);
+      token = decryptor.decrypt(token);
       Verifier verifier = new VerifierRSA(null, issuer, new Date(), publicKey);
       if (verifier.verify(token)) {
         String[] subject = token.getSubject().split(":");
@@ -179,7 +181,8 @@ public class AuthorizationService {
 
     try {
       Token token = TokenImpl.parseFromString(sessionToken);
-      token.decrypt(new DecryptorRSA(privateKey));
+      Decryptor decryptor = new DecryptorRSA(privateKey);
+      token = decryptor.decrypt(token);
       Verifier verifier = new SignatureVerifierRSA(publicKey);
       if (verifier.verify(token) && issuer.equals(token.getIssuer())) {
         AuthRequestSearchDtoLocal searchTemplate = new AuthRequestSearchDtoLocal();

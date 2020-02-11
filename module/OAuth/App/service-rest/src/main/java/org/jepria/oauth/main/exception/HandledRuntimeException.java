@@ -1,6 +1,6 @@
 package org.jepria.oauth.main.exception;
 
-public class HandledRuntimeException extends RuntimeException{
+public class HandledRuntimeException extends RuntimeException {
 
   static final long serialVersionUID = -7034823190735666639L;
   final String code;
@@ -29,5 +29,4 @@ public class HandledRuntimeException extends RuntimeException{
   public String getExceptionCode() {
     return this.code;
   }
-
 }

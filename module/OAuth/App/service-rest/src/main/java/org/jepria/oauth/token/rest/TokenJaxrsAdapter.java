@@ -56,17 +56,8 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
     @FormParam("username") String username,
     @FormParam("password") String password,
     @FormParam("code_verifier") String codeVerifier) {
-    Response response = null;
-    try {
-      TokenDto result = TokenServerFactory.getInstance().getService().create(grantType, getPrivateKey(), getHostContext(), authCode, clientId, redirectUri, username, password);
-      response = Response.ok(result).build();
-    } catch (IllegalArgumentException | IllegalStateException | NoSuchElementException e) {
-      response = Response.status(Response.Status.BAD_REQUEST).build();
-    } catch (Throwable th) {
-      response = Response.serverError().build();
-    } finally {
-      return response;
-    }
+    TokenDto result = TokenServerFactory.getInstance().getService().create(grantType, getPrivateKey(), getHostContext(), authCode, clientId, redirectUri, username, password);
+    return Response.ok(result).build();
   }
 
   @POST
@@ -83,8 +74,9 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   @WithClientCredentials
   @AllowAllOrigin
-  public Response revokeToken(@FormParam("token") String token, @FormParam("redirect_uri") String redirectUri) {
-    return TokenServerFactory.getInstance().getService().revokeToken(securityContext.getUserPrincipal().getName(), token, redirectUri);
+  public Response revokeToken(@FormParam("token") String token) {
+    TokenServerFactory.getInstance().getService().revokeToken(securityContext.getUserPrincipal().getName(), token);
+    return Response.ok().build();
   }
 
 }

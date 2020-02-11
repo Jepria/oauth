@@ -10,35 +10,35 @@ import org.jepria.oauth.clienturi.dto.ClientUriDto;
 import org.jepria.oauth.clienturi.dto.ClientUriSearchDtoLocal;
 import org.jepria.oauth.main.exception.HandledRuntimeException;
 import org.jepria.oauth.sdk.ResponseType;
-import org.jepria.oauth.sdk.token.rsa.DecryptorRSA;
-import org.jepria.oauth.sdk.token.rsa.SignatureVerifierRSA;
-import org.jepria.oauth.sdk.token.TokenImpl;
-import org.jepria.oauth.sdk.token.rsa.VerifierRSA;
 import org.jepria.oauth.sdk.token.Decryptor;
 import org.jepria.oauth.sdk.token.Token;
+import org.jepria.oauth.sdk.token.TokenImpl;
 import org.jepria.oauth.sdk.token.Verifier;
+import org.jepria.oauth.sdk.token.rsa.DecryptorRSA;
+import org.jepria.oauth.sdk.token.rsa.SignatureVerifierRSA;
+import org.jepria.oauth.sdk.token.rsa.VerifierRSA;
 import org.jepria.server.data.OptionDto;
 import org.jepria.server.data.RuntimeSQLException;
 
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.*;
 
 import static org.jepria.oauth.authorization.AuthorizationFieldNames.AUTH_REQUEST_ID;
-import static org.jepria.oauth.sdk.OAuthConstants.UNAUTHORIZED_CLIENT;
-import static org.jepria.oauth.sdk.OAuthConstants.UNSUPPORTED_RESPONSE_TYPE;
+import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 public class AuthorizationService {
 
   public AuthRequestDto authorize(String responseType, String clientId, String redirectUri, String codeChallenge) {
-      if (!ResponseType.implies(responseType)) {
+    if (!ResponseType.implies(responseType)) {
       throw new HandledRuntimeException(UNSUPPORTED_RESPONSE_TYPE);
     }
 
     List<OptionDto<String>> clientResponseTypes = ClientServerFactory.getInstance().getService().getClientResponseTypes(clientId);
     if (clientResponseTypes.size() == 0 || !clientResponseTypes.stream().anyMatch(clientResponseType -> clientResponseType.getValue().equals(responseType))) {
-      throw new HandledRuntimeException(UNAUTHORIZED_CLIENT);
+      throw new HandledRuntimeException(UNAUTHORIZED_CLIENT, "Client doesn't have enough permissions to use responseType=" + responseType);
     }
 
     AuthRequestCreateDto authRequestDto = new AuthRequestCreateDto();
@@ -54,10 +54,10 @@ public class AuthorizationService {
     } catch (RuntimeSQLException ex) {
       SQLException sqlException = ex.getSQLException();
       if (sqlException.getErrorCode() == 20001) {
-        throw new HandledRuntimeException(UNAUTHORIZED_CLIENT);
+        throw new HandledRuntimeException(UNAUTHORIZED_CLIENT, "Client ID not found");
       }
       if (sqlException.getErrorCode() == 20002) {
-        throw new IllegalArgumentException("redirect_uri mismatch");
+        throw new HandledRuntimeException(INVALID_REQUEST, "redirect_uri mismatch");
       }
       throw new RuntimeSQLException(sqlException);
     }
@@ -69,7 +69,7 @@ public class AuthorizationService {
     }
     List<OptionDto<String>> clientResponseTypes = ClientServerFactory.getInstance().getService().getClientResponseTypes(clientId);
     if (clientResponseTypes.size() == 0 || !clientResponseTypes.stream().anyMatch(clientResponseType -> clientResponseType.getValue().equals(responseType))) {
-      throw new HandledRuntimeException(UNAUTHORIZED_CLIENT);
+      throw new HandledRuntimeException(UNAUTHORIZED_CLIENT, "Client doesn't have enough permissions to use responseType=" + responseType);
     }
     try {
       Token token = TokenImpl.parseFromString(sessionToken);
@@ -98,21 +98,22 @@ public class AuthorizationService {
     } catch (RuntimeSQLException ex) {
       SQLException sqlException = ex.getSQLException();
       if (sqlException.getErrorCode() == 20001) {
-        throw new HandledRuntimeException(UNAUTHORIZED_CLIENT);
+        throw new HandledRuntimeException(UNAUTHORIZED_CLIENT, "Client ID not found");
       }
       if (sqlException.getErrorCode() == 20002) {
-        throw new IllegalArgumentException("redirect_uri mismatch");
+        throw new HandledRuntimeException(INVALID_REQUEST, "redirect_uri mismatch");
       }
       throw new RuntimeSQLException(sqlException);
-    } catch (Throwable th) {
-      th.printStackTrace();
+    } catch (ParseException ex) {
+      /**
+       * Получен битый токен сессии, запрашиваем авторизацию заново без сессии
+       */
       return authorize(responseType, clientId, redirectUri, codeChallenge);
     }
   }
 
 
   /**
-   *
    * @param template
    * @return
    */
@@ -123,7 +124,6 @@ public class AuthorizationService {
   }
 
   /**
-   *
    * @param record
    * @return
    */
@@ -133,20 +133,18 @@ public class AuthorizationService {
   }
 
   /**
-   *
    * @param record
    */
   public void update(AuthRequestUpdateDto record) {
     if (record.getAuthRequestId() == null) {
       throw new IllegalArgumentException("Primary key must be not null");
     }
-    AuthorizationServerFactory.getInstance().getDao().update(new HashMap<String, Integer>(){{
+    AuthorizationServerFactory.getInstance().getDao().update(new HashMap<String, Integer>() {{
       put(AUTH_REQUEST_ID, record.getAuthRequestId());
     }}, record, null);
   }
 
   /**
-   *
    * @param authRequestId
    */
   public void block(Integer authRequestId) {
@@ -154,7 +152,6 @@ public class AuthorizationService {
   }
 
   /**
-   *
    * @return
    */
   public String generateCode() {
@@ -166,8 +163,8 @@ public class AuthorizationService {
       random.nextBytes(salt);
       md.update(salt);
       return Base64.getUrlEncoder().withoutPadding().encodeToString(md.digest(randomUuid.toString().getBytes()));
-    } catch (Throwable e) {
-      throw new RuntimeException(e);
+    } catch (Throwable th) {
+      throw new HandledRuntimeException(SERVER_ERROR, th);
     }
   }
 
@@ -176,7 +173,7 @@ public class AuthorizationService {
     clientUriSearchTemplate.setClientId(clientId);
     List<ClientUriDto> clientUriList = ClientUriServerFactory.getInstance().getService().findClientUri(clientUriSearchTemplate, null);
     if (!clientUriList.stream().anyMatch(clientUriDto -> clientUriDto.getClientUri().equals(redirectUri))) {
-      throw new IllegalArgumentException("redirect_uri mismatch");
+      throw new HandledRuntimeException(INVALID_REQUEST, "redirect_uri mismatch");
     }
 
     try {
@@ -194,9 +191,8 @@ public class AuthorizationService {
           .stream()
           .forEach(authRequestDto -> block(((AuthRequestDto) authRequestDto).getAuthRequestId()));
       }
-    } catch (Throwable th) {
-      th.printStackTrace();
-      throw new RuntimeException(th);
+    } catch (ParseException ex) {
+      throw new HandledRuntimeException(SERVER_ERROR, ex);
     }
   }
 }

@@ -1,22 +1,40 @@
 package org.jepria.oauth.main.dto;
 
 public class ErrorDto {
-  Integer code;
-  String message;
+  String errorId;
+  String error;
+  String errorDescription;
+  String errorUri;
 
-  public Integer getCode() {
-    return code;
+  public String getErrorId() {
+    return errorId;
   }
 
-  public void setCode(Integer code) {
-    this.code = code;
+  public void setErrorId(String errorId) {
+    this.errorId = errorId;
   }
 
-  public String getMessage() {
-    return message;
+  public String getError() {
+    return error;
   }
 
-  public void setMessage(String message) {
-    this.message = message;
+  public void setError(String error) {
+    this.error = error;
+  }
+
+  public String getErrorDescription() {
+    return errorDescription;
+  }
+
+  public void setErrorDescription(String errorDescription) {
+    this.errorDescription = errorDescription;
+  }
+
+  public String getErrorUri() {
+    return errorUri;
+  }
+
+  public void setErrorUri(String errorUri) {
+    this.errorUri = errorUri;
   }
 }

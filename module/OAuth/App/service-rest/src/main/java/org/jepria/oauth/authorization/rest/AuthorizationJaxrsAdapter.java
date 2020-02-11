@@ -6,6 +6,7 @@ import org.jepria.oauth.authorization.dto.AuthRequestSearchDto;
 import org.jepria.oauth.authorization.dto.AuthRequestSearchDtoLocal;
 import org.jepria.oauth.main.exception.HandledRuntimeException;
 import org.jepria.oauth.sdk.ResponseType;
+import org.jepria.oauth.sdk.util.URIUtil;
 import org.jepria.server.data.SearchRequestDto;
 import org.jepria.server.service.rest.ErrorDto;
 import org.jepria.server.service.rest.ExtendedResponse;
@@ -38,14 +39,6 @@ import java.util.NoSuchElementException;
 
 import static org.jepria.oauth.sdk.OAuthConstants.*;
 
-/**
- * The authorization code grant type is used to obtain both access
- *    tokens and optionally refresh tokens and is optimized for confidential clients.
- *    Since this is a redirection-based flow, the client must be capable of
- *    interacting with the resource owner's user-agent (typically a web
- *    browser) and capable of receiving incoming requests (via redirection)
- *    from the authorization server.
- */
 public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
   @Context
   HttpServletRequest request;
@@ -69,40 +62,35 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
 
   @GET
   @Path("/authorize")
-  @Consumes({MediaType.TEXT_HTML, "text/x-gwt-rpc"})// TODO delete after getting off GWT (cause GWT send redirect query with 'content-type: text/x-gwt-rpc' in IE
+  @Consumes({MediaType.TEXT_HTML, "text/x-gwt-rpc"})
+// TODO delete after getting off GWT (cause GWT send redirect query with 'content-type: text/x-gwt-rpc' in IE
   public Response authorize(@QueryParam("response_type") String responseType,
                             @QueryParam("client_id") String clientId,
                             @QueryParam("redirect_uri") String redirectUriEncoded,
                             @QueryParam("code_challenge") String codeChallenge,
                             @QueryParam("state") String state,
                             @CookieParam(SESSION_ID) String sessionToken) {
-    String redirectUri = new String(Base64.getUrlDecoder().decode(redirectUriEncoded));
-    if (!isValidUri(redirectUri)) {
-      ErrorDto errorDto = exceptionManager.registerExceptionAndPrepareErrorDto(new IllegalArgumentException("redirect_uri is invalid"));
-      return Response.status(Response.Status.BAD_REQUEST).entity(errorDto).build();
+    String redirectUri;
+    try {
+      redirectUri = new String(Base64.getUrlDecoder().decode(redirectUriEncoded));
+      if (!isValidUri(redirectUri)) {
+        ErrorDto errorDto = exceptionManager.registerExceptionAndPrepareErrorDto(new IllegalArgumentException("redirect_uri is invalid"));
+        return Response.status(Response.Status.BAD_REQUEST).entity(errorDto).build();
+      }
+    } catch (Throwable th) {
+      throw new HandledRuntimeException(INVALID_REQUEST, "redirect_uri is null or invalid");
     }
     Response response = null;
-    try {
-      AuthRequestDto authRequest;
-      if (sessionToken != null) {
-        authRequest = AuthorizationServerFactory.getInstance().getService().authorize(responseType, clientId, redirectUri, codeChallenge, sessionToken, getHostContext(), getPublicKey(), getPrivateKey());
-        if (authRequest.getOperator() != null) {
-          response = Response.
-            status(302)
-            .location(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + authRequest.getAuthorizationCode() + "&" + (state != null ? STATE + "=" + state : "")))
-            .build();
-        } else {
-          response = Response.status(302).location(new URI("/oauth/login/?"
-            + RESPONSE_TYPE + "=" + CODE
-            + "&" + CODE + "=" + authRequest.getAuthorizationCode()
-            + "&" + REDIRECT_URI + "=" + redirectUriEncoded
-            + "&" + CLIENT_ID + "=" + authRequest.getClient().getValue()
-            + "&" + CLIENT_NAME + "=" + authRequest.getClient().getName()
-            + "&" + STATE + "=" + state)).build();
-        }
+    AuthRequestDto authRequest;
+    if (sessionToken != null) {
+      authRequest = AuthorizationServerFactory.getInstance().getService().authorize(responseType, clientId, redirectUri, codeChallenge, sessionToken, getHostContext(), getPublicKey(), getPrivateKey());
+      if (authRequest.getOperator() != null) {
+        response = Response
+          .status(302)
+          .location(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + authRequest.getAuthorizationCode() + "&" + (state != null ? STATE + "=" + state : "")))
+          .build();
       } else {
-        authRequest = AuthorizationServerFactory.getInstance().getService().authorize(responseType, clientId, redirectUri, codeChallenge);
-        response = Response.status(302).location(new URI("/oauth/login/?"
+        response = Response.status(302).location(URI.create("/oauth/login/?"
           + RESPONSE_TYPE + "=" + CODE
           + "&" + CODE + "=" + authRequest.getAuthorizationCode()
           + "&" + REDIRECT_URI + "=" + redirectUriEncoded
@@ -110,32 +98,17 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
           + "&" + CLIENT_NAME + "=" + authRequest.getClient().getName()
           + "&" + STATE + "=" + state)).build();
       }
-    } catch (HandledRuntimeException e) {
-      String errorId = exceptionManager.registerException(e);
-      if (UNSUPPORTED_RESPONSE_TYPE.equals(e.getExceptionCode())) {
-        response = Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri)
-          + ERROR_QUERY_PARAM + UNSUPPORTED_RESPONSE_TYPE + "&"
-          + ERROR_ID_QUERY_PARAM + errorId)).build();
-      }
-      if (UNAUTHORIZED_CLIENT.equals(e.getExceptionCode())) {
-        response = Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri)
-          + ERROR_QUERY_PARAM + UNAUTHORIZED_CLIENT + "&"
-          + ERROR_ID_QUERY_PARAM + errorId)).build();
-      }
-    } catch (IllegalArgumentException e) {
-      String errorId = exceptionManager.registerException(e);
-      response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri)
-        + ERROR_QUERY_PARAM + INVALID_REQUEST + "&"
-        + ERROR_DESCRIPTION_QUERY_PARAM + URLEncoder.encode(e.getMessage(), "UTF-8") + "&"
-        + ERROR_ID_QUERY_PARAM + errorId)).build();
-    } catch (Throwable e) {
-      String errorId = exceptionManager.registerException(e);
-      response =  Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri)
-        + ERROR_QUERY_PARAM + "&" + SERVER_ERROR  + "&"
-        + ERROR_ID_QUERY_PARAM + errorId)).build();
-    } finally {
-      return response;
+    } else {
+      authRequest = AuthorizationServerFactory.getInstance().getService().authorize(responseType, clientId, redirectUri, codeChallenge);
+      response = Response.status(302).location(URI.create("/oauth/login/?"
+        + RESPONSE_TYPE + "=" + CODE
+        + "&" + CODE + "=" + authRequest.getAuthorizationCode()
+        + "&" + REDIRECT_URI + "=" + redirectUriEncoded
+        + "&" + CLIENT_ID + "=" + authRequest.getClient().getValue()
+        + "&" + CLIENT_NAME + "=" + authRequest.getClient().getName()
+        + "&" + STATE + "=" + state)).build();
     }
+    return response;
   }
 
   @GET
@@ -205,7 +178,7 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
   @HttpBasic(passwordType = HttpBasic.PASSWORD)
   public Response getSearchRequest(
     @PathParam("searchId") String searchId) {
-    SearchRequestDto<AuthRequestSearchDtoLocal> result = (SearchRequestDto<AuthRequestSearchDtoLocal>)searchEndpointAdapter.getSearchRequest(searchId);
+    SearchRequestDto<AuthRequestSearchDtoLocal> result = (SearchRequestDto<AuthRequestSearchDtoLocal>) searchEndpointAdapter.getSearchRequest(searchId);
 
     AuthRequestSearchDto searchRequestDto = new AuthRequestSearchDto();
     searchRequestDto.setAuthRequestId(result.getTemplate().getAuthRequestId());
@@ -235,7 +208,7 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
     @QueryParam("pageSize") Integer pageSize,
     @QueryParam("page") Integer page,
     @HeaderParam("Cache-Control") String cacheControl) {
-    List<AuthRequestDto> result = (List<AuthRequestDto>)searchEndpointAdapter.getResultset(searchId, pageSize, page, cacheControl);
+    List<AuthRequestDto> result = (List<AuthRequestDto>) searchEndpointAdapter.getResultset(searchId, pageSize, page, cacheControl);
     return Response.ok(result).build();
   }
 
@@ -247,7 +220,7 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
     @PathParam("pageSize") Integer pageSize,
     @PathParam("page") Integer page,
     @HeaderParam("Cache-Control") String cacheControl) {
-    List<AuthRequestDto> result = (List<AuthRequestDto>)searchEndpointAdapter.getResultsetPaged(searchId, pageSize, page, cacheControl);
+    List<AuthRequestDto> result = (List<AuthRequestDto>) searchEndpointAdapter.getResultsetPaged(searchId, pageSize, page, cacheControl);
     return Response.ok(result).build();
   }
 
@@ -272,11 +245,10 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
   }
 
   /**
-   *
    * @param redirectUri
    * @return
    */
-  private boolean isValidUri(String redirectUri)  {
+  private boolean isValidUri(String redirectUri) {
     if (redirectUri == null) {
       return false;
     }

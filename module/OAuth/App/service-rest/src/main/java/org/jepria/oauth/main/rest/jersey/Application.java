@@ -4,7 +4,7 @@ import org.jepria.oauth.authentication.rest.AuthenticationJaxrsAdapter;
 import org.jepria.oauth.authorization.rest.AuthorizationJaxrsAdapter;
 import org.jepria.oauth.client.rest.ClientJaxrsAdapter;
 import org.jepria.oauth.clienturi.rest.ClientUriJaxrsAdapter;
-import org.jepria.oauth.main.security.AllowAllOrigin;
+import org.jepria.oauth.main.exception.ExtendedExceptionMapper;
 import org.jepria.oauth.main.security.AllowAllOriginFilter;
 import org.jepria.oauth.main.security.ClientCredentialsRequestFilter;
 import org.jepria.oauth.token.rest.TokenJaxrsAdapter;
@@ -28,4 +28,9 @@ public class Application extends ApplicationConfigBase {
   protected void registerCorsHandler() {
     register(AllowAllOriginFilter.class);
   };
+
+  @Override
+  protected void registerExceptionMapperDefault() {
+    register(ExtendedExceptionMapper.class);
+  }
 }

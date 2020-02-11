@@ -6,6 +6,7 @@ import org.jepria.oauth.authorization.dto.AuthRequestCreateDto;
 import org.jepria.oauth.authorization.dto.AuthRequestDto;
 import org.jepria.oauth.authorization.dto.AuthRequestSearchDtoLocal;
 import org.jepria.oauth.authorization.dto.AuthRequestUpdateDto;
+import org.jepria.oauth.main.exception.HandledRuntimeException;
 import org.jepria.oauth.sdk.GrantType;
 import org.jepria.oauth.token.dto.TokenDto;
 import org.jepria.oauth.token.dto.TokenInfoDto;
@@ -25,9 +26,14 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static org.jepria.oauth.sdk.OAuthConstants.*;
+
 public class TokenService {
 
-  private AuthRequestDto getAuthRequest(String authCode, String clientId, String redirectUri, String tokenId)  {
+  private AuthRequestDto getAuthRequest(String authCode,
+                                        String clientId,
+                                        String redirectUri,
+                                        String tokenId) {
     AuthRequestSearchDtoLocal searchTemplate = new AuthRequestSearchDtoLocal();
     searchTemplate.setAuthorizationCode(authCode);
     searchTemplate.setClientId(clientId);
@@ -62,7 +68,6 @@ public class TokenService {
   }
 
   /**
-   *
    * @param grantType
    * @param privateKey
    * @param host
@@ -81,12 +86,15 @@ public class TokenService {
     String username,
     String password) {
     TokenDto result;
+    if (grantType == null) {
+      throw new HandledRuntimeException(UNSUPPORTED_GRANT_TYPE, "Grant type must be not null");
+    }
     switch (grantType) {
       case GrantType.AUTHORIZATION_CODE: {
         result = createTokenForAuthCodeGrant(privateKey, host, authCode, clientId, new String(Base64.getUrlDecoder().decode(redirectUri)));
         break;
       }
-//        case GrantType.CLIENT_CREDENTIALS: {
+//        case GrantType.CLIENT_CREDENTIALS: {TODO
 //          break;
 //        }
       case GrantType.PASSWORD: {
@@ -94,14 +102,13 @@ public class TokenService {
         break;
       }
       default: {
-        throw new IllegalArgumentException();
+        throw new HandledRuntimeException(UNSUPPORTED_GRANT_TYPE, "Grant type '" + grantType + "' is not supported");
       }
     }
     return result;
   }
 
   /**
-   *
    * @param privateKeyString
    * @param host
    * @param authCode
@@ -109,7 +116,11 @@ public class TokenService {
    * @param redirectUri
    * @return
    */
-  public TokenDto createTokenForImplicitGrant(String privateKeyString, String host, String authCode, String clientId, String redirectUri) {
+  public TokenDto createTokenForImplicitGrant(String privateKeyString,
+                                              String host,
+                                              String authCode,
+                                              String clientId,
+                                              String redirectUri) {
     if (authCode == null) {
       throw new IllegalArgumentException("Authorization code is null.");
     }
@@ -122,10 +133,10 @@ public class TokenService {
 
     AuthRequestDto authRequest = getAuthRequest(authCode, clientId, redirectUri, null);
     if (TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - authRequest.getDateIns().getTime()) > 10) {
-      throw new IllegalStateException("Authorization code active time has expired.");
+      throw new HandledRuntimeException(INVALID_GRANT, "Authorization code active time has expired.");
     }
     if (authRequest.getAccessTokenId() != null) {
-      throw new IllegalStateException("Request is finished.");
+      throw new HandledRuntimeException(INVALID_GRANT, "Request is finished.");
     }
     Token token = generateToken(authRequest.getOperatorLogin(), null, authRequest.getOperator().getValue(), host, privateKeyString, 1);
     TokenDto tokenDto = new TokenDto();
@@ -144,7 +155,6 @@ public class TokenService {
   }
 
   /**
-   *
    * @param privateKeyString
    * @param host
    * @param authCode
@@ -152,7 +162,11 @@ public class TokenService {
    * @param redirectUri
    * @return
    */
-  private TokenDto createTokenForAuthCodeGrant(String privateKeyString, String host, String authCode, String clientId, String redirectUri) {
+  private TokenDto createTokenForAuthCodeGrant(String privateKeyString,
+                                               String host,
+                                               String authCode,
+                                               String clientId,
+                                               String redirectUri) {
     if (authCode == null) {
       throw new IllegalArgumentException("Authorization code is null.");
     }
@@ -164,10 +178,10 @@ public class TokenService {
     }
     AuthRequestDto authRequest = getAuthRequest(authCode, clientId, redirectUri, null);
     if (TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - authRequest.getDateIns().getTime()) > 10) {
-      throw new IllegalStateException("Authorization code active time has expired.");
+      throw new HandledRuntimeException(INVALID_GRANT, "Authorization code active time has expired.");
     }
     if (authRequest.getAccessTokenId() != null) {
-      throw new IllegalStateException("Request is finished.");
+      throw new HandledRuntimeException(INVALID_GRANT, "Request is finished.");
     }
     Token token = generateToken(authRequest.getOperatorLogin(), null, authRequest.getOperator().getValue(), host, privateKeyString, 4);
     TokenDto tokenDto = new TokenDto();
@@ -186,16 +200,18 @@ public class TokenService {
   }
 
   /**
-   *
    * @param privateKeyString
    * @param host
    * @param username
    * @param password
    * @return
    */
-  private TokenDto createTokenForUserCredentialsGrant(String privateKeyString, String host, String clientId, String username, String password) {
-    TokenDto result = null;
-
+  private TokenDto createTokenForUserCredentialsGrant(String privateKeyString,
+                                                      String host,
+                                                      String clientId,
+                                                      String username,
+                                                      String password) {
+    TokenDto result;
     try {
       Integer operatorId = AuthenticationServerFactory.getInstance().getService().loginByPassword(username, password);
 
@@ -216,13 +232,12 @@ public class TokenService {
 
       result = tokenDto;
     } catch (LoginException e) {
-      e.printStackTrace();
+      throw new HandledRuntimeException(ACCESS_DENIED, e);
     }
     return result;
   }
 
   /**
-   *
    * @param privateKeyString
    * @param host
    * @param clientId
@@ -234,7 +249,6 @@ public class TokenService {
   }
 
   /**
-   *
    * @param publicKey
    * @param hostContext
    * @param tokenString
@@ -270,36 +284,26 @@ public class TokenService {
   }
 
   /**
-   *
    * @param clientId
    * @param tokenString
-   * @param redirectUri
    * @return
    */
-  public Response revokeToken(String clientId, String tokenString, String redirectUri) {
-    if (redirectUri != null) {
-      try {
-        URI redirectionURI = URI.create(new String(Base64.getUrlDecoder().decode(redirectUri)));
-        return  Response.status(302).location(redirectionURI).build();
-      } catch (IllegalArgumentException ex) {
-        ex.printStackTrace();
-      }
-    }
-    Response response = null;
+  public void revokeToken(String clientId, String tokenString) {
     try {
       Token token = TokenImpl.parseFromString(tokenString);
-      AuthRequestDto authRequestDto = getAuthRequest(null, null, null, token.getJti());
+      AuthRequestDto authRequestDto = getAuthRequest(null, clientId, null, token.getJti());
       AuthorizationServerFactory.getInstance().getDao().blockAuthRequest(authRequestDto.getAuthRequestId());
-      response = Response.ok().build();
-    } catch (IllegalArgumentException | ParseException e) {
-      e.printStackTrace();
-      response =  Response.serverError().build();
-    } finally {
-      return response;
+    } catch (ParseException e) {
+      throw new HandledRuntimeException(SERVER_ERROR, e);
     }
   }
 
-  private Token generateToken(String username, List<String> audience, Integer userId, String issuer, String privateKeyString, Integer expiresIn) {
+  private Token generateToken(String username,
+                              List<String> audience,
+                              Integer userId,
+                              String issuer,
+                              String privateKeyString,
+                              Integer expiresIn) {
     try {
       /**
        * Generate uuid for token ID
@@ -312,7 +316,7 @@ public class TokenService {
        * Create token with JWT lib
        * TODO пересмотреть концепцию передачи данных пользователя
        */
-      Token token = new TokenImpl(tokenId, audience != null ? audience : Collections.singletonList("RFInfo"),username + ":" + userId,
+      Token token = new TokenImpl(tokenId, audience != null ? audience : Collections.singletonList("RFInfo"), username + ":" + userId,
         issuer, addHours(new Date(), expiresIn), new Date());
       /**
        * Sign token with private key
@@ -321,8 +325,7 @@ public class TokenService {
       token = signer.sign(token);
       return token;
     } catch (Throwable th) {
-      th.printStackTrace();
-      throw new RuntimeException(th);
+      throw new HandledRuntimeException(SERVER_ERROR, th);
     }
   }
 

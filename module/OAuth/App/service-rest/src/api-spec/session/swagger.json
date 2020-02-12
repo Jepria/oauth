@@ -11,24 +11,24 @@
   ],
   "tags": [
     {
-      "name": "authorization-request: entity",
+      "name": "session: entity",
       "description": "Entity operations (CRUD)"
     },
     {
-      "name": "authorization-request: search",
-      "description": "AuthorizationRequest search operations"
+      "name": "session: search",
+      "description": "Session search operations"
     }
   ],
   "paths": {
-    "/authorization-request/{authRequestId}": {
+    "/session/{sessionId}": {
       "get": {
-        "tags": ["authorization-request: entity"],
+        "tags": ["session: entity"],
         "summary": "Get record by ID",
         "description": "",
-        "operationId": "getRecordById-authorization-request",
+        "operationId": "getRecordById-session",
         "parameters": [
           {
-            "name": "authRequestId",
+            "name": "sessionId",
             "in": "path",
             "required": true,
             "schema": {
@@ -42,7 +42,7 @@
             "content": {
               "application/json;charset=utf-8": {
                 "schema": {
-                  "$ref": "#/components/schemas/AuthorizationRequestDto"
+                  "$ref": "#/components/schemas/SessionDto"
                 }
               }
             }
@@ -50,9 +50,9 @@
         }
       }
     },
-    "/authorization-request/search/{searchId}/resultset-size": {
+    "/session/search/{searchId}/resultset-size": {
       "get": {
-        "tags": ["authorization-request: search"],
+        "tags": ["session: search"],
         "summary": "Get size of a resultset for a search request",
         "description": "",
         "operationId": "getSearchResultsetSize",
@@ -89,9 +89,9 @@
         }
       }
     },
-    "/authorization-request/search/{searchId}/resultset/paged-by-{pageSize}/{page}": {
+    "/session/search/{searchId}/resultset/paged-by-{pageSize}/{page}": {
       "get": {
-        "tags": ["authorization-request: search"],
+        "tags": ["session: search"],
         "summary": "Get paged resultset for a search request",
         "description": "",
         "operationId": "getResultsetPaged",
@@ -140,7 +140,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/AuthorizationRequestDto"
+                    "$ref": "#/components/schemas/SessionDto"
                   }
                 }
               }
@@ -149,15 +149,15 @@
         }
       }
     },
-    "/authorization-request/{authRequestId}/block": {
+    "/session/{sessionId}/block": {
       "post": {
-        "tags": ["authorization-request: entity"],
+        "tags": ["session: entity"],
         "summary": "Block authorization request",
         "description": "",
-        "operationId": "blockAuthorizationRequest",
+        "operationId": "blockSession",
         "parameters": [
           {
-            "name": "authRequestId",
+            "name": "sessionId",
             "in": "path",
             "required": true,
             "schema": {
@@ -172,9 +172,9 @@
         }
       }
     },
-    "/authorization-request/search": {
+    "/session/search": {
       "post": {
-        "tags": ["authorization-request: search"],
+        "tags": ["session: search"],
         "summary": "Post search request",
         "description": "",
         "operationId": "postSearch",
@@ -212,9 +212,9 @@
         }
       }
     },
-    "/authorization-request/search/{searchId}/resultset": {
+    "/session/search/{searchId}/resultset": {
       "get": {
-        "tags": ["authorization-request: search"],
+        "tags": ["session: search"],
         "summary": "Get resultset for a search request",
         "description": "",
         "operationId": "getResultset",
@@ -262,7 +262,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/AuthorizationRequestDto"
+                    "$ref": "#/components/schemas/SessionDto"
                   }
                 }
               }
@@ -271,9 +271,9 @@
         }
       }
     },
-    "/authorization-request/search/{searchId}": {
+    "/session/search/{searchId}": {
       "get": {
-        "tags": ["authorization-request: search"],
+        "tags": ["session: search"],
         "summary": "Get search request by ID",
         "description": "",
         "operationId": "getSearchRequest",
@@ -337,10 +337,10 @@
           }
         }
       },
-      "AuthorizationRequestDto": {
+      "SessionDto": {
         "type": "object",
         "properties": {
-          "authRequestId": {
+          "sessionId": {
             "type": "integer"
           },
           "authorizationCode": {
@@ -356,12 +356,41 @@
           "operatorLogin": {
             "type": "string"
           },
-          "tokenId": {
+          "accessTokenId": {
             "type": "string"
           },
-          "tokenDateIns": {
+          "accessTokenDateIns": {
             "type": "string",
             "format": "date-time"
+          },
+          "accessTokenDateFinish": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "refreshTokenId": {
+            "type": "string"
+          },
+          "refreshTokenDateIns": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "refreshTokenDateFinish": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sessionTokenId": {
+            "type": "string"
+          },
+          "sessionTokenDateIns": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sessionTokenDateFinish": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "codeChallenge": {
+            "type": "string"
           },
           "redirectUri": {
             "type": "string"
@@ -374,10 +403,10 @@
           }
         }
       },
-      "AuthorizationRequestSearchDto": {
+      "SessionSearchDto": {
         "type": "object",
         "properties": {
-          "authRequestId": {
+          "sessionId": {
             "type": "integer"
           },
           "operatorId": {
@@ -395,7 +424,7 @@
         "type": "object",
         "properties": {
           "template": {
-            "$ref": "#/components/schemas/AuthorizationRequestSearchDto"
+            "$ref": "#/components/schemas/SessionSearchDto"
           },
           "listSortConfiguration": {
             "type": "array",

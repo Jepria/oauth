@@ -6,7 +6,7 @@
   },
   "tags": [
     {
-      "name": "OAuth: flow",
+      "name": "OAuth",
       "description": "OAuth authentication management"
     }
   ],
@@ -18,15 +18,15 @@
   "paths": {
     "/authorize": {
       "get": {
-        "tags": ["OAuth: flow"],
-        "summary": "start authorization flow",
-        "description": "This endpoint is used in the code and implicit OAuth 2.0 flows which require end-user interaction.",
+        "tags": ["OAuth"],
+        "summary": "Start authorization",
+        "description": "This endpoint is used in the authorization code and implicit OAuth 2.0 flows which require end-user interaction",
         "operationId": "authorize",
         "parameters": [
           {
             "name": "response_type",
             "in": "query",
-            "description": "Indicates that your server expects to receive an authorization code",
+            "description": "OAuth authorization server expected response type",
             "required": true,
             "schema": {
               "type": "string",
@@ -39,7 +39,7 @@
           {
             "name": "client_id",
             "in": "query",
-            "description": "The client ID you received when you first created the application",
+            "description": "Client Application identificator",
             "required": true,
             "schema": {
               "type": "string"
@@ -48,7 +48,7 @@
           {
             "name": "redirect_uri",
             "in": "query",
-            "description": "Indicates the URI (Base64URL without padding) to return the user to after authorization is complete",
+            "description": "URI (Base64URL without padding) to return the user to after authorization is completed",
             "required": true,
             "schema": {
               "type": "string"
@@ -65,7 +65,7 @@
           }
         ],
         "responses": {
-          "307": {
+          "302": {
             "content": {
               "application/x-www-form-urlencoded": {
                 "schema": {
@@ -110,270 +110,56 @@
               }
             },
             "description": "Redirect to provided request URI"
-          },
-          "400": {
-            "description": "Error if redirect_uri is invalid"
           }
         }
       }
     },
-    "/token": {
-      "post": {
-        "tags": ["OAuth: flow"],
-        "summary": "get OAuth 2.0 token",
-        "description": "The token endpoint is used by the client to obtain an access token by presenting its authorization grant or refresh token. The token endpoint is used with every authorization grant except for the implicit grant type (since an access token is issued directly).",
-        "operationId": "getToken",
-        "requestBody": {
-          "content": {
-            "application/x-www-form-urlencoded": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "grant_type": {
-                    "type": "string",
-                    "description": "Indicates OAuth 2.0 specified grant type value",
-                    "enum": [
-                      "authorization_code",
-                      "password",
-                      "client_credentials",
-                      "refresh_token"
-                    ]
-                  },
-                  "client_id": {
-                    "type": "string",
-                    "description": "Indicates the registered client ID"
-                  },
-                  "client_secret": {
-                    "type": "string",
-                    "description": " Indicates the client secret connect to client ID"
-                  },
-                  "redirect_uri": {
-                    "type": "string",
-                    "description": "Indicates the URI in __Base64URL without padding__ to return the user to after authorization is complete"
-                  },
-                  "code": {
-                    "type": "string",
-                    "description": "Indicates the authorizaton code"
-                  },
-                  "username": {
-                    "type": "string",
-                    "description": "Indicates the end-user name"
-                  },
-                  "password": {
-                    "type": "string",
-                    "description": "Indicates the end-user password"
-                  }
-                },
-                "required": [
-                  "grant_type"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "successful operation",
-            "content": {
-              "application/json;charset=utf-8": {
-                "schema": {
-                  "$ref": "#/components/schemas/TokenResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "bad request",
-            "content": {
-              "application/json;charset=utf-8": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "unauthorized",
-            "content": {
-              "application/json;charset=utf-8": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal sever error"
-          }
-        }
-      }
-    },
-    "/tokeninfo": {
-      "post": {
-        "tags": ["OAuth: flow"],
-        "summary": "introspect token",
-        "description": "Takes a parameter representing an OAuth 2.0 token and returns a JSON document representing the meta information surrounding the token, including whether this token is currently active.",
-        "operationId": "getTokenInfo",
-        "requestBody": {
-          "content": {
-            "application/x-www-form-urlencoded": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "token": {
-                    "type": "string",
-                    "description": "string representation of OAuth 2.0 token"
-                  }
-                },
-                "required": [
-                  "token"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "successful operation",
-            "content": {
-              "application/json;charset=utf-8": {
-                "schema": {
-                  "$ref": "#/components/schemas/TokenInfoResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "token not found"
-          }
-        }
-      }
-    },
-    "/token/revoke": {
-      "post": {
-        "tags": ["OAuth: flow"],
-        "summary": "permanently block token in OAuth 2.0 provider",
-        "description": "",
-        "operationId": "revokeToken",
-        "requestBody": {
-          "content": {
-            "application/x-www-form-urlencoded": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "token": {
-                    "type": "string",
-                    "description": "string representation of OAuth 2.0 token"
-                  },
-                  "redirect_uri": {
-                    "type": "string",
-                    "description": "URI in __Base64URL without padding__. Server will send redirect to this URI (only if it is valid)"
-                  }
-                },
-                "required": [
-                  "token"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "successful operation if redirect_uri param is empty or invalid"
-          },
-          "307": {
-            "description": "successful operation if redirect_uri param is valid"
-          }
-        }
-      }
-    }
-  },
-  "components": {
-    "schemas": {
-      "ErrorResponse": {
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "string",
-            "enum": [
-              "invalid_request",
-              "invalid_client",
-              "invalid_grant",
-              "unauthorized_client",
-              "unsupported_grant_type"
-            ],
-            "description": "An error code which can take on of the following values: \n  * _invalid_request_ - The request is missing a required parameter, includes an unsupported parameter value (other than grant type), repeats a parameter, or is otherwise malformed.\n  * _invalid_client_ - Client authentication failed, due to missing or invalid client credentials \n  * _invalid_grant_ - The provided OAuth 2.0 grant is invalid, expired or has been revoked. May also indicate the redirect_uri parameter doesn't match (for a code grant). \n  * _unauthorized_client_ - The client is successfully authenticated, but it's not registered to use the submitted grant type \n  * _unsupported_grant_type_ - The grant type is not supported by the server"
-          },
-          "error_description": {
-            "type": "string",
-            "description": ""
-          },
-          "error_uri": {
-            "type": "string",
-            "description": ""
-          }
-        }
-      },
-      "TokenResponse": {
-        "type": "object",
-        "properties": {
-          "token_type": {
-            "type": "string",
-            "description": "The type of the token"
-          },
-          "expires_in": {
-            "type": "integer",
-            "format": "int32",
-            "description": "The lifetime in seconds of the access token"
-          },
-          "access_token": {
-            "type": "string",
-            "description": "The access token issued by the authorization server"
-          },
-          "refresh_token": {
-            "type": "string",
-            "description": "The refresh token, which can be used to obtain new access tokens"
-          }
-        }
-      },
-      "TokenInfoResponse": {
-        "type": "object",
-        "properties": {
-          "active": {
-            "type": "boolean",
-            "description": "Boolean indicator of whether or not the presented token is currently active."
-          },
-          "client_id": {
-            "type": "string",
-            "description": "Client identifier for the OAuth 2.0 client that requested this token"
-          },
-          "username": {
-            "type": "string",
-            "description": ""
-          },
-          "sub": {
-            "type": "string",
-            "description": "Human-readable identifier for the resource owner who authorized this token"
-          },
-          "exp": {
-            "type": "integer",
-            "format": "int64",
-            "description": "Integer timestamp, measured in the number of seconds since January 1 1970 UTC, indicating when this token will expire, as defined in JWT"
-          },
-          "aud": {
-            "type": "array",
-            "items": {
+    "/logout": {
+      "get": {
+        "tags": ["OAuth"],
+        "summary": "Logout from application and cancel OAuth session",
+        "operationId": "logout",
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "query",
+            "required": true,
+            "description": "Client application identificator",
+            "schema": {
               "type": "string"
-            },
-            "description": "Service-specific string identifier or list of string identifiers representing the intended audience for this token, as defined in JWT"
+            }
           },
-          "iss": {
-            "type": "string",
-            "description": "String representing the issuer of this token, as defined in JWT"
+          {
+            "name": "redirect_uri",
+            "in": "query",
+            "description": "URI (Base64URL without padding) to return the user to after logout is completed",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           },
-          "jti": {
-            "type": "string",
-            "description": "String identifier for the token, as defined in JWT"
+          {
+            "name": "state",
+            "in": "query",
+            "description": "A random string generated by client",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "SID",
+            "in": "cookie",
+            "description": "Session identificator cookie",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "redirect to redirect_uri from query param"
           }
         }
       }

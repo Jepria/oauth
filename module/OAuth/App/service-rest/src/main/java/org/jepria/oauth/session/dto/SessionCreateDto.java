@@ -1,9 +1,12 @@
-package org.jepria.oauth.authorization.dto;
+package org.jepria.oauth.session.dto;
 
 import java.util.Date;
 
-public class AuthRequestUpdateDto {
-  Integer authRequestId;
+public class SessionCreateDto {
+
+  String authorizationCode;
+  String redirectUri;
+  String clientId;
   Integer operatorId;
   String accessTokenId;
   Date accessTokenDateIns;
@@ -14,14 +17,30 @@ public class AuthRequestUpdateDto {
   String refreshTokenId;
   Date refreshTokenDateIns;
   Date refreshTokenDateFinish;
-  Boolean isBlocked;
+  String codeChallenge;
 
-  public Integer getAuthRequestId() {
-    return authRequestId;
+  public String getAuthorizationCode() {
+    return authorizationCode;
   }
 
-  public void setAuthRequestId(Integer authRequestId) {
-    this.authRequestId = authRequestId;
+  public void setAuthorizationCode(String authorizationCode) {
+    this.authorizationCode = authorizationCode;
+  }
+
+  public String getRedirectUri() {
+    return redirectUri;
+  }
+
+  public void setRedirectUri(String redirectUri) {
+    this.redirectUri = redirectUri;
+  }
+
+  public String getClientId() {
+    return clientId;
+  }
+
+  public void setClientId(String clientId) {
+    this.clientId = clientId;
   }
 
   public Integer getOperatorId() {
@@ -104,11 +123,11 @@ public class AuthRequestUpdateDto {
     this.refreshTokenDateFinish = refreshTokenDateFinish;
   }
 
-  public Boolean getBlocked() {
-    return isBlocked;
+  public String getCodeChallenge() {
+    return codeChallenge;
   }
 
-  public void setBlocked(Boolean blocked) {
-    isBlocked = blocked;
+  public void setCodeChallenge(String codeChallenge) {
+    this.codeChallenge = codeChallenge;
   }
 }

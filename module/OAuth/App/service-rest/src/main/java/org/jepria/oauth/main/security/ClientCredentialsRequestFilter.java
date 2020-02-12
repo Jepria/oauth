@@ -2,23 +2,25 @@ package org.jepria.oauth.main.security;
 
 import org.glassfish.jersey.message.internal.ReaderWriter;
 import org.glassfish.jersey.server.ContainerException;
+import org.jepria.oauth.authentication.AuthenticationServerFactory;
+import org.jepria.oauth.authentication.AuthenticationService;
 import org.jepria.oauth.authorization.AuthorizationServerFactory;
-import org.jepria.oauth.authorization.dto.AuthRequestDto;
-import org.jepria.oauth.authorization.dto.AuthRequestSearchDtoLocal;
 import org.jepria.oauth.client.ClientServerFactory;
-import org.jepria.oauth.client.dao.ClientDao;
 import org.jepria.oauth.client.dto.ClientDto;
 import org.jepria.oauth.client.dto.ClientSearchDto;
 import org.jepria.oauth.sdk.util.URIUtil;
+import org.jepria.oauth.session.dto.SessionDto;
+import org.jepria.oauth.session.dto.SessionSearchDtoLocal;
+import org.jepria.server.service.security.PrincipalImpl;
 
 import javax.annotation.Priority;
+import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -36,12 +38,13 @@ import static org.jepria.oauth.sdk.OAuthConstants.*;
 /**
  * Client credentials based authentication filter
  */
-@Priority(Priorities.AUTHENTICATION)
 @WithClientCredentials
+@Priority(Priorities.AUTHENTICATION)
 public final class ClientCredentialsRequestFilter implements ContainerRequestFilter {
 
   @Context
   HttpServletRequest request;
+  AuthenticationService authenticationService = AuthenticationServerFactory.getInstance().getService();
 
   private static final String NONE = "none";
   private static final String HEADER = "client_secret_basic";
@@ -59,35 +62,30 @@ public final class ClientCredentialsRequestFilter implements ContainerRequestFil
     }
   }
 
-  private AuthRequestDto getRequestDto(String clientId, String authCode) {
-    AuthRequestSearchDtoLocal searchDto = new AuthRequestSearchDtoLocal();
+  private SessionDto getRequestDto(String clientId, String authCode) {
+    SessionSearchDtoLocal searchDto = new SessionSearchDtoLocal();
     searchDto.setClientId(clientId);
     searchDto.setAuthorizationCode(authCode);
-    List<AuthRequestDto> result = (List<AuthRequestDto>) AuthorizationServerFactory.getInstance().getDao().find(searchDto, 1);
+    List<SessionDto> result = (List<SessionDto>) AuthorizationServerFactory.getInstance().getDao().find(searchDto, 1);
     if (result.size() == 1) {
-      AuthRequestDto client = result.get(0);
+      SessionDto client = result.get(0);
       return client;
     } else {
       return null;
     }
   }
 
-  private boolean verifyCredentials(ContainerRequestContext requestContext) {
+  private void login(ContainerRequestContext requestContext) throws LoginException {
     String authString = requestContext.getHeaderString("authorization");
-    boolean result = false;
     if (authString != null) {
       /*
       Client credentials in Authorization Header
        */
       authString = authString.replaceFirst("[Bb]asic ", "");
       String[] credentials = new String(Base64.getUrlDecoder().decode(authString)).split(":");
+      Integer clientId = authenticationService.loginByClientCredentials(credentials[0], credentials[1]);
       ClientDto client = getClient(credentials[0]);
-      if (client != null && HEADER.equals(client.getTokenAuthMethod().getValue())) {
-        result = client.getClientSecret().equals(credentials[1]);
-        if (result) {
-          requestContext.setSecurityContext(new ClientSecurityContext(credentials[0]));
-        }
-      }
+      requestContext.setSecurityContext(new ClientSecurityContext(clientId, client.getClientName()));
     } else {
       ByteArrayOutputStream out = new ByteArrayOutputStream();
       try (InputStream in = requestContext.getEntityStream()) {
@@ -95,50 +93,57 @@ public final class ClientCredentialsRequestFilter implements ContainerRequestFil
         byte[] requestEntity = out.toByteArray();
         Map<String, String> parameters = URIUtil.parseParameters(new String(requestEntity), null);
         if (parameters.get(CLIENT_ID) != null && parameters.get(CLIENT_SECRET) != null) {
-          /*
-          Client credentials in Body
-           */
+          Integer clientId = authenticationService.loginByClientCredentials(parameters.get(CLIENT_ID), parameters.get(CLIENT_SECRET));
           ClientDto client = getClient(parameters.get(CLIENT_ID));
-          if (client != null) {
-            if (BODY.equals(client.getTokenAuthMethod().getValue())) {
-              result = client.getClientSecret().equals(parameters.get(CLIENT_SECRET));
-            } else if (NONE.equals(client.getTokenAuthMethod().getValue())) {
-              /*
-              PKCE for public clients
-               */
-              AuthRequestDto authRequest = getRequestDto(parameters.get(CLIENT_ID), parameters.get(CODE));
-              if (authRequest != null && authRequest.getCodeChallenge() == null && parameters.get("code_verifier") == null) {
-                MessageDigest cryptoProvider = MessageDigest.getInstance("SHA-256");
-                result = authRequest.getCodeChallenge().equals(Base64.getUrlEncoder().withoutPadding().encodeToString(cryptoProvider.digest(parameters.get("code_verifier").getBytes())));
-              }
+          requestContext.setSecurityContext(new ClientSecurityContext(clientId, client.getClientName()));
+        } else if (parameters.get(CLIENT_ID) != null && parameters.get(CLIENT_SECRET) == null && parameters.get(CODE) != null) {
+          /*
+           * PKCE for public clients
+           * https://tools.ietf.org/html/rfc7636
+           */
+          SessionDto authRequest = getRequestDto(parameters.get(CLIENT_ID), parameters.get(CODE));
+          if (authRequest != null && authRequest.getCodeChallenge() == null && parameters.get(CODE_VERIFIER) == null) {
+            MessageDigest cryptoProvider = MessageDigest.getInstance("SHA-256");
+            if (authRequest
+              .getCodeChallenge()
+              .equals(Base64
+                .getUrlEncoder()
+                .withoutPadding()
+                .encodeToString(cryptoProvider.digest(parameters.get(CODE_VERIFIER).getBytes())))) {
+              Integer clientId = authenticationService.loginByClientId(parameters.get(CLIENT_ID));
+              ClientDto client = getClient(parameters.get(CLIENT_ID));
+              requestContext.setSecurityContext(new ClientSecurityContext(clientId, client.getClientName()));
             }
           }
-        }
-        if (result) {
-          requestContext.setSecurityContext(new ClientSecurityContext(parameters.get(CLIENT_ID)));
+        } else {
+          throw new LoginException();
         }
         requestContext.setEntityStream(new ByteArrayInputStream(requestEntity));
       } catch (IOException | NoSuchAlgorithmException ex) {
         throw new ContainerException(ex);
       }
     }
-    return result;
   }
 
   @Override
   public void filter(ContainerRequestContext requestContext) {
-    if (!verifyCredentials(requestContext)) {
+    try {
+      login(requestContext);
+    } catch (LoginException e) {
       throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).build());
     }
   }
 
   final class ClientSecurityContext implements javax.ws.rs.core.SecurityContext {
 
-    private final String clientCode;
+    private final Integer clientId;
+    private final String clientName;
 
-    public ClientSecurityContext(String clientCode) {
-      this.clientCode = clientCode;
+    public ClientSecurityContext(Integer clientId, String clientName) {
+      this.clientId = clientId;
+      this.clientName = clientName;
     }
+
     @Override
     public boolean isUserInRole(final String roleName) {
       return true;
@@ -146,17 +151,12 @@ public final class ClientCredentialsRequestFilter implements ContainerRequestFil
 
     @Override
     public Principal getUserPrincipal() {
-      return new Principal() {
-        @Override
-        public String getName() {
-          return clientCode;
-        }
-      };
+      return new PrincipalImpl(clientName, clientId);
     }
 
     @Override
     public String getAuthenticationScheme() {
-      return "BASIC";
+      return BASIC_AUTH;
     }
 
     @Override

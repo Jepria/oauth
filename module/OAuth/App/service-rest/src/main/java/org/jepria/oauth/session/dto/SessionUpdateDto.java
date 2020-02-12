@@ -1,18 +1,10 @@
-package org.jepria.oauth.authorization.dto;
-
-import org.jepria.server.data.OptionDto;
-import org.jepria.server.data.PrimaryKey;
+package org.jepria.oauth.session.dto;
 
 import java.util.Date;
 
-public class AuthRequestDto {
-
-  @PrimaryKey
-  Integer authRequestId;
-  String authorizationCode;
-  Date dateIns;
-  OptionDto<Integer> operator;
-  String operatorLogin;
+public class SessionUpdateDto {
+  Integer sessionId;
+  Integer operatorId;
   String accessTokenId;
   Date accessTokenDateIns;
   Date accessTokenDateFinish;
@@ -22,49 +14,22 @@ public class AuthRequestDto {
   String refreshTokenId;
   Date refreshTokenDateIns;
   Date refreshTokenDateFinish;
-  String codeChallenge;
-  String redirectUri;
-  OptionDto<String> client;
   Boolean isBlocked;
 
-  public Integer getAuthRequestId() {
-    return authRequestId;
+  public Integer getSessionId() {
+    return sessionId;
   }
 
-  public void setAuthRequestId(Integer authRequestId) {
-    this.authRequestId = authRequestId;
+  public void setSessionId(Integer sessionId) {
+    this.sessionId = sessionId;
   }
 
-  public String getAuthorizationCode() {
-    return authorizationCode;
+  public Integer getOperatorId() {
+    return operatorId;
   }
 
-  public void setAuthorizationCode(String authorizationCode) {
-    this.authorizationCode = authorizationCode;
-  }
-
-  public Date getDateIns() {
-    return dateIns;
-  }
-
-  public void setDateIns(Date dateIns) {
-    this.dateIns = dateIns;
-  }
-
-  public OptionDto<Integer> getOperator() {
-    return operator;
-  }
-
-  public void setOperator(OptionDto<Integer> operator) {
-    this.operator = operator;
-  }
-
-  public String getOperatorLogin() {
-    return operatorLogin;
-  }
-
-  public void setOperatorLogin(String operatorLogin) {
-    this.operatorLogin = operatorLogin;
+  public void setOperatorId(Integer operatorId) {
+    this.operatorId = operatorId;
   }
 
   public String getAccessTokenId() {
@@ -137,30 +102,6 @@ public class AuthRequestDto {
 
   public void setRefreshTokenDateFinish(Date refreshTokenDateFinish) {
     this.refreshTokenDateFinish = refreshTokenDateFinish;
-  }
-
-  public String getCodeChallenge() {
-    return codeChallenge;
-  }
-
-  public void setCodeChallenge(String codeChallenge) {
-    this.codeChallenge = codeChallenge;
-  }
-
-  public String getRedirectUri() {
-    return redirectUri;
-  }
-
-  public void setRedirectUri(String redirectUri) {
-    this.redirectUri = redirectUri;
-  }
-
-  public OptionDto<String> getClient() {
-    return client;
-  }
-
-  public void setClient(OptionDto<String> client) {
-    this.client = client;
   }
 
   public Boolean getBlocked() {

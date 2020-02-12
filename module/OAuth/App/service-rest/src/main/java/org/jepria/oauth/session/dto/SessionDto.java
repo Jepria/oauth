@@ -1,13 +1,18 @@
-package org.jepria.oauth.authorization.dto;
+package org.jepria.oauth.session.dto;
+
+import org.jepria.server.data.OptionDto;
+import org.jepria.server.data.PrimaryKey;
 
 import java.util.Date;
 
-public class AuthRequestCreateDto {
+public class SessionDto {
 
+  @PrimaryKey
+  Integer sessionId;
   String authorizationCode;
-  String redirectUri;
-  String clientId;
-  Integer operatorId;
+  Date dateIns;
+  OptionDto<Integer> operator;
+  String operatorLogin;
   String accessTokenId;
   Date accessTokenDateIns;
   Date accessTokenDateFinish;
@@ -18,6 +23,17 @@ public class AuthRequestCreateDto {
   Date refreshTokenDateIns;
   Date refreshTokenDateFinish;
   String codeChallenge;
+  String redirectUri;
+  OptionDto<String> client;
+  Boolean isBlocked;
+
+  public Integer getSessionId() {
+    return sessionId;
+  }
+
+  public void setSessionId(Integer sessionId) {
+    this.sessionId = sessionId;
+  }
 
   public String getAuthorizationCode() {
     return authorizationCode;
@@ -27,28 +43,28 @@ public class AuthRequestCreateDto {
     this.authorizationCode = authorizationCode;
   }
 
-  public String getRedirectUri() {
-    return redirectUri;
+  public Date getDateIns() {
+    return dateIns;
   }
 
-  public void setRedirectUri(String redirectUri) {
-    this.redirectUri = redirectUri;
+  public void setDateIns(Date dateIns) {
+    this.dateIns = dateIns;
   }
 
-  public String getClientId() {
-    return clientId;
+  public OptionDto<Integer> getOperator() {
+    return operator;
   }
 
-  public void setClientId(String clientId) {
-    this.clientId = clientId;
+  public void setOperator(OptionDto<Integer> operator) {
+    this.operator = operator;
   }
 
-  public Integer getOperatorId() {
-    return operatorId;
+  public String getOperatorLogin() {
+    return operatorLogin;
   }
 
-  public void setOperatorId(Integer operatorId) {
-    this.operatorId = operatorId;
+  public void setOperatorLogin(String operatorLogin) {
+    this.operatorLogin = operatorLogin;
   }
 
   public String getAccessTokenId() {
@@ -129,5 +145,29 @@ public class AuthRequestCreateDto {
 
   public void setCodeChallenge(String codeChallenge) {
     this.codeChallenge = codeChallenge;
+  }
+
+  public String getRedirectUri() {
+    return redirectUri;
+  }
+
+  public void setRedirectUri(String redirectUri) {
+    this.redirectUri = redirectUri;
+  }
+
+  public OptionDto<String> getClient() {
+    return client;
+  }
+
+  public void setClient(OptionDto<String> client) {
+    this.client = client;
+  }
+
+  public Boolean getBlocked() {
+    return isBlocked;
+  }
+
+  public void setBlocked(Boolean blocked) {
+    isBlocked = blocked;
   }
 }

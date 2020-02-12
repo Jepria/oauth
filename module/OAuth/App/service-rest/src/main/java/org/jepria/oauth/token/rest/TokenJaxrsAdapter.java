@@ -6,18 +6,20 @@ import org.jepria.oauth.token.TokenServerFactory;
 import org.jepria.oauth.token.dto.TokenDto;
 import org.jepria.oauth.token.dto.TokenInfoDto;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
+import org.jepria.server.service.security.JepSecurityContext;
 
+import javax.annotation.Priority;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.*;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.POST;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 import java.net.URI;
-import java.util.NoSuchElementException;
 
 /**
  * The token endpoint is used by the client to obtain an access token by
@@ -25,11 +27,12 @@ import java.util.NoSuchElementException;
  *    endpoint is used with every authorization grant except for the
  *    implicit grant type (since an access token is issued directly).
  */
+@Path("/token")
 public class TokenJaxrsAdapter extends JaxrsAdapterBase {
   @Context
   HttpServletRequest request;
   @Context
-  SecurityContext securityContext;
+  JepSecurityContext securityContext;
 
   //TODO Убрать после перехода на модуль Option???
   private String getPublicKey() {
@@ -44,9 +47,8 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
   }
 
   @POST
-  @Path("/token")
-  @WithClientCredentials
   @AllowAllOrigin
+  @WithClientCredentials
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   public Response createToken(
     @FormParam("grant_type") String grantType,
@@ -56,26 +58,39 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
     @FormParam("username") String username,
     @FormParam("password") String password,
     @FormParam("code_verifier") String codeVerifier) {
-    TokenDto result = TokenServerFactory.getInstance().getService().create(grantType, getPrivateKey(), getHostContext(), authCode, clientId, redirectUri, username, password);
+    TokenDto result = TokenServerFactory.getInstance().getService().create(grantType,
+      getPrivateKey(),
+      getHostContext(),
+      authCode,
+      clientId,
+      redirectUri,
+      username,
+      password);
     return Response.ok(result).build();
   }
 
   @POST
-  @Path("/tokeninfo")
+  @Path("/introspect")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-  @WithClientCredentials
   @AllowAllOrigin
+  @WithClientCredentials
   public TokenInfoDto getTokenInfo(@FormParam("token") String token) {
-    return TokenServerFactory.getInstance().getService().getTokenInfo(getPublicKey(), getHostContext(), token);
+    return TokenServerFactory.getInstance().getService().getTokenInfo(getPublicKey(),
+      getHostContext(),
+      token,
+      securityContext.getCredential());
   }
 
   @POST
-  @Path("/token/revoke")
+  @Path("/revoke")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-  @WithClientCredentials
   @AllowAllOrigin
-  public Response revokeToken(@FormParam("token") String token) {
-    TokenServerFactory.getInstance().getService().revokeToken(securityContext.getUserPrincipal().getName(), token);
+  @WithClientCredentials
+  public Response deleteToken(@FormParam("token") String token) {
+    TokenServerFactory.getInstance().getService().deleteToken(
+      securityContext.getUserPrincipal().getName(),
+      token,
+      securityContext.getCredential());
     return Response.ok().build();
   }
 

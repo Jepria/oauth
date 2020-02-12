@@ -1,18 +1,18 @@
-package org.jepria.oauth.authorization.dto;
+package org.jepria.oauth.session.dto;
 
-public class AuthRequestSearchDto {
+public class SessionSearchDto {
 
-  Integer authRequestId;
+  Integer sessionId;
   Integer operatorId;
   String clientId;
   Boolean isBlocked;
 
-  public Integer getAuthRequestId() {
-    return authRequestId;
+  public Integer getSessionId() {
+    return sessionId;
   }
 
-  public void setAuthRequestId(Integer authRequestId) {
-    this.authRequestId = authRequestId;
+  public void setSessionId(Integer sessionId) {
+    this.sessionId = sessionId;
   }
 
   public Integer getOperatorId() {

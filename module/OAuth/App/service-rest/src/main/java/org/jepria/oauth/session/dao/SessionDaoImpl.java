@@ -1,12 +1,12 @@
-package org.jepria.oauth.authorization.dao;
+package org.jepria.oauth.session.dao;
 
 import com.technology.jep.jepria.server.dao.ResultSetMapper;
 import com.technology.jep.jepria.server.db.Db;
 import oracle.jdbc.OracleTypes;
-import org.jepria.oauth.authorization.dto.AuthRequestCreateDto;
-import org.jepria.oauth.authorization.dto.AuthRequestDto;
-import org.jepria.oauth.authorization.dto.AuthRequestSearchDtoLocal;
-import org.jepria.oauth.authorization.dto.AuthRequestUpdateDto;
+import org.jepria.oauth.session.dto.SessionCreateDto;
+import org.jepria.oauth.session.dto.SessionDto;
+import org.jepria.oauth.session.dto.SessionSearchDtoLocal;
+import org.jepria.oauth.session.dto.SessionUpdateDto;
 import org.jepria.server.data.OptionDto;
 import org.jepria.server.data.RuntimeSQLException;
 
@@ -15,9 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.jepria.oauth.authorization.AuthorizationFieldNames.*;
+import static org.jepria.oauth.session.SessionFieldNames.*;
 
-public class AuthorizationDaoImpl implements AuthorizationDao {
+public class SessionDaoImpl implements SessionDao {
 
   protected Db getDb() {
     return new Db("jdbc/RFInfoDS");
@@ -34,7 +34,7 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
       "accessTokenId varchar2(64) := ?;" +
       "isBlocked integer := ?;" +
       "hasToken integer := ?;" +
-      "sessionId varchar2(64) := ?;" +
+      "sessionTokenId varchar2(64) := ?;" +
     "begin " +
       "open rc for select " +
           "ar.AUTH_REQUEST_ID," +
@@ -63,7 +63,7 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
           "and (ar.OPERATOR_ID = operatorId or operatorId is null) " +
           "and (cl.CLIENT_CODE like clientCode or clientCode is null) " +
           "and (ar.REDIRECT_URI like redirectUri or redirectUri is null) " +
-          "and (ar.SESSION_TOKEN_ID like sessionId or sessionId is null) " +
+          "and (ar.SESSION_TOKEN_ID like sessionTokenId or sessionTokenId is null) " +
           "and ((hasToken = 0 and (ar.ACCESS_TOKEN_ID like accessTokenId or accessTokenId is null)) " +
             "or (hasToken = 1 and ar.ACCESS_TOKEN_ID is not null)) " +
           "and (ar.IS_BLOCKED = isBlocked or isBlocked is null); " +
@@ -71,10 +71,10 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
     "end;";
 
 
-  private ResultSetMapper mapper = new ResultSetMapper<AuthRequestDto>() {
+  private ResultSetMapper mapper = new ResultSetMapper<SessionDto>() {
     @Override
-    public void map(ResultSet rs, AuthRequestDto dto) throws SQLException {
-      dto.setAuthRequestId(getInteger(rs, AUTH_REQUEST_ID));
+    public void map(ResultSet rs, SessionDto dto) throws SQLException {
+      dto.setSessionId(getInteger(rs, AUTH_REQUEST_ID));
       dto.setAuthorizationCode(rs.getString(AUTHORIZATION_CODE));
       dto.setDateIns(getTimestamp(rs, DATE_INS));
       dto.setRedirectUri(rs.getString(REDIRECT_URI));
@@ -99,31 +99,31 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
   };
 
   @Override
-  public List<AuthRequestDto> find(Object template, Integer operatorId) {
-    AuthRequestSearchDtoLocal dto = (AuthRequestSearchDtoLocal) template;
+  public List<SessionDto> find(Object template, Integer operatorId) {
+    SessionSearchDtoLocal dto = (SessionSearchDtoLocal) template;
     Db db = getDb();
     CallableStatement statement = db.prepare(findSqlQuery);
-    List<AuthRequestDto> result = new ArrayList<>();
+    List<SessionDto> result = new ArrayList<>();
     try {
-      if (dto.getAuthRequestId() != null) statement.setInt(1, dto.getAuthRequestId());
+      if (dto.getSessionId() != null) statement.setInt(1, dto.getSessionId());
       else statement.setNull(1, OracleTypes.INTEGER);
       statement.setString(2, dto.getAuthorizationCode());
       if (dto.getOperatorId() != null) statement.setInt(3, dto.getOperatorId());
       else statement.setNull(3, OracleTypes.INTEGER);
       statement.setString(4, dto.getClientId());
       statement.setString(5, dto.getRedirectUri());
-      statement.setString(6, dto.getTokenId());
+      statement.setString(6, dto.getAccessTokenId());
       if (dto.getBlocked() != null) statement.setInt(7, dto.getBlocked() ? 1 : 0);
       else statement.setNull(7, OracleTypes.INTEGER);
       if (dto.getHasToken() != null) statement.setInt(8, dto.getHasToken() ? 1 : 0);
       else statement.setInt(8, 0);
-      statement.setString(9, dto.getSessionId());
+      statement.setString(9, dto.getSessionTokenId());
       statement.registerOutParameter(10, OracleTypes.CURSOR);
       statement.executeQuery();
 
       try (ResultSet rs = (ResultSet) statement.getObject(10)) {
         while (rs.next()) {
-          AuthRequestDto resultDto = new AuthRequestDto();
+          SessionDto resultDto = new SessionDto();
           mapper.map(rs, resultDto);
           result.add(resultDto);
         }
@@ -141,12 +141,12 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
   }
 
   @Override
-  public List<AuthRequestDto> findByPrimaryKey(Map<String, ?> primaryKeyMap, Integer operatorId) {
+  public List<SessionDto> findByPrimaryKey(Map<String, ?> primaryKeyMap, Integer operatorId) {
     Db db = getDb();
     CallableStatement statement = db.prepare(findSqlQuery);
-    List<AuthRequestDto> result = new ArrayList<>();
+    List<SessionDto> result = new ArrayList<>();
     try {
-      statement.setInt(1, (Integer) primaryKeyMap.get(AUTH_REQUEST_ID));
+      statement.setInt(1, (Integer) primaryKeyMap.get(SESSION_ID));
       statement.setNull(2, OracleTypes.VARCHAR);
       statement.setNull(3, OracleTypes.INTEGER);
       statement.setNull(4, OracleTypes.VARCHAR);
@@ -160,7 +160,7 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
 
       try (ResultSet rs = (ResultSet) statement.getObject(10)) {
         while (rs.next()) {
-          AuthRequestDto resultDto = new AuthRequestDto();
+          SessionDto resultDto = new SessionDto();
           mapper.map(rs, resultDto);
           result.add(resultDto);
         }
@@ -180,7 +180,7 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
   @Override
   public Object create(Object record, Integer operatorId) {
     Db db = getDb();
-    AuthRequestCreateDto dto = (AuthRequestCreateDto) record;
+    SessionCreateDto dto = (SessionCreateDto) record;
     //language=Oracle
     String insertSqlQuery = "declare " +
         "authCode varchar2(64) := ?;" +
@@ -313,7 +313,7 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
   @Override
   public void update(Map<String, ?> primaryKey, Object record, Integer operatorId) {
     Db db = getDb();
-    AuthRequestUpdateDto dto = (AuthRequestUpdateDto) record;
+    SessionUpdateDto dto = (SessionUpdateDto) record;
     //language=Oracle
     String updateSqlQuery = "UPDATE OA_AUTH_REQUEST t " +
       "SET " +
@@ -370,35 +370,7 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
         updateStatement.setNull(10, Types.DATE);
       }
       updateStatement.setInt(11, dto.getBlocked() != null ? (dto.getBlocked() ? 1 : 0) : 0);
-      updateStatement.setInt(12, (Integer) primaryKey.get(AUTH_REQUEST_ID));
-      int updatedRecordCount = updateStatement.executeUpdate();
-      if (updatedRecordCount == 1) {
-        db.commit();
-      }
-    } catch (SQLException e) {
-      e.printStackTrace();
-      db.rollback();
-      throw new RuntimeSQLException(e);
-    } catch (Throwable th) {
-      th.printStackTrace();
-      db.rollback();
-      throw th;
-    } finally {
-      db.closeAll();
-    }
-  }
-
-  @Override
-  public void blockAuthRequest(Integer authRequestId) {
-    Db db = getDb();
-    //language=Oracle
-    String updateSqlQuery = "UPDATE OA_AUTH_REQUEST t " +
-      "SET IS_BLOCKED = ? " +
-      "WHERE t.AUTH_REQUEST_ID = ?";
-    CallableStatement updateStatement = db.prepare(updateSqlQuery);
-    try {
-      updateStatement.setInt(1, 1);
-      updateStatement.setInt(2, authRequestId);
+      updateStatement.setInt(12, (Integer) primaryKey.get(SESSION_ID));
       int updatedRecordCount = updateStatement.executeUpdate();
       if (updatedRecordCount == 1) {
         db.commit();
@@ -418,6 +390,29 @@ public class AuthorizationDaoImpl implements AuthorizationDao {
 
   @Override
   public void delete(Map<String, ?> primaryKey, Integer operatorId) {
-    throw new UnsupportedOperationException();
+    Db db = getDb();
+    //language=Oracle
+    String updateSqlQuery = "UPDATE OA_AUTH_REQUEST t " +
+      "SET IS_BLOCKED = ? " +
+      "WHERE t.AUTH_REQUEST_ID = ?";
+    CallableStatement updateStatement = db.prepare(updateSqlQuery);
+    try {
+      updateStatement.setInt(1, 1);
+      updateStatement.setInt(2, Integer.valueOf((String) primaryKey.get(SESSION_ID)));
+      int updatedRecordCount = updateStatement.executeUpdate();
+      if (updatedRecordCount == 1) {
+        db.commit();
+      }
+    } catch (SQLException e) {
+      e.printStackTrace();
+      db.rollback();
+      throw new RuntimeSQLException(e);
+    } catch (Throwable th) {
+      th.printStackTrace();
+      db.rollback();
+      throw th;
+    } finally {
+      db.closeAll();
+    }
   }
 }

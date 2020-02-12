@@ -2,12 +2,14 @@ package org.jepria.oauth.token;
 
 import org.jepria.oauth.authentication.AuthenticationServerFactory;
 import org.jepria.oauth.authorization.AuthorizationServerFactory;
-import org.jepria.oauth.authorization.dto.AuthRequestCreateDto;
-import org.jepria.oauth.authorization.dto.AuthRequestDto;
-import org.jepria.oauth.authorization.dto.AuthRequestSearchDtoLocal;
-import org.jepria.oauth.authorization.dto.AuthRequestUpdateDto;
 import org.jepria.oauth.main.exception.HandledRuntimeException;
 import org.jepria.oauth.sdk.GrantType;
+import org.jepria.oauth.session.SessionServerFactory;
+import org.jepria.oauth.session.SessionService;
+import org.jepria.oauth.session.dto.SessionCreateDto;
+import org.jepria.oauth.session.dto.SessionDto;
+import org.jepria.oauth.session.dto.SessionSearchDtoLocal;
+import org.jepria.oauth.session.dto.SessionUpdateDto;
 import org.jepria.oauth.token.dto.TokenDto;
 import org.jepria.oauth.token.dto.TokenInfoDto;
 
@@ -17,10 +19,9 @@ import org.jepria.oauth.sdk.token.Verifier;
 import org.jepria.oauth.sdk.token.rsa.SignerRSA;
 import org.jepria.oauth.sdk.token.TokenImpl;
 import org.jepria.oauth.sdk.token.rsa.VerifierRSA;
+import org.jepria.server.service.security.Credential;
 
 import javax.security.auth.login.LoginException;
-import javax.ws.rs.core.Response;
-import java.net.URI;
 import java.security.MessageDigest;
 import java.text.ParseException;
 import java.util.*;
@@ -30,33 +31,54 @@ import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 public class TokenService {
 
-  private AuthRequestDto getAuthRequest(String authCode,
-                                        String clientId,
-                                        String redirectUri,
-                                        String tokenId) {
-    AuthRequestSearchDtoLocal searchTemplate = new AuthRequestSearchDtoLocal();
+  private SessionService sessionService = SessionServerFactory.getInstance().getService();
+
+  private Credential serverCredential = new Credential() {
+    @Override
+    public int getOperatorId() {
+      return 1;
+    }
+
+    @Override
+    public String getUsername() {
+      return "SERVER";
+    }
+
+    @Override
+    public boolean isUserInRole(String roleShortName) {
+      return true;
+    }
+  };
+
+  private SessionDto getSession(String authCode,
+                                String clientId,
+                                String redirectUri,
+                                String tokenId,
+                                Credential credential) {
+    SessionSearchDtoLocal searchTemplate = new SessionSearchDtoLocal();
     searchTemplate.setAuthorizationCode(authCode);
     searchTemplate.setClientId(clientId);
     searchTemplate.setRedirectUri(redirectUri);
-    searchTemplate.setTokenId(tokenId);
-    List<AuthRequestDto> result = (List<AuthRequestDto>) AuthorizationServerFactory.getInstance().getDao().find(searchTemplate, 1);
+    searchTemplate.setAccessTokenId(tokenId);
+    List<SessionDto> result = sessionService.find(searchTemplate, credential);
     if (result.size() == 1) {
       return result.get(0);
     } else {
-      throw new NoSuchElementException("Authorization request not found");
+      throw new HandledRuntimeException(INVALID_GRANT, "Authorization request not found");
     }
   }
 
-  private void updateAuthRequest(Integer authRequestId,
+  private void updateSession(Integer sessionId,
                                  Integer operatorId,
                                  String accessTokenId,
                                  Date accessTokenDateIns,
                                  Date accessTokenDateFinish,
                                  String sessionTokenId,
                                  Date sessionTokenDateIns,
-                                 Date sessionTokenDateFinish) {
-    AuthRequestUpdateDto updateDto = new AuthRequestUpdateDto();
-    updateDto.setAuthRequestId(authRequestId);
+                                 Date sessionTokenDateFinish,
+                                 Credential credential) {
+    SessionUpdateDto updateDto = new SessionUpdateDto();
+    updateDto.setSessionId(sessionId);
     updateDto.setOperatorId(operatorId);
     updateDto.setAccessTokenId(accessTokenId);
     updateDto.setAccessTokenDateIns(accessTokenDateIns);
@@ -64,7 +86,7 @@ public class TokenService {
     updateDto.setSessionTokenId(sessionTokenId);
     updateDto.setSessionTokenDateIns(sessionTokenDateIns);
     updateDto.setSessionTokenDateFinish(sessionTokenDateFinish);
-    AuthorizationServerFactory.getInstance().getService().update(updateDto);
+    sessionService.update(updateDto, credential);
   }
 
   /**
@@ -76,15 +98,14 @@ public class TokenService {
    * @param redirectUri
    * @return
    */
-  public TokenDto create(
-    String grantType,
-    String privateKey,
-    String host,
-    String authCode,
-    String clientId,
-    String redirectUri,
-    String username,
-    String password) {
+  public TokenDto create(String grantType,
+                         String privateKey,
+                         String host,
+                         String authCode,
+                         String clientId,
+                         String redirectUri,
+                         String username,
+                         String password) {
     TokenDto result;
     if (grantType == null) {
       throw new HandledRuntimeException(UNSUPPORTED_GRANT_TYPE, "Grant type must be not null");
@@ -131,26 +152,27 @@ public class TokenService {
       throw new IllegalArgumentException("Redirect URI is null.");
     }
 
-    AuthRequestDto authRequest = getAuthRequest(authCode, clientId, redirectUri, null);
-    if (TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - authRequest.getDateIns().getTime()) > 10) {
+    SessionDto session = getSession(authCode, clientId, redirectUri, null, serverCredential);
+    if (TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - session.getDateIns().getTime()) > 10) {
       throw new HandledRuntimeException(INVALID_GRANT, "Authorization code active time has expired.");
     }
-    if (authRequest.getAccessTokenId() != null) {
+    if (session.getAccessTokenId() != null) {
       throw new HandledRuntimeException(INVALID_GRANT, "Request is finished.");
     }
-    Token token = generateToken(authRequest.getOperatorLogin(), null, authRequest.getOperator().getValue(), host, privateKeyString, 1);
+    Token token = generateToken(session.getOperatorLogin(), null, session.getOperator().getValue(), host, privateKeyString, 1);
     TokenDto tokenDto = new TokenDto();
     tokenDto.setAccessToken(token.asString());
     tokenDto.setExpiresIn(3600); // 1 hour active time
     tokenDto.setTokenType("Bearer");
-    updateAuthRequest(authRequest.getAuthRequestId(),
-      authRequest.getOperator().getValue(),
+    updateSession(session.getSessionId(),
+      session.getOperator().getValue(),
       token.getJti(),
       token.getIssueTime(),
       token.getExpirationTime(),
-      authRequest.getSessionTokenId(),
-      authRequest.getSessionTokenDateIns(),
-      authRequest.getSessionTokenDateFinish());
+      session.getSessionTokenId(),
+      session.getSessionTokenDateIns(),
+      session.getSessionTokenDateFinish(),
+      serverCredential);
     return tokenDto;
   }
 
@@ -176,26 +198,27 @@ public class TokenService {
     if (redirectUri == null) {
       throw new IllegalArgumentException("Redirect URI is null.");
     }
-    AuthRequestDto authRequest = getAuthRequest(authCode, clientId, redirectUri, null);
-    if (TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - authRequest.getDateIns().getTime()) > 10) {
+    SessionDto session = getSession(authCode, clientId, redirectUri, null, serverCredential);
+    if (TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - session.getDateIns().getTime()) > 10) {
       throw new HandledRuntimeException(INVALID_GRANT, "Authorization code active time has expired.");
     }
-    if (authRequest.getAccessTokenId() != null) {
+    if (session.getAccessTokenId() != null) {
       throw new HandledRuntimeException(INVALID_GRANT, "Request is finished.");
     }
-    Token token = generateToken(authRequest.getOperatorLogin(), null, authRequest.getOperator().getValue(), host, privateKeyString, 4);
+    Token token = generateToken(session.getOperatorLogin(), null, session.getOperator().getValue(), host, privateKeyString, 4);
     TokenDto tokenDto = new TokenDto();
     tokenDto.setAccessToken(token.asString());
     tokenDto.setExpiresIn(14400); // 4 hours active time
     tokenDto.setTokenType("Bearer");
-    updateAuthRequest(authRequest.getAuthRequestId(),
-      authRequest.getOperator().getValue(),
+    updateSession(session.getSessionId(),
+      session.getOperator().getValue(),
       token.getJti(),
       token.getIssueTime(),
       token.getExpirationTime(),
-      authRequest.getSessionTokenId(),
-      authRequest.getSessionTokenDateIns(),
-      authRequest.getSessionTokenDateFinish());
+      session.getSessionTokenId(),
+      session.getSessionTokenDateIns(),
+      session.getSessionTokenDateFinish(),
+      serverCredential);
     return tokenDto;
   }
 
@@ -221,14 +244,14 @@ public class TokenService {
       tokenDto.setExpiresIn(3600); // 1 hours active time
       tokenDto.setTokenType("Bearer");
 
-      AuthRequestCreateDto createDto = new AuthRequestCreateDto();
+      SessionCreateDto createDto = new SessionCreateDto();
       createDto.setAuthorizationCode(AuthorizationServerFactory.getInstance().getService().generateCode());
       createDto.setClientId(clientId);
       createDto.setOperatorId(operatorId);
       createDto.setAccessTokenId(token.getJti());
       createDto.setAccessTokenDateIns(token.getIssueTime());
       createDto.setAccessTokenDateFinish(token.getExpirationTime());
-      AuthorizationServerFactory.getInstance().getService().create(createDto);
+      sessionService.create(createDto, serverCredential);
 
       result = tokenDto;
     } catch (LoginException e) {
@@ -254,13 +277,13 @@ public class TokenService {
    * @param tokenString
    * @return
    */
-  public TokenInfoDto getTokenInfo(String publicKey, String hostContext, String tokenString) {
+  public TokenInfoDto getTokenInfo(String publicKey, String hostContext, String tokenString, Credential credential) {
     TokenInfoDto result = new TokenInfoDto();
     Token token;
     try {
       token = TokenImpl.parseFromString(tokenString);
-      AuthRequestDto authRequestDto = getAuthRequest(null, null, null, token.getJti());
-      if (authRequestDto.getBlocked()) {
+      SessionDto sessionDto = getSession(null, null, null, token.getJti(), credential);
+      if (sessionDto.getBlocked()) {
         result.setActive(false);
         return result;
       }
@@ -288,11 +311,11 @@ public class TokenService {
    * @param tokenString
    * @return
    */
-  public void revokeToken(String clientId, String tokenString) {
+  public void deleteToken(String clientId, String tokenString, Credential credential) {
     try {
       Token token = TokenImpl.parseFromString(tokenString);
-      AuthRequestDto authRequestDto = getAuthRequest(null, clientId, null, token.getJti());
-      AuthorizationServerFactory.getInstance().getDao().blockAuthRequest(authRequestDto.getAuthRequestId());
+      SessionDto sessionDto = getSession(null, clientId, null, token.getJti(), credential);
+      sessionService.delete(sessionDto.getSessionId(), credential);
     } catch (ParseException e) {
       throw new HandledRuntimeException(SERVER_ERROR, e);
     }

@@ -1,7 +1,5 @@
 package org.jepria.oauth.token.dao;
 
-import org.jepria.oauth.authorization.dao.AuthorizationDaoImpl;
-
 import java.util.List;
 import java.util.Map;
 

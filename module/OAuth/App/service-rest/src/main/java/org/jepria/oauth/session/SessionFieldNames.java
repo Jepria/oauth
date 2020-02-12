@@ -1,6 +1,7 @@
-package org.jepria.oauth.authorization;
+package org.jepria.oauth.session;
 
-public class AuthorizationFieldNames {
+public class SessionFieldNames {
+  public static String SESSION_ID = "session_id";
   public static String AUTH_REQUEST_ID = "auth_request_id";
   public static String AUTHORIZATION_CODE = "authorization_code";
   public static String DATE_INS = "date_ins";

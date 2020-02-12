@@ -1,23 +1,23 @@
-package org.jepria.oauth.authorization.dto;
+package org.jepria.oauth.session.dto;
 
-public class AuthRequestSearchDtoLocal {
+public class SessionSearchDtoLocal {
 
-  Integer authRequestId;
+  Integer sessionId;
   String authorizationCode;
   Integer operatorId;
   String clientId;
-  String sessionId;
-  String tokenId;
+  String sessionTokenId;
+  String accessTokenId;
   Boolean isBlocked;
   String redirectUri;
   Boolean hasToken;
 
-  public Integer getAuthRequestId() {
-    return authRequestId;
+  public Integer getSessionId() {
+    return sessionId;
   }
 
-  public void setAuthRequestId(Integer authRequestId) {
-    this.authRequestId = authRequestId;
+  public void setSessionId(Integer sessionId) {
+    this.sessionId = sessionId;
   }
 
   public String getAuthorizationCode() {
@@ -44,20 +44,20 @@ public class AuthRequestSearchDtoLocal {
     this.clientId = clientId;
   }
 
-  public String getSessionId() {
-    return sessionId;
+  public String getSessionTokenId() {
+    return sessionTokenId;
   }
 
-  public void setSessionId(String sessionId) {
-    this.sessionId = sessionId;
+  public void setSessionTokenId(String sessionTokenId) {
+    this.sessionTokenId = sessionTokenId;
   }
 
-  public String getTokenId() {
-    return tokenId;
+  public String getAccessTokenId() {
+    return accessTokenId;
   }
 
-  public void setTokenId(String tokenId) {
-    this.tokenId = tokenId;
+  public void setAccessTokenId(String accessTokenId) {
+    this.accessTokenId = accessTokenId;
   }
 
   public Boolean getBlocked() {

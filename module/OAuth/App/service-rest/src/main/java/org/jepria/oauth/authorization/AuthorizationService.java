@@ -1,9 +1,5 @@
 package org.jepria.oauth.authorization;
 
-import org.jepria.oauth.authorization.dto.AuthRequestCreateDto;
-import org.jepria.oauth.authorization.dto.AuthRequestDto;
-import org.jepria.oauth.authorization.dto.AuthRequestSearchDtoLocal;
-import org.jepria.oauth.authorization.dto.AuthRequestUpdateDto;
 import org.jepria.oauth.client.ClientServerFactory;
 import org.jepria.oauth.clienturi.ClientUriServerFactory;
 import org.jepria.oauth.clienturi.dto.ClientUriDto;
@@ -17,8 +13,14 @@ import org.jepria.oauth.sdk.token.Verifier;
 import org.jepria.oauth.sdk.token.rsa.DecryptorRSA;
 import org.jepria.oauth.sdk.token.rsa.SignatureVerifierRSA;
 import org.jepria.oauth.sdk.token.rsa.VerifierRSA;
+import org.jepria.oauth.session.SessionServerFactory;
+import org.jepria.oauth.session.SessionService;
+import org.jepria.oauth.session.dto.SessionCreateDto;
+import org.jepria.oauth.session.dto.SessionDto;
+import org.jepria.oauth.session.dto.SessionSearchDtoLocal;
 import org.jepria.server.data.OptionDto;
 import org.jepria.server.data.RuntimeSQLException;
+import org.jepria.server.service.security.Credential;
 
 import java.security.MessageDigest;
 import java.security.SecureRandom;
@@ -26,12 +28,33 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.*;
 
-import static org.jepria.oauth.authorization.AuthorizationFieldNames.AUTH_REQUEST_ID;
 import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 public class AuthorizationService {
 
-  public AuthRequestDto authorize(String responseType, String clientId, String redirectUri, String codeChallenge) {
+  private SessionService sessionService = SessionServerFactory.getInstance().getService();
+
+  private Credential serverCredential = new Credential() {
+    @Override
+    public int getOperatorId() {
+      return 1;
+    }
+
+    @Override
+    public String getUsername() {
+      return "SERVER";
+    }
+
+    @Override
+    public boolean isUserInRole(String roleShortName) {
+      return true;
+    }
+  };
+
+  public SessionDto authorize(String responseType,
+                              String clientId,
+                              String redirectUri,
+                              String codeChallenge) {
     if (!ResponseType.implies(responseType)) {
       throw new HandledRuntimeException(UNSUPPORTED_RESPONSE_TYPE);
     }
@@ -41,16 +64,13 @@ public class AuthorizationService {
       throw new HandledRuntimeException(UNAUTHORIZED_CLIENT, "Client doesn't have enough permissions to use responseType=" + responseType);
     }
 
-    AuthRequestCreateDto authRequestDto = new AuthRequestCreateDto();
-    authRequestDto.setAuthorizationCode(generateCode());
-    authRequestDto.setClientId(clientId);
-    authRequestDto.setRedirectUri(redirectUri);
-    authRequestDto.setCodeChallenge(codeChallenge);
+    SessionCreateDto sessionDto = new SessionCreateDto();
+    sessionDto.setAuthorizationCode(generateCode());
+    sessionDto.setClientId(clientId);
+    sessionDto.setRedirectUri(redirectUri);
+    sessionDto.setCodeChallenge(codeChallenge);
     try {
-      List<AuthRequestDto> authRequestList = (List<AuthRequestDto>) AuthorizationServerFactory.getInstance().getDao().findByPrimaryKey(new HashMap<String, Integer>() {{
-        put(AUTH_REQUEST_ID, (create(authRequestDto)));
-      }}, 1);
-      return authRequestList.get(0);
+      return sessionService.findByPrimaryKey(sessionService.create(sessionDto, serverCredential), serverCredential);
     } catch (RuntimeSQLException ex) {
       SQLException sqlException = ex.getSQLException();
       if (sqlException.getErrorCode() == 20001) {
@@ -63,7 +83,14 @@ public class AuthorizationService {
     }
   }
 
-  public AuthRequestDto authorize(String responseType, String clientId, String redirectUri, String codeChallenge, String sessionToken, String issuer, String publicKey, String privateKey) {
+  public SessionDto authorize(String responseType,
+                              String clientId,
+                              String redirectUri,
+                              String codeChallenge,
+                              String sessionToken,
+                              String issuer,
+                              String publicKey,
+                              String privateKey) {
     if (!ResponseType.implies(responseType)) {
       throw new HandledRuntimeException(UNSUPPORTED_RESPONSE_TYPE);
     }
@@ -79,19 +106,16 @@ public class AuthorizationService {
       if (verifier.verify(token)) {
         String[] subject = token.getSubject().split(":");
 
-        AuthRequestCreateDto authRequestDto = new AuthRequestCreateDto();
-        authRequestDto.setAuthorizationCode(generateCode());
-        authRequestDto.setClientId(clientId);
-        authRequestDto.setRedirectUri(redirectUri);
-        authRequestDto.setOperatorId(Integer.valueOf(subject[1]));
-        authRequestDto.setSessionTokenId(token.getJti());
-        authRequestDto.setSessionTokenDateIns(token.getIssueTime());
-        authRequestDto.setSessionTokenDateFinish(token.getExpirationTime());
-        authRequestDto.setCodeChallenge(codeChallenge);
-        List<AuthRequestDto> authRequestList = (List<AuthRequestDto>) AuthorizationServerFactory.getInstance().getDao().findByPrimaryKey(new HashMap<String, Integer>() {{
-          put(AUTH_REQUEST_ID, (create(authRequestDto)));
-        }}, 1);
-        return authRequestList.get(0);
+        SessionCreateDto sessionDto = new SessionCreateDto();
+        sessionDto.setAuthorizationCode(generateCode());
+        sessionDto.setClientId(clientId);
+        sessionDto.setRedirectUri(redirectUri);
+        sessionDto.setOperatorId(Integer.valueOf(subject[1]));
+        sessionDto.setSessionTokenId(token.getJti());
+        sessionDto.setSessionTokenDateIns(token.getIssueTime());
+        sessionDto.setSessionTokenDateFinish(token.getExpirationTime());
+        sessionDto.setCodeChallenge(codeChallenge);
+        return sessionService.findByPrimaryKey(sessionService.create(sessionDto, serverCredential), serverCredential);
       } else {
         return authorize(responseType, clientId, redirectUri, codeChallenge);
       }
@@ -112,45 +136,6 @@ public class AuthorizationService {
     }
   }
 
-
-  /**
-   * @param template
-   * @return
-   */
-  public List<AuthRequestDto> find(AuthRequestSearchDtoLocal template) {
-    template.setHasToken(false);
-    List<AuthRequestDto> result = (List<AuthRequestDto>) AuthorizationServerFactory.getInstance().getDao().find(template, 1);
-    return result;
-  }
-
-  /**
-   * @param record
-   * @return
-   */
-  public Integer create(AuthRequestCreateDto record) {
-    Integer result = (Integer) AuthorizationServerFactory.getInstance().getDao().create(record, 1);
-    return result;
-  }
-
-  /**
-   * @param record
-   */
-  public void update(AuthRequestUpdateDto record) {
-    if (record.getAuthRequestId() == null) {
-      throw new IllegalArgumentException("Primary key must be not null");
-    }
-    AuthorizationServerFactory.getInstance().getDao().update(new HashMap<String, Integer>() {{
-      put(AUTH_REQUEST_ID, record.getAuthRequestId());
-    }}, record, null);
-  }
-
-  /**
-   * @param authRequestId
-   */
-  public void block(Integer authRequestId) {
-    AuthorizationServerFactory.getInstance().getDao().blockAuthRequest(authRequestId);
-  }
-
   /**
    * @return
    */
@@ -168,7 +153,12 @@ public class AuthorizationService {
     }
   }
 
-  public void logout(String clientId, String redirectUri, String sessionToken, String issuer, String publicKey, String privateKey) {
+  public void logout(String clientId,
+                     String redirectUri,
+                     String sessionToken,
+                     String issuer,
+                     String publicKey,
+                     String privateKey) {
     ClientUriSearchDtoLocal clientUriSearchTemplate = new ClientUriSearchDtoLocal();
     clientUriSearchTemplate.setClientId(clientId);
     List<ClientUriDto> clientUriList = ClientUriServerFactory.getInstance().getService().findClientUri(clientUriSearchTemplate, null);
@@ -182,14 +172,13 @@ public class AuthorizationService {
       token = decryptor.decrypt(token);
       Verifier verifier = new SignatureVerifierRSA(publicKey);
       if (verifier.verify(token) && issuer.equals(token.getIssuer())) {
-        AuthRequestSearchDtoLocal searchTemplate = new AuthRequestSearchDtoLocal();
-        searchTemplate.setSessionId(token.getJti());
+        SessionSearchDtoLocal searchTemplate = new SessionSearchDtoLocal();
+        searchTemplate.setSessionTokenId(token.getJti());
         searchTemplate.setBlocked(false);
-        AuthorizationServerFactory.getInstance()
-          .getDao()
-          .find(searchTemplate, null)
+        sessionService
+          .find(searchTemplate, serverCredential)
           .stream()
-          .forEach(authRequestDto -> block(((AuthRequestDto) authRequestDto).getAuthRequestId()));
+          .forEach(sessionDto -> sessionService.delete(sessionDto.getSessionId(), serverCredential));
       }
     } catch (ParseException ex) {
       throw new HandledRuntimeException(SERVER_ERROR, ex);

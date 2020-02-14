@@ -155,13 +155,14 @@ public class SessionDaoImpl implements SessionDao {
       statement.setNull(4, OracleTypes.VARCHAR);
       statement.setNull(5, OracleTypes.VARCHAR);
       statement.setNull(6, OracleTypes.VARCHAR);
-      statement.setNull(7, OracleTypes.INTEGER);
-      statement.setInt(8, 0);
-      statement.setNull(9, OracleTypes.VARCHAR);
-      statement.registerOutParameter(10, OracleTypes.CURSOR);
+      statement.setNull(7, OracleTypes.VARCHAR);
+      statement.setNull(8, OracleTypes.VARCHAR);
+      statement.setNull(9, OracleTypes.INTEGER);
+      statement.setInt(10, 0);
+      statement.registerOutParameter(11, OracleTypes.CURSOR);
       statement.executeQuery();
 
-      try (ResultSet rs = (ResultSet) statement.getObject(10)) {
+      try (ResultSet rs = (ResultSet) statement.getObject(11)) {
         while (rs.next()) {
           SessionDto resultDto = new SessionDto();
           mapper.map(rs, resultDto);

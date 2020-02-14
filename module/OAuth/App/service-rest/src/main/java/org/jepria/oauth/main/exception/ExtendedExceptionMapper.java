@@ -31,6 +31,9 @@ public class ExtendedExceptionMapper extends ApplicationConfigBase.ExceptionMapp
 
   @Override
   public Response toResponse(Throwable exception) {
+    if (resourceInfo.getResourceClass() == null) {
+      super.toResponse(exception);
+    }
     String errorId = exceptionManager.registerException(exception);
     String exceptionCode;
     if (exception instanceof HandledRuntimeException) {

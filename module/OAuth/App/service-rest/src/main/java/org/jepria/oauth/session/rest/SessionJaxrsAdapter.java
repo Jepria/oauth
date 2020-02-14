@@ -97,7 +97,7 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
   }
 
   @GET
-  @Path("/session/search/{searchId}/resultset")
+  @Path("/search/{searchId}/resultset")
   @HttpBasic(passwordType = HttpBasic.PASSWORD)
   public Response getResultset(
     @PathParam("searchId") String searchId,
@@ -109,7 +109,7 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
   }
 
   @GET
-  @Path("/session/search/{searchId}/resultset/paged-by-{pageSize:\\d+}/{page}")
+  @Path("/search/{searchId}/resultset/paged-by-{pageSize:\\d+}/{page}")
   @HttpBasic(passwordType = HttpBasic.PASSWORD)
   public Response getResultsetPaged(
     @PathParam("searchId") String searchId,

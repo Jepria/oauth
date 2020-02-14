@@ -8,6 +8,7 @@ public class SessionSearchDtoLocal {
   String clientId;
   String sessionTokenId;
   String accessTokenId;
+  String refreshTokenId;
   Boolean isBlocked;
   String redirectUri;
   Boolean hasToken;
@@ -58,6 +59,14 @@ public class SessionSearchDtoLocal {
 
   public void setAccessTokenId(String accessTokenId) {
     this.accessTokenId = accessTokenId;
+  }
+
+  public String getRefreshTokenId() {
+    return refreshTokenId;
+  }
+
+  public void setRefreshTokenId(String refreshTokenId) {
+    this.refreshTokenId = refreshTokenId;
   }
 
   public Boolean getBlocked() {

@@ -1,7 +1,6 @@
 package org.jepria.oauth.authentication;
 
 import org.jepria.oauth.authentication.dao.AuthenticationDao;
-import org.jepria.oauth.authorization.AuthorizationServerFactory;
 import org.jepria.oauth.main.exception.HandledRuntimeException;
 import org.jepria.oauth.sdk.token.rsa.EncryptorRSA;
 import org.jepria.oauth.sdk.token.rsa.SignerRSA;
@@ -9,17 +8,12 @@ import org.jepria.oauth.sdk.token.TokenImpl;
 import org.jepria.oauth.sdk.token.Encryptor;
 import org.jepria.oauth.sdk.token.Signer;
 import org.jepria.oauth.sdk.token.Token;
-import org.jepria.oauth.session.SessionServerFactory;
 import org.jepria.oauth.session.SessionService;
 import org.jepria.oauth.session.dto.SessionDto;
 import org.jepria.oauth.session.dto.SessionSearchDtoLocal;
 import org.jepria.oauth.session.dto.SessionUpdateDto;
-import org.jepria.oauth.token.TokenServerFactory;
-import org.jepria.oauth.token.TokenService;
-import org.jepria.oauth.token.dto.TokenDto;
 import org.jepria.server.service.security.Credential;
 
-import javax.security.auth.login.LoginException;
 import java.security.MessageDigest;
 import java.text.ParseException;
 import java.util.*;
@@ -30,10 +24,13 @@ import static org.jepria.oauth.sdk.OAuthConstants.*;
 public class AuthenticationService {
 
   public static int DEFAULT_EXPIRE_TIME = 8;
+  private final AuthenticationDao dao;
+  private final SessionService sessionService;
 
-  private TokenService tokenService = TokenServerFactory.getInstance().getService();
-  private AuthenticationDao dao = AuthenticationServerFactory.getInstance().getDao();
-  private SessionService sessionService = SessionServerFactory.getInstance().getService();
+  public AuthenticationService(AuthenticationDao dao, SessionService sessionService) {
+    this.dao = dao;
+    this.sessionService = sessionService;
+  }
 
   private Credential serverCredential = new Credential() {
     @Override
@@ -56,14 +53,17 @@ public class AuthenticationService {
    * @param username
    * @param password
    * @return
-   * @throws LoginException
    */
-  public Integer loginByPassword(String username, String password) throws LoginException {
-    Integer operatorId = dao.loginByPassword(username, password);
-    if (operatorId == null) {
-      throw new LoginException();
-    } else {
-      return operatorId;
+  public Integer loginByPassword(String username, String password) {
+    try {
+      Integer operatorId = dao.loginByPassword(username, password);
+      if (operatorId == null) {
+        throw new HandledRuntimeException(ACCESS_DENIED, "Wrong username/password.");
+      } else {
+        return operatorId;
+      }
+    } catch (Throwable th) {
+      throw new HandledRuntimeException(SERVER_ERROR, th);
     }
   }
 
@@ -71,28 +71,54 @@ public class AuthenticationService {
    * @param clientId
    * @param clientSecret
    * @return
-   * @throws LoginException
    */
-  public Integer loginByClientCredentials(String clientId, String clientSecret) throws LoginException {
-    Integer clientID = dao.loginByClientCredentials(clientId, clientSecret);
-    if (clientID == null) {
-      throw new LoginException();
-    } else {
-      return clientID;
+  public Integer loginByClientCredentials(String clientId, String clientSecret) {
+    try {
+      Integer clientID = dao.loginByClientCredentials(clientId, clientSecret);
+      if (clientID == null) {
+        throw new HandledRuntimeException(ACCESS_DENIED, "Wrong clientId/clientSecret");
+      } else {
+        return clientID;
+      }
+    } catch (Throwable th) {
+      throw new HandledRuntimeException(SERVER_ERROR, th);
     }
   }
 
   /**
    * @param clientId
    * @return
-   * @throws LoginException
    */
-  public Integer loginByClientId(String clientId) throws LoginException {
-    Integer clientID = dao.loginByClientCredentials(clientId, null);
-    if (clientID == null) {
-      throw new LoginException();
-    } else {
-      return clientID;
+  public Integer loginByClientId(String clientId) {
+    try {
+      Integer clientID = dao.loginByClientCredentials(clientId, null);
+      if (clientID == null) {
+        throw new HandledRuntimeException(ACCESS_DENIED, "Wrong clientId");
+      } else {
+        return clientID;
+      }
+    } catch (Throwable th) {
+      throw new HandledRuntimeException(SERVER_ERROR, th);
+    }
+  }
+
+  /**
+   *
+   * @param authorizationCode
+   * @param clientId
+   * @param codeVerifier
+   * @return
+   */
+  public Integer loginByPKCE(String authorizationCode, String clientId, String codeVerifier) {
+    Integer clientID = loginByClientId(clientId);
+    try {
+      if (dao.verifyPKCE(authorizationCode, codeVerifier)) {
+        return clientID;
+      } else {
+        throw new HandledRuntimeException(ACCESS_DENIED, "PKCE verification failed");
+      }
+    } catch (Throwable th) {
+      throw new HandledRuntimeException(SERVER_ERROR, th);
     }
   }
 
@@ -126,41 +152,25 @@ public class AuthenticationService {
     if (session.getAccessTokenId() != null) {
       throw new HandledRuntimeException(ACCESS_DENIED, "Request is finished");
     }
+    Integer operatorId = loginByPassword(username, password);
+    Token sessionToken = generateSessionToken(username, operatorId, host, privateKey, null);
+    updateSession(session.getSessionId(),
+      operatorId,
+      sessionToken.getJti(),
+      sessionToken.getIssueTime(),
+      sessionToken.getExpirationTime(),
+      serverCredential);
+
+    /**
+     * Encrypt token with public key
+     */
+    Encryptor encryptor = new EncryptorRSA(publicKey);
     try {
-      Integer operatorId = loginByPassword(username, password);
-      Token sessionToken = generateSessionToken(username, operatorId, host, privateKey, null);
-      updateSession(session.getSessionId(),
-        operatorId,
-        sessionToken.getJti(),
-        sessionToken.getIssueTime(),
-        sessionToken.getExpirationTime(),
-        serverCredential);
-
-      /**
-       * Encrypt token with public key
-       */
-      Encryptor encryptor = new EncryptorRSA(publicKey);
-      try {
-        sessionToken = encryptor.encrypt(sessionToken);
-      } catch (ParseException e) {
-        throw new HandledRuntimeException(SERVER_ERROR, e);
-      }
-      return sessionToken.asString();
-    } catch (LoginException e) {
-      throw new HandledRuntimeException(ACCESS_DENIED, e);
+      sessionToken = encryptor.encrypt(sessionToken);
+    } catch (ParseException e) {
+      throw new HandledRuntimeException(SERVER_ERROR, e);
     }
-  }
-
-  /**
-   * @param privateKey
-   * @param host
-   * @param authCode
-   * @param clientId
-   * @param redirectUri
-   * @return
-   */
-  public TokenDto getToken(String privateKey, String host, String authCode, String clientId, String redirectUri) {
-    return tokenService.createTokenForImplicitGrant(privateKey, host, authCode, clientId, redirectUri);
+    return sessionToken.asString();
   }
 
   private SessionDto getSession(String authCode, String clientId, String redirectUri) {

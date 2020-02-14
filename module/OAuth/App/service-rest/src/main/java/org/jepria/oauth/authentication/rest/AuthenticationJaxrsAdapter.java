@@ -2,6 +2,7 @@ package org.jepria.oauth.authentication.rest;
 
 import org.jepria.oauth.authentication.AuthenticationServerFactory;
 import org.jepria.oauth.authentication.AuthenticationService;
+import org.jepria.oauth.token.TokenServerFactory;
 import org.jepria.oauth.token.dto.TokenDto;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
 
@@ -26,7 +27,6 @@ import static org.jepria.oauth.sdk.OAuthConstants.*;
 public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
   @Context
   HttpServletRequest request;
-  AuthenticationService service = AuthenticationServerFactory.getInstance().getService();
 
   private String getPublicKey() {
     return request.getServletContext().getInitParameter("org.jepria.auth.jwt.PublicKey");
@@ -55,7 +55,7 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
     String redirectUri = new String(Base64.getUrlDecoder().decode(redirectUriEncoded));
     Response response;
     if (CODE.equalsIgnoreCase(responseType)) {
-      String sessionToken = service
+      String sessionToken = AuthenticationServerFactory.getInstance().getService()
         .authenticate(authCode,
           redirectUri,
           clientId,
@@ -77,7 +77,7 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
           true))
         .build();
     } else if (TOKEN.equalsIgnoreCase(responseType)) {
-      String sessionToken = service
+      String sessionToken = AuthenticationServerFactory.getInstance().getService()
         .authenticate(authCode,
           redirectUri,
           clientId,
@@ -86,7 +86,7 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
           getHostContext(),
           getPublicKey(),
           getPrivateKey());
-      TokenDto tokenDto = service.getToken(getPrivateKey(), getHostContext(), authCode, clientId, redirectUri);
+      TokenDto tokenDto = TokenServerFactory.getInstance().getService().create(responseType, getPrivateKey(), getHostContext(), authCode, clientId, redirectUri);
       response = Response.status(302).location(URI.create(redirectUri
         + "#" + ACCESS_TOKEN_QUERY_PARAM + tokenDto.getAccessToken()
         + "&" + TOKEN_TYPE_QUERY_PARAM + tokenDto.getTokenType()

@@ -13,7 +13,6 @@ import org.jepria.oauth.sdk.token.Verifier;
 import org.jepria.oauth.sdk.token.rsa.DecryptorRSA;
 import org.jepria.oauth.sdk.token.rsa.SignatureVerifierRSA;
 import org.jepria.oauth.sdk.token.rsa.VerifierRSA;
-import org.jepria.oauth.session.SessionServerFactory;
 import org.jepria.oauth.session.SessionService;
 import org.jepria.oauth.session.dto.SessionCreateDto;
 import org.jepria.oauth.session.dto.SessionDto;
@@ -32,7 +31,7 @@ import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 public class AuthorizationService {
 
-  private SessionService sessionService = SessionServerFactory.getInstance().getService();
+  private final SessionService sessionService;
 
   private Credential serverCredential = new Credential() {
     @Override
@@ -50,6 +49,10 @@ public class AuthorizationService {
       return true;
     }
   };
+
+  public AuthorizationService(SessionService sessionService) {
+    this.sessionService = sessionService;
+  }
 
   public SessionDto authorize(String responseType,
                               String clientId,

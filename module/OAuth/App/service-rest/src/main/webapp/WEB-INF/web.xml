@@ -42,14 +42,7 @@
         <welcome-file>api-docs</welcome-file>
         <welcome-file>index.html</welcome-file>
         <welcome-file>login.html</welcome-file>
+        <welcome-file>error.html</welcome-file>
     </welcome-file-list>
-
-<!--  <security-constraint>-->
-<!--    <web-resource-collection>-->
-<!--      <web-resource-name>Public API</web-resource-name>-->
-<!--      <url-pattern>/api/*</url-pattern>-->
-<!--      <url-pattern>/api-docs/*</url-pattern>-->
-<!--    </web-resource-collection>-->
-<!--  </security-constraint>-->
 
 </web-app>

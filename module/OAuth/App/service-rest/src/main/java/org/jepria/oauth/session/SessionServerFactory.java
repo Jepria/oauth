@@ -13,16 +13,25 @@ import java.util.function.Supplier;
 
 public class SessionServerFactory extends ServerFactory<SessionDao> {
 
+  private static SessionServerFactory instance;
+  private SessionService service;
+
   private SessionServerFactory() {
     super(new SessionDaoImpl(), "jdbc/RFInfoDS");
   }
 
   public static SessionServerFactory getInstance() {
-     return new SessionServerFactory();
+    if (instance == null) {
+      instance =  new SessionServerFactory();
+    }
+    return instance;
   }
 
   public SessionService getService() {
-    return new SessionService();
+    if (service == null) {
+      service =  new SessionService();
+    }
+    return service;
   }
 
   /**

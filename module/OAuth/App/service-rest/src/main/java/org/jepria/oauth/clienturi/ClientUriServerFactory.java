@@ -5,21 +5,28 @@ import org.jepria.oauth.clienturi.dao.ClientUriDaoImpl;
 import org.jepria.server.ServerFactory;
 import org.jepria.server.service.rest.EntityService;
 import org.jepria.server.service.rest.EntityServiceImpl;
-import org.jepria.server.service.rest.SearchService;
-import org.jepria.server.service.rest.SearchServiceImpl;
 
 public class ClientUriServerFactory extends ServerFactory<ClientUriDao> {
+
+  private static ClientUriServerFactory instance;
+  private ClientUriService service;
 
   private ClientUriServerFactory() {
     super(new ClientUriDaoImpl(), "jdbc/RFInfoDS");
   }
 
   public static ClientUriServerFactory getInstance() {
-    return new ClientUriServerFactory();
+    if (instance == null) {
+      instance = new ClientUriServerFactory();
+    }
+    return instance;
   }
 
   public ClientUriService getService() {
-    return new ClientUriService();
+    if (service == null) {
+      service = new ClientUriService(getDao());
+    }
+    return service;
   }
 
   /**

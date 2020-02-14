@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.Path;
@@ -20,6 +21,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.util.Base64;
 
 /**
  * The token endpoint is used by the client to obtain an access token by
@@ -48,24 +50,48 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
 
   @POST
   @AllowAllOrigin
-  @WithClientCredentials
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   public Response createToken(
+    @HeaderParam("Authorization") String authHeader,
     @FormParam("grant_type") String grantType,
     @FormParam("client_id") String clientId,
+    @FormParam("client_secret") String clientSecret,
     @FormParam("redirect_uri") String redirectUri,
     @FormParam("code") String authCode,
     @FormParam("username") String username,
     @FormParam("password") String password,
-    @FormParam("code_verifier") String codeVerifier) {
-    TokenDto result = TokenServerFactory.getInstance().getService().create(grantType,
-      getPrivateKey(),
-      getHostContext(),
-      authCode,
-      clientId,
-      redirectUri,
-      username,
-      password);
+    @FormParam("code_verifier") String codeVerifier,
+    @FormParam("refresh_token") String refreshToken) {
+    TokenDto result;
+    if (authHeader != null) {
+      authHeader = authHeader.replaceFirst("[Bb]asic ", "");
+      String[] clientCredentials = new String(Base64.getUrlDecoder().decode(authHeader)).split(":");
+      result = TokenServerFactory.getInstance().getService().create(grantType,
+        getPublicKey(),
+        getPrivateKey(),
+        getHostContext(),
+        authCode,
+        clientCredentials[0],
+        clientCredentials[1],
+        codeVerifier,
+        redirectUri,
+        username,
+        password,
+        refreshToken);
+    } else {
+      result = TokenServerFactory.getInstance().getService().create(grantType,
+        getPublicKey(),
+        getPrivateKey(),
+        getHostContext(),
+        authCode,
+        clientId,
+        clientSecret,
+        codeVerifier,
+        redirectUri,
+        username,
+        password,
+        refreshToken);
+    }
     return Response.ok(result).build();
   }
 

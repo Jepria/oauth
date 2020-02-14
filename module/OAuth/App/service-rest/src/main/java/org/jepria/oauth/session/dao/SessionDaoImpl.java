@@ -26,47 +26,49 @@ public class SessionDaoImpl implements SessionDao {
   //language=Oracle
   private String findSqlQuery = "declare " +
       "rc sys_refcursor;" +
-      "authRequestId integer := ?;" +
+      "sessionId integer := ?;" +
       "authCode varchar2(64) := ?;" +
       "operatorId integer := ?;" +
       "clientCode varchar2(32) := ?;" +
       "redirectUri varchar2(4000) := ?;" +
       "accessTokenId varchar2(64) := ?;" +
+      "refreshTokenId varchar2(64) := ?;" +
+      "sessionTokenId varchar2(64) := ?;" +
       "isBlocked integer := ?;" +
       "hasToken integer := ?;" +
-      "sessionTokenId varchar2(64) := ?;" +
     "begin " +
       "open rc for select " +
-          "ar.AUTH_REQUEST_ID," +
+          "ss.SESSION_ID," +
           "cl.CLIENT_CODE as CLIENT_ID," +
           "cl.CLIENT_NAME," +
-          "ar.REDIRECT_URI," +
-          "ar.AUTHORIZATION_CODE," +
-          "ar.DATE_INS," +
-          "ar.SESSION_TOKEN_ID," +
-          "ar.SESSION_TOKEN_DATE_INS," +
-          "ar.ACCESS_TOKEN_ID," +
-          "ar.ACCESS_TOKEN_DATE_INS," +
-          "ar.REFRESH_TOKEN_ID," +
-          "ar.REFRESH_TOKEN_DATE_INS," +
-          "ar.OPERATOR_ID," +
+          "ss.REDIRECT_URI," +
+          "ss.AUTHORIZATION_CODE," +
+          "ss.DATE_INS," +
+          "ss.SESSION_TOKEN_ID," +
+          "ss.SESSION_TOKEN_DATE_INS," +
+          "ss.ACCESS_TOKEN_ID," +
+          "ss.ACCESS_TOKEN_DATE_INS," +
+          "ss.REFRESH_TOKEN_ID," +
+          "ss.REFRESH_TOKEN_DATE_INS," +
+          "ss.OPERATOR_ID," +
           "op.OPERATOR_NAME," +
           "op.LOGIN as OPERATOR_LOGIN," +
-          "ar.CODE_CHALLENGE," +
-          "ar.IS_BLOCKED " +
-        "from OA_AUTH_REQUEST ar " +
-          "left join OP_OPERATOR op on ar.OPERATOR_ID = op.OPERATOR_ID  " +
-          "inner join OA_CLIENT cl on ar.CLIENT_ID = cl.CLIENT_ID " +
+          "ss.CODE_CHALLENGE," +
+          "ss.IS_BLOCKED " +
+        "from OA_SESSION ss " +
+          "left join OP_OPERATOR op on ss.OPERATOR_ID = op.OPERATOR_ID  " +
+          "inner join OA_CLIENT cl on ss.CLIENT_ID = cl.CLIENT_ID " +
         "where " +
-          "(ar.AUTH_REQUEST_ID = authRequestId or authRequestId is null) " +
-          "and (ar.AUTHORIZATION_CODE like authCode or authCode is null) " +
-          "and (ar.OPERATOR_ID = operatorId or operatorId is null) " +
+          "(ss.SESSION_ID = sessionId or sessionId is null) " +
+          "and (ss.AUTHORIZATION_CODE like authCode or authCode is null) " +
+          "and (ss.OPERATOR_ID = operatorId or operatorId is null) " +
           "and (cl.CLIENT_CODE like clientCode or clientCode is null) " +
-          "and (ar.REDIRECT_URI like redirectUri or redirectUri is null) " +
-          "and (ar.SESSION_TOKEN_ID like sessionTokenId or sessionTokenId is null) " +
-          "and ((hasToken = 0 and (ar.ACCESS_TOKEN_ID like accessTokenId or accessTokenId is null)) " +
-            "or (hasToken = 1 and ar.ACCESS_TOKEN_ID is not null)) " +
-          "and (ar.IS_BLOCKED = isBlocked or isBlocked is null); " +
+          "and (ss.REDIRECT_URI like redirectUri or redirectUri is null) " +
+          "and (ss.SESSION_TOKEN_ID like sessionTokenId or sessionTokenId is null) " +
+          "and (ss.REFRESH_TOKEN_ID like refreshTokenId or refreshTokenId is null) " +
+          "and ((hasToken = 0 and (ss.ACCESS_TOKEN_ID like accessTokenId or accessTokenId is null)) " +
+            "or (hasToken = 1 and ss.ACCESS_TOKEN_ID is not null)) " +
+          "and (ss.IS_BLOCKED = isBlocked or isBlocked is null); " +
       "? := rc; " +
     "end;";
 
@@ -74,7 +76,7 @@ public class SessionDaoImpl implements SessionDao {
   private ResultSetMapper mapper = new ResultSetMapper<SessionDto>() {
     @Override
     public void map(ResultSet rs, SessionDto dto) throws SQLException {
-      dto.setSessionId(getInteger(rs, AUTH_REQUEST_ID));
+      dto.setSessionId(getInteger(rs, SESSION_ID));
       dto.setAuthorizationCode(rs.getString(AUTHORIZATION_CODE));
       dto.setDateIns(getTimestamp(rs, DATE_INS));
       dto.setRedirectUri(rs.getString(REDIRECT_URI));
@@ -113,15 +115,16 @@ public class SessionDaoImpl implements SessionDao {
       statement.setString(4, dto.getClientId());
       statement.setString(5, dto.getRedirectUri());
       statement.setString(6, dto.getAccessTokenId());
-      if (dto.getBlocked() != null) statement.setInt(7, dto.getBlocked() ? 1 : 0);
-      else statement.setNull(7, OracleTypes.INTEGER);
-      if (dto.getHasToken() != null) statement.setInt(8, dto.getHasToken() ? 1 : 0);
-      else statement.setInt(8, 0);
-      statement.setString(9, dto.getSessionTokenId());
-      statement.registerOutParameter(10, OracleTypes.CURSOR);
+      statement.setString(7, dto.getRefreshTokenId());
+      statement.setString(8, dto.getSessionTokenId());
+      if (dto.getBlocked() != null) statement.setInt(9, dto.getBlocked() ? 1 : 0);
+      else statement.setNull(9, OracleTypes.INTEGER);
+      if (dto.getHasToken() != null) statement.setInt(10, dto.getHasToken() ? 1 : 0);
+      else statement.setInt(10, 0);
+      statement.registerOutParameter(11, OracleTypes.CURSOR);
       statement.executeQuery();
 
-      try (ResultSet rs = (ResultSet) statement.getObject(10)) {
+      try (ResultSet rs = (ResultSet) statement.getObject(11)) {
         while (rs.next()) {
           SessionDto resultDto = new SessionDto();
           mapper.map(rs, resultDto);
@@ -205,7 +208,7 @@ public class SessionDaoImpl implements SessionDao {
         "if clientCount <> 1 then " +
           "raise_application_error(-20001, 'Нет клиентского приложения с указанным ID'); " +
         "end if;" +
-        "insert into OA_AUTH_REQUEST(" +
+        "insert into OA_SESSION(" +
           "AUTHORIZATION_CODE, " +
           "REDIRECT_URI, " +
           "CLIENT_ID, " +
@@ -235,15 +238,15 @@ public class SessionDaoImpl implements SessionDao {
           "refreshTokenDateIns, " +
           "refreshTokenDateFinish, " +
           "codeChallenge); " +
-        "? := OA_AUTH_REQUEST_SEQ.currval;" +
+        "? := OA_SESSION_SEQ.currval;" +
       "exception " +
         "when others then " +
           "err_num := SQLCODE; " +
           "err_msg := SUBSTR(SQLERRM, 1, 100); " +
-          "if instr(err_msg, 'OA_AUTH_REQUEST_FK_CLIENT_URI') <> 0 then " +
+          "if instr(err_msg, 'OA_SESSION_FK_CLIENT_URI') <> 0 then " +
             "raise_application_error(-20002, concat('Указанный URI не содержится в WHITELIST ', redirectUri)); " +
           "end if; " +
-          "if instr(err_msg, 'OA_AUTH_REQUEST_FK_CLIENT') <> 0 or err_num = -20001 then " +
+          "if instr(err_msg, 'OA_SESSION_FK_CLIENT') <> 0 or err_num = -20001 then " +
             "raise_application_error(-20001, 'Нет клиентского приложения с указанным ID'); " +
           "end if; " +
           "raise_application_error(-20150, err_msg); " +
@@ -315,7 +318,7 @@ public class SessionDaoImpl implements SessionDao {
     Db db = getDb();
     SessionUpdateDto dto = (SessionUpdateDto) record;
     //language=Oracle
-    String updateSqlQuery = "UPDATE OA_AUTH_REQUEST t " +
+    String updateSqlQuery = "UPDATE OA_SESSION t " +
       "SET " +
         "OPERATOR_ID = ?, " +
         "ACCESS_TOKEN_ID = ?, " +
@@ -328,7 +331,7 @@ public class SessionDaoImpl implements SessionDao {
         "REFRESH_TOKEN_DATE_INS = ?, " +
         "REFRESH_TOKEN_DATE_FINISH = ?, " +
         "IS_BLOCKED = ? " +
-      "WHERE t.AUTH_REQUEST_ID = ?";
+      "WHERE t.SESSION_ID = ?";
     CallableStatement updateStatement = db.prepare(updateSqlQuery);
     try {
       if (dto.getOperatorId() != null) {
@@ -392,13 +395,13 @@ public class SessionDaoImpl implements SessionDao {
   public void delete(Map<String, ?> primaryKey, Integer operatorId) {
     Db db = getDb();
     //language=Oracle
-    String updateSqlQuery = "UPDATE OA_AUTH_REQUEST t " +
+    String updateSqlQuery = "UPDATE OA_SESSION t " +
       "SET IS_BLOCKED = ? " +
-      "WHERE t.AUTH_REQUEST_ID = ?";
+      "WHERE t.SESSION_ID = ?";
     CallableStatement updateStatement = db.prepare(updateSqlQuery);
     try {
       updateStatement.setInt(1, 1);
-      updateStatement.setInt(2, Integer.valueOf((String) primaryKey.get(SESSION_ID)));
+      updateStatement.setInt(2, (Integer) primaryKey.get(SESSION_ID));
       int updatedRecordCount = updateStatement.executeUpdate();
       if (updatedRecordCount == 1) {
         db.commit();

@@ -13,16 +13,25 @@ import java.util.function.Supplier;
 
 public class ClientServerFactory extends ServerFactory<ClientDao> {
 
+  private static ClientServerFactory instance;
+  private ClientService service;
+
   private ClientServerFactory() {
     super(new ClientDaoImpl(), "jdbc/RFInfoDS");
   }
 
   public static ClientServerFactory getInstance() {
-    return new ClientServerFactory();
+    if (instance == null) {
+      instance = new ClientServerFactory();
+    }
+    return instance;
   }
 
   public ClientService getService() {
-    return new ClientService();
+    if (service == null) {
+      service = new ClientService(getDao());
+    }
+    return service;
   }
 
   /**

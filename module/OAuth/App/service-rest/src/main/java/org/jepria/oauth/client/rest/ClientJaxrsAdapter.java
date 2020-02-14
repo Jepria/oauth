@@ -89,7 +89,6 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
       throw new IllegalStateException(e);
     }
     return entityEndpointAdapter.create(record);
-   // return ClientServerFactory.getInstance().getService().create(request.getRequestURL().toString(), record, securityContext.getCredential());
   }
 
   @DELETE

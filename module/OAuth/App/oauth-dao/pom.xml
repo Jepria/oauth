@@ -15,6 +15,8 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
         <oracle.version>11.2.0.4</oracle.version>
+        <jepria.version>11.1.0-SNAPSHOT</jepria.version>
+        <oauth.version>1.0.0-SNAPSHOT</oauth.version>
         <bin.home>${env.BIN_HOME}</bin.home>
     </properties>
 
@@ -46,10 +48,17 @@
     </repositories>
 
     <dependencies>
+        <!-- JepRia -->
+        <dependency>
+            <groupId>org.jepria</groupId>
+            <artifactId>jepria</artifactId>
+            <version>${jepria.version}</version>
+            <scope>compile</scope>
+        </dependency>
         <dependency>
             <groupId>org.jepria</groupId>
             <artifactId>oauth-model</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${oauth.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

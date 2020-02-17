@@ -16,5 +16,5 @@
         <module>oauth-model</module>
         <module>oauth-dao</module>
     </modules>
-    
+
 </project>

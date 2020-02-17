@@ -60,36 +60,43 @@
             <groupId>org.jepria</groupId>
             <artifactId>oauth-model</artifactId>
             <version>1.0.0-SNAPSHOT</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.jepria</groupId>
             <artifactId>oauth-dao</artifactId>
             <version>1.0.0-SNAPSHOT</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.jepria</groupId>
             <artifactId>oauth-service</artifactId>
             <version>1.0.0-SNAPSHOT</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.jepria</groupId>
             <artifactId>oauth-rest</artifactId>
             <version>1.0.0-SNAPSHOT</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
             <version>7.9</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>net.minidev</groupId>
             <artifactId>asm</artifactId>
             <version>1.0.2</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.2.4</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -107,6 +114,7 @@
             <groupId>org.jepria</groupId>
             <artifactId>oauth-sdk</artifactId>
             <version>${oauth-sdk.version}</version>
+            <scope>runtime</scope>
         </dependency>
 
         <!-- Jepria obsolete runtime dependencies -->
@@ -115,26 +123,31 @@
             <groupId>com.oracle</groupId>
             <artifactId>ojdbc6dms</artifactId>
             <version>${oracle.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.allen-sauer.gwt.log</groupId>
             <artifactId>gwt-log</artifactId>
             <version>${gwtlog.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.google.gwt</groupId>
             <artifactId>gwt-servlet</artifactId>
             <version>${gwt.version}-customized</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
             <version>${commonsfileupload.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${commonsio.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <!-- Rest/Jersey -->
         <!-- Jepria/Jersey: application compile dependencies -->
@@ -142,26 +155,31 @@
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-server</artifactId>
             <version>${jersey.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>jakarta.ws.rs</groupId>
             <artifactId>jakarta.ws.rs-api</artifactId>
             <version>${jakartawsrsapi.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-common</artifactId>
             <version>${jersey.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-servlet-core</artifactId>
             <version>${jersey.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.google.code</groupId>
             <artifactId>gson</artifactId>
             <version>${gson.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.inject</groupId>
@@ -173,16 +191,19 @@
                     <artifactId>javassist</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
             <version>${javassist.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>jakarta.json.bind</groupId>
             <artifactId>jakarta.json.bind-api</artifactId>
             <version>${jakartajsonbindapi.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <!-- Jersey -->
         <!-- Log4j -->
@@ -190,14 +211,14 @@
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
             <version>${log4j.version}</version>
-            <scope>compile</scope>
+            <scope>runtime</scope>
         </dependency>
         <!-- JepRia -->
         <dependency>
             <groupId>org.jepria</groupId>
             <artifactId>jepria</artifactId>
             <version>${jepria.version}</version>
-            <scope>compile</scope>
+            <scope>runtime</scope>
         </dependency>
         <!-- JepRia Toolkit -->
         <!-- javax needs for compilation -->
@@ -205,32 +226,32 @@
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-catalina-ant</artifactId>
             <version>${tomcat.version}</version>
-            <scope>provided</scope>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-coyote</artifactId>
             <version>${tomcat.version}</version>
-            <scope>provided</scope>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-util</artifactId>
             <version>${tomcat.version}</version>
-            <scope>provided</scope>
+            <scope>runtime</scope>
         </dependency>
         <!--Hibernate validator-->
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator</artifactId>
             <version>4.1.0.Final</version>
-            <scope>compile</scope>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.21</version>
-            <scope>compile</scope>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>io.rest-assured</groupId>
@@ -246,7 +267,7 @@
                 <artifactId>tomcat7-maven-plugin</artifactId>
                 <version>2.2</version>
                 <configuration>
-                    <url>http://vsmlapprfid7:8082/manager/text</url>
+                    <url>http://localhost:8082/manager/text</url>
                     <username>admin</username>
                     <password>admin</password>
                     <path>/oauth</path>
@@ -306,35 +327,28 @@
                     </webResources>
                 </configuration>
             </plugin>
-            <!--            <plugin>-->
-            <!--                <groupId>org.apache.maven.plugins</groupId>-->
-            <!--                <artifactId>maven-javadoc-plugin</artifactId>-->
-            <!--                <version>3.1.1</version>-->
-            <!--                <executions>-->
-            <!--                    <execution>-->
-            <!--                        <id>attach-javadocs</id>-->
-            <!--                        <phase>generate-resources</phase>-->
-            <!--                        <goals>-->
-            <!--                            <goal>javadoc</goal>-->
-            <!--                        </goals>-->
-            <!--                        <configuration>-->
-            <!--                            <destDir>/</destDir>-->
-            <!--                            <reportOutputDirectory>../../Doc/App/AutoGen</reportOutputDirectory>-->
-            <!--                            <additionalJOptions>-->
-            <!--                                <additionalJOption>-J-Xmx1g</additionalJOption>-->
-            <!--                                <additionalJOption>-Xdoclint:none</additionalJOption>-->
-            <!--                            </additionalJOptions>-->
-            <!--                            <docencoding>UTF-8</docencoding>-->
-            <!--                            <encoding>UTF-8</encoding>-->
-            <!--                            <doctitle>${project.artifactId} API Reference</doctitle>-->
-            <!--                            <windowtitle>>${project.artifactId} JavaDoc</windowtitle>-->
-            <!--                            <overview>src/main/java/org/jepria/oauth/overview.html</overview>-->
-            <!--                            <sourcepath>src/main/java</sourcepath>-->
-            <!--                            <show>private</show>-->
-            <!--                        </configuration>-->
-            <!--                    </execution>-->
-            <!--                </executions>-->
-            <!--            </plugin>-->
+            <plugin>
+                <groupId>com.coderplus.maven.plugins</groupId>
+                <artifactId>copy-rename-maven-plugin</artifactId>
+                <version>1.0.1</version>
+                <executions>
+                    <execution>
+                        <id>publish-war</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <overWrite>true</overWrite>
+                            <sourceFile>${project.build.directory}/${project.artifactId}-${project.version}.war
+                            </sourceFile>
+                            <destinationFile>
+                                ../dist/oauth.war
+                            </destinationFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.22.2</version>

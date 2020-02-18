@@ -147,35 +147,6 @@
                     <target>8</target>
                 </configuration>
             </plugin>
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-javadoc-plugin</artifactId>-->
-<!--                <version>3.1.1</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <id>attach-javadocs</id>-->
-<!--                        <phase>generate-resources</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>javadoc</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <destDir>/</destDir>-->
-<!--                            <reportOutputDirectory>../../Doc/App/AutoGen</reportOutputDirectory>-->
-<!--                            <additionalJOptions>-->
-<!--                                <additionalJOption>-J-Xmx1g</additionalJOption>-->
-<!--                                <additionalJOption>-Xdoclint:none</additionalJOption>-->
-<!--                            </additionalJOptions>-->
-<!--                            <docencoding>UTF-8</docencoding>-->
-<!--                            <encoding>UTF-8</encoding>-->
-<!--                            <doctitle>${project.artifactId} API Reference</doctitle>-->
-<!--                            <windowtitle>>${project.artifactId} JavaDoc</windowtitle>-->
-<!--                            <overview>src/main/java/org/jepria/oauth/overview.html</overview>-->
-<!--                            <sourcepath>src/main/java</sourcepath>-->
-<!--                            <show>private</show>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.22.2</version>

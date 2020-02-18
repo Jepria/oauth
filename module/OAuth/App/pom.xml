@@ -9,6 +9,10 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
+    <properties>
+        <javadoc.directory>../Doc/App/AutoGen</javadoc.directory>
+    </properties>
+
     <modules>
         <module>oauth-web</module>
         <module>oauth-rest</module>
@@ -17,4 +21,91 @@
         <module>oauth-dao</module>
     </modules>
 
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>clean-dist</id>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                        <phase>clean</phase>
+                        <inherited>false</inherited>
+                        <configuration>
+                            <filesets>
+                                <fileset>
+                                    <directory>dist</directory>
+                                </fileset>
+                            </filesets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.tomcat.maven</groupId>
+                <artifactId>tomcat7-maven-plugin</artifactId>
+                <version>2.2</version>
+                <inherited>false</inherited>
+                <configuration>
+                    <ignorePackaging>true</ignorePackaging>
+                    <url>http://localhost:8082/manager/text</url>
+                    <username>admin</username>
+                    <password>admin</password>
+                    <path>/oauth</path>
+                    <warFile>${project.basedir}/dist/oauth.war</warFile>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.1.1</version>
+                <executions>
+                    <execution>
+                        <!-- Compile javadoc for child modules-->
+                        <id>javadoc</id>
+                        <goals>
+                            <goal>javadoc</goal>
+                        </goals>
+                        <phase>install</phase>
+                        <configuration>
+                            <additionalJOptions>
+                                <additionalJOption>-J-Xmx1g</additionalJOption>
+                                <additionalJOption>-Xdoclint:none</additionalJOption>
+                            </additionalJOptions>
+                            <docencoding>UTF-8</docencoding>
+                            <encoding>UTF-8</encoding>
+                            <doctitle>${project.artifactId} API Reference</doctitle>
+                            <windowtitle>>${project.artifactId} JavaDoc</windowtitle>
+                            <show>private</show>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <!-- Aggregate javadoc from child modules to output report directory-->
+                        <id>aggregate</id>
+                        <goals>
+                            <goal>aggregate</goal>
+                        </goals>
+                        <phase>install</phase>
+                        <inherited>false</inherited>
+                        <configuration>
+                            <reportOutputDirectory>${javadoc.directory}</reportOutputDirectory>
+                            <additionalJOptions>
+                                <additionalJOption>-J-Xmx1g</additionalJOption>
+                                <additionalJOption>-Xdoclint:none</additionalJOption>
+                            </additionalJOptions>
+                            <docencoding>UTF-8</docencoding>
+                            <encoding>UTF-8</encoding>
+                            <doctitle>${project.artifactId} API Reference</doctitle>
+                            <windowtitle>>${project.artifactId} JavaDoc</windowtitle>
+                            <overview>overview.html</overview>
+                            <show>private</show>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

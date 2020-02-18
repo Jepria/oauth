@@ -99,16 +99,6 @@ public class TokenServiceImpl implements TokenService {
     sessionService.update(updateDto, credential);
   }
 
-  /**
-   *
-   * @param responseType
-   * @param privateKey
-   * @param host
-   * @param authCode
-   * @param clientId
-   * @param redirectUri
-   * @return
-   */
   public TokenDto create(String responseType,
                          String privateKey,
                          String host,
@@ -122,15 +112,6 @@ public class TokenServiceImpl implements TokenService {
     }
   }
 
-  /**
-   * @param grantType
-   * @param privateKey
-   * @param host
-   * @param authCode
-   * @param clientId
-   * @param redirectUri
-   * @return
-   */
   public TokenDto create(String grantType,
                          String publicKey,
                          String privateKey,
@@ -253,13 +234,6 @@ public class TokenServiceImpl implements TokenService {
     return tokenDto;
   }
 
-  /**
-   * @param privateKeyString
-   * @param host
-   * @param clientId
-   * @param clientSecret
-   * @return
-   */
   private TokenDto createTokenForClientCredentialsGrant(String privateKeyString, String host, String clientId, String clientSecret) {
     throw new UnsupportedOperationException();
   }
@@ -284,12 +258,6 @@ public class TokenServiceImpl implements TokenService {
     }
   }
 
-  /**
-   * @param publicKey
-   * @param hostContext
-   * @param tokenString
-   * @return
-   */
   public TokenInfoDto getTokenInfo(String publicKey, String hostContext, String tokenString, Credential credential) {
     TokenInfoDto result = new TokenInfoDto();
     Token token;
@@ -319,11 +287,6 @@ public class TokenServiceImpl implements TokenService {
     return result;
   }
 
-  /**
-   * @param clientId
-   * @param tokenString
-   * @return
-   */
   public void deleteToken(String clientId, String tokenString, Credential credential) {
     try {
       Token token = TokenImpl.parseFromString(tokenString);

@@ -51,11 +51,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
   };
 
-  /**
-   * @param username
-   * @param password
-   * @return
-   */
   public Integer loginByPassword(String username, String password) {
     try {
       Integer operatorId = dao.loginByPassword(username, password);
@@ -69,11 +64,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
   }
 
-  /**
-   * @param clientId
-   * @param clientSecret
-   * @return
-   */
   public Integer loginByClientCredentials(String clientId, String clientSecret) {
     try {
       Integer clientID = dao.loginByClientCredentials(clientId, clientSecret);
@@ -87,10 +77,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
   }
 
-  /**
-   * @param clientId
-   * @return
-   */
   public Integer loginByClientId(String clientId) {
     try {
       Integer clientID = dao.loginByClientCredentials(clientId, null);
@@ -104,13 +90,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
   }
 
-  /**
-   *
-   * @param authorizationCode
-   * @param clientId
-   * @param codeVerifier
-   * @return
-   */
   public Integer loginByPKCE(String authorizationCode, String clientId, String codeVerifier) {
     Integer clientID = loginByClientId(clientId);
     try {
@@ -124,17 +103,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
   }
 
-  /**
-   * @param authCode
-   * @param redirectUri
-   * @param clientId
-   * @param username
-   * @param password
-   * @param host
-   * @param publicKey
-   * @param privateKey
-   * @return
-   */
   public String authenticate(
     String authCode,
     String redirectUri,

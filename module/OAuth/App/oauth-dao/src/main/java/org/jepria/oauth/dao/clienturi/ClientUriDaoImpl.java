@@ -110,7 +110,7 @@ public class ClientUriDaoImpl implements ClientUriDao {
     Db db = getDb();
     ClientUriCreateDto dto = (ClientUriCreateDto) record;
     //language=Oracle
-    String insertSqlQuery = "insert into OA_CLIENT_URI(CLIENT_ID, CLIENT_URI, OPERATOR_ID) " +
+    String insertSqlQuery = "insert into OA_CLIENT_URI(CLIENT_ID, CLIENT_URI, OPERATOR_ID_INS) " +
       "values ((" +
         "select ct.client_id " +
         "from OA_CLIENT ct " +

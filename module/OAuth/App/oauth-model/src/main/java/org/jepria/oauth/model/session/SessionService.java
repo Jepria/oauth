@@ -11,35 +11,35 @@ import java.util.List;
 public interface SessionService {
   
   /**
-   * @param template
-   * @param credential
-   * @return
+   * @param template шаблон поиска
+   * @param credential креденциал
+   * @return список сессий
    */
   List<SessionDto> find(SessionSearchDto template, Credential credential);
   
   /**
-   * @param sessionId
-   * @param credential
-   * @return
+   * @param sessionId ID сессии
+   * @param credential креденциал
+   * @return сессия
    */
   SessionDto findByPrimaryKey(Integer sessionId, Credential credential);
   
   /**
-   * @param record
-   * @param credential
-   * @return
+   * @param record создаваемая запись
+   * @param credential креденциал
+   * @return ID созданной сессии
    */
   Integer create(SessionCreateDto record, Credential credential);
   
   /**
-   * @param record
-   * @param credential
+   * @param record обновляемая запись
+   * @param credential креденциал
    */
   void update(SessionUpdateDto record, Credential credential);
   
   /**
-   * @param sessionId
-   * @param credential
+   * @param sessionId ID сессии
+   * @param credential креденциал
    */
   void delete(Integer sessionId, Credential credential);
   

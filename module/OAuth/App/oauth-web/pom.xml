@@ -272,6 +272,15 @@
                     <password>admin</password>
                     <path>/oauth</path>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>tomcat-deploy</id>
+                        <goals>
+                            <goal>redeploy</goal>
+                        </goals>
+                        <phase>install</phase>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -333,8 +342,8 @@
                 <version>1.0.1</version>
                 <executions>
                     <execution>
-                        <id>publish-war</id>
-                        <phase>install</phase>
+                        <id>create-dist</id>
+                        <phase>package</phase>
                         <goals>
                             <goal>copy</goal>
                         </goals>

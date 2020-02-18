@@ -36,16 +36,10 @@ public class SessionServerFactory extends ServerFactory<SessionDao> {
     return service;
   }
 
-  /**
-   * @return сервис, воплощающий логику CRUD-операций (create, get-by-id, update, delete)
-   */
   public EntityService getEntityService() {
     return new EntityServiceImpl(getDao(), new SessionRecordDefinition());
   }
 
-  /**
-   * @return сервис, воплощающий логику поиска объектов сущности
-   */
   public SearchService getSearchService(Supplier<HttpSession> session) {
     return new SearchServiceImpl(getDao(), new SessionRecordDefinition(), session);
   }

@@ -207,7 +207,7 @@ public class SessionDaoImpl implements SessionDao {
         "err_msg VARCHAR2(100);" +
       "begin " +
         "select count(*) into clientCount from OA_CLIENT cl where cl.CLIENT_CODE like clientId; " +
-        "if clientCount <> 1 then " +
+        "if clientId is not null and clientCount <> 1 then " +
           "raise_application_error(-20001, 'Нет клиентского приложения с указанным ID'); " +
         "end if;" +
         "insert into OA_SESSION(" +

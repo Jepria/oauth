@@ -1,6 +1,6 @@
 package org.jepria.oauth.service.token;
 
-import org.jepria.oauth.exception.HandledRuntimeException;
+import org.jepria.oauth.exception.OAuthRuntimeException;
 import org.jepria.oauth.model.authentication.AuthenticationService;
 import org.jepria.oauth.model.session.SessionService;
 import org.jepria.oauth.model.session.dto.SessionCreateDto;
@@ -74,7 +74,7 @@ public class TokenServiceImpl implements TokenService {
     if (result.size() == 1) {
       return result.get(0);
     } else {
-      throw new HandledRuntimeException(INVALID_GRANT, "Authorization request not found");
+      throw new OAuthRuntimeException(INVALID_GRANT, "Authorization request not found");
     }
   }
 
@@ -96,22 +96,24 @@ public class TokenServiceImpl implements TokenService {
     updateDto.setSessionTokenId(sessionTokenId);
     updateDto.setSessionTokenDateIns(sessionTokenDateIns);
     updateDto.setSessionTokenDateFinish(sessionTokenDateFinish);
-    sessionService.update(updateDto, credential);
+    sessionService.update(String.valueOf(updateDto.getSessionId()), updateDto, credential);
   }
 
+  @Override
   public TokenDto create(String responseType,
                          String privateKey,
                          String host,
                          String authCode,
                          String clientId,
                          String redirectUri) {
-    if (ResponseType.IMPLICIT.equals(responseType)) {
+    if (ResponseType.TOKEN.equals(responseType)) {
       return createTokenFromAuthCode(privateKey, host, authCode, clientId, new String(Base64.getUrlDecoder().decode(redirectUri)));
     } else {
-      throw new HandledRuntimeException(UNSUPPORTED_RESPONSE_TYPE);
+      throw new OAuthRuntimeException(UNSUPPORTED_RESPONSE_TYPE);
     }
   }
 
+  @Override
   public TokenDto create(String grantType,
                          String publicKey,
                          String privateKey,
@@ -126,16 +128,16 @@ public class TokenServiceImpl implements TokenService {
                          String refreshToken) {
     TokenDto result;
     if (grantType == null) {
-      throw new HandledRuntimeException(UNSUPPORTED_GRANT_TYPE, "Grant type must be not null");
+      throw new OAuthRuntimeException(UNSUPPORTED_GRANT_TYPE, "Grant type must be not null");
     }
     switch (grantType) {
       case GrantType.AUTHORIZATION_CODE: {
         if (clientId != null && clientSecret != null) {
-          authenticationService.loginByClientCredentials(clientId, clientSecret);
+          authenticationService.loginByClientSecret(clientId, clientSecret);
         } else if (clientId != null && clientSecret == null && codeVerifier != null) {
-          authenticationService.loginByPKCE(authCode, clientId, codeVerifier);
+          authenticationService.loginByAuthorizationCode(authCode, clientId, codeVerifier);
         } else {
-          throw new HandledRuntimeException(ACCESS_DENIED, "Request authorization failed");
+          throw new OAuthRuntimeException(ACCESS_DENIED, "Request authorization failed");
         }
         result = createTokenFromAuthCode(privateKey, host, authCode, clientId, new String(Base64.getUrlDecoder().decode(redirectUri)));
         break;
@@ -145,7 +147,7 @@ public class TokenServiceImpl implements TokenService {
 //        }
       case GrantType.PASSWORD: {
         if (clientId != null && clientSecret != null) {
-          authenticationService.loginByClientCredentials(clientId, clientSecret);
+          authenticationService.loginByClientSecret(clientId, clientSecret);
         } else if (clientId != null && clientSecret == null) {
           authenticationService.loginByClientId(clientId);
         }
@@ -155,7 +157,7 @@ public class TokenServiceImpl implements TokenService {
       }
       case GrantType.REFRESH_TOKEN: {
         if (clientId != null && clientSecret != null) {
-          authenticationService.loginByClientCredentials(clientId, clientSecret);
+          authenticationService.loginByClientSecret(clientId, clientSecret);
         } else if (clientId != null && clientSecret == null) {
           authenticationService.loginByClientId(clientId);
         }
@@ -163,7 +165,7 @@ public class TokenServiceImpl implements TokenService {
         break;
       }
       default: {
-        throw new HandledRuntimeException(UNSUPPORTED_GRANT_TYPE, "Grant type '" + grantType + "' is not supported");
+        throw new OAuthRuntimeException(UNSUPPORTED_GRANT_TYPE, "Grant type '" + grantType + "' is not supported");
       }
     }
     return result;
@@ -175,20 +177,20 @@ public class TokenServiceImpl implements TokenService {
                                            String clientId,
                                            String redirectUri) {
     if (authCode == null) {
-      throw new HandledRuntimeException(INVALID_REQUEST, "Authorization code is null.");
+      throw new OAuthRuntimeException(INVALID_REQUEST, "Authorization code is null.");
     }
     if (clientId == null) {
-      throw new HandledRuntimeException(INVALID_REQUEST, "Client ID is null.");
+      throw new OAuthRuntimeException(INVALID_REQUEST, "Client ID is null.");
     }
     if (redirectUri == null) {
-      throw new HandledRuntimeException(INVALID_REQUEST, "Redirect URI is null.");
+      throw new OAuthRuntimeException(INVALID_REQUEST, "Redirect URI is null.");
     }
     SessionDto session = getSession(authCode, clientId, redirectUri, null, null, serverCredential);
     if (TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - session.getDateIns().getTime()) > 10) {
-      throw new HandledRuntimeException(INVALID_GRANT, "Authorization code active time has expired.");
+      throw new OAuthRuntimeException(INVALID_GRANT, "Authorization code active time has expired.");
     }
     if (session.getAccessTokenId() != null) {
-      throw new HandledRuntimeException(INVALID_GRANT, "Request is finished.");
+      throw new OAuthRuntimeException(INVALID_GRANT, "Request is finished.");
     }
     Token accessToken = generateToken(session.getOperatorLogin(), null, session.getOperator().getValue(), host, privateKeyString, 4);
     TokenDto tokenDto = new TokenDto();
@@ -245,19 +247,20 @@ public class TokenServiceImpl implements TokenService {
       if (verifier.verify(refreshToken)) {
         SessionDto sessionDto = getSession(null, clientId, null, null, refreshToken.getJti(), serverCredential);
         if (sessionDto.getBlocked()) {
-          throw new HandledRuntimeException(INVALID_GRANT, "Token is blocked");
+          throw new OAuthRuntimeException(INVALID_GRANT, "Token is blocked");
         }
         String[] subject = refreshToken.getSubject().split(":");
-        sessionService.delete(sessionDto.getSessionId(), serverCredential);
+        sessionService.deleteRecord(String.valueOf(sessionDto.getSessionId()), serverCredential);
         return createTokenPair(privateKeyString, issuer, refreshToken.getAudience().get(0), subject[0], Integer.valueOf(subject[1]));
       } else {
-        throw new HandledRuntimeException(INVALID_GRANT, "Token verification failed");
+        throw new OAuthRuntimeException(INVALID_GRANT, "Token verification failed");
       }
     } catch (ParseException e) {
-      throw new HandledRuntimeException(INVALID_GRANT, e);
+      throw new OAuthRuntimeException(INVALID_GRANT, e);
     }
   }
 
+  @Override
   public TokenInfoDto getTokenInfo(String publicKey, String hostContext, String tokenString, Credential credential) {
     TokenInfoDto result = new TokenInfoDto();
     Token token;
@@ -287,13 +290,14 @@ public class TokenServiceImpl implements TokenService {
     return result;
   }
 
-  public void deleteToken(String clientId, String tokenString, Credential credential) {
+  @Override
+  public void delete(String clientId, String tokenString, Credential credential) {
     try {
       Token token = TokenImpl.parseFromString(tokenString);
       SessionDto sessionDto = getSession(null, clientId, null, token.getJti(), null, credential);
-      sessionService.delete(sessionDto.getSessionId(), credential);
+      sessionService.deleteRecord(String.valueOf(sessionDto.getSessionId()), credential);
     } catch (ParseException e) {
-      throw new HandledRuntimeException(SERVER_ERROR, e);
+      throw new OAuthRuntimeException(SERVER_ERROR, e);
     }
   }
 
@@ -324,7 +328,7 @@ public class TokenServiceImpl implements TokenService {
       token = signer.sign(token);
       return token;
     } catch (Throwable th) {
-      throw new HandledRuntimeException(SERVER_ERROR, th);
+      throw new OAuthRuntimeException(SERVER_ERROR, th);
     }
   }
 
@@ -345,7 +349,7 @@ public class TokenServiceImpl implements TokenService {
       md.update(salt);
       return Base64.getUrlEncoder().withoutPadding().encodeToString(md.digest(randomUuid.toString().getBytes()));
     } catch (Throwable th) {
-      throw new HandledRuntimeException(SERVER_ERROR, th);
+      throw new OAuthRuntimeException(SERVER_ERROR, th);
     }
   }
 }

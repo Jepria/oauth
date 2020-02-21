@@ -230,7 +230,7 @@
         }
       }
     },
-    "/client/option/grant-type": {
+    "/client/grant-types": {
       "get": {
         "tags": ["dict"],
         "summary": "Get client grant type options",
@@ -244,7 +244,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/OptionDtoString"
+                    "type": "string"
                   }
                 }
               }
@@ -253,7 +253,7 @@
         }
       }
     },
-    "/client/option/grant-response-type": {
+    "/client/grant-response-types": {
       "get": {
         "tags": ["dict"],
         "summary": "Get grant response type options",
@@ -280,7 +280,63 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/OptionDtoString"
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/client/application-types": {
+      "get": {
+        "tags": ["dict"],
+        "summary": "Get application type codes",
+        "description": "",
+        "operationId": "getApplicationTypes",
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json;charset=utf-8": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/client/application-grant-types": {
+      "get": {
+        "tags": ["dict"],
+        "summary": "Get grant type codes for application type code",
+        "description": "",
+        "operationId": "getApplicationGrantTypes",
+        "parameters": [
+          {
+            "name": "applicationType",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json;charset=utf-8": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
                   }
                 }
               }
@@ -590,9 +646,6 @@
             "items": {
               "type": "string"
             }
-          },
-          "tokenAuthMethod": {
-            "type": "string"
           }
         }
       },
@@ -613,9 +666,6 @@
             "items": {
               "type": "string"
             }
-          },
-          "tokenAuthMethod": {
-            "type": "string"
           }
         }
       },
@@ -636,21 +686,18 @@
             "type": "string"
           },
           "applicationType": {
-            "$ref": "#/components/schemas/OptionDtoString"
-          },
-          "tokenAuthMethod": {
-            "$ref": "#/components/schemas/OptionDtoString"
+            "type": "string"
           },
           "grantTypes": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/OptionDtoString"
+              "type": "string"
             }
           },
           "responseTypes": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/OptionDtoString"
+              "type": "string"
             }
           }
         }

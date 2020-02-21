@@ -3,11 +3,11 @@ package org.jepria.oauth.dao.session;
 import com.technology.jep.jepria.server.dao.ResultSetMapper;
 import com.technology.jep.jepria.server.db.Db;
 import oracle.jdbc.OracleTypes;
-import org.jepria.oauth.model.session.dao.SessionDao;
 import org.jepria.oauth.model.session.dto.SessionCreateDto;
 import org.jepria.oauth.model.session.dto.SessionDto;
 import org.jepria.oauth.model.session.dto.SessionSearchDto;
 import org.jepria.oauth.model.session.dto.SessionUpdateDto;
+import org.jepria.server.data.Dao;
 import org.jepria.server.data.OptionDto;
 import org.jepria.server.data.RuntimeSQLException;
 
@@ -18,7 +18,7 @@ import java.util.Map;
 
 import static org.jepria.oauth.dao.session.SessionFieldNames.*;
 
-public class SessionDaoImpl implements SessionDao {
+public class SessionDaoImpl implements Dao {
 
   protected Db getDb() {
     return new Db("jdbc/RFInfoDS");

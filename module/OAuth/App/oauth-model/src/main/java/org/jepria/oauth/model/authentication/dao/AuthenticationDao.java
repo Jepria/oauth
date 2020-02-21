@@ -1,9 +1,8 @@
 package org.jepria.oauth.model.authentication.dao;
 
-import org.jepria.server.data.Dao;
 
-public interface AuthenticationDao extends Dao {
+public interface AuthenticationDao {
   Integer loginByPassword(String username, String password);
-  Integer loginByClientCredentials(String clientId, String clientSecret);
+  Integer loginByClientSecret(String clientId, String clientSecret);
   Boolean verifyPKCE(String authorizationCode, String codeVerifier);
 }

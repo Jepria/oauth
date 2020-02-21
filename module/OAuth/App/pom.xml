@@ -51,7 +51,7 @@
                 <inherited>false</inherited>
                 <configuration>
                     <ignorePackaging>true</ignorePackaging>
-                    <url>http://localhost:8082/manager/text</url>
+                    <url>http://localhost:8080/manager/text</url>
                     <username>admin</username>
                     <password>admin</password>
                     <path>/oauth</path>

@@ -2,7 +2,8 @@ package org.jepria.oauth.service.client;
 
 import org.jepria.oauth.model.client.ClientService;
 import org.jepria.oauth.model.client.dao.ClientDao;
-import org.jepria.server.data.OptionDto;
+import org.jepria.oauth.sdk.ApplicationType;
+import org.jepria.oauth.sdk.GrantType;
 
 import java.util.List;
 
@@ -14,20 +15,29 @@ public class ClientServiceImpl implements ClientService {
     this.dao = dao;
   }
 
-  public List<OptionDto<String>> getGrantType() {
-    return dao.getGrantType();
+  public List<String> getGrantType() {
+    return GrantType.getGrantTypes();
   }
 
-  public List<OptionDto<String>> getGrantResponseType(List<String> grantTypeCodes) {
-    return dao.getGrantResponseType(grantTypeCodes);
+  public List<String> getGrantResponseType(List<String> grantTypeCodes) {
+    return GrantType.getGrantResponseTypes(grantTypeCodes);
   }
 
-  public List<OptionDto<String>> getClientGrantTypes(String clientId) {
+  public List<String> getClientGrantTypes(String clientId) {
     return dao.getClientGrantTypes(clientId);
   }
 
-  public List<OptionDto<String>> getClientResponseTypes(String clientId) {
-    return dao.getClientResponseTypes(clientId);
+  public List<String> getClientResponseTypes(String clientId) {
+    return GrantType.getGrantResponseTypes(dao.getClientGrantTypes(clientId));
   }
 
+  @Override
+  public List<String> getApplicationTypes() {
+    return ApplicationType.getApplicationTypes();
+  }
+
+  @Override
+  public List<String> getApplicationGrantTypes(String applicationTypeCodes) {
+    return ApplicationType.getApplicationGrantTypes(applicationTypeCodes);
+  }
 }

@@ -1,17 +1,19 @@
 package org.jepria.oauth.service.authentication;
 
-import org.jepria.oauth.exception.HandledRuntimeException;
+import org.jepria.oauth.exception.OAuthRuntimeException;
 import org.jepria.oauth.model.authentication.AuthenticationService;
 import org.jepria.oauth.model.authentication.dao.AuthenticationDao;
+import org.jepria.oauth.model.clienturi.ClientUriService;
+import org.jepria.oauth.model.clienturi.dto.ClientUriDto;
+import org.jepria.oauth.model.clienturi.dto.ClientUriSearchDto;
 import org.jepria.oauth.model.session.SessionService;
 import org.jepria.oauth.model.session.dto.SessionDto;
 import org.jepria.oauth.model.session.dto.SessionSearchDto;
 import org.jepria.oauth.model.session.dto.SessionUpdateDto;
-import org.jepria.oauth.sdk.token.Encryptor;
-import org.jepria.oauth.sdk.token.Signer;
-import org.jepria.oauth.sdk.token.Token;
-import org.jepria.oauth.sdk.token.TokenImpl;
+import org.jepria.oauth.sdk.token.*;
+import org.jepria.oauth.sdk.token.rsa.DecryptorRSA;
 import org.jepria.oauth.sdk.token.rsa.EncryptorRSA;
+import org.jepria.oauth.sdk.token.rsa.SignatureVerifierRSA;
 import org.jepria.oauth.sdk.token.rsa.SignerRSA;
 import org.jepria.server.service.security.Credential;
 
@@ -20,18 +22,19 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static org.jepria.oauth.sdk.OAuthConstants.ACCESS_DENIED;
-import static org.jepria.oauth.sdk.OAuthConstants.SERVER_ERROR;
+import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 public class AuthenticationServiceImpl implements AuthenticationService {
 
   public static int DEFAULT_EXPIRE_TIME = 8;
   private final AuthenticationDao dao;
   private final SessionService sessionService;
+  private final ClientUriService clientUriService;
 
-  public AuthenticationServiceImpl(AuthenticationDao dao, SessionService sessionService) {
+  public AuthenticationServiceImpl(AuthenticationDao dao, SessionService sessionService, ClientUriService clientUriService) {
     this.dao = dao;
     this.sessionService = sessionService;
+    this.clientUriService = clientUriService;
   }
 
   private Credential serverCredential = new Credential() {
@@ -55,54 +58,58 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     try {
       Integer operatorId = dao.loginByPassword(username, password);
       if (operatorId == null) {
-        throw new HandledRuntimeException(ACCESS_DENIED, "Wrong username/password.");
+        throw new OAuthRuntimeException(ACCESS_DENIED, "Wrong username/password.");
       } else {
         return operatorId;
       }
     } catch (Throwable th) {
-      throw new HandledRuntimeException(SERVER_ERROR, th);
+      throw new OAuthRuntimeException(SERVER_ERROR, th);
     }
   }
 
-  public Integer loginByClientCredentials(String clientId, String clientSecret) {
+  @Override
+  public Integer loginByClientSecret(String clientId, String clientSecret) {
     try {
-      Integer clientID = dao.loginByClientCredentials(clientId, clientSecret);
+      Integer clientID = dao.loginByClientSecret(clientId, clientSecret);
       if (clientID == null) {
-        throw new HandledRuntimeException(ACCESS_DENIED, "Wrong clientId/clientSecret");
+        throw new OAuthRuntimeException(ACCESS_DENIED, "Wrong clientId/clientSecret");
       } else {
         return clientID;
       }
     } catch (Throwable th) {
-      throw new HandledRuntimeException(SERVER_ERROR, th);
+      throw new OAuthRuntimeException(SERVER_ERROR, th);
     }
   }
 
+  @Override
   public Integer loginByClientId(String clientId) {
     try {
-      Integer clientID = dao.loginByClientCredentials(clientId, null);
+      Integer clientID = dao.loginByClientSecret(clientId, null);
       if (clientID == null) {
-        throw new HandledRuntimeException(ACCESS_DENIED, "Wrong clientId");
+        throw new OAuthRuntimeException(ACCESS_DENIED, "Wrong clientId");
       } else {
         return clientID;
       }
     } catch (Throwable th) {
-      throw new HandledRuntimeException(SERVER_ERROR, th);
+      throw new OAuthRuntimeException(SERVER_ERROR, th);
     }
   }
 
-  public Integer loginByPKCE(String authorizationCode, String clientId, String codeVerifier) {
+  @Override
+  public Integer loginByAuthorizationCode(String authorizationCode, String clientId, String codeVerifier) {
     Integer clientID = loginByClientId(clientId);
     try {
       if (dao.verifyPKCE(authorizationCode, codeVerifier)) {
         return clientID;
       } else {
-        throw new HandledRuntimeException(ACCESS_DENIED, "PKCE verification failed");
+        throw new OAuthRuntimeException(ACCESS_DENIED, "PKCE verification failed");
       }
     } catch (Throwable th) {
-      throw new HandledRuntimeException(SERVER_ERROR, th);
+      throw new OAuthRuntimeException(SERVER_ERROR, th);
     }
   }
 
+  @Override
   public String authenticate(
     String authCode,
     String redirectUri,
@@ -114,13 +121,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     String privateKey) {
     SessionDto session = getSession(authCode, clientId, redirectUri);
     if (TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - session.getDateIns().getTime()) > 10) {
-      throw new HandledRuntimeException(ACCESS_DENIED, "Authorization code not found or has expired");
+      throw new OAuthRuntimeException(ACCESS_DENIED, "Authorization code not found or has expired");
     }
     if (session.getOperator() != null) {
-      throw new HandledRuntimeException(ACCESS_DENIED, "Request has already passed authentication");
+      throw new OAuthRuntimeException(ACCESS_DENIED, "Request has already passed authentication");
     }
     if (session.getAccessTokenId() != null) {
-      throw new HandledRuntimeException(ACCESS_DENIED, "Request is finished");
+      throw new OAuthRuntimeException(ACCESS_DENIED, "Request is finished");
     }
     Integer operatorId = loginByPassword(username, password);
     Token sessionToken = generateSessionToken(username, operatorId, host, privateKey, null);
@@ -138,9 +145,42 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     try {
       sessionToken = encryptor.encrypt(sessionToken);
     } catch (ParseException e) {
-      throw new HandledRuntimeException(SERVER_ERROR, e);
+      throw new OAuthRuntimeException(SERVER_ERROR, e);
     }
     return sessionToken.asString();
+  }
+
+  @Override
+  public void logout(String clientId,
+                     String redirectUri,
+                     String sessionToken,
+                     String issuer,
+                     String publicKey,
+                     String privateKey) {
+    ClientUriSearchDto clientUriSearchTemplate = new ClientUriSearchDto();
+    clientUriSearchTemplate.setClientId(clientId);
+    List<ClientUriDto> clientUriList = clientUriService.findClientUri(clientUriSearchTemplate, 1);
+    if (!clientUriList.stream().anyMatch(clientUriDto -> clientUriDto.getClientUri().equals(redirectUri))) {
+      throw new OAuthRuntimeException(INVALID_REQUEST, "redirect_uri mismatch");
+    }
+
+    try {
+      Token token = TokenImpl.parseFromString(sessionToken);
+      Decryptor decryptor = new DecryptorRSA(privateKey);
+      token = decryptor.decrypt(token);
+      Verifier verifier = new SignatureVerifierRSA(publicKey);
+      if (verifier.verify(token) && issuer.equals(token.getIssuer())) {
+        SessionSearchDto searchTemplate = new SessionSearchDto();
+        searchTemplate.setSessionTokenId(token.getJti());
+        searchTemplate.setBlocked(false);
+        sessionService
+          .find(searchTemplate, serverCredential)
+          .stream()
+          .forEach(sessionDto -> sessionService.deleteRecord(String.valueOf(sessionDto.getSessionId()), serverCredential));
+      }
+    } catch (ParseException ex) {
+      throw new OAuthRuntimeException(SERVER_ERROR, ex);
+    }
   }
 
   private SessionDto getSession(String authCode, String clientId, String redirectUri) {
@@ -152,7 +192,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     if (sessions.size() == 1) {
       return sessions.get(0);
     } else {
-      throw new HandledRuntimeException(ACCESS_DENIED, "Session not found");
+      throw new OAuthRuntimeException(ACCESS_DENIED, "Session not found");
     }
   }
 
@@ -168,7 +208,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     updateDto.setSessionTokenId(sessionTokenId);
     updateDto.setSessionTokenDateIns(sessionDateIns);
     updateDto.setSessionTokenDateFinish(sessionDateFinish);
-    sessionService.update(updateDto, serverCredential);
+    sessionService.update(String.valueOf(updateDto.getSessionId()), updateDto, serverCredential);
   }
 
   private Token generateSessionToken(String username, Integer operatorId, String issuer, String privateKey, Integer expiresIn) {
@@ -192,7 +232,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       token = signer.sign(token);
       return token;
     } catch (Throwable th) {
-      throw new HandledRuntimeException(SERVER_ERROR, th);
+      throw new OAuthRuntimeException(SERVER_ERROR, th);
     }
   }
 

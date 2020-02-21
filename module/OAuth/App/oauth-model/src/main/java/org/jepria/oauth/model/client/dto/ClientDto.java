@@ -1,6 +1,5 @@
 package org.jepria.oauth.model.client.dto;
 
-import org.jepria.server.data.OptionDto;
 import org.jepria.server.data.PrimaryKey;
 
 import java.util.List;
@@ -12,10 +11,10 @@ public class ClientDto {
   String clientSecret;
   String clientName;
   String clientNameEn;
-  OptionDto<String> applicationType;
-  OptionDto<String> tokenAuthMethod;
-  List<OptionDto<String>> grantTypes;
-  List<OptionDto<String>> responseTypes;
+  String applicationType;
+  String tokenAuthMethod;
+  List<String> grantTypes;
+  List<String> responseTypes;
 
   public String getClientId() {
     return clientId;
@@ -49,35 +48,35 @@ public class ClientDto {
     this.clientNameEn = clientNameEn;
   }
 
-  public OptionDto<String> getApplicationType() {
+  public String getApplicationType() {
     return applicationType;
   }
 
-  public void setApplicationType(OptionDto<String> applicationType) {
+  public void setApplicationType(String applicationType) {
     this.applicationType = applicationType;
   }
 
-  public OptionDto<String> getTokenAuthMethod() {
+  public String getTokenAuthMethod() {
     return tokenAuthMethod;
   }
 
-  public void setTokenAuthMethod(OptionDto<String> tokenAuthMethod) {
+  public void setTokenAuthMethod(String tokenAuthMethod) {
     this.tokenAuthMethod = tokenAuthMethod;
   }
 
-  public List<OptionDto<String>> getGrantTypes() {
+  public List<String> getGrantTypes() {
     return grantTypes;
   }
 
-  public void setGrantTypes(List<OptionDto<String>> grantTypes) {
+  public void setGrantTypes(List<String> grantTypes) {
     this.grantTypes = grantTypes;
   }
 
-  public List<OptionDto<String>> getResponseTypes() {
+  public List<String> getResponseTypes() {
     return responseTypes;
   }
 
-  public void setResponseTypes(List<OptionDto<String>> responseTypes) {
+  public void setResponseTypes(List<String> responseTypes) {
     this.responseTypes = responseTypes;
   }
 }

@@ -87,24 +87,6 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>net.minidev</groupId>
-            <artifactId>asm</artifactId>
-            <version>1.0.2</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.2.4</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>3.0.1</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>5.6.0</version>
@@ -116,7 +98,6 @@
             <version>${oauth-sdk.version}</version>
             <scope>runtime</scope>
         </dependency>
-
         <!-- Jepria obsolete runtime dependencies -->
         <!-- TODO Эти зависимости не нужны для Rest/Jersey, они нужны для функционирования текущей версии Джеприи в целом. Необходимо убрать эти зависимости со временем -->
         <dependency>
@@ -226,31 +207,38 @@
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-catalina-ant</artifactId>
             <version>${tomcat.version}</version>
-            <scope>runtime</scope>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-coyote</artifactId>
             <version>${tomcat.version}</version>
-            <scope>runtime</scope>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-util</artifactId>
             <version>${tomcat.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!--Jersey bean validation-->
+        <dependency>
+            <groupId>org.glassfish.jersey.ext</groupId>
+            <artifactId>jersey-bean-validation</artifactId>
+            <version>2.26-b09</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-validator</artifactId>
+                </exclusion>
+            </exclusions>
             <scope>runtime</scope>
         </dependency>
         <!--Hibernate validator-->
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator</artifactId>
-            <version>4.1.0.Final</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.21</version>
+            <version>5.4.3.Final</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>

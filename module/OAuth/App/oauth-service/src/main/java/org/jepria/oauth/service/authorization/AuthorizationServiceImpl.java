@@ -1,6 +1,6 @@
 package org.jepria.oauth.service.authorization;
 
-import org.jepria.oauth.exception.HandledRuntimeException;
+import org.jepria.oauth.exception.OAuthRuntimeException;
 import org.jepria.oauth.model.authorization.AuthorizationService;
 import org.jepria.oauth.model.client.ClientService;
 import org.jepria.oauth.model.clienturi.ClientUriService;
@@ -18,7 +18,6 @@ import org.jepria.oauth.sdk.token.Verifier;
 import org.jepria.oauth.sdk.token.rsa.DecryptorRSA;
 import org.jepria.oauth.sdk.token.rsa.SignatureVerifierRSA;
 import org.jepria.oauth.sdk.token.rsa.VerifierRSA;
-import org.jepria.server.data.OptionDto;
 import org.jepria.server.data.RuntimeSQLException;
 import org.jepria.server.service.security.Credential;
 
@@ -26,10 +25,7 @@ import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static org.jepria.oauth.sdk.OAuthConstants.*;
 
@@ -37,7 +33,6 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
   private final SessionService sessionService;
   private final ClientService clientService;
-  private final ClientUriService clientUriService;
   
   private Credential serverCredential = new Credential() {
     @Override
@@ -56,23 +51,23 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
   };
 
-  public AuthorizationServiceImpl(SessionService sessionService, ClientService clientService, ClientUriService clientUriService) {
-    this.clientUriService = clientUriService;
+  public AuthorizationServiceImpl(SessionService sessionService, ClientService clientService) {
     this.clientService = clientService;
     this.sessionService = sessionService;
   }
 
+  @Override
   public SessionDto authorize(String responseType,
                               String clientId,
                               String redirectUri,
                               String codeChallenge) {
     if (!ResponseType.implies(responseType)) {
-      throw new HandledRuntimeException(UNSUPPORTED_RESPONSE_TYPE);
+      throw new OAuthRuntimeException(UNSUPPORTED_RESPONSE_TYPE);
     }
 
-    List<OptionDto<String>> clientResponseTypes = clientService.getClientResponseTypes(clientId);
-    if (clientResponseTypes.size() == 0 || !clientResponseTypes.stream().anyMatch(clientResponseType -> clientResponseType.getValue().equals(responseType))) {
-      throw new HandledRuntimeException(UNAUTHORIZED_CLIENT, "Client doesn't have enough permissions to use responseType=" + responseType);
+    List<String> clientResponseTypes = clientService.getClientResponseTypes(clientId);
+    if (clientResponseTypes.size() == 0 || !clientResponseTypes.stream().anyMatch(clientResponseType -> clientResponseType.equals(responseType))) {
+      throw new OAuthRuntimeException(UNAUTHORIZED_CLIENT, "Client doesn't have enough permissions to use responseType=" + responseType);
     }
 
     SessionCreateDto sessionDto = new SessionCreateDto();
@@ -81,19 +76,20 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     sessionDto.setRedirectUri(redirectUri);
     sessionDto.setCodeChallenge(codeChallenge);
     try {
-      return sessionService.findByPrimaryKey(sessionService.create(sessionDto, serverCredential), serverCredential);
+      return (SessionDto) sessionService.getRecordById(String.valueOf(sessionService.create(sessionDto, serverCredential)), serverCredential);
     } catch (RuntimeSQLException ex) {
       SQLException sqlException = ex.getSQLException();
       if (sqlException.getErrorCode() == 20001) {
-        throw new HandledRuntimeException(UNAUTHORIZED_CLIENT, "Client ID not found");
+        throw new OAuthRuntimeException(UNAUTHORIZED_CLIENT, "Client ID not found");
       }
       if (sqlException.getErrorCode() == 20002) {
-        throw new HandledRuntimeException(INVALID_REQUEST, "redirect_uri mismatch");
+        throw new OAuthRuntimeException(INVALID_REQUEST, "redirect_uri mismatch");
       }
       throw new RuntimeSQLException(sqlException);
     }
   }
 
+  @Override
   public SessionDto authorize(String responseType,
                               String clientId,
                               String redirectUri,
@@ -103,11 +99,11 @@ public class AuthorizationServiceImpl implements AuthorizationService {
                               String publicKey,
                               String privateKey) {
     if (!ResponseType.implies(responseType)) {
-      throw new HandledRuntimeException(UNSUPPORTED_RESPONSE_TYPE);
+      throw new OAuthRuntimeException(UNSUPPORTED_RESPONSE_TYPE);
     }
-    List<OptionDto<String>> clientResponseTypes = clientService.getClientResponseTypes(clientId);
-    if (clientResponseTypes.size() == 0 || !clientResponseTypes.stream().anyMatch(clientResponseType -> clientResponseType.getValue().equals(responseType))) {
-      throw new HandledRuntimeException(UNAUTHORIZED_CLIENT, "Client doesn't have enough permissions to use responseType=" + responseType);
+    List<String> clientResponseTypes = clientService.getClientResponseTypes(clientId);
+    if (clientResponseTypes.size() == 0 || !clientResponseTypes.stream().anyMatch(clientResponseType -> clientResponseType.equals(responseType))) {
+      throw new OAuthRuntimeException(UNAUTHORIZED_CLIENT, "Client doesn't have enough permissions to use responseType=" + responseType);
     }
     try {
       Token token = TokenImpl.parseFromString(sessionToken);
@@ -126,17 +122,20 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         sessionDto.setSessionTokenDateIns(token.getIssueTime());
         sessionDto.setSessionTokenDateFinish(token.getExpirationTime());
         sessionDto.setCodeChallenge(codeChallenge);
-        return sessionService.findByPrimaryKey(sessionService.create(sessionDto, serverCredential), serverCredential);
+        return (SessionDto) sessionService.getRecordById(String.valueOf(sessionService.create(sessionDto, serverCredential)), serverCredential);
       } else {
+        /**
+         * Сессия истекла или не валидна
+         */
         return authorize(responseType, clientId, redirectUri, codeChallenge);
       }
     } catch (RuntimeSQLException ex) {
       SQLException sqlException = ex.getSQLException();
       if (sqlException.getErrorCode() == 20001) {
-        throw new HandledRuntimeException(UNAUTHORIZED_CLIENT, "Client ID not found");
+        throw new OAuthRuntimeException(UNAUTHORIZED_CLIENT, "Client ID not found");
       }
       if (sqlException.getErrorCode() == 20002) {
-        throw new HandledRuntimeException(INVALID_REQUEST, "redirect_uri mismatch");
+        throw new OAuthRuntimeException(INVALID_REQUEST, "redirect_uri mismatch");
       }
       throw new RuntimeSQLException(sqlException);
     } catch (ParseException ex) {
@@ -157,39 +156,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
       md.update(salt);
       return Base64.getUrlEncoder().withoutPadding().encodeToString(md.digest(randomUuid.toString().getBytes()));
     } catch (Throwable th) {
-      throw new HandledRuntimeException(SERVER_ERROR, th);
-    }
-  }
-
-  public void logout(String clientId,
-                     String redirectUri,
-                     String sessionToken,
-                     String issuer,
-                     String publicKey,
-                     String privateKey) {
-    ClientUriSearchDto clientUriSearchTemplate = new ClientUriSearchDto();
-    clientUriSearchTemplate.setClientId(clientId);
-    List<ClientUriDto> clientUriList = clientUriService.findClientUri(clientUriSearchTemplate, null);
-    if (!clientUriList.stream().anyMatch(clientUriDto -> clientUriDto.getClientUri().equals(redirectUri))) {
-      throw new HandledRuntimeException(INVALID_REQUEST, "redirect_uri mismatch");
-    }
-
-    try {
-      Token token = TokenImpl.parseFromString(sessionToken);
-      Decryptor decryptor = new DecryptorRSA(privateKey);
-      token = decryptor.decrypt(token);
-      Verifier verifier = new SignatureVerifierRSA(publicKey);
-      if (verifier.verify(token) && issuer.equals(token.getIssuer())) {
-        SessionSearchDto searchTemplate = new SessionSearchDto();
-        searchTemplate.setSessionTokenId(token.getJti());
-        searchTemplate.setBlocked(false);
-        sessionService
-          .find(searchTemplate, serverCredential)
-          .stream()
-          .forEach(sessionDto -> sessionService.delete(sessionDto.getSessionId(), serverCredential));
-      }
-    } catch (ParseException ex) {
-      throw new HandledRuntimeException(SERVER_ERROR, ex);
+      throw new OAuthRuntimeException(SERVER_ERROR, th);
     }
   }
 }

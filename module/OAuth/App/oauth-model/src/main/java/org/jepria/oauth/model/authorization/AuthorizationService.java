@@ -36,19 +36,4 @@ public interface AuthorizationService {
                        String issuer,
                        String publicKey,
                        String privateKey);
-
-  /**
-   * @param clientId ID клиентского приложения
-   * @param redirectUri URL для перенаправления
-   * @param sessionToken токен сессии
-   * @param issuer имя сервера
-   * @param publicKey публичный ключ
-   * @param privateKey приватный ключ
-   */
-  void logout(String clientId,
-              String redirectUri,
-              String sessionToken,
-              String issuer,
-              String publicKey,
-              String privateKey);
 }

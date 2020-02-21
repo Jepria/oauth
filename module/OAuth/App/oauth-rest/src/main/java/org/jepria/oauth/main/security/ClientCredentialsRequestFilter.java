@@ -42,7 +42,7 @@ public final class ClientCredentialsRequestFilter implements ContainerRequestFil
     if (authString != null) {
       authString = authString.replaceFirst("[Bb]asic ", "");
       String[] credentials = new String(Base64.getUrlDecoder().decode(authString)).split(":");
-      Integer clientIdentifier = authenticationService.loginByClientCredentials(credentials[0], credentials[1]);
+      Integer clientIdentifier = authenticationService.loginByClientSecret(credentials[0], credentials[1]);
       requestContext.setSecurityContext(new ClientSecurityContext(clientIdentifier, credentials[0]));
     } else {
       ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -52,7 +52,7 @@ public final class ClientCredentialsRequestFilter implements ContainerRequestFil
         Map<String, String> parameters = URIUtil.parseParameters(new String(requestEntity), null);
         requestContext.setEntityStream(new ByteArrayInputStream(requestEntity));
         if (parameters.get(CLIENT_ID) != null && parameters.get(CLIENT_SECRET) != null) {
-          Integer clientIdentifier = authenticationService.loginByClientCredentials(parameters.get(CLIENT_ID), parameters.get(CLIENT_SECRET));
+          Integer clientIdentifier = authenticationService.loginByClientSecret(parameters.get(CLIENT_ID), parameters.get(CLIENT_SECRET));
           requestContext.setSecurityContext(new ClientSecurityContext(clientIdentifier, parameters.get(CLIENT_ID)));
         } else {
           throw new LoginException("Invalid credentials");

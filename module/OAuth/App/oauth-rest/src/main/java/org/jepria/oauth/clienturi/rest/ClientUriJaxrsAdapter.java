@@ -9,6 +9,7 @@ import org.jepria.server.service.rest.JaxrsAdapterBase;
 import org.jepria.server.service.security.HttpBasic;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import javax.ws.rs.POST;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -50,8 +51,15 @@ public class ClientUriJaxrsAdapter extends JaxrsAdapterBase {
     return Response.ok().entity(result).build();
   }
 
+  /**
+   * URI вынесен в Dto, потому что в IE максимальная длина урла 2048. Значение может не поместиться.
+   *
+   * @param clientId Client app ID
+   * @param record {@link ClientUriCreateDto}
+   * @return
+   */
   @POST
-  public Response create(@PathParam("clientId") String clientId, ClientUriCreateDto record) {
+  public Response create(@PathParam("clientId") String clientId, @Valid ClientUriCreateDto record) {
     record.setClientId(clientId);
     return entityEndpointAdapter.create(record);
   }

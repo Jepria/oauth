@@ -111,7 +111,7 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
   @AllowAllOrigin
   @WithClientCredentials
   public Response deleteToken(@FormParam("token") String token) {
-    TokenServerFactory.getInstance().getService().deleteToken(
+    TokenServerFactory.getInstance().getService().delete(
       securityContext.getUserPrincipal().getName(),
       token,
       securityContext.getCredential());

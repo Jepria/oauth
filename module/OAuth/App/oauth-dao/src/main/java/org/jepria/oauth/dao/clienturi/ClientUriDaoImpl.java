@@ -2,10 +2,10 @@ package org.jepria.oauth.dao.clienturi;
 
 import com.technology.jep.jepria.server.dao.ResultSetMapper;
 import com.technology.jep.jepria.server.db.Db;
-import org.jepria.oauth.model.clienturi.dao.ClientUriDao;
 import org.jepria.oauth.model.clienturi.dto.ClientUriCreateDto;
 import org.jepria.oauth.model.clienturi.dto.ClientUriDto;
 import org.jepria.oauth.model.clienturi.dto.ClientUriSearchDto;
+import org.jepria.server.data.Dao;
 import org.jepria.server.data.RuntimeSQLException;
 
 import java.sql.CallableStatement;
@@ -18,7 +18,7 @@ import java.util.Map;
 import static org.jepria.oauth.dao.clienturi.ClientUriFieldNames.*;
 
 
-public class ClientUriDaoImpl implements ClientUriDao {
+public class ClientUriDaoImpl implements Dao {
 
 
   private Db getDb() {

@@ -2,13 +2,13 @@ package org.jepria.oauth.clienturi;
 
 import org.jepria.oauth.dao.clienturi.ClientUriDaoImpl;
 import org.jepria.oauth.model.clienturi.ClientUriService;
-import org.jepria.oauth.model.clienturi.dao.ClientUriDao;
 import org.jepria.oauth.service.clienturi.ClientUriServiceImpl;
 import org.jepria.server.ServerFactory;
+import org.jepria.server.data.Dao;
 import org.jepria.server.service.rest.EntityService;
 import org.jepria.server.service.rest.EntityServiceImpl;
 
-public class ClientUriServerFactory extends ServerFactory<ClientUriDao> {
+public class ClientUriServerFactory extends ServerFactory<Dao> {
 
   private static ClientUriServerFactory instance;
   private ClientUriService service;

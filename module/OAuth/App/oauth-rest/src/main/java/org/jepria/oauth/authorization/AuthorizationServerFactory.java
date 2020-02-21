@@ -27,8 +27,7 @@ public class AuthorizationServerFactory extends ServerFactory<Dao> {
   public AuthorizationService getService() {
     if (service == null) {
       service = new AuthorizationServiceImpl(SessionServerFactory.getInstance().getService(),
-          ClientServerFactory.getInstance().getService(),
-          ClientUriServerFactory.getInstance().getService());
+          ClientServerFactory.getInstance().getService());
     }
     return service;
   }

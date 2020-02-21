@@ -3,6 +3,8 @@ package org.jepria.oauth.model.authentication;
 public interface AuthenticationService {
   
   /**
+   * Проверка логина/пароля пользователя в системе
+   *
    * @param username имя пользователя
    * @param password пароль пользователя
    * @return уникальный ID пользователя
@@ -10,13 +12,17 @@ public interface AuthenticationService {
   Integer loginByPassword(String username, String password);
 
   /**
+   * Проверка секретного слова клиентского приложения в системе
+   *
    * @param clientId ID клиентского приложения
    * @param clientSecret секретное слово клиенского приложения
    * @return уникальный ID клиенского приложения
    */
-  Integer loginByClientCredentials(String clientId, String clientSecret);
+  Integer loginByClientSecret(String clientId, String clientSecret);
 
   /**
+   * Проверка ID клиентского приложения в системе
+   *
    * @param clientId ID клиентского приложения
    * @return уникальный ID клиенского приложения
    */
@@ -24,14 +30,19 @@ public interface AuthenticationService {
 
   /**
    *
-   * @param authorizationCode одноразовый код
    * @param clientId ID клиентского приложения
+   * @param authorizationCode одноразовый код
    * @param codeVerifier проверочный код
    * @return уникальный ID клиенского приложения
    */
-  Integer loginByPKCE(String authorizationCode, String clientId, String codeVerifier);
+  Integer loginByAuthorizationCode(String clientId, String authorizationCode, String codeVerifier);
 
   /**
+   * <pre>
+   * Аутентификация OAuth, по логину/паролю пользвателя.
+   * Результат -> созданная SSO сессия OAuth
+   * </pre>
+   *
    * @param authCode одноразовый код
    * @param redirectUri URL для перенаправления
    * @param clientId ID клиентского приложения
@@ -40,7 +51,7 @@ public interface AuthenticationService {
    * @param host имя сервера
    * @param publicKey публичный ключ
    * @param privateKey приватный ключ
-   * @return Session Cookie
+   * @return Session Token
    */
   String authenticate(
     String authCode,
@@ -51,4 +62,19 @@ public interface AuthenticationService {
     String host,
     String publicKey,
     String privateKey);
+
+  /**
+   * @param clientId ID клиентского приложения
+   * @param redirectUri URL для перенаправления
+   * @param sessionToken токен сессии
+   * @param issuer имя сервера
+   * @param publicKey публичный ключ
+   * @param privateKey приватный ключ
+   */
+  void logout(String clientId,
+              String redirectUri,
+              String sessionToken,
+              String issuer,
+              String publicKey,
+              String privateKey);
 }

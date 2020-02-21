@@ -36,7 +36,7 @@ public class AuthenticationDaoImpl implements AuthenticationDao {
   }
 
   @Override
-  public Integer loginByClientCredentials(String clientId, String clientSecret) {
+  public Integer loginByClientSecret(String clientId, String clientSecret) {
     //language=Oracle
     String sqlQuery = "select cl.client_id from OA_CLIENT cl where cl.CLIENT_CODE like ? and cl.CLIENT_SECRET like ?";
     Db db = getDb();
@@ -97,30 +97,5 @@ public class AuthenticationDaoImpl implements AuthenticationDao {
       db.closeAll();
       return Boolean.FALSE;
     }
-  }
-
-  @Override
-  public List<?> find(Object template, Integer operatorId) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public List<?> findByPrimaryKey(Map<String, ?> primaryKeyMap, Integer operatorId) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Object create(Object record, Integer operatorId) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void update(Map<String, ?> primaryKey, Object record, Integer operatorId) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void delete(Map<String, ?> primaryKey, Integer operatorId) {
-    throw new UnsupportedOperationException();
   }
 }

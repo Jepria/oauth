@@ -1,5 +1,6 @@
 package org.jepria.oauth.authentication;
 
+import org.jepria.oauth.clienturi.ClientUriServerFactory;
 import org.jepria.oauth.dao.authentication.AuthenticationDaoImpl;
 import org.jepria.oauth.model.authentication.AuthenticationService;
 import org.jepria.oauth.model.authentication.dao.AuthenticationDao;
@@ -25,7 +26,9 @@ public class AuthenticationServerFactory extends ServerFactory<AuthenticationDao
 
   public AuthenticationService getService() {
     if (service == null) {
-      service = new AuthenticationServiceImpl(getDao(), SessionServerFactory.getInstance().getService());
+      service = new AuthenticationServiceImpl(getDao(),
+        SessionServerFactory.getInstance().getService(),
+        ClientUriServerFactory.getInstance().getService());
     }
     return service;
   }

@@ -1,17 +1,17 @@
 package org.jepria.oauth.service.clienturi;
 
 import org.jepria.oauth.model.clienturi.ClientUriService;
-import org.jepria.oauth.model.clienturi.dao.ClientUriDao;
 import org.jepria.oauth.model.clienturi.dto.ClientUriDto;
 import org.jepria.oauth.model.clienturi.dto.ClientUriSearchDto;
+import org.jepria.server.data.Dao;
 
 import java.util.List;
 
 public class ClientUriServiceImpl implements ClientUriService {
 
-  private final ClientUriDao dao;
+  private final Dao dao;
 
-  public ClientUriServiceImpl(ClientUriDao dao) {
+  public ClientUriServiceImpl(Dao dao) {
     this.dao = dao;
   }
 

@@ -1,23 +1,21 @@
 package org.jepria.oauth.service.session;
 
 import org.jepria.oauth.model.session.SessionService;
-import org.jepria.oauth.model.session.dao.SessionDao;
-import org.jepria.oauth.model.session.dto.SessionCreateDto;
 import org.jepria.oauth.model.session.dto.SessionDto;
 import org.jepria.oauth.model.session.dto.SessionSearchDto;
-import org.jepria.oauth.model.session.dto.SessionUpdateDto;
-import org.jepria.server.service.rest.EntityService;
+import org.jepria.server.data.Dao;
+import org.jepria.server.data.RecordDefinition;
+import org.jepria.server.service.rest.EntityServiceImpl;
 import org.jepria.server.service.security.Credential;
 
 import java.util.List;
 
-public class SessionServiceImpl implements SessionService {
+public class SessionServiceImpl extends EntityServiceImpl implements SessionService {
   
-  private final SessionDao dao;
-  private final EntityService entityService;
+  private final Dao dao;
   
-  public SessionServiceImpl(EntityService entityService, SessionDao dao) {
-    this.entityService = entityService;
+  public SessionServiceImpl(Dao dao, RecordDefinition recordDefinition) {
+    super(dao, recordDefinition);
     this.dao = dao;
   }
 
@@ -25,22 +23,6 @@ public class SessionServiceImpl implements SessionService {
     template.setHasToken(false);
     List<SessionDto> result = (List<SessionDto>) dao.find(template, credential.getOperatorId());
     return result;
-  }
-
-  public SessionDto findByPrimaryKey(Integer sessionId, Credential credential) {
-    return (SessionDto) entityService.getRecordById(String.valueOf(sessionId), credential);
-  }
-
-  public Integer create(SessionCreateDto record, Credential credential) {
-    return Integer.valueOf(entityService.create(record, credential));
-  }
-
-  public void update(SessionUpdateDto record, Credential credential) {
-    entityService.update(String.valueOf(record.getSessionId()), record, credential);
-  }
-
-  public void delete(Integer sessionId, Credential credential) {
-    entityService.deleteRecord(String.valueOf(sessionId), credential);
   }
 
 }

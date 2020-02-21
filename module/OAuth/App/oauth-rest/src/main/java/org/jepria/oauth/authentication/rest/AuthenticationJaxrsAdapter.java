@@ -1,22 +1,20 @@
 package org.jepria.oauth.authentication.rest;
 
 import org.jepria.oauth.authentication.AuthenticationServerFactory;
+import org.jepria.oauth.authorization.AuthorizationServerFactory;
 import org.jepria.oauth.model.token.dto.TokenDto;
 import org.jepria.oauth.token.TokenServerFactory;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.Base64;
+import java.util.Date;
 
 import static org.jepria.oauth.sdk.OAuthConstants.*;
 
@@ -104,6 +102,30 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
       response = Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR_QUERY_PARAM + UNSUPPORTED_RESPONSE_TYPE)).build();
     }
     return response;
+  }
+
+  @GET
+  @Path("/logout")
+  public Response logout(
+    @QueryParam("client_id") String clientId,
+    @QueryParam("redirect_uri") String redirectUriEncoded,
+    @QueryParam("state") String state,
+    @CookieParam(SESSION_ID) String sessionToken
+  ) {
+    String redirectUri = new String(Base64.getUrlDecoder().decode(redirectUriEncoded));
+    AuthenticationServerFactory
+      .getInstance()
+      .getService()
+      .logout(clientId,
+        redirectUri,
+        sessionToken,
+        getHostContext(),
+        getPublicKey(),
+        getPrivateKey());
+    return Response.status(302)
+      .location(URI.create(redirectUri + getSeparator(redirectUri) + STATE + "=" + state))
+      .cookie(new NewCookie(SESSION_ID, "", null, null, NewCookie.DEFAULT_VERSION, null, 0, new Date(), false, true))
+      .build();
   }
 
   /**

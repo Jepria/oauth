@@ -1,9 +1,14 @@
 package org.jepria.oauth.model.client.dto;
 
+
 import org.hibernate.validator.constraints.NotBlank;
+import org.jepria.oauth.model.client.constraint.ApplicationGrantType;
+import org.jepria.oauth.model.client.constraint.ApplicationType;
+import org.jepria.oauth.model.client.constraint.GrantType;
 
 import java.util.List;
 
+@ApplicationGrantType
 public class ClientCreateDto {
 
   String clientId;
@@ -12,10 +17,10 @@ public class ClientCreateDto {
   String clientName;
   String clientNameEn;
   @NotBlank
+  @ApplicationType
   String applicationType;
+  @GrantType
   List<String> grantTypes;
-  @NotBlank
-  String tokenAuthMethod;
 
   public String getClientId() {
     return clientId;
@@ -63,13 +68,5 @@ public class ClientCreateDto {
 
   public void setGrantTypes(List<String> grantTypes) {
     this.grantTypes = grantTypes;
-  }
-
-  public String getTokenAuthMethod() {
-    return tokenAuthMethod;
-  }
-
-  public void setTokenAuthMethod(String tokenAuthMethod) {
-    this.tokenAuthMethod = tokenAuthMethod;
   }
 }

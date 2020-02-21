@@ -7,6 +7,7 @@ import org.jepria.server.service.security.Credential;
 public interface TokenService {
   
   /**
+   * Создание токена при входе в OAuth через IMPLICIT flow (responseType = token)
    * @param responseType тип ответа
    * @param privateKey приватный ключ
    * @param host имя сервера
@@ -23,6 +24,7 @@ public interface TokenService {
                   String redirectUri);
 
   /**
+   * Создание токена для всех OAuth GrantType
    *
    * @param grantType тип гранта
    * @param publicKey публичный ключ
@@ -52,6 +54,8 @@ public interface TokenService {
                   String refreshToken);
   
   /**
+   * Получение информации о токене
+   *
    * @param publicKey публичный ключ
    * @param hostContext имя сервера
    * @param tokenString токен
@@ -60,10 +64,12 @@ public interface TokenService {
   TokenInfoDto getTokenInfo(String publicKey, String hostContext, String tokenString, Credential credential);
   
   /**
+   * Удаление выданного токена
+   *
    * @param clientId ID клиентского приложения
    * @param tokenString токен
    * @param credential креденциал
    */
-  void deleteToken(String clientId, String tokenString, Credential credential);
+  void delete(String clientId, String tokenString, Credential credential);
   
 }

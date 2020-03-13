@@ -1,25 +1,25 @@
 package org.jepria.oauth.token.rest;
 
+import org.jepria.oauth.authentication.AuthenticationServerFactory;
+import org.jepria.oauth.exception.OAuthRuntimeException;
 import org.jepria.oauth.main.security.AllowAllOrigin;
-import org.jepria.oauth.main.security.WithClientCredentials;
+import org.jepria.oauth.model.authentication.AuthenticationService;
 import org.jepria.oauth.model.token.dto.TokenDto;
 import org.jepria.oauth.model.token.dto.TokenInfoDto;
+import org.jepria.oauth.sdk.GrantType;
 import org.jepria.oauth.token.TokenServerFactory;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
 import org.jepria.server.service.security.JepSecurityContext;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.Base64;
+
+import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 /**
  * The token endpoint is used by the client to obtain an access token by
@@ -33,6 +33,7 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
   HttpServletRequest request;
   @Context
   JepSecurityContext securityContext;
+  AuthenticationService authenticationService = AuthenticationServerFactory.getInstance().getService();
 
   //TODO Убрать после перехода на модуль Option???
   private String getPublicKey() {
@@ -60,36 +61,52 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
     @FormParam("password") String password,
     @FormParam("code_verifier") String codeVerifier,
     @FormParam("refresh_token") String refreshToken) {
-    TokenDto result;
     if (authHeader != null) {
       authHeader = authHeader.replaceFirst("[Bb]asic ", "");
       String[] clientCredentials = new String(Base64.getUrlDecoder().decode(authHeader)).split(":");
-      result = TokenServerFactory.getInstance().getService().create(grantType,
-        getPublicKey(),
-        getPrivateKey(),
-        getHostContext(),
-        authCode,
-        clientCredentials[0],
-        clientCredentials[1],
-        codeVerifier,
-        redirectUri,
-        username,
-        password,
-        refreshToken);
-    } else {
-      result = TokenServerFactory.getInstance().getService().create(grantType,
-        getPublicKey(),
-        getPrivateKey(),
-        getHostContext(),
-        authCode,
-        clientId,
-        clientSecret,
-        codeVerifier,
-        redirectUri,
-        username,
-        password,
-        refreshToken);
+      clientId = clientCredentials[0];
+      clientSecret = clientCredentials[1];
     }
+    if (grantType == null) {
+      throw new OAuthRuntimeException(INVALID_REQUEST, "Grant type must be not null");
+    }
+    switch (grantType) {
+      case GrantType.AUTHORIZATION_CODE: {
+        if (clientId != null && clientSecret != null) {
+          authenticationService.loginByClientSecret(clientId, clientSecret);
+        } else if (clientId != null && clientSecret == null && codeVerifier != null) {
+          authenticationService.loginByAuthorizationCode(authCode, clientId, codeVerifier);
+        } else {
+          throw new OAuthRuntimeException(ACCESS_DENIED, "Request authorization failed");
+        }
+        break;
+      }
+//        case GrantType.CLIENT_CREDENTIALS: {TODO
+//          break;
+//        }
+      case GrantType.PASSWORD:
+      case GrantType.REFRESH_TOKEN: {
+        if (clientId != null && clientSecret != null) {
+          authenticationService.loginByClientSecret(clientId, clientSecret);
+        } else if (clientId != null && clientSecret == null) {
+          authenticationService.loginByClientId(clientId);
+        }
+        break;
+      }
+      default: {
+        throw new OAuthRuntimeException(UNSUPPORTED_GRANT_TYPE, "Grant type '" + grantType + "' is not supported");
+      }
+    }
+    TokenDto result = TokenServerFactory.getInstance().getService().create(grantType,
+      getPublicKey(),
+      getPrivateKey(),
+      getHostContext(),
+      authCode,
+      clientId,
+      redirectUri,
+      username,
+      password,
+      refreshToken);
     return Response.ok(result).build();
   }
 
@@ -97,24 +114,43 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
   @Path("/introspect")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   @AllowAllOrigin
-  @WithClientCredentials
-  public TokenInfoDto getTokenInfo(@FormParam("token") String token) {
-    return TokenServerFactory.getInstance().getService().getTokenInfo(getPublicKey(),
+  public Response getTokenInfo(
+    @HeaderParam("Authorization") String authHeader,
+    @FormParam("client_id") String clientId,
+    @FormParam("client_secret") String clientSecret,
+    @FormParam("token") String token) {
+    if (authHeader != null) {
+      authHeader = authHeader.replaceFirst("[Bb]asic ", "");
+      String[] clientCredentials = new String(Base64.getUrlDecoder().decode(authHeader)).split(":");
+      clientId = clientCredentials[0];
+      clientSecret = clientCredentials[1];
+    }
+    authenticationService.loginByClientSecret(clientId, clientSecret);
+    TokenInfoDto result = TokenServerFactory.getInstance().getService().getTokenInfo(getPublicKey(),
       getHostContext(),
-      token,
-      securityContext.getCredential());
+      token);
+    return Response.ok(result).build();
   }
 
   @POST
   @Path("/revoke")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   @AllowAllOrigin
-  @WithClientCredentials
-  public Response deleteToken(@FormParam("token") String token) {
+  public Response deleteToken(
+    @HeaderParam("Authorization") String authHeader,
+    @FormParam("client_id") String clientId,
+    @FormParam("client_secret") String clientSecret,
+    @FormParam("token") String token) {
+    if (authHeader != null) {
+      authHeader = authHeader.replaceFirst("[Bb]asic ", "");
+      String[] clientCredentials = new String(Base64.getUrlDecoder().decode(authHeader)).split(":");
+      clientId = clientCredentials[0];
+      clientSecret = clientCredentials[1];
+    }
+    authenticationService.loginByClientSecret(clientId, clientSecret);
     TokenServerFactory.getInstance().getService().delete(
-      securityContext.getUserPrincipal().getName(),
-      token,
-      securityContext.getCredential());
+      clientId,
+      token);
     return Response.ok().build();
   }
 

@@ -26,7 +26,7 @@ public interface AuthenticationService {
    * @param clientId ID клиентского приложения
    * @return уникальный ID клиенского приложения
    */
-  Integer loginByClientId(String clientId);
+  void loginByClientId(String clientId);
 
   /**
    *
@@ -35,7 +35,7 @@ public interface AuthenticationService {
    * @param codeVerifier проверочный код
    * @return уникальный ID клиенского приложения
    */
-  Integer loginByAuthorizationCode(String clientId, String authorizationCode, String codeVerifier);
+  void loginByAuthorizationCode(String clientId, String authorizationCode, String codeVerifier);
 
   /**
    * <pre>

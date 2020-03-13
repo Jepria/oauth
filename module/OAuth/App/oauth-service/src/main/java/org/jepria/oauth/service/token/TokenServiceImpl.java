@@ -120,25 +120,16 @@ public class TokenServiceImpl implements TokenService {
                          String host,
                          String authCode,
                          String clientId,
-                         String clientSecret,
-                         String codeVerifier,
                          String redirectUri,
                          String username,
                          String password,
                          String refreshToken) {
     TokenDto result;
     if (grantType == null) {
-      throw new OAuthRuntimeException(UNSUPPORTED_GRANT_TYPE, "Grant type must be not null");
+      throw new OAuthRuntimeException(INVALID_REQUEST, "Grant type must be not null");
     }
     switch (grantType) {
       case GrantType.AUTHORIZATION_CODE: {
-        if (clientId != null && clientSecret != null) {
-          authenticationService.loginByClientSecret(clientId, clientSecret);
-        } else if (clientId != null && clientSecret == null && codeVerifier != null) {
-          authenticationService.loginByAuthorizationCode(authCode, clientId, codeVerifier);
-        } else {
-          throw new OAuthRuntimeException(ACCESS_DENIED, "Request authorization failed");
-        }
         result = createTokenFromAuthCode(privateKey, host, authCode, clientId, new String(Base64.getUrlDecoder().decode(redirectUri)));
         break;
       }
@@ -146,21 +137,11 @@ public class TokenServiceImpl implements TokenService {
 //          break;
 //        }
       case GrantType.PASSWORD: {
-        if (clientId != null && clientSecret != null) {
-          authenticationService.loginByClientSecret(clientId, clientSecret);
-        } else if (clientId != null && clientSecret == null) {
-          authenticationService.loginByClientId(clientId);
-        }
         Integer operatorId = authenticationService.loginByPassword(username, password);
         result = createTokenPair(privateKey, host, clientId, username, operatorId);;
         break;
       }
       case GrantType.REFRESH_TOKEN: {
-        if (clientId != null && clientSecret != null) {
-          authenticationService.loginByClientSecret(clientId, clientSecret);
-        } else if (clientId != null && clientSecret == null) {
-          authenticationService.loginByClientId(clientId);
-        }
         result = refreshToken(publicKey, privateKey, host, clientId, refreshToken);
         break;
       }
@@ -261,12 +242,12 @@ public class TokenServiceImpl implements TokenService {
   }
 
   @Override
-  public TokenInfoDto getTokenInfo(String publicKey, String hostContext, String tokenString, Credential credential) {
+  public TokenInfoDto getTokenInfo(String publicKey, String hostContext, String tokenString) {
     TokenInfoDto result = new TokenInfoDto();
     Token token;
     try {
       token = TokenImpl.parseFromString(tokenString);
-      SessionDto sessionDto = getSession(null, null, null, token.getJti(), null, credential);
+      SessionDto sessionDto = getSession(null, null, null, token.getJti(), null, serverCredential);
       if (sessionDto.getBlocked()) {
         result.setActive(false);
         return result;
@@ -291,11 +272,11 @@ public class TokenServiceImpl implements TokenService {
   }
 
   @Override
-  public void delete(String clientId, String tokenString, Credential credential) {
+  public void delete(String clientId, String tokenString) {
     try {
       Token token = TokenImpl.parseFromString(tokenString);
-      SessionDto sessionDto = getSession(null, clientId, null, token.getJti(), null, credential);
-      sessionService.deleteRecord(String.valueOf(sessionDto.getSessionId()), credential);
+      SessionDto sessionDto = getSession(null, clientId, null, token.getJti(), null, serverCredential);
+      sessionService.deleteRecord(String.valueOf(sessionDto.getSessionId()), serverCredential);
     } catch (ParseException e) {
       throw new OAuthRuntimeException(SERVER_ERROR, e);
     }

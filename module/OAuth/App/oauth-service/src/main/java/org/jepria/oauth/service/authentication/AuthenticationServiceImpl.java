@@ -15,6 +15,7 @@ import org.jepria.oauth.sdk.token.rsa.DecryptorRSA;
 import org.jepria.oauth.sdk.token.rsa.EncryptorRSA;
 import org.jepria.oauth.sdk.token.rsa.SignatureVerifierRSA;
 import org.jepria.oauth.sdk.token.rsa.SignerRSA;
+import org.jepria.server.data.RuntimeSQLException;
 import org.jepria.server.service.security.Credential;
 
 import java.security.MessageDigest;
@@ -70,38 +71,34 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   @Override
   public Integer loginByClientSecret(String clientId, String clientSecret) {
     try {
-      Integer clientID = dao.loginByClientSecret(clientId, clientSecret);
-      if (clientID == null) {
-        throw new OAuthRuntimeException(ACCESS_DENIED, "Wrong clientId/clientSecret");
-      } else {
-        return clientID;
-      }
-    } catch (Throwable th) {
-      throw new OAuthRuntimeException(SERVER_ERROR, th);
-    }
-  }
-
-  @Override
-  public Integer loginByClientId(String clientId) {
-    try {
-      Integer clientID = dao.loginByClientSecret(clientId, null);
-      if (clientID == null) {
+      return dao.loginByClientSecret(clientId, clientSecret);
+    } catch (RuntimeSQLException th) {
+      if (th.getSQLException().getErrorCode() == 20003) {
         throw new OAuthRuntimeException(ACCESS_DENIED, "Wrong clientId");
       } else {
-        return clientID;
+        throw new OAuthRuntimeException(SERVER_ERROR, th);
       }
-    } catch (Throwable th) {
-      throw new OAuthRuntimeException(SERVER_ERROR, th);
     }
   }
 
   @Override
-  public Integer loginByAuthorizationCode(String authorizationCode, String clientId, String codeVerifier) {
-    Integer clientID = loginByClientId(clientId);
+  public void loginByClientId(String clientId) {
     try {
-      if (dao.verifyPKCE(authorizationCode, codeVerifier)) {
-        return clientID;
+      dao.loginByClientSecret(clientId, null);
+    } catch (RuntimeSQLException th) {
+      if (th.getSQLException().getErrorCode() == 20003) {
+        throw new OAuthRuntimeException(ACCESS_DENIED, "Wrong clientId");
       } else {
+        throw new OAuthRuntimeException(SERVER_ERROR, th);
+      }
+    }
+  }
+
+  @Override
+  public void loginByAuthorizationCode(String authorizationCode, String clientId, String codeVerifier) {
+    loginByClientId(clientId);
+    try {
+      if (!dao.verifyPKCE(authorizationCode, codeVerifier)) {
         throw new OAuthRuntimeException(ACCESS_DENIED, "PKCE verification failed");
       }
     } catch (Throwable th) {

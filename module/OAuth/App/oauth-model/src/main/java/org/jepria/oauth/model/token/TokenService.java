@@ -46,8 +46,6 @@ public interface TokenService {
                   String host,
                   String authCode,
                   String clientId,
-                  String clientSecret,
-                  String codeVerifier,
                   String redirectUri,
                   String username,
                   String password,
@@ -61,15 +59,14 @@ public interface TokenService {
    * @param tokenString токен
    * @return информация о токене
    */
-  TokenInfoDto getTokenInfo(String publicKey, String hostContext, String tokenString, Credential credential);
+  TokenInfoDto getTokenInfo(String publicKey, String hostContext, String tokenString);
   
   /**
    * Удаление выданного токена
    *
    * @param clientId ID клиентского приложения
    * @param tokenString токен
-   * @param credential креденциал
    */
-  void delete(String clientId, String tokenString, Credential credential);
+  void delete(String clientId, String tokenString);
   
 }

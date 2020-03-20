@@ -49,8 +49,6 @@ public interface AuthenticationService {
    * @param username имя пользователя
    * @param password пароль пользователя
    * @param host имя сервера
-   * @param publicKey публичный ключ
-   * @param privateKey приватный ключ
    * @return Session Token
    */
   String authenticate(
@@ -59,22 +57,16 @@ public interface AuthenticationService {
     String clientId,
     String username,
     String password,
-    String host,
-    String publicKey,
-    String privateKey);
+    String host);
 
   /**
    * @param clientId ID клиентского приложения
    * @param redirectUri URL для перенаправления
    * @param sessionToken токен сессии
    * @param issuer имя сервера
-   * @param publicKey публичный ключ
-   * @param privateKey приватный ключ
    */
   void logout(String clientId,
               String redirectUri,
               String sessionToken,
-              String issuer,
-              String publicKey,
-              String privateKey);
+              String issuer);
 }

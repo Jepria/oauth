@@ -6,6 +6,7 @@ import org.jepria.oauth.authentication.rest.AuthenticationJaxrsAdapter;
 import org.jepria.oauth.authorization.rest.AuthorizationJaxrsAdapter;
 import org.jepria.oauth.client.rest.ClientJaxrsAdapter;
 import org.jepria.oauth.clienturi.rest.ClientUriJaxrsAdapter;
+import org.jepria.oauth.key.rest.KeyJaxrsAdapter;
 import org.jepria.oauth.main.exception.OAuthExceptionMapper;
 import org.jepria.oauth.main.rest.jersey.inject.ClientLocaleFeature;
 import org.jepria.oauth.main.rest.jersey.inject.ClientLocaleSupplier;
@@ -26,6 +27,7 @@ public class Application extends ApplicationConfigBase {
     register(TokenJaxrsAdapter.class);
     register(ClientJaxrsAdapter.class);
     register(ClientUriJaxrsAdapter.class);
+    register(KeyJaxrsAdapter.class);
     register(new ValidationExceptionMapper());
     register(ClientLocaleFeature.class);
     register(new AbstractBinder() {

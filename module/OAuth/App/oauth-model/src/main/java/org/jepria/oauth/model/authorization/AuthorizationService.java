@@ -24,8 +24,6 @@ public interface AuthorizationService {
    * @param codeChallenge хэш проверочного кода
    * @param sessionToken токен сессии
    * @param issuer имя сервера
-   * @param publicKey публичный ключ
-   * @param privateKey приватный ключ
    * @return OAuth сессия
    */
   SessionDto authorize(String responseType,
@@ -33,7 +31,5 @@ public interface AuthorizationService {
                        String redirectUri,
                        String codeChallenge,
                        String sessionToken,
-                       String issuer,
-                       String publicKey,
-                       String privateKey);
+                       String issuer);
 }

@@ -25,14 +25,6 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
   @Context
   HttpServletRequest request;
 
-  private String getPublicKey() {
-    return request.getServletContext().getInitParameter("org.jepria.auth.jwt.PublicKey");
-  }
-
-  private String getPrivateKey() {
-    return request.getServletContext().getInitParameter("org.jepria.auth.jwt.PrivateKey");
-  }
-
   private String getHostContext() {
     return URI.create(request.getRequestURL().toString()).resolve(request.getContextPath()).toString();
   }
@@ -58,9 +50,7 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
           clientId,
           username,
           password,
-          getHostContext(),
-          getPublicKey(),
-          getPrivateKey());
+          getHostContext());
       response = Response.
         status(302)
         .location(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + authCode + "&" + (state != null ? STATE + "=" + state : "")))
@@ -80,10 +70,8 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
           clientId,
           username,
           password,
-          getHostContext(),
-          getPublicKey(),
-          getPrivateKey());
-      TokenDto tokenDto = TokenServerFactory.getInstance().getService().create(responseType, getPrivateKey(), getHostContext(), authCode, clientId, redirectUri);
+          getHostContext());
+      TokenDto tokenDto = TokenServerFactory.getInstance().getService().create(responseType, getHostContext(), authCode, clientId, redirectUri);
       response = Response.status(302).location(URI.create(redirectUri
         + "#" + ACCESS_TOKEN_QUERY_PARAM + tokenDto.getAccessToken()
         + "&" + TOKEN_TYPE_QUERY_PARAM + tokenDto.getTokenType()
@@ -119,9 +107,7 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
       .logout(clientId,
         redirectUri,
         sessionToken,
-        getHostContext(),
-        getPublicKey(),
-        getPrivateKey());
+        getHostContext());
     return Response.status(302)
       .location(URI.create(redirectUri + getSeparator(redirectUri) + STATE + "=" + state))
       .cookie(new NewCookie(SESSION_ID, "", null, null, NewCookie.DEFAULT_VERSION, null, 0, new Date(), false, true))

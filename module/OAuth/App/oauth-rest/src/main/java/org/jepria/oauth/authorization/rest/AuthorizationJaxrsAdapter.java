@@ -26,14 +26,6 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
   HttpServletRequest request;
   ExceptionManager exceptionManager = new ExceptionManagerImpl();
 
-  private String getPublicKey() {
-    return request.getServletContext().getInitParameter("org.jepria.auth.jwt.PublicKey");
-  }
-
-  private String getPrivateKey() {
-    return request.getServletContext().getInitParameter("org.jepria.auth.jwt.PrivateKey");
-  }
-
   private String getHostContext() {
     return URI.create(request.getRequestURL().toString()).resolve(request.getContextPath()).toString();
   }
@@ -70,9 +62,7 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
           redirectUri,
           codeChallenge,
           sessionToken,
-          getHostContext(),
-          getPublicKey(),
-          getPrivateKey());
+          getHostContext());
       if (session.getOperator() != null) {
         response = Response
           .status(302)

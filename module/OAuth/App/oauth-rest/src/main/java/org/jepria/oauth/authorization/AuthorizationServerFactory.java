@@ -2,6 +2,7 @@ package org.jepria.oauth.authorization;
 
 import org.jepria.oauth.client.ClientServerFactory;
 import org.jepria.oauth.clienturi.ClientUriServerFactory;
+import org.jepria.oauth.key.KeyServerFactory;
 import org.jepria.oauth.model.authorization.AuthorizationService;
 import org.jepria.oauth.service.authorization.AuthorizationServiceImpl;
 import org.jepria.oauth.session.SessionServerFactory;
@@ -27,7 +28,8 @@ public class AuthorizationServerFactory extends ServerFactory<Dao> {
   public AuthorizationService getService() {
     if (service == null) {
       service = new AuthorizationServiceImpl(SessionServerFactory.getInstance().getService(),
-          ClientServerFactory.getInstance().getService());
+          ClientServerFactory.getInstance().getService(),
+          KeyServerFactory.getInstance().getService());
     }
     return service;
   }

@@ -35,14 +35,6 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
   JepSecurityContext securityContext;
   AuthenticationService authenticationService = AuthenticationServerFactory.getInstance().getService();
 
-  //TODO Убрать после перехода на модуль Option???
-  private String getPublicKey() {
-    return request.getServletContext().getInitParameter("org.jepria.auth.jwt.PublicKey");
-  }
-  private String getPrivateKey() {
-    return request.getServletContext().getInitParameter("org.jepria.auth.jwt.PrivateKey");
-  }
-
   private String getHostContext() {
     return URI.create(request.getRequestURL().toString()).resolve(request.getContextPath()).toString();
   }
@@ -98,8 +90,6 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
       }
     }
     TokenDto result = TokenServerFactory.getInstance().getService().create(grantType,
-      getPublicKey(),
-      getPrivateKey(),
       getHostContext(),
       authCode,
       clientId,
@@ -126,9 +116,7 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
       clientSecret = clientCredentials[1];
     }
     authenticationService.loginByClientSecret(clientId, clientSecret);
-    TokenInfoDto result = TokenServerFactory.getInstance().getService().getTokenInfo(getPublicKey(),
-      getHostContext(),
-      token);
+    TokenInfoDto result = TokenServerFactory.getInstance().getService().getTokenInfo( getHostContext(), token);
     return Response.ok(result).build();
   }
 

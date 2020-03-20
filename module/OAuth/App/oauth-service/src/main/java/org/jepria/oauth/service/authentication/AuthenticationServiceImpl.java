@@ -6,6 +6,8 @@ import org.jepria.oauth.model.authentication.dao.AuthenticationDao;
 import org.jepria.oauth.model.clienturi.ClientUriService;
 import org.jepria.oauth.model.clienturi.dto.ClientUriDto;
 import org.jepria.oauth.model.clienturi.dto.ClientUriSearchDto;
+import org.jepria.oauth.model.key.KeyService;
+import org.jepria.oauth.model.key.dto.KeyDto;
 import org.jepria.oauth.model.session.SessionService;
 import org.jepria.oauth.model.session.dto.SessionDto;
 import org.jepria.oauth.model.session.dto.SessionSearchDto;
@@ -31,11 +33,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   private final AuthenticationDao dao;
   private final SessionService sessionService;
   private final ClientUriService clientUriService;
+  private final KeyService keyService;
 
-  public AuthenticationServiceImpl(AuthenticationDao dao, SessionService sessionService, ClientUriService clientUriService) {
+  public AuthenticationServiceImpl(AuthenticationDao dao, SessionService sessionService, ClientUriService clientUriService, KeyService keyService) {
     this.dao = dao;
     this.sessionService = sessionService;
     this.clientUriService = clientUriService;
+    this.keyService = keyService;
   }
 
   private Credential serverCredential = new Credential() {
@@ -113,9 +117,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     String clientId,
     String username,
     String password,
-    String host,
-    String publicKey,
-    String privateKey) {
+    String host) {
     SessionDto session = getSession(authCode, clientId, redirectUri);
     if (TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - session.getDateIns().getTime()) > 10) {
       throw new OAuthRuntimeException(ACCESS_DENIED, "Authorization code not found or has expired");
@@ -127,7 +129,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       throw new OAuthRuntimeException(ACCESS_DENIED, "Request is finished");
     }
     Integer operatorId = loginByPassword(username, password);
-    Token sessionToken = generateSessionToken(username, operatorId, host, privateKey, null);
+    KeyDto keyDto = keyService.getKeys(null, serverCredential);
+    Token sessionToken = generateSessionToken(username, operatorId, host, keyDto.getPrivateKey(), null);
     updateSession(session.getSessionId(),
       operatorId,
       sessionToken.getJti(),
@@ -138,7 +141,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     /**
      * Encrypt token with public key
      */
-    Encryptor encryptor = new EncryptorRSA(publicKey);
+    Encryptor encryptor = new EncryptorRSA(keyDto.getPublicKey());
     try {
       sessionToken = encryptor.encrypt(sessionToken);
     } catch (ParseException e) {
@@ -151,9 +154,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   public void logout(String clientId,
                      String redirectUri,
                      String sessionToken,
-                     String issuer,
-                     String publicKey,
-                     String privateKey) {
+                     String issuer) {
     ClientUriSearchDto clientUriSearchTemplate = new ClientUriSearchDto();
     clientUriSearchTemplate.setClientId(clientId);
     List<ClientUriDto> clientUriList = clientUriService.findClientUri(clientUriSearchTemplate, 1);
@@ -163,9 +164,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     try {
       Token token = TokenImpl.parseFromString(sessionToken);
-      Decryptor decryptor = new DecryptorRSA(privateKey);
+      KeyDto keyDto = keyService.getKeys(null, serverCredential);
+      Decryptor decryptor = new DecryptorRSA(keyDto.getPrivateKey());
       token = decryptor.decrypt(token);
-      Verifier verifier = new SignatureVerifierRSA(publicKey);
+      Verifier verifier = new SignatureVerifierRSA(keyDto.getPublicKey());
       if (verifier.verify(token) && issuer.equals(token.getIssuer())) {
         SessionSearchDto searchTemplate = new SessionSearchDto();
         searchTemplate.setSessionTokenId(token.getJti());

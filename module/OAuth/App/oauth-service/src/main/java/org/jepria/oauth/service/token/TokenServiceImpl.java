@@ -2,6 +2,8 @@ package org.jepria.oauth.service.token;
 
 import org.jepria.oauth.exception.OAuthRuntimeException;
 import org.jepria.oauth.model.authentication.AuthenticationService;
+import org.jepria.oauth.model.key.KeyService;
+import org.jepria.oauth.model.key.dto.KeyDto;
 import org.jepria.oauth.model.session.SessionService;
 import org.jepria.oauth.model.session.dto.SessionCreateDto;
 import org.jepria.oauth.model.session.dto.SessionDto;
@@ -35,6 +37,7 @@ public class TokenServiceImpl implements TokenService {
   private static final String TOKEN_TYPE = "Bearer";
   private final AuthenticationService authenticationService;
   private final SessionService sessionService;
+  private final KeyService keyService;
 
   private Credential serverCredential = new Credential() {
     @Override
@@ -53,9 +56,10 @@ public class TokenServiceImpl implements TokenService {
     }
   };
 
-  public TokenServiceImpl(AuthenticationService authenticationService, SessionService sessionService) {
+  public TokenServiceImpl(AuthenticationService authenticationService, SessionService sessionService, KeyService keyService) {
     this.authenticationService = authenticationService;
     this.sessionService = sessionService;
+    this.keyService = keyService;
   }
 
   private SessionDto getSession(String authCode,
@@ -101,13 +105,13 @@ public class TokenServiceImpl implements TokenService {
 
   @Override
   public TokenDto create(String responseType,
-                         String privateKey,
                          String host,
                          String authCode,
                          String clientId,
                          String redirectUri) {
     if (ResponseType.TOKEN.equals(responseType)) {
-      return createTokenFromAuthCode(privateKey, host, authCode, clientId, new String(Base64.getUrlDecoder().decode(redirectUri)));
+      KeyDto keyDto = keyService.getKeys(null, serverCredential);
+      return createTokenFromAuthCode(keyDto.getPrivateKey(), host, authCode, clientId, new String(Base64.getUrlDecoder().decode(redirectUri)));
     } else {
       throw new OAuthRuntimeException(UNSUPPORTED_RESPONSE_TYPE);
     }
@@ -115,8 +119,6 @@ public class TokenServiceImpl implements TokenService {
 
   @Override
   public TokenDto create(String grantType,
-                         String publicKey,
-                         String privateKey,
                          String host,
                          String authCode,
                          String clientId,
@@ -130,7 +132,8 @@ public class TokenServiceImpl implements TokenService {
     }
     switch (grantType) {
       case GrantType.AUTHORIZATION_CODE: {
-        result = createTokenFromAuthCode(privateKey, host, authCode, clientId, new String(Base64.getUrlDecoder().decode(redirectUri)));
+        KeyDto keyDto = keyService.getKeys(null, serverCredential);
+        result = createTokenFromAuthCode(keyDto.getPrivateKey(), host, authCode, clientId, new String(Base64.getUrlDecoder().decode(redirectUri)));
         break;
       }
 //        case GrantType.CLIENT_CREDENTIALS: {TODO
@@ -138,11 +141,13 @@ public class TokenServiceImpl implements TokenService {
 //        }
       case GrantType.PASSWORD: {
         Integer operatorId = authenticationService.loginByPassword(username, password);
-        result = createTokenPair(privateKey, host, clientId, username, operatorId);;
+        KeyDto keyDto = keyService.getKeys(null, serverCredential);
+        result = createTokenPair(keyDto.getPrivateKey(), host, clientId, username, operatorId);;
         break;
       }
       case GrantType.REFRESH_TOKEN: {
-        result = refreshToken(publicKey, privateKey, host, clientId, refreshToken);
+        KeyDto keyDto = keyService.getKeys(null, serverCredential);
+        result = refreshToken(keyDto.getPublicKey(), keyDto.getPrivateKey(), host, clientId, refreshToken);
         break;
       }
       default: {
@@ -242,17 +247,18 @@ public class TokenServiceImpl implements TokenService {
   }
 
   @Override
-  public TokenInfoDto getTokenInfo(String publicKey, String hostContext, String tokenString) {
+  public TokenInfoDto getTokenInfo(String hostContext, String tokenString) {
     TokenInfoDto result = new TokenInfoDto();
     Token token;
     try {
+      KeyDto keyDto = keyService.getKeys(null, serverCredential);
       token = TokenImpl.parseFromString(tokenString);
       SessionDto sessionDto = getSession(null, null, null, token.getJti(), null, serverCredential);
       if (sessionDto.getBlocked()) {
         result.setActive(false);
         return result;
       }
-      Verifier verifier = new VerifierRSA(null, hostContext, new Date(), publicKey);
+      Verifier verifier = new VerifierRSA(null, hostContext, new Date(), keyDto.getPublicKey());
       if (!verifier.verify(token)) {
         result.setActive(false);
         return result;

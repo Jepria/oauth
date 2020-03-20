@@ -6,6 +6,8 @@ import org.jepria.oauth.model.client.ClientService;
 import org.jepria.oauth.model.clienturi.ClientUriService;
 import org.jepria.oauth.model.clienturi.dto.ClientUriDto;
 import org.jepria.oauth.model.clienturi.dto.ClientUriSearchDto;
+import org.jepria.oauth.model.key.KeyService;
+import org.jepria.oauth.model.key.dto.KeyDto;
 import org.jepria.oauth.model.session.SessionService;
 import org.jepria.oauth.model.session.dto.SessionCreateDto;
 import org.jepria.oauth.model.session.dto.SessionDto;
@@ -33,6 +35,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
   private final SessionService sessionService;
   private final ClientService clientService;
+  private final KeyService keyService;
   
   private Credential serverCredential = new Credential() {
     @Override
@@ -51,9 +54,10 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
   };
 
-  public AuthorizationServiceImpl(SessionService sessionService, ClientService clientService) {
+  public AuthorizationServiceImpl(SessionService sessionService, ClientService clientService, KeyService keyService) {
     this.clientService = clientService;
     this.sessionService = sessionService;
+    this.keyService = keyService;
   }
 
   @Override
@@ -95,9 +99,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
                               String redirectUri,
                               String codeChallenge,
                               String sessionToken,
-                              String issuer,
-                              String publicKey,
-                              String privateKey) {
+                              String issuer) {
     if (!ResponseType.implies(responseType)) {
       throw new OAuthRuntimeException(UNSUPPORTED_RESPONSE_TYPE);
     }
@@ -106,10 +108,11 @@ public class AuthorizationServiceImpl implements AuthorizationService {
       throw new OAuthRuntimeException(UNAUTHORIZED_CLIENT, "Client doesn't have enough permissions to use responseType=" + responseType);
     }
     try {
+      KeyDto keyDto = keyService.getKeys(null, serverCredential);
       Token token = TokenImpl.parseFromString(sessionToken);
-      Decryptor decryptor = new DecryptorRSA(privateKey);
+      Decryptor decryptor = new DecryptorRSA(keyDto.getPrivateKey());
       token = decryptor.decrypt(token);
-      Verifier verifier = new VerifierRSA(null, issuer, new Date(), publicKey);
+      Verifier verifier = new VerifierRSA(null, issuer, new Date(), keyDto.getPublicKey());
       if (verifier.verify(token)) {
         String[] subject = token.getSubject().split(":");
 

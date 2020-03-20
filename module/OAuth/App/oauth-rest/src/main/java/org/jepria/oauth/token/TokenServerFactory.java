@@ -2,6 +2,7 @@ package org.jepria.oauth.token;
 
 import org.jepria.oauth.authentication.AuthenticationServerFactory;
 import org.jepria.oauth.dao.token.TokenDaoImpl;
+import org.jepria.oauth.key.KeyServerFactory;
 import org.jepria.oauth.model.token.TokenService;
 import org.jepria.oauth.model.token.dao.TokenDao;
 import org.jepria.oauth.service.token.TokenServiceImpl;
@@ -26,7 +27,9 @@ public class TokenServerFactory extends ServerFactory<TokenDao> {
 
   public TokenService getService() {
     if (service == null) {
-      service = new TokenServiceImpl(AuthenticationServerFactory.getInstance().getService(), SessionServerFactory.getInstance().getService());
+      service = new TokenServiceImpl(AuthenticationServerFactory.getInstance().getService(),
+          SessionServerFactory.getInstance().getService(),
+          KeyServerFactory.getInstance().getService());
     }
     return service;
   }

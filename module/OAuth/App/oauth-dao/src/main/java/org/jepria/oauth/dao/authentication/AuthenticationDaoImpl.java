@@ -16,9 +16,17 @@ import java.util.List;
 import java.util.Map;
 
 public class AuthenticationDaoImpl implements AuthenticationDao {
+  
+  private String jndiName = "jdbc/RFInfoDS";
+  
+  public AuthenticationDaoImpl(){};
+  
+  public AuthenticationDaoImpl(String jndName) {
+    this.jndiName = jndName;
+  }
 
   protected Db getDb() {
-    return new Db("jdbc/RFInfoDS");
+    return new Db(jndiName);
   }
 
   @Override
@@ -95,7 +103,7 @@ public class AuthenticationDaoImpl implements AuthenticationDao {
        */
     } finally {
       db.closeAll();
-      return Boolean.FALSE;
     }
+    return Boolean.FALSE;
   }
 }

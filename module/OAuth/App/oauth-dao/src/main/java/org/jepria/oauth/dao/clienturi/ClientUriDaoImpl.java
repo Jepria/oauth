@@ -19,10 +19,18 @@ import static org.jepria.oauth.dao.clienturi.ClientUriFieldNames.*;
 
 
 public class ClientUriDaoImpl implements Dao {
+  
+  private String jndiName = "jdbc/RFInfoDS";
+  
+  public ClientUriDaoImpl(){};
+  
+  public ClientUriDaoImpl(String jndName) {
+    this.jndiName = jndName;
+  }
 
 
   private Db getDb() {
-    return new Db("jdbc/RFInfoDS");
+    return new Db(jndiName);
   }
 
   private ResultSetMapper mapper = new ResultSetMapper<ClientUriDto>() {
@@ -75,7 +83,7 @@ public class ClientUriDaoImpl implements Dao {
     Db db = getDb();
     //language=Oracle
     String findSqlQuery =
-      "select cu.client_uri_id, cu.client_uri " +
+      "select ct.CLIENT_CODE as CLIENT_ID, cu.client_uri_id, cu.client_uri " +
         "from OA_CLIENT_URI cu " +
         "inner join OA_CLIENT ct " +
         "      on cu.client_id = ct.client_id " +

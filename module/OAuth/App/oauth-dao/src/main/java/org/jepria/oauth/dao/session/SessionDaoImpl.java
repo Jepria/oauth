@@ -19,9 +19,17 @@ import java.util.Map;
 import static org.jepria.oauth.dao.session.SessionFieldNames.*;
 
 public class SessionDaoImpl implements Dao {
+  
+  private String jndiName = "jdbc/RFInfoDS";
+  
+  public SessionDaoImpl(){};
+  
+  public SessionDaoImpl(String jndName) {
+    this.jndiName = jndName;
+  }
 
   protected Db getDb() {
-    return new Db("jdbc/RFInfoDS");
+    return new Db(jndiName);
   }
 
   //language=Oracle

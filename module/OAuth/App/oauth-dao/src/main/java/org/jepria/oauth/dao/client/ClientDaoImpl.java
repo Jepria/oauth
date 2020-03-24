@@ -24,9 +24,17 @@ import java.util.Map;
 import static org.jepria.oauth.dao.client.ClientFieldNames.*;
 
 public class ClientDaoImpl implements ClientDao {
+  
+  private String jndiName = "jdbc/RFInfoDS";
+  
+  public ClientDaoImpl(){};
+  
+  public ClientDaoImpl(String jndName) {
+    this.jndiName = jndName;
+  }
 
   private Db getDb() {
-    return new Db("jdbc/RFInfoDS");
+    return new Db(jndiName);
   }
 
   //language=Oracle
@@ -164,7 +172,7 @@ public class ClientDaoImpl implements ClientDao {
         //language=Oracle
         CallableStatement insertGrantTypeStatement;
         if (dto.getGrantTypes() != null && dto.getGrantTypes().size() != 0) {
-          String insertGrantSqlString = "insert into OA_CLIENT_GRANT_TYPE (CLIENT_ID, GRANT_TYPE_CODE) values (?,?,?)";
+          String insertGrantSqlString = "insert into OA_CLIENT_GRANT_TYPE (CLIENT_ID, GRANT_TYPE_CODE) values (?,?)";
           insertGrantTypeStatement = db.prepare(insertGrantSqlString);
           for (String grantType : dto.getGrantTypes()) {
             insertGrantTypeStatement.setInt(1, clientId);

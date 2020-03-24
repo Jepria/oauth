@@ -17,8 +17,16 @@ import static org.jepria.oauth.dao.key.KeyFieldNames.*;
 
 public class KeyDaoImpl implements KeyDao {
   
+  private String jndiName = "jdbc/RFInfoDS";
+
+  public KeyDaoImpl(){};
+  
+  public KeyDaoImpl(String jndName) {
+    this.jndiName = jndName;
+  }
+
   private Db getDb() {
-    return new Db("jdbc/RFInfoDS");
+    return new Db(jndiName);
   }
   
   private ResultSetMapper mapper = new ResultSetMapper<KeyDto>() {

@@ -39,7 +39,7 @@ public class ClientUpdateDto {
     return applicationType;
   }
 
-  public void setApplicationTypeC(String applicationType) {
+  public void setApplicationType(String applicationType) {
     this.applicationType = applicationType;
   }
 

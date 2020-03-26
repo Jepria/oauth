@@ -4,44 +4,73 @@ import org.jepria.oauth.model.token.dto.TokenDto;
 import org.jepria.oauth.model.token.dto.TokenInfoDto;
 import org.jepria.server.service.security.Credential;
 
+import java.net.URI;
+
 public interface TokenService {
-  
+
   /**
    * Создание токена при входе в OAuth через IMPLICIT flow (responseType = token)
    * @param responseType тип ответа
-   * @param host имя сервера
-   * @param authCode одноразовый код
    * @param clientId ID клиентского приложения
-   * @param redirectUri URL для перенаправления
+   * @param issuer имя сервера
+   * @param authCode одноразовый код
+   * @param redirectUri URI для перенаправления
    * @return токен
    */
   TokenDto create(String responseType,
-                  String host,
-                  String authCode,
                   String clientId,
-                  String redirectUri);
-
+                  String issuer,
+                  String authCode,
+                  URI redirectUri);
   /**
-   * Создание токена для всех OAuth GrantType
+   * Создание токена для OAuth GrantType Authorization Code
    *
-   * @param grantType тип гранта
-   * @param host имя сервера
-   * @param authCode  одноразовый код
    * @param clientId ID клиентского приложения
+   * @param authCode  одноразовый код
    * @param redirectUri URL для перенаправления
-   * @param username имя пользователя
-   * @param password пароль пользователя
-   * @param refreshToken refresh токен
+   * @param issuer имя сервера
    * @return токен
    */
-  TokenDto create(String grantType,
-                  String host,
+  TokenDto create(String clientId,
                   String authCode,
-                  String clientId,
-                  String redirectUri,
+                  String issuer,
+                  URI redirectUri);
+  /**
+   * Создание токена для OAuth GrantType Resource owner credentials
+   *
+   * @param clientId ID клиентского приложения
+   * @param username имя пользователя
+   * @param userId ID пользователя
+   * @param issuer имя сервера
+   * @return токен
+   */
+  TokenDto create(String clientId,
                   String username,
-                  String password,
-                  String refreshToken);
+                  Integer userId,
+                  String issuer);
+  
+  /**
+   * Создание токена для всех OAuth GrantType Refresh token
+   *
+   * @param clientId ID клиентского приложения
+   * @param refreshToken refresh токен
+   * @param issuer имя сервера
+   * @return токен
+   */
+  TokenDto create(String clientId,
+                  String refreshToken,
+                  String issuer);
+  
+  /**
+   * Создание токена для всех OAuth GrantType Client credentials
+   *
+   * @param clientId ID клиентского приложения
+   * @param issuer имя сервера
+   * @return токен
+   */
+  TokenDto create(String clientId,
+                  Integer userId,
+                  String issuer);
   
   /**
    * Получение информации о токене

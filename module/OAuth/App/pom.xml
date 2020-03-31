@@ -4,21 +4,20 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.jepria</groupId>
+    <groupId>org.jepria.oauth</groupId>
     <artifactId>OAuth</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
         <javadoc.directory>../Doc/App/AutoGen</javadoc.directory>
+        <oauth.version>1.0.0-SNAPSHOT</oauth.version>
     </properties>
 
     <modules>
-        <module>oauth-web</module>
-        <module>oauth-rest</module>
-        <module>oauth-service</module>
-        <module>oauth-model</module>
-        <module>oauth-dao</module>
+        <module>client-html</module>
+        <module>service-rest</module>
+        <module>main-web</module>
     </modules>
 
     <build>

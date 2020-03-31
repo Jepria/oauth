@@ -65,6 +65,7 @@ public class TokenServiceImpl implements TokenService {
                                 String redirectUri,
                                 String accessTokenId,
                                 String refreshTokenId,
+                                Boolean hasToken,
                                 Credential credential) {
     SessionSearchDto searchTemplate = new SessionSearchDto();
     searchTemplate.setAuthorizationCode(authCode);
@@ -72,6 +73,7 @@ public class TokenServiceImpl implements TokenService {
     searchTemplate.setRedirectUri(redirectUri);
     searchTemplate.setAccessTokenId(accessTokenId);
     searchTemplate.setRefreshTokenId(refreshTokenId);
+    searchTemplate.setHasToken(hasToken);
     List<SessionDto> result = sessionService.find(searchTemplate, credential);
     if (result.size() == 1) {
       return result.get(0);
@@ -118,7 +120,13 @@ public class TokenServiceImpl implements TokenService {
       if (redirectUri == null) {
         throw new OAuthRuntimeException(INVALID_REQUEST, "Redirect URI is null.");
       }
-      SessionDto session = getSession(authCode, clientId, redirectUri.toString(), null, null, serverCredential);
+      SessionDto session = getSession(authCode,
+          clientId,
+          redirectUri.toString(),
+          null,
+          null,
+          false,
+          serverCredential);
       if (TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - session.getDateIns().getTime()) > 10) {
         throw new OAuthRuntimeException(INVALID_GRANT, "Authorization code active time has expired.");
       }
@@ -160,7 +168,13 @@ public class TokenServiceImpl implements TokenService {
     if (redirectUri == null) {
       throw new OAuthRuntimeException(INVALID_REQUEST, "Redirect URI is null.");
     }
-    SessionDto session = getSession(authCode, clientId, redirectUri.toString(), null, null, serverCredential);
+    SessionDto session = getSession(authCode,
+        clientId,
+        redirectUri.toString(),
+        null,
+        null,
+        false,
+        serverCredential);
     if (TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - session.getDateIns().getTime()) > 10) {
       throw new OAuthRuntimeException(INVALID_GRANT, "Authorization code active time has expired.");
     }
@@ -202,17 +216,23 @@ public class TokenServiceImpl implements TokenService {
       Token refreshToken = TokenImpl.parseFromString(refreshTokenString);
       Verifier verifier = new VerifierRSA(clientId != null ? Collections.singletonList(clientId) : null, issuer, new Date(), keyDto.getPublicKey());
       if (verifier.verify(refreshToken)) {
-        SessionDto sessionDto = getSession(null, clientId, null, null, refreshToken.getJti(), serverCredential);
+        SessionDto sessionDto = getSession(null,
+            clientId,
+            null,
+            null,
+            refreshToken.getJti(),
+            true,
+            serverCredential);
         if (sessionDto.getBlocked()) {
           throw new OAuthRuntimeException(INVALID_GRANT, "Token is blocked");
         }
         String[] subject = refreshToken.getSubject().split(":");
         sessionService.deleteRecord(String.valueOf(sessionDto.getSessionId()), serverCredential);
-        return createTokenPair(keyDto.getPrivateKey(), issuer, refreshToken.getAudience().get(0), subject[0], Integer.valueOf(subject[1]));
+        return createTokenPair(keyDto.getPrivateKey(), issuer, refreshToken.getAudience().isEmpty() ? null : refreshToken.getAudience().get(0), subject[0], Integer.valueOf(subject[1]));
       } else {
         throw new OAuthRuntimeException(INVALID_GRANT, "Token verification failed");
       }
-    } catch (ParseException e) {
+    } catch (ParseException | IllegalArgumentException e) {
       throw new OAuthRuntimeException(INVALID_GRANT, e);
     }
   }
@@ -259,7 +279,13 @@ public class TokenServiceImpl implements TokenService {
     try {
       KeyDto keyDto = keyService.getKeys(null, serverCredential);
       token = TokenImpl.parseFromString(tokenString);
-      SessionDto sessionDto = getSession(null, null, null, token.getJti(), null, serverCredential);
+      SessionDto sessionDto = getSession(null,
+          null,
+          null,
+          token.getJti(),
+          null,
+          true,
+          serverCredential);
       if (sessionDto.getBlocked()) {
         result.setActive(false);
         return result;
@@ -287,7 +313,13 @@ public class TokenServiceImpl implements TokenService {
   public void delete(String clientId, String tokenString) {
     try {
       Token token = TokenImpl.parseFromString(tokenString);
-      SessionDto sessionDto = getSession(null, clientId, null, token.getJti(), null, serverCredential);
+      SessionDto sessionDto = getSession(null,
+          clientId,
+          null,
+          token.getJti(),
+          null,
+          true,
+          serverCredential);
       sessionService.deleteRecord(String.valueOf(sessionDto.getSessionId()), serverCredential);
     } catch (ParseException e) {
       throw new OAuthRuntimeException(SERVER_ERROR, e);

@@ -32,8 +32,18 @@ public class KeyJaxrsAdapter extends JaxrsAdapterBase {
   
   @GET
   @Path("{kid}")
-  public Response getKey(@PathParam("kid") String keyId) {
+  public Response getKeyById(@PathParam("kid") String keyId) {
     KeyDto keyDto = service.getKeys(keyId, securityContext.getCredential());
+    if (keyDto != null) {
+      return Response.ok(keyDto.getPublicKey()).build();
+    } else {
+      return null;
+    }
+  }
+  
+  @GET
+  public Response getKey() {
+    KeyDto keyDto = service.getKeys(null, securityContext.getCredential());
     if (keyDto != null) {
       return Response.ok(keyDto.getPublicKey()).build();
     } else {

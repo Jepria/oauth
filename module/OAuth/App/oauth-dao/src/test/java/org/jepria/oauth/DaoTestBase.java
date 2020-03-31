@@ -37,7 +37,7 @@ public abstract class DaoTestBase {
   public static void initialize() throws IOException, SQLException, NamingException {
     ic = prepareInitialContextForJdbc();
     properties = new Properties();
-    properties.load(KeyDaoIT.class.getClassLoader().getResourceAsStream("database.properties"));
+    properties.load(DaoTestBase.class.getClassLoader().getResourceAsStream("database.properties"));
     OracleConnectionPoolDataSource dsPool = new OracleConnectionPoolDataSource();
     dsPool.setURL(properties.getProperty("datasource.url"));
     dsPool.setUser(properties.getProperty("datasource.username"));

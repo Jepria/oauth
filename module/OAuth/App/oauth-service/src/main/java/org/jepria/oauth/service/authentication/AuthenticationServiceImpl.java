@@ -67,13 +67,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       } else {
         return operatorId;
       }
-    } catch (Throwable th) {
+    } catch (RuntimeSQLException th) {
       throw new OAuthRuntimeException(SERVER_ERROR, th);
     }
   }
 
   @Override
   public Integer loginByClientSecret(String clientId, String clientSecret) {
+    if (clientId == null || clientSecret == null) {
+      throw new OAuthRuntimeException(ACCESS_DENIED, "credentials must be not null");
+    }
     try {
       return dao.loginByClientSecret(clientId, clientSecret);
     } catch (RuntimeSQLException th) {
@@ -87,6 +90,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
   @Override
   public void loginByClientId(String clientId) {
+    if (clientId == null) {
+      throw new OAuthRuntimeException(ACCESS_DENIED, "clientId must be not null");
+    }
     try {
       dao.loginByClientSecret(clientId, null);
     } catch (RuntimeSQLException th) {

@@ -66,7 +66,7 @@ public class SessionDaoImpl implements Dao {
           "ss.IS_BLOCKED " +
         "from OA_SESSION ss " +
           "left join OP_OPERATOR op on ss.OPERATOR_ID = op.OPERATOR_ID  " +
-          "inner join OA_CLIENT cl on ss.CLIENT_ID = cl.CLIENT_ID " +
+          "left join OA_CLIENT cl on ss.CLIENT_ID = cl.CLIENT_ID " +
         "where " +
           "(ss.SESSION_ID = sessionId or sessionId is null) " +
           "and (ss.AUTHORIZATION_CODE like authCode or authCode is null) " +
@@ -75,8 +75,11 @@ public class SessionDaoImpl implements Dao {
           "and (ss.REDIRECT_URI like redirectUri or redirectUri is null) " +
           "and (ss.SESSION_TOKEN_ID like sessionTokenId or sessionTokenId is null) " +
           "and (ss.REFRESH_TOKEN_ID like refreshTokenId or refreshTokenId is null) " +
-          "and ((hasToken = 0 and (ss.ACCESS_TOKEN_ID like accessTokenId or accessTokenId is null)) " +
-            "or (hasToken = 1 and ss.ACCESS_TOKEN_ID is not null)) " +
+          "and ((hasToken = 0 and ss.ACCESS_TOKEN_ID is null) " +
+            "or (hasToken = 1 " +
+                "and (accessTokenId is null and ss.ACCESS_TOKEN_ID is not null " +
+                  "or (accessTokenId is not null and ss.ACCESS_TOKEN_ID like accessTokenId)))" +
+            "or hasToken is null) " +
           "and (ss.IS_BLOCKED = isBlocked or isBlocked is null); " +
       "? := rc; " +
     "end;";
@@ -129,7 +132,7 @@ public class SessionDaoImpl implements Dao {
       if (dto.getBlocked() != null) statement.setInt(9, dto.getBlocked() ? 1 : 0);
       else statement.setNull(9, OracleTypes.INTEGER);
       if (dto.getHasToken() != null) statement.setInt(10, dto.getHasToken() ? 1 : 0);
-      else statement.setInt(10, 0);
+      else statement.setNull(10, OracleTypes.INTEGER);
       statement.registerOutParameter(11, OracleTypes.CURSOR);
       statement.executeQuery();
 
@@ -167,7 +170,7 @@ public class SessionDaoImpl implements Dao {
       statement.setNull(7, OracleTypes.VARCHAR);
       statement.setNull(8, OracleTypes.VARCHAR);
       statement.setNull(9, OracleTypes.INTEGER);
-      statement.setInt(10, 0);
+      statement.setNull(10, OracleTypes.INTEGER);
       statement.registerOutParameter(11, OracleTypes.CURSOR);
       statement.executeQuery();
 

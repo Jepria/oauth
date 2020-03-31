@@ -71,7 +71,7 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
           username,
           password,
           getHostContext());
-      TokenDto tokenDto = TokenServerFactory.getInstance().getService().create(responseType, getHostContext(), authCode, clientId, redirectUri);
+      TokenDto tokenDto = TokenServerFactory.getInstance().getService().create(responseType, getHostContext(), authCode, clientId, URI.create(redirectUri));
       response = Response.status(302).location(URI.create(redirectUri
         + "#" + ACCESS_TOKEN_QUERY_PARAM + tokenDto.getAccessToken()
         + "&" + TOKEN_TYPE_QUERY_PARAM + tokenDto.getTokenType()

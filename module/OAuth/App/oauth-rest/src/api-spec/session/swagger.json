@@ -1,0 +1,439 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "OAuth 2.0 Provider API"
+  },
+  "servers": [
+    {
+      "url": "/oauth/api"
+    }
+  ],
+  "tags": [
+    {
+      "name": "session: entity",
+      "description": "Entity operations (CRUD)"
+    },
+    {
+      "name": "session: search",
+      "description": "Session search operations"
+    }
+  ],
+  "paths": {
+    "/session/{sessionId}": {
+      "get": {
+        "tags": ["session: entity"],
+        "summary": "Get record by ID",
+        "description": "",
+        "operationId": "getRecordById-session",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json;charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/session/search/{searchId}/resultset-size": {
+      "get": {
+        "tags": ["session: search"],
+        "summary": "Get size of a resultset for a search request",
+        "description": "",
+        "operationId": "getSearchResultsetSize",
+        "parameters": [
+          {
+            "name": "searchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Cache-Control",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json;charset=utf-8": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/session/search/{searchId}/resultset/paged-by-{pageSize}/{page}": {
+      "get": {
+        "tags": ["session: search"],
+        "summary": "Get paged resultset for a search request",
+        "description": "",
+        "operationId": "getResultsetPaged",
+        "parameters": [
+          {
+            "name": "searchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "pattern": "\\d+"
+            }
+          },
+          {
+            "name": "page",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Cache-Control",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json;charset=utf-8": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SessionDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/session/{sessionId}/block": {
+      "post": {
+        "tags": ["session: entity"],
+        "summary": "Block authorization request",
+        "description": "",
+        "operationId": "blockSession",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          }
+        }
+      }
+    },
+    "/session/search": {
+      "post": {
+        "tags": ["session: search"],
+        "summary": "Post search request",
+        "description": "",
+        "operationId": "postSearch",
+        "parameters": [
+          {
+            "name": "Extended-Response",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Cache-Control",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json;charset=utf-8": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "successful operation"
+          }
+        }
+      }
+    },
+    "/session/search/{searchId}/resultset": {
+      "get": {
+        "tags": ["session: search"],
+        "summary": "Get resultset for a search request",
+        "description": "",
+        "operationId": "getResultset",
+        "parameters": [
+          {
+            "name": "searchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Cache-Control",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json;charset=utf-8": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SessionDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/session/search/{searchId}": {
+      "get": {
+        "tags": ["session: search"],
+        "summary": "Get search request by ID",
+        "description": "",
+        "operationId": "getSearchRequest",
+        "parameters": [
+          {
+            "name": "searchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json;charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchRequestDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ColumnSortConfigurationDto": {
+        "type": "object",
+        "properties": {
+          "columnName": {
+            "type": "string"
+          },
+          "sortOrder": {
+            "type": "string"
+          }
+        }
+      },
+      "OptionDtoInteger": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "integer"
+          }
+        }
+      },
+      "OptionDtoString": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      },
+      "SessionDto": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "integer"
+          },
+          "authorizationCode": {
+            "type": "string"
+          },
+          "dateIns": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "operator": {
+            "$ref": "#/components/schemas/OptionDtoInteger"
+          },
+          "operatorLogin": {
+            "type": "string"
+          },
+          "accessTokenId": {
+            "type": "string"
+          },
+          "accessTokenDateIns": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "accessTokenDateFinish": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "refreshTokenId": {
+            "type": "string"
+          },
+          "refreshTokenDateIns": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "refreshTokenDateFinish": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sessionTokenId": {
+            "type": "string"
+          },
+          "sessionTokenDateIns": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sessionTokenDateFinish": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "codeChallenge": {
+            "type": "string"
+          },
+          "redirectUri": {
+            "type": "string"
+          },
+          "client": {
+            "$ref": "#/components/schemas/OptionDtoString"
+          },
+          "isBlocked": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SessionSearchDto": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "integer"
+          },
+          "operatorId": {
+            "type": "integer"
+          },
+          "clientId": {
+            "type": "string"
+          },
+          "maxRowCount": {
+            "type": "integer"
+          }
+        }
+      },
+      "SearchRequestDto": {
+        "type": "object",
+        "properties": {
+          "template": {
+            "$ref": "#/components/schemas/SessionSearchDto"
+          },
+          "listSortConfiguration": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ColumnSortConfigurationDto"
+            }
+          }
+        }
+      }
+    }
+  }
+}

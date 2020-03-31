@@ -78,6 +78,7 @@
             <groupId>org.jepria</groupId>
             <artifactId>oauth-rest</artifactId>
             <version>1.0.0-SNAPSHOT</version>
+            <classifier>classes</classifier>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -272,14 +273,6 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>8</source>
-                    <target>8</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>3.1.1</version>
                 <executions>
@@ -299,6 +292,15 @@
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/swagger-ui/</outputDirectory>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.jepria</groupId>
+                                    <artifactId>oauth-rest</artifactId>
+                                    <version>1.0.0-SNAPSHOT</version>
+                                    <type>zip</type>
+                                    <classifier>api-spec</classifier>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.build.directory}/api-spec/</outputDirectory>
+                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>
@@ -311,7 +313,7 @@
                 <configuration>
                     <webResources>
                         <resource>
-                            <directory>src/api-spec</directory>
+                            <directory>${project.build.directory}/api-spec</directory>
                             <targetPath>WEB-INF/api-spec</targetPath>
                         </resource>
                         <resource>

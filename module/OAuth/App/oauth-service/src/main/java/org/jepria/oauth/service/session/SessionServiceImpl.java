@@ -20,7 +20,6 @@ public class SessionServiceImpl extends EntityServiceImpl implements SessionServ
   }
 
   public List<SessionDto> find(SessionSearchDto template, Credential credential) {
-    template.setHasToken(false);
     List<SessionDto> result = (List<SessionDto>) dao.find(template, credential.getOperatorId());
     return result;
   }

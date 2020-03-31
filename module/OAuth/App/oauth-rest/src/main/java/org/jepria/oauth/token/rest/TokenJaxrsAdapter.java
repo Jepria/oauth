@@ -4,6 +4,7 @@ import org.jepria.oauth.authentication.AuthenticationServerFactory;
 import org.jepria.oauth.exception.OAuthRuntimeException;
 import org.jepria.oauth.main.security.AllowAllOrigin;
 import org.jepria.oauth.model.authentication.AuthenticationService;
+import org.jepria.oauth.model.token.TokenService;
 import org.jepria.oauth.model.token.dto.TokenDto;
 import org.jepria.oauth.model.token.dto.TokenInfoDto;
 import org.jepria.oauth.sdk.GrantType;
@@ -34,6 +35,7 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
   @Context
   JepSecurityContext securityContext;
   AuthenticationService authenticationService = AuthenticationServerFactory.getInstance().getService();
+  TokenService tokenService = TokenServerFactory.getInstance().getService();
 
   private String getHostContext() {
     return URI.create(request.getRequestURL().toString()).resolve(request.getContextPath()).toString();
@@ -47,7 +49,7 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
     @FormParam("grant_type") String grantType,
     @FormParam("client_id") String clientId,
     @FormParam("client_secret") String clientSecret,
-    @FormParam("redirect_uri") String redirectUri,
+    @FormParam("redirect_uri") String redirectUriEncoded,
     @FormParam("code") String authCode,
     @FormParam("username") String username,
     @FormParam("password") String password,
@@ -62,6 +64,7 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
     if (grantType == null) {
       throw new OAuthRuntimeException(INVALID_REQUEST, "Grant type must be not null");
     }
+    TokenDto result = null;
     switch (grantType) {
       case GrantType.AUTHORIZATION_CODE: {
         if (clientId != null && clientSecret != null) {
@@ -71,32 +74,43 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
         } else {
           throw new OAuthRuntimeException(ACCESS_DENIED, "Request authorization failed");
         }
+        URI redirectUri = URI.create(new String(Base64.getUrlDecoder().decode(redirectUriEncoded)));
+        result = tokenService.create(clientId, authCode, getHostContext(), redirectUri);
         break;
       }
-//        case GrantType.CLIENT_CREDENTIALS: {TODO
-//          break;
-//        }
-      case GrantType.PASSWORD:
+      case GrantType.CLIENT_CREDENTIALS: {
+        Integer userId;
+        if (clientId != null && clientSecret != null) {
+          userId = authenticationService.loginByClientSecret(clientId, clientSecret);
+        } else {
+          throw new OAuthRuntimeException(ACCESS_DENIED, "Request authorization failed");
+        }
+        tokenService.create(clientId, userId, getHostContext());
+        break;
+      }
+      case GrantType.PASSWORD: {
+        if (clientId != null && clientSecret != null) {
+          authenticationService.loginByClientSecret(clientId, clientSecret);
+        } else if (clientId != null && clientSecret == null) {
+          authenticationService.loginByClientId(clientId);
+        }
+        Integer userId = authenticationService.loginByPassword(username, password);
+        result = tokenService.create(clientId, username, userId, getHostContext());
+        break;
+      }
       case GrantType.REFRESH_TOKEN: {
         if (clientId != null && clientSecret != null) {
           authenticationService.loginByClientSecret(clientId, clientSecret);
         } else if (clientId != null && clientSecret == null) {
           authenticationService.loginByClientId(clientId);
         }
+        result = tokenService.create(clientId, refreshToken, getHostContext());
         break;
       }
       default: {
         throw new OAuthRuntimeException(UNSUPPORTED_GRANT_TYPE, "Grant type '" + grantType + "' is not supported");
       }
     }
-    TokenDto result = TokenServerFactory.getInstance().getService().create(grantType,
-      getHostContext(),
-      authCode,
-      clientId,
-      redirectUri,
-      username,
-      password,
-      refreshToken);
     return Response.ok(result).build();
   }
 

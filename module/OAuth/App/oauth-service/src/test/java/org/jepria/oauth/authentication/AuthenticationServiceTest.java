@@ -140,7 +140,9 @@ public class AuthenticationServiceTest {
   @Test
   public void loginByCredentials() {
     assertEquals(authenticationService.loginByClientSecret("test", "testSecret"), 1);
-    assertNull(authenticationService.loginByClientSecret("test", null));
+    assertThrows(OAuthRuntimeException.class, () -> {
+      authenticationService.loginByClientSecret("test", null);
+    });
     assertThrows(OAuthRuntimeException.class, () -> {
       authenticationService.loginByClientSecret("123", "123");
     });

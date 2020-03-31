@@ -3,6 +3,9 @@ package org.jepria.oauth.authorization.rest;
 import org.jepria.oauth.authorization.AuthorizationServerFactory;
 import org.jepria.oauth.exception.OAuthRuntimeException;
 import org.jepria.oauth.model.session.dto.SessionDto;
+import org.jepria.oauth.model.token.dto.TokenDto;
+import org.jepria.oauth.sdk.ResponseType;
+import org.jepria.oauth.token.TokenServerFactory;
 import org.jepria.server.service.rest.ErrorDto;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
 import org.jepria.server.service.rest.jersey.ExceptionManager;
@@ -63,14 +66,32 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
           codeChallenge,
           sessionToken,
           getHostContext());
-      if (session.getOperator() != null) {
-        response = Response
-          .status(302)
-          .location(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + session.getAuthorizationCode() + "&" + (state != null ? STATE + "=" + state : "")))
-          .build();
+      if (!session.getBlocked() && session.getSessionTokenDateFinish().before(new Date()) && session.getOperator() != null) {
+        if (ResponseType.CODE.equals(responseType)) {
+          response = Response
+              .status(302)
+              .location(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + session.getAuthorizationCode() + "&" + (state != null ? STATE + "=" + state : "")))
+              .build();
+        } else {
+          TokenDto tokenDto = TokenServerFactory.getInstance().getService().create(responseType, clientId, getHostContext(), session.getAuthorizationCode(), URI.create(redirectUri));
+          response = Response.status(302).location(URI.create(redirectUri
+              + "#" + ACCESS_TOKEN_QUERY_PARAM + tokenDto.getAccessToken()
+              + "&" + TOKEN_TYPE_QUERY_PARAM + tokenDto.getTokenType()
+              + "&" + EXPIRES_IN_QUERY_PARAM + tokenDto.getExpiresIn()
+              + "&" + STATE + "=" + state))
+              .cookie(new NewCookie(SESSION_ID,
+                  sessionToken,
+                  null,
+                  null,
+                  null,
+                  NewCookie.DEFAULT_MAX_AGE,
+                  false,
+                  true))
+              .build();
+        }
       } else {
         response = Response.status(302).location(URI.create("/oauth/login/?"
-          + RESPONSE_TYPE + "=" + CODE
+          + RESPONSE_TYPE + "=" + responseType
           + "&" + CODE + "=" + session.getAuthorizationCode()
           + "&" + REDIRECT_URI + "=" + redirectUriEncoded
           + "&" + CLIENT_ID + "=" + session.getClient().getValue()
@@ -86,7 +107,7 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
           redirectUri,
           codeChallenge);
       response = Response.status(302).location(URI.create("/oauth/login/?"
-        + RESPONSE_TYPE + "=" + CODE
+        + RESPONSE_TYPE + "=" + responseType
         + "&" + CODE + "=" + session.getAuthorizationCode()
         + "&" + REDIRECT_URI + "=" + redirectUriEncoded
         + "&" + CLIENT_ID + "=" + session.getClient().getValue()

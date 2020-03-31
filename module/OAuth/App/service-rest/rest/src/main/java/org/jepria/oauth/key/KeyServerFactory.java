@@ -1,9 +1,7 @@
 package org.jepria.oauth.key;
 
-import org.jepria.oauth.dao.key.KeyDaoImpl;
-import org.jepria.oauth.model.key.KeyService;
-import org.jepria.oauth.model.key.dao.KeyDao;
-import org.jepria.oauth.service.key.KeyServiceImpl;
+import org.jepria.oauth.key.dao.KeyDaoImpl;
+import org.jepria.oauth.key.dao.KeyDao;
 import org.jepria.server.ServerFactory;
 
 public class KeyServerFactory extends ServerFactory<KeyDao> {

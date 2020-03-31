@@ -1,11 +1,11 @@
 package org.jepria.oauth.session;
 
 import org.jepria.oauth.DaoTestBase;
-import org.jepria.oauth.dao.session.SessionDaoImpl;
-import org.jepria.oauth.model.session.dto.SessionCreateDto;
-import org.jepria.oauth.model.session.dto.SessionDto;
-import org.jepria.oauth.model.session.dto.SessionSearchDto;
-import org.jepria.oauth.model.session.dto.SessionUpdateDto;
+import org.jepria.oauth.session.dto.SessionCreateDto;
+import org.jepria.oauth.session.dto.SessionDto;
+import org.jepria.oauth.session.dto.SessionSearchDto;
+import org.jepria.oauth.session.dto.SessionUpdateDto;
+import org.jepria.oauth.session.dao.SessionDaoImpl;
 import org.jepria.server.data.Dao;
 import org.junit.jupiter.api.*;
 
@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
-import static org.jepria.oauth.dao.session.SessionFieldNames.SESSION_ID;
+import static org.jepria.oauth.session.SessionFieldNames.SESSION_ID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)

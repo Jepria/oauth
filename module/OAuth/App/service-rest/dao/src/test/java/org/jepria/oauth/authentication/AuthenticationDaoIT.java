@@ -1,10 +1,10 @@
 package org.jepria.oauth.authentication;
 
 import org.jepria.oauth.DaoTestBase;
-import org.jepria.oauth.dao.authentication.AuthenticationDaoImpl;
-import org.jepria.oauth.dao.session.SessionDaoImpl;
-import org.jepria.oauth.model.authentication.dao.AuthenticationDao;
-import org.jepria.oauth.model.session.dto.SessionCreateDto;
+import org.jepria.oauth.authentication.dao.AuthenticationDaoImpl;
+import org.jepria.oauth.session.dao.SessionDaoImpl;
+import org.jepria.oauth.authentication.dao.AuthenticationDao;
+import org.jepria.oauth.session.dto.SessionCreateDto;
 import org.jepria.server.data.Dao;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,7 +16,7 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.HashMap;
 
-import static org.jepria.oauth.dao.session.SessionFieldNames.SESSION_ID;
+import static org.jepria.oauth.session.SessionFieldNames.SESSION_ID;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AuthenticationDaoIT extends DaoTestBase {

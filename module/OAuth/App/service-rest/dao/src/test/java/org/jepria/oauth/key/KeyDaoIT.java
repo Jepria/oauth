@@ -2,10 +2,10 @@ package org.jepria.oauth.key;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.jepria.oauth.DaoTestBase;
-import org.jepria.oauth.dao.key.KeyDaoImpl;
-import org.jepria.oauth.model.key.dao.KeyDao;
-import org.jepria.oauth.model.key.dto.KeyCreateDto;
-import org.jepria.oauth.model.key.dto.KeyDto;
+import org.jepria.oauth.key.dao.KeyDaoImpl;
+import org.jepria.oauth.key.dao.KeyDao;
+import org.jepria.oauth.key.dto.KeyCreateDto;
+import org.jepria.oauth.key.dto.KeyDto;
 import org.junit.jupiter.api.*;
 
 import java.security.Key;

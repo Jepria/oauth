@@ -2,8 +2,8 @@ package org.jepria.oauth.authorization.rest;
 
 import org.jepria.oauth.authorization.AuthorizationServerFactory;
 import org.jepria.oauth.exception.OAuthRuntimeException;
-import org.jepria.oauth.model.session.dto.SessionDto;
-import org.jepria.oauth.model.token.dto.TokenDto;
+import org.jepria.oauth.session.dto.SessionDto;
+import org.jepria.oauth.token.dto.TokenDto;
 import org.jepria.oauth.sdk.ResponseType;
 import org.jepria.oauth.token.TokenServerFactory;
 import org.jepria.server.service.rest.ErrorDto;

@@ -1,9 +1,6 @@
 package org.jepria.oauth.token;
 
-import org.jepria.oauth.authentication.AuthenticationServerFactory;
 import org.jepria.oauth.key.KeyServerFactory;
-import org.jepria.oauth.model.token.TokenService;
-import org.jepria.oauth.service.token.TokenServiceImpl;
 import org.jepria.oauth.session.SessionServerFactory;
 import org.jepria.server.ServerFactory;
 

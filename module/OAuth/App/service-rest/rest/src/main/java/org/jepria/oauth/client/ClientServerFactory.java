@@ -1,9 +1,7 @@
 package org.jepria.oauth.client;
 
-import org.jepria.oauth.dao.client.ClientDaoImpl;
-import org.jepria.oauth.model.client.ClientService;
-import org.jepria.oauth.model.client.dao.ClientDao;
-import org.jepria.oauth.service.client.ClientServiceImpl;
+import org.jepria.oauth.client.dao.ClientDaoImpl;
+import org.jepria.oauth.client.dao.ClientDao;
 import org.jepria.server.ServerFactory;
 import org.jepria.server.service.rest.EntityService;
 import org.jepria.server.service.rest.EntityServiceImpl;

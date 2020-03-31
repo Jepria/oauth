@@ -1,8 +1,7 @@
 package org.jepria.oauth.authentication.rest;
 
 import org.jepria.oauth.authentication.AuthenticationServerFactory;
-import org.jepria.oauth.authorization.AuthorizationServerFactory;
-import org.jepria.oauth.model.token.dto.TokenDto;
+import org.jepria.oauth.token.dto.TokenDto;
 import org.jepria.oauth.token.TokenServerFactory;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
 

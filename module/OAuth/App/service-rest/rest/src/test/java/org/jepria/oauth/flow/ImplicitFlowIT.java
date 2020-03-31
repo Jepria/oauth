@@ -4,7 +4,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.jepria.oauth.JaxRsAdapterTestBase;
-import org.jepria.oauth.model.token.dto.TokenInfoDto;
+import org.jepria.oauth.token.dto.TokenInfoDto;
 import org.jepria.oauth.sdk.ResponseType;
 import org.jepria.oauth.sdk.util.URIUtil;
 import org.junit.jupiter.api.Test;

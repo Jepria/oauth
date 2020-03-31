@@ -1,7 +1,7 @@
 package org.jepria.oauth.session.rest;
 
-import org.jepria.oauth.model.session.dto.SessionDto;
-import org.jepria.oauth.model.session.dto.SessionSearchDto;
+import org.jepria.oauth.session.dto.SessionDto;
+import org.jepria.oauth.session.dto.SessionSearchDto;
 import org.jepria.oauth.session.SessionServerFactory;
 import org.jepria.server.data.SearchRequestDto;
 import org.jepria.server.service.rest.ExtendedResponse;
@@ -9,7 +9,6 @@ import org.jepria.server.service.rest.JaxrsAdapterBase;
 import org.jepria.server.service.security.HttpBasic;
 import org.jepria.server.service.security.JepSecurityContext;
 
-import javax.ws.rs.*;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;

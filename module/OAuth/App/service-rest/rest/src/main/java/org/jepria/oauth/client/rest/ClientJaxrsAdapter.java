@@ -2,10 +2,10 @@ package org.jepria.oauth.client.rest;
 
 import org.hibernate.validator.constraints.NotEmpty;
 import org.jepria.oauth.client.ClientServerFactory;
-import org.jepria.oauth.model.client.dto.ClientCreateDto;
-import org.jepria.oauth.model.client.dto.ClientDto;
-import org.jepria.oauth.model.client.dto.ClientSearchDto;
-import org.jepria.oauth.model.client.dto.ClientUpdateDto;
+import org.jepria.oauth.client.dto.ClientCreateDto;
+import org.jepria.oauth.client.dto.ClientDto;
+import org.jepria.oauth.client.dto.ClientSearchDto;
+import org.jepria.oauth.client.dto.ClientUpdateDto;
 import org.jepria.server.data.SearchRequestDto;
 import org.jepria.server.service.rest.ExtendedResponse;
 import org.jepria.server.service.rest.JaxrsAdapterBase;

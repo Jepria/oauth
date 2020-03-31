@@ -1,13 +1,12 @@
 package org.jepria.oauth.authorization;
 
 import org.jepria.oauth.exception.OAuthRuntimeException;
-import org.jepria.oauth.model.authorization.AuthorizationService;
-import org.jepria.oauth.model.client.ClientService;
-import org.jepria.oauth.model.key.KeyService;
-import org.jepria.oauth.model.key.dto.KeyDto;
-import org.jepria.oauth.model.session.SessionService;
-import org.jepria.oauth.model.session.dto.SessionCreateDto;
-import org.jepria.oauth.model.session.dto.SessionDto;
+import org.jepria.oauth.client.ClientService;
+import org.jepria.oauth.key.KeyService;
+import org.jepria.oauth.key.dto.KeyDto;
+import org.jepria.oauth.session.SessionService;
+import org.jepria.oauth.session.dto.SessionCreateDto;
+import org.jepria.oauth.session.dto.SessionDto;
 import org.jepria.oauth.sdk.ResponseType;
 import org.jepria.oauth.sdk.token.Encryptor;
 import org.jepria.oauth.sdk.token.Signer;
@@ -15,7 +14,6 @@ import org.jepria.oauth.sdk.token.Token;
 import org.jepria.oauth.sdk.token.TokenImpl;
 import org.jepria.oauth.sdk.token.rsa.EncryptorRSA;
 import org.jepria.oauth.sdk.token.rsa.SignerRSA;
-import org.jepria.oauth.service.authorization.AuthorizationServiceImpl;
 import org.jepria.server.data.OptionDto;
 import org.jepria.server.data.RuntimeSQLException;
 import org.jepria.server.service.security.Credential;

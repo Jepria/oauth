@@ -1,17 +1,15 @@
 package org.jepria.oauth.token;
 
-import org.jepria.oauth.model.key.KeyService;
-import org.jepria.oauth.model.key.dto.KeyDto;
-import org.jepria.oauth.model.session.SessionService;
-import org.jepria.oauth.model.session.dto.SessionCreateDto;
-import org.jepria.oauth.model.session.dto.SessionDto;
-import org.jepria.oauth.model.session.dto.SessionSearchDto;
-import org.jepria.oauth.model.session.dto.SessionUpdateDto;
-import org.jepria.oauth.model.token.TokenService;
-import org.jepria.oauth.model.token.dto.TokenDto;
-import org.jepria.oauth.model.token.dto.TokenInfoDto;
+import org.jepria.oauth.key.KeyService;
+import org.jepria.oauth.key.dto.KeyDto;
+import org.jepria.oauth.session.SessionService;
+import org.jepria.oauth.session.dto.SessionCreateDto;
+import org.jepria.oauth.session.dto.SessionDto;
+import org.jepria.oauth.session.dto.SessionSearchDto;
+import org.jepria.oauth.session.dto.SessionUpdateDto;
+import org.jepria.oauth.token.dto.TokenDto;
+import org.jepria.oauth.token.dto.TokenInfoDto;
 import org.jepria.oauth.sdk.ResponseType;
-import org.jepria.oauth.service.token.TokenServiceImpl;
 import org.jepria.server.data.OptionDto;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

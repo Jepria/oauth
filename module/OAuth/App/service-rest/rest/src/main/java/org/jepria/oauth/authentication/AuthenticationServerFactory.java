@@ -1,11 +1,9 @@
 package org.jepria.oauth.authentication;
 
+import org.jepria.oauth.authentication.dao.AuthenticationDaoImpl;
 import org.jepria.oauth.clienturi.ClientUriServerFactory;
-import org.jepria.oauth.dao.authentication.AuthenticationDaoImpl;
 import org.jepria.oauth.key.KeyServerFactory;
-import org.jepria.oauth.model.authentication.AuthenticationService;
-import org.jepria.oauth.model.authentication.dao.AuthenticationDao;
-import org.jepria.oauth.service.authentication.AuthenticationServiceImpl;
+import org.jepria.oauth.authentication.dao.AuthenticationDao;
 import org.jepria.oauth.session.SessionServerFactory;
 import org.jepria.server.ServerFactory;
 

@@ -1,16 +1,15 @@
 package org.jepria.oauth.client;
 
 import org.jepria.oauth.DaoTestBase;
-import org.jepria.oauth.dao.client.ClientDaoImpl;
-import org.jepria.oauth.dao.client.ClientFieldNames;
-import org.jepria.oauth.dao.clienturi.ClientUriDaoImpl;
-import org.jepria.oauth.model.client.dao.ClientDao;
-import org.jepria.oauth.model.client.dto.ClientCreateDto;
-import org.jepria.oauth.model.client.dto.ClientDto;
-import org.jepria.oauth.model.client.dto.ClientSearchDto;
-import org.jepria.oauth.model.client.dto.ClientUpdateDto;
-import org.jepria.oauth.model.clienturi.dto.ClientUriCreateDto;
-import org.jepria.oauth.model.clienturi.dto.ClientUriDto;
+import org.jepria.oauth.client.dao.ClientDaoImpl;
+import org.jepria.oauth.clienturi.dao.ClientUriDaoImpl;
+import org.jepria.oauth.client.dao.ClientDao;
+import org.jepria.oauth.client.dto.ClientCreateDto;
+import org.jepria.oauth.client.dto.ClientDto;
+import org.jepria.oauth.client.dto.ClientSearchDto;
+import org.jepria.oauth.client.dto.ClientUpdateDto;
+import org.jepria.oauth.clienturi.dto.ClientUriCreateDto;
+import org.jepria.oauth.clienturi.dto.ClientUriDto;
 import org.jepria.oauth.sdk.ApplicationType;
 import org.jepria.server.data.Dao;
 import org.junit.jupiter.api.*;
@@ -23,7 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
-import static org.jepria.oauth.dao.clienturi.ClientUriFieldNames.*;
+import static org.jepria.oauth.clienturi.ClientUriFieldNames.CLIENT_URI_ID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)

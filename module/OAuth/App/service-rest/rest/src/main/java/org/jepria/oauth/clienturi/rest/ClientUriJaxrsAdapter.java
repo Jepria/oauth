@@ -1,10 +1,10 @@
 package org.jepria.oauth.clienturi.rest;
 
 import org.jepria.oauth.clienturi.ClientUriServerFactory;
-import org.jepria.oauth.dao.clienturi.ClientUriFieldNames;
-import org.jepria.oauth.model.clienturi.dto.ClientUriCreateDto;
-import org.jepria.oauth.model.clienturi.dto.ClientUriDto;
-import org.jepria.oauth.model.clienturi.dto.ClientUriSearchDto;
+import org.jepria.oauth.clienturi.ClientUriFieldNames;
+import org.jepria.oauth.clienturi.dto.ClientUriCreateDto;
+import org.jepria.oauth.clienturi.dto.ClientUriDto;
+import org.jepria.oauth.clienturi.dto.ClientUriSearchDto;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
 import org.jepria.server.service.security.HttpBasic;
 

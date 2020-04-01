@@ -69,7 +69,7 @@ public class ImplicitFlowIT extends JaxRsAdapterTestBase {
     revokeTokenResponse.then().assertThat().statusCode(200);
   }
   
-  //@Test
+  @Test
   public void wrongAuthorizationRequestTest() throws UnsupportedEncodingException {
     Response authorizeResponse = RestAssured.given()
         .redirects()
@@ -82,12 +82,12 @@ public class ImplicitFlowIT extends JaxRsAdapterTestBase {
     assertNotNull(queryParams.get("error"));
   }
   
-  //@Test
+  @Test
   public void wrongUserCredentialsTest() throws UnsupportedEncodingException {
     Response authorizeResponse = RestAssured.given()
         .redirects()
         .follow(false)
-        .param("response_type", ResponseType.CODE)
+        .param("response_type", ResponseType.TOKEN)
         .param("client_id", properties.getProperty("client.id"))
         .param("redirect_uri", Base64.getUrlEncoder().withoutPadding().encodeToString(properties.getProperty("client.redirect_uri").getBytes()))
         .param("state", String.valueOf(new Date().getTime()))

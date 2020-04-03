@@ -1,0 +1,115 @@
+Format: 1.5
+
+
+Title: OAuth
+SubTitle: Версия 1.0.0
+
+# You can add a footer to your documentation like this:
+# Footer: [text]
+# If you want to add a copyright notice, this would be the place to do it.
+
+# You can add a timestamp to your documentation like one of these:
+# Timestamp: Generated on month day, year
+# Timestamp: Updated mm/dd/yyyy
+# Timestamp: Last updated mon day
+#
+#   m     - One or two digit month.  January is "1"
+#   mm    - Always two digit month.  January is "01"
+#   mon   - Short month word.  January is "Jan"
+#   month - Long month word.  January is "January"
+#   d     - One or two digit day.  1 is "1"
+#   dd    - Always two digit day.  1 is "01"
+#   day   - Day with letter extension.  1 is "1st"
+#   yy    - Two digit year.  2006 is "06"
+#   yyyy  - Four digit year.  2006 is "2006"
+#   year  - Four digit year.  2006 is "2006"
+
+
+# --------------------------------------------------------------------------
+# 
+# Cut and paste the lines below to change the order in which your files
+# appear on the menu.  Don't worry about adding or removing files, Natural
+# Docs will take care of that.
+# 
+# You can further organize the menu by grouping the entries.  Add a
+# "Group: [name] {" line to start a group, and add a "}" to end it.
+# 
+# You can add text and web links to the menu by adding "Text: [text]" and
+# "Link: [name] ([URL])" lines, respectively.
+# 
+# The formatting and comments are auto-generated, so don't worry about
+# neatness when editing the file.  Natural Docs will clean it up the next
+# time it is run.  When working with groups, just deal with the braces and
+# forget about the indentation and comments.
+# 
+# --------------------------------------------------------------------------
+
+
+Group: О модуле  {
+
+   File: Описание  (Doc/readme.txt)
+   File: Установка  (Doc/install.txt)
+   File: Ошибки  (Doc/bugs.txt)
+   File: Доработки  (Doc/todo.txt)
+   File: Сборка  (Makefile)
+   File: Версии  (Doc/version.txt)
+   }  # Group: О модуле
+
+Group: Пакеты  {
+
+   Group: pkg_OAuth  {
+
+      File: Спецификация  (no auto-title, pkg_OAuth.pks)
+      File: Реализация  (no auto-title, pkg_OAuth.pkb)
+      }  # Group: pkg_OAuth
+
+   }  # Group: Пакеты
+
+Group: Скрипты  {
+
+   Group: Install  {
+
+      Group: Schema  {
+
+         Group: Last  {
+
+            File: run  (no auto-title, Install/Schema/Last/run.sql)
+            File: revert  (no auto-title, Install/Schema/Last/revert.sql)
+            File: oa_client  (no auto-title, Install/Schema/Last/oa_client.tab)
+            File: oa_client_grant  (no auto-title, Install/Schema/Last/oa_client_grant.tab)
+            File: oa_client_seq  (no auto-title, Install/Schema/Last/oa_client_seq.sqs)
+            File: oa_client_uri  (no auto-title, Install/Schema/Last/oa_client_uri.tab)
+            File: oa_client_uri_seq  (no auto-title, Install/Schema/Last/oa_client_uri_seq.sqs)
+            File: oa_key  (no auto-title, Install/Schema/Last/oa_key.tab)
+            File: oa_key_seq  (no auto-title, Install/Schema/Last/oa_key_seq.sqs)
+            File: oa_session  (no auto-title, Install/Schema/Last/oa_session.tab)
+            File: oa_session_seq  (no auto-title, Install/Schema/Last/oa_session_seq.sqs)
+            File: set-session-comment  (no auto-title, Install/Schema/Last/set-session-comment.sql)
+            File: v_oa_session  (no auto-title, Install/Schema/Last/v_oa_session.vw)
+            }  # Group: Last
+
+         }  # Group: Schema
+
+      }  # Group: Install
+
+   }  # Group: Скрипты
+
+Group: Индекс  {
+
+   Group: Объекты БД  {
+
+      Database View Index: Представления
+      Database Table Index: Таблицы
+      Database Index Index: Индексы
+      Database Sequence Index: Последовательности
+      }  # Group: Объекты БД
+
+   Group: Открытые объявления  {
+
+      Constant Index: Константы
+      }  # Group: Открытые объявления
+
+   File Index: Скрипты
+   Index: Все вместе
+   }  # Group: Индекс
+

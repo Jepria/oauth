@@ -1,0 +1,33 @@
+-- table: oa_client_grant
+-- Список грантов клиентского приложения.
+create table
+  oa_client_grant
+(
+  client_id                       integer                             not null
+  , grant_type                    varchar2(20)                        not null
+  , date_ins                      timestamp with time zone
+                                    default systimestamp              not null
+  , operator_id                   integer
+  , constraint oa_client_grant_pk primary key
+    ( client_id, grant_type)
+    using index tablespace &indexTablespace
+)
+/
+
+
+
+comment on table oa_client_grant is
+  'Список грантов клиентского приложения [ SVN root: JEP/Module/OAuth]'
+/
+comment on column oa_client_grant.client_id is
+  'Id клиентского приложения'
+/
+comment on column oa_client_grant.grant_type is
+  'Тип гранта'
+/
+comment on column oa_client_grant.date_ins is
+  'Дата создания записи'
+/
+comment on column oa_client_grant.operator_id is
+  'Id оператора, создавшего запись'
+/

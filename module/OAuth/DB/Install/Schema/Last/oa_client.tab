@@ -1,0 +1,69 @@
+-- table: oa_client
+-- Клиентские приложения.
+create table
+  oa_client
+(
+  client_id                       integer                             not null
+  , client_uuid                   varchar2(32)                        not null
+  , client_secret                 varchar2(100)
+  , client_name                   varchar2(100)                       not null
+  , client_name_en                varchar2(100)                       not null
+  , application_type              varchar2(100)                       not null
+  , date_ins                      timestamp with time zone
+                                    default systimestamp              not null
+  , operator_id_ins               integer                             not null
+  , change_date                   timestamp with time zone
+                                    default systimestamp              not null
+  , change_operator_id            integer                             not null
+  , operator_id                   integer
+  , is_deleted                    integer         default 0           not null
+  , constraint oa_client_pk primary key
+    ( client_id)
+    using index tablespace &indexTablespace
+  , constraint oa_client_uk_uuid unique
+    ( client_uuid)
+    using index tablespace &indexTablespace
+)
+/
+
+
+
+comment on table oa_client is
+  'Клиентские приложения [ SVN root: JEP/Module/OAuth]'
+/
+comment on column oa_client.client_id is
+  'Id клиентского приложения'
+/
+comment on column oa_client.client_uuid is
+  'UUID клиентского приложения'
+/
+comment on column oa_client.client_secret is
+  'Случайная криптографически устойчивая строка'
+/
+comment on column oa_client.client_name is
+  'Имя клиентского приложения'
+/
+comment on column oa_client.client_name_en is
+  'Имя клиентского приложения на английском'
+/
+comment on column oa_client.application_type is
+  'Тип клиентского приложения'
+/
+comment on column oa_client.date_ins is
+  'Дата создания записи'
+/
+comment on column oa_client.operator_id_ins is
+  'Id оператора, создавшего запись'
+/
+comment on column oa_client.change_date is
+  'Дата последнего изменения записи'
+/
+comment on column oa_client.change_operator_id is
+  'Id оператора, изменившего запись'
+/
+comment on column oa_client.operator_id is
+  'Id привязанного оператора'
+/
+comment on column oa_client.is_deleted is
+  'Признак удаления записи'
+/

@@ -1,0 +1,6 @@
+-- sequence: oa_key_seq
+-- Последовательность для заполнения первичного ключа таблицы
+-- <oa_key>.
+create sequence
+  oa_key_seq
+/

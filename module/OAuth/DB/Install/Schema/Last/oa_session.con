@@ -1,0 +1,30 @@
+alter table
+  oa_session
+add constraint
+  oa_session_fk_client_id
+foreign key
+  ( client_id)
+references
+  oa_client ( client_id)
+on delete cascade
+/
+
+alter table
+  oa_session
+add constraint
+  oa_session_fk_operator_id
+foreign key
+  ( operator_id)
+references
+  op_operator ( operator_id)
+/
+
+alter table
+  oa_session
+add constraint
+  oa_session_fk_operator_id_ins
+foreign key
+  ( operator_id_ins)
+references
+  op_operator ( operator_id)
+/

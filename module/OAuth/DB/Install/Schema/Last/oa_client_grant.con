@@ -1,0 +1,20 @@
+alter table
+  oa_client_grant
+add constraint
+  oa_client_grant_fk_client_id
+foreign key
+  ( client_id)
+references
+  oa_client ( client_id)
+on delete cascade
+/
+
+alter table
+  oa_client_grant
+add constraint
+  oa_client_grant_fk_operator_id
+foreign key
+  ( operator_id)
+references
+  op_operator ( operator_id)
+/

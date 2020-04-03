@@ -1,0 +1,9 @@
+alter table
+  oa_key
+add constraint
+  oa_key_fk_operator_id_ins
+foreign key
+  ( operator_id_ins)
+references
+  op_operator ( operator_id)
+/

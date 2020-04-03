@@ -1,0 +1,43 @@
+title: Установка
+
+
+
+group: Общие замечания
+
+Реализуется с помощью целей сборки модуля из make-целей <Установка модуля в БД>.
+Для корректной установки должна быть установлена актуальная версия OMS
+( см. <Версия OMS-файлов>).
+
+Параметры установки:
+INSTALL_VERSION               - устанавливаемая версия модуля ( Last при
+                                первоначальной установке или номер при
+                                обновлении)
+LOAD_OPERATORID               - логин и пароль оператора, выполняющего установку
+                                ( формат: login/password)
+LOAD_USERID                   - основной пользователь для установки в БД
+                                ( формат: username/password@dbName)
+LOAD_USERID2                  - пользователь, под которым создаются роли
+                                для модуля AccessOperator
+                                ( формат: username/password@dbName)
+
+
+
+group: Первоначальная установка
+
+Порядок установки:
+
+- установка в основную схему
+
+> make install INSTALL_VERSION=Last LOAD_USERID=???/???@??? LOAD_OPERATORID=???/???
+
+- создание ролей для модуля AccessOperator
+
+> make install INSTALL_VERSION=Last LOAD_USERID2=???/???@??? LOAD_OPERATORID=???/???
+
+
+
+group: Удаление модуля из БД
+
+Команда для удаления модуля из БД:
+
+> make uninstall INSTALL_VERSION=Last LOAD_USERID=???/???@??? LOAD_OPERATORID=???/???

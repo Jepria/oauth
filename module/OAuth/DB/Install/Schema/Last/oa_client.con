@@ -1,0 +1,29 @@
+alter table
+  oa_client
+add constraint
+  oa_client_fk_operator_id_ins
+foreign key
+  ( operator_id_ins)
+references
+  op_operator ( operator_id)
+/
+
+alter table
+  oa_client
+add constraint
+  oa_client_fk_change_operator
+foreign key
+  ( change_operator_id)
+references
+  op_operator ( operator_id)
+/
+
+alter table
+  oa_client
+add constraint
+  oa_client_fk_operator_id
+foreign key
+  ( operator_id)
+references
+  op_operator ( operator_id)
+/

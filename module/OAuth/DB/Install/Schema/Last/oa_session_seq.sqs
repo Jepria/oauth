@@ -1,0 +1,6 @@
+-- sequence: oa_session_seq
+-- Последовательность для заполнения первичного ключа таблицы
+-- <oa_session>.
+create sequence
+  oa_session_seq
+/

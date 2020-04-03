@@ -1,0 +1,40 @@
+-- table: oa_client_uri
+-- URI для клиентского приложения.
+create table
+  oa_client_uri
+(
+  client_uri_id                   integer                             not null
+  , client_id                     integer                             not null
+  , client_uri                    varchar2(4000)                      not null
+  , date_ins                      timestamp with time zone
+                                    default systimestamp              not null
+  , operator_id                   integer
+  , constraint oa_client_uri_pk primary key
+    ( client_uri_id)
+    using index tablespace &indexTablespace
+  , constraint oa_client_uri_uk unique
+    ( client_id, client_uri)
+    using index tablespace &indexTablespace
+)
+/
+
+
+
+comment on table oa_client_uri is
+  'URI для клиентского приложения [ SVN root: JEP/Module/OAuth]'
+/
+comment on column oa_client_uri.client_uri_id is
+  'Id записи с URI клиентского приложения'
+/
+comment on column oa_client_uri.client_id is
+  'Id клиентского приложения'
+/
+comment on column oa_client_uri.client_uri is
+  'URI клиентского приложения'
+/
+comment on column oa_client_uri.date_ins is
+  'Дата создания записи'
+/
+comment on column oa_client_uri.operator_id is
+  'Id оператора, создавшего запись'
+/

@@ -1,0 +1,87 @@
+-- table: oa_session
+-- Пользовательские сессии.
+create table
+  oa_session
+(
+  session_id                      integer                             not null
+  , auth_code                     varchar2(32)                        not null
+  , client_id                     integer                             not null
+  , redirect_uri                  varchar2(4000)
+  , operator_id                   integer
+  , code_challenge                varchar2(128)
+  , access_token                  varchar2(32)
+  , access_token_date_ins         timestamp with time zone
+  , access_token_date_finish      timestamp with time zone
+  , refresh_token                 varchar2(32)
+  , refresh_token_date_ins        timestamp with time zone
+  , refresh_token_date_finish     timestamp with time zone
+  , session_token                 varchar2(32)
+  , session_token_date_ins        timestamp with time zone
+  , session_token_date_finish     timestamp with time zone
+  , is_manual_blocked             number(1)
+  , date_finish                   timestamp with time zone
+  , date_ins                      timestamp with time zone
+                                    default systimestamp              not null
+  , operator_id_ins               integer                             not null
+  , constraint oa_session_pk primary key
+    ( session_id)
+    using index tablespace &indexTablespace
+  , constraint oa_session_uk_auth_code unique
+    ( auth_code)
+    using index tablespace &indexTablespace
+  , constraint oa_session_uk_access_token unique
+    ( access_token)
+    using index tablespace &indexTablespace
+  , constraint oa_session_uk_refresh_token unique
+    ( refresh_token)
+    using index tablespace &indexTablespace
+  , constraint oa_session_ck_is_manual_bl_dt check
+    (is_manual_blocked = 1)
+)
+/
+
+
+
+-- index: oa_session_ix_client_id_actual
+-- Индекс для внешнего ключа.
+create index
+  oa_session_ix_client_id_actual
+on
+  oa_session (
+    client_id
+    , case when date_finish is null then 1 end
+  )
+tablespace &indexTablespace
+/
+
+-- index: oa_session_ix_session_token
+-- Индекс для выборки записей по session_token.
+create index
+  oa_session_ix_session_token
+on
+  oa_session (
+    session_token
+  )
+tablespace &indexTablespace
+/
+
+-- index: oa_session_ix_actual_date_ins
+-- Индекс для выборки актуальных записей.
+create index
+  oa_session_ix_actual_date_ins
+on
+  oa_session (
+    case when date_finish is null then date_ins end desc
+  )
+tablespace &indexTablespace
+/
+
+
+
+comment on table oa_session is
+  'Пользовательские сессии [ SVN root: JEP/Module/OAuth]'
+/
+comment on column oa_session.date_finish is
+  'Дата блокировки (неактуальности) сессии'
+/
+@oms-run set-session-comment.sql oa_session

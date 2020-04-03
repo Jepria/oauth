@@ -1,0 +1,60 @@
+-- table: oa_key
+-- Хранилище RSA ключей.
+create table
+  oa_key
+(
+  key_id                          integer                             not null
+  , public_key                    varchar2(2048)                      not null
+  , private_key                   varchar2(2048)                      not null
+  , date_ins                      timestamp with time zone
+                                    default systimestamp              not null
+  , is_actual                     number(1)       default 1           not null
+  , operator_id_ins               integer
+  , constraint oa_key_pk primary key
+    ( key_id)
+    using index tablespace &indexTablespace
+  , constraint oa_key_uk unique
+    ( public_key, private_key)
+    using index tablespace &indexTablespace
+  , constraint ok_key_ck_is_actual check
+    (is_actual in (0,1))
+)
+/
+
+
+
+-- index: oa_key_ix_is_actual_date_ins
+-- Индекс для выборки актуальных и неактуальных записей.
+create index
+  oa_key_ix_is_actual_date_ins
+on
+  oa_key (
+    is_actual
+    , date_ins
+  )
+tablespace &indexTablespace
+/
+
+
+
+comment on table oa_key is
+  'Хранилище RSA ключей [ SVN root: JEP/Module/OAuth]'
+/
+comment on column oa_key.key_id is
+  'Id записи с ключами'
+/
+comment on column oa_key.public_key is
+  'Публичный ключ'
+/
+comment on column oa_key.private_key is
+  'Приватный ключ'
+/
+comment on column oa_key.is_actual is
+  'Признак актуальной записи (1 - актуальная; 0 - неактуальная)'
+/
+comment on column oa_key.date_ins is
+  'Дата создания записи'
+/
+comment on column oa_key.operator_id_ins is
+  'Id оператора, создавшего запись'
+/

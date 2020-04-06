@@ -36,3 +36,7 @@ Install/Schema/Last/v_oa_session.vw.$(lu): \
   Install/Schema/Last/set-session-comment.sql \
 
 
+Install/Data/Last/AccessOperatorDb/op_group.sql.$(lu2): \
+  Install/Data/Last/AccessOperatorDb/op_role.sql.$(lu2) \
+
+

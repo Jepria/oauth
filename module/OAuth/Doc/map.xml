@@ -31,7 +31,12 @@
     <infrastructure></infrastructure>
   </diagram>
   <depend>
-    <module></module>
+    <module>AccessOperator</module>
+    <module>Common</module>
+    <module>DynamicSql</module>
+    <module>Logging</module>
+    <module>Option</module>
+    <module>Scheduler</module>
     <link></link>
   </depend>
   <image></image>

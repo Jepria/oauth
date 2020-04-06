@@ -69,6 +69,20 @@ Group: Скрипты  {
 
    Group: Install  {
 
+      Group: Data  {
+
+         Group: Last  {
+
+            Group: AccessOperatorDb  {
+
+               File: op_group  (no auto-title, Install/Data/Last/AccessOperatorDb/op_group.sql)
+               File: op_role  (no auto-title, Install/Data/Last/AccessOperatorDb/op_role.sql)
+               }  # Group: AccessOperatorDb
+
+            }  # Group: Last
+
+         }  # Group: Data
+
       Group: Schema  {
 
          Group: Last  {

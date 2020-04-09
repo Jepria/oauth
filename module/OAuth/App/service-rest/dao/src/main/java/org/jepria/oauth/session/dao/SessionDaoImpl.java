@@ -55,10 +55,13 @@ public class SessionDaoImpl implements Dao {
           "ss.DATE_INS," +
           "ss.SESSION_TOKEN_ID," +
           "ss.SESSION_TOKEN_DATE_INS," +
+          "ss.SESSION_TOKEN_DATE_FINISH," +
           "ss.ACCESS_TOKEN_ID," +
+          "ss.ACCESS_TOKEN_DATE_FINISH," +
           "ss.ACCESS_TOKEN_DATE_INS," +
           "ss.REFRESH_TOKEN_ID," +
           "ss.REFRESH_TOKEN_DATE_INS," +
+          "ss.REFRESH_TOKEN_DATE_FINISH," +
           "ss.OPERATOR_ID," +
           "op.OPERATOR_NAME," +
           "op.LOGIN as OPERATOR_LOGIN," +
@@ -103,11 +106,14 @@ public class SessionDaoImpl implements Dao {
       dto.setClient(client);
       dto.setAccessTokenId(rs.getString(ACCESS_TOKEN_ID));
       dto.setAccessTokenDateIns(getTimestamp(rs, ACCESS_TOKEN_DATE_INS));
+      dto.setAccessTokenDateFinish(getTimestamp(rs, ACCESS_TOKEN_DATE_FINiSH));
       dto.setBlocked(getBoolean(rs, IS_BLOCKED));
       dto.setSessionTokenId(rs.getString(SESSION_TOKEN_ID));
       dto.setSessionTokenDateIns(getTimestamp(rs, SESSION_TOKEN_DATE_INS));
+      dto.setSessionTokenDateFinish(getTimestamp(rs, SESSION_TOKEN_DATE_FINISH));
       dto.setRefreshTokenId(rs.getString(REFRESH_TOKEN_ID));
       dto.setRefreshTokenDateIns(getTimestamp(rs, REFRESH_TOKEN_DATE_INS));
+      dto.setRefreshTokenDateFinish(getTimestamp(rs, REFRESH_TOKEN_DATE_FINISH));
       dto.setCodeChallenge(rs.getString(CODE_CHALLENGE));
     }
   };

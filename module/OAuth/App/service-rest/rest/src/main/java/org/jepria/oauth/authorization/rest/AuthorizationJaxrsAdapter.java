@@ -66,7 +66,7 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
           codeChallenge,
           sessionToken,
           getHostContext());
-      if (!session.getBlocked() && session.getSessionTokenDateFinish().before(new Date()) && session.getOperator() != null) {
+      if (!session.getBlocked() && session.getSessionTokenId() != null && new Date().before(session.getSessionTokenDateFinish()) && session.getOperator() != null) {
         if (ResponseType.CODE.equals(responseType)) {
           response = Response
               .status(302)

@@ -21,6 +21,7 @@ public class Application extends ApplicationConfigBase {
   
   public Application() {
     super();
+    register(RequestLogFilter.class);
     register(AuthorizationJaxrsAdapter.class);
     register(SessionJaxrsAdapter.class);
     register(AuthenticationJaxrsAdapter.class);

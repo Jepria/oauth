@@ -8,7 +8,6 @@ const ToolBar = styled.div`
   horizontal-align: left;
   margin: 0;
   padding: 2px;
-  width: 100%;
   min-height: 20px;
   border-style: solid;
   border-color: #99BBE8;
@@ -19,7 +18,7 @@ const ToolBar = styled.div`
   background-position: 0 5%;
 `;
 
-const ToolBarButton = styled.div`
+const ToolBarItem = styled.div`
   float: left;
   vertical-align: top;
   height: 100%;
@@ -58,9 +57,9 @@ type ToolBarButtonComponentProps = {
 
 const ToolBarButtonComponent: React.FC<ToolBarButtonComponentProps> = ({onClick, tooltip, disabled, children}) => {
   return (
-    <ToolBarButton>
+    <ToolBarItem>
       <Button onClick={onClick} title={tooltip} disabled={disabled}>{children}</Button>
-    </ToolBarButton>
+    </ToolBarItem>
   );
 }
 
@@ -72,4 +71,4 @@ const ToolBarComponent: React.FC = ({children}) => {
   );
 }
 
-export {ToolBarComponent as ToolBar, ToolBarButtonComponent as ToolBarButton}
+export {ToolBarComponent as ToolBar, ToolBarButtonComponent as ToolBarButton, ToolBarItem}

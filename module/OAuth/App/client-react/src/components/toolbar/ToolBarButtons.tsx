@@ -1,19 +1,34 @@
 import React from 'react';
-import { ToolBarButton } from '../toolbar/ToolBar';
+import { ToolBarButton } from './';
 import add from './images/add.png';
 import save from './images/save.png';
 import edit from './images/edit.png';
 import view from './images/view.png';
 import del from './images/delete.png';
+import split from './images/split.gif';
+import styled from 'styled-components';
+
+const Splitter = styled.span`
+  float: left;
+  vertical-align: top;
+  background-position: center;
+  background-repeat: repeat;
+  height: 22px;
+  width: 2px;
+  margin-left: 2px;
+  margin-right: 2px;
+  background-image: url(${split});
+`;
+
 
 type CreateButtonProps = {
   onCreate(): any;
-  disabled: boolean;
+  disabled?: boolean;
 }
 
 const CreateButton: React.FC<CreateButtonProps> = ({onCreate, disabled}) => {
   return (
-    <ToolBarButton onClick={onCreate} disabled={disabled} tooltip='Создание записи'>
+    <ToolBarButton onClick={onCreate} disabled={disabled ? true : false} tooltip='Создание записи'>
       <img src={add} alt='Создание записи'/>
     </ToolBarButton>
   );
@@ -21,12 +36,12 @@ const CreateButton: React.FC<CreateButtonProps> = ({onCreate, disabled}) => {
 
 type EditButtonProps = {
   onEdit(): any;
-  disabled: boolean;
+  disabled?: boolean;
 }
 
 const EditButton: React.FC<EditButtonProps> = ({onEdit, disabled}) => {
   return (
-    <ToolBarButton onClick={onEdit} disabled={disabled} tooltip='Редактирование записи'>
+    <ToolBarButton onClick={onEdit} disabled={disabled ? true : false} tooltip='Редактирование записи'>
       <img src={edit} alt='Редактирование записи'/>
     </ToolBarButton>
   );
@@ -34,12 +49,12 @@ const EditButton: React.FC<EditButtonProps> = ({onEdit, disabled}) => {
 
 type SaveButtonProps = {
   onSave(): any;
-  disabled: boolean;
+  disabled?: boolean;
 }
 
 const SaveButton: React.FC<SaveButtonProps> = ({onSave, disabled}) => {
   return (
-    <ToolBarButton onClick={onSave} disabled={disabled} tooltip='Сохранить запись'>
+    <ToolBarButton onClick={onSave} disabled={disabled ? true : false} tooltip='Сохранить запись'>
       <img src={save} alt='Сохранить запись'/>
     </ToolBarButton>
   );
@@ -47,12 +62,12 @@ const SaveButton: React.FC<SaveButtonProps> = ({onSave, disabled}) => {
 
 type ViewButtonProps = {
   onView(): any;
-  disabled: boolean;
+  disabled?: boolean;
 }
 
 const ViewButton: React.FC<ViewButtonProps> = ({onView, disabled}) => {
   return (
-    <ToolBarButton onClick={onView} disabled={disabled} tooltip='Просмотр записи'>
+    <ToolBarButton onClick={onView} disabled={disabled ? true : false} tooltip='Просмотр записи'>
       <img src={view} alt='Просмотр записи'/>
     </ToolBarButton>
   );
@@ -60,15 +75,15 @@ const ViewButton: React.FC<ViewButtonProps> = ({onView, disabled}) => {
 
 type DeleteButtonProps = {
   onDelete(): any;
-  disabled: boolean;
+  disabled?: boolean;
 }
 
 const DeleteButton: React.FC<DeleteButtonProps> = ({onDelete, disabled}) => {
   return (
-    <ToolBarButton onClick={onDelete} disabled={disabled} tooltip='Удалить запись'>
+    <ToolBarButton onClick={onDelete} disabled={disabled ? true : false} tooltip='Удалить запись'>
       <img src={del} alt='Удалить запись'/>
     </ToolBarButton>
   );
 }
 
-export { CreateButton, EditButton, SaveButton, DeleteButton, ViewButton};
+export { CreateButton, EditButton, SaveButton, DeleteButton, ViewButton, Splitter};

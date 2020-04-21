@@ -1,10 +1,10 @@
+import 'core-js/stable';
+import 'react-app-polyfill/ie11';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
-import 'react-app-polyfill/ie11';
-import 'core-js';
 
 ReactDOM.render(
   <React.StrictMode>

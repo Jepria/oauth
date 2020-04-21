@@ -1,7 +1,29 @@
 import axios from 'axios';
 import * as Crypto from './Crypto';
 
-export default class OAuth {
+export const GrantType: { [id: string]: string; } = {
+  'authorization_code': 'Authorization code',
+  'implicit': 'Implicit',
+  'password': 'User credentials',
+  'client_credentials': 'Client credentials',
+  'refresh_token': 'Refresh token'
+}
+
+export const ApplicationType: { [id: string]: string; } = {
+  'native': 'Native',
+  'web': 'Web application',
+  'browser': 'Browser application',
+  'service': 'Service',
+}
+
+export const ApplicationGrantType: { [id: string]: Array<string>; } = {
+  'native': ['authorization_code', 'implicit', 'password', 'refresh_token'],
+  'web': ['authorization_code', 'implicit', 'password', 'client_credentials', 'refresh_token'],
+  'browser': ['authorization_code', 'implicit', 'password'],
+  'service': ['client_credentials', 'refresh_token']
+}
+
+export class OAuth {
 
   private _clientId: string;
   private _redirectUri: string;
@@ -149,7 +171,6 @@ class TokenRequest {
           }
         }
       ).then(response => resolve(response.data)).catch(error => {
-        console.log(error.response.data)
         reject(error);
       });
     });
@@ -168,14 +189,12 @@ class TokenRequest {
           }
         }
       ).then(response => resolve(response.data)).catch(error => {
-        console.log(error.response.data)
         reject(error);
       });
     });
   }
 
   withUserCredentials(username:string, password: string): Promise<Object> {
-    console.log(`withUserCredentials-${username}-${password}`);
     return new Promise<Object>((resolve, reject) => {
       axios.post(
         this._tokenUrl, 
@@ -187,7 +206,6 @@ class TokenRequest {
           }
         }
       ).then(response => resolve(response.data)).catch(error => {
-        console.log(error.response.data)
         reject(error);
       });
     });

@@ -1,11 +1,15 @@
 import React, { createContext, useEffect, useReducer, useContext } from 'react';
-import OAuth from './OAuth';
+import { OAuth } from './OAuth';
 import * as Crypto from './Crypto';
+import axios, { AxiosRequestConfig, AxiosInstance, AxiosResponse, AxiosError } from 'axios';
+import { LoadingPanel } from '../components/mask';
 
-export interface ISecurityProviderProps {
+export interface SecurityProviderProps {
   clientId: string,
   redirectUri: string,
-  oauthContextPath: string
+  oauthContextPath: string,
+  configureAxios?: boolean,
+  axiosInstance?: AxiosInstance
 }
 
 interface ISecurityContext {
@@ -91,7 +95,7 @@ const OAuthStateReducer = (state: OAuthState, action: Action) => {
   }
 }
 
-const OAuthSecurityProvider: React.FC<ISecurityProviderProps> = ({ clientId, oauthContextPath, redirectUri, children }) => {
+const OAuthSecurityProvider: React.FC<SecurityProviderProps> = ({ clientId, oauthContextPath, redirectUri, children, configureAxios = true, axiosInstance}) => {
 
   const [{ isLoading, accessToken, error }, dispatch] = useReducer(OAuthStateReducer, { isLoading: false })
 
@@ -137,8 +141,23 @@ const OAuthSecurityProvider: React.FC<ISecurityProviderProps> = ({ clientId, oau
     }
   });
 
+  if (configureAxios && accessToken) {
+    let currentAxios: AxiosInstance = axiosInstance ?  axiosInstance : axios;
+    currentAxios.interceptors.request.use((config: AxiosRequestConfig) => {
+      config.headers['Authorization'] = `Bearer ${accessToken}`;
+      return config;
+    });
+    currentAxios.interceptors.response.use((response: AxiosResponse) => response, (error: AxiosError) => {
+      if (401 === error.response?.status) {
+        authorize();
+      }
+    });
+  }
+
   if (isLoading || isOAuthRoute) {
-    return (<span>Loading</span>);
+    return (
+      <LoadingPanel header='OAuth' text='Загрузка приложения, пожалуйста, подождите...'/>
+    );
   } if (error) {
     return (<span>{error.message}</span>);
   } else {

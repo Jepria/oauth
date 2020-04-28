@@ -7,6 +7,7 @@ export default class ClientApi {
 
   constructor(url: string) {
     this.url = url;
+    axios.defaults.withCredentials = true;
   }
 
   create = (client: Client): Promise<Client> => {
@@ -105,12 +106,12 @@ export default class ClientApi {
           headers: {
             'Accept': 'application/json;charset=utf-8',
             'Content-Type': 'application/json;charset=utf-8',
-            'Cache-Control': 'no-cache'
+            'X-Cache-Control': 'no-cache'
           }
         }
       ).then(response => {
         if (response.status === 201) {
-          let location: string = response.headers['Location'];
+          let location: string = response.headers['location'];
           resolve(location.split('/').pop());
         } else {
           reject(response);
@@ -119,10 +120,10 @@ export default class ClientApi {
     });
   }
 
-  search = (searchId: string): Promise<Array<Client>> => {
+  search = (searchId: string, pageSize: number, page: number): Promise<Array<Client>> => {
     return new Promise<Array<Client>>((resolve, reject) => {
       axios.get(
-        this.url + `/search/${searchId}/resultset`,
+        this.url + `/search/${searchId}/resultset?pageSize=${pageSize}&page=${page}`,
         {
           headers: {
             'Accept': 'application/json;charset=utf-8',
@@ -135,6 +136,27 @@ export default class ClientApi {
           resolve(response.data);
         } else if (response.status === 204) {
           resolve([]);
+        } else {
+          reject(response);
+        }
+      }).catch(error => reject(error));
+    });
+  }
+
+  getResultSetSize = (searchId: string): Promise<number> => {
+    return new Promise<number>((resolve, reject) => {
+      axios.get(
+        this.url + `/search/${searchId}/resultset-size`,
+        {
+          headers: {
+            'Accept': 'application/json;charset=utf-8',
+            'Content-Type': 'application/json;charset=utf-8',
+            'X-Cache-Control': 'no-cache'
+          }
+        }
+      ).then(response => {
+        if (response.status === 200) {
+          resolve(response.data);
         } else {
           reject(response);
         }

@@ -11,7 +11,7 @@ const TabPanel = styled.div`
 `;
 
 const Tab = styled.div`
-  float: left;
+  display: inline-block;
   margin-left: 2px;
   padding: 3px 6px 3px 6px;
   text-align: center;
@@ -27,7 +27,7 @@ const Tab = styled.div`
 `;
 
 const SelectedTab = styled.div`
-  float: left;
+  display: inline-block;
   margin-left: 2px;
   padding: 3px 6px 3px 6px;
   text-align: center;

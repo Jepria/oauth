@@ -6,9 +6,9 @@ import { TabPanel, SelectedTab, Tab } from '../../../../components/tabpanel/TabP
 import { Page, Content, VerticalLayout } from '../../../../components/page/Layout';
 import { FormField, Label, Text } from '../../../../components/form/Field';
 import { AppState } from '../../../store';
-import { Client } from '../../types';
+import { ClientState } from '../../types';
 import { useSelector, useDispatch } from 'react-redux';
-import { getClientById, deleteClient, setCurrentRecord } from '../../state/actions';
+import { getClientById, deleteClient, setCurrentRecord } from '../../state/redux/actions';
 import { GrantType, ApplicationType } from '../../../../security/OAuth';
 
 const ClientViewPage: React.FC = () => {
@@ -17,7 +17,7 @@ const ClientViewPage: React.FC = () => {
   const { path } = useRouteMatch();
   const history = useHistory();
   const { clientId } = useParams();
-  const current = useSelector<AppState, Client | undefined>(state => state.client.current);
+  const { current, searchRequest } = useSelector<AppState, ClientState>(state => state.client);
 
   console.log(path)
 
@@ -35,18 +35,32 @@ const ClientViewPage: React.FC = () => {
       </TabPanel>
       <ToolBar>
         <DefaultButtons.CreateButton onCreate={() => {
-          dispatch(setCurrentRecord(undefined));
-          history.push('/ui/client/create')
+          dispatch(setCurrentRecord(undefined, () => {
+            history.push('/ui/client/create')
+          }));
         }} disabled={false} />
-        <DefaultButtons.SaveButton onSave={() => { }} disabled={true} />
-        <DefaultButtons.EditButton onEdit={() => { history.push(`/ui/client/${clientId}/edit`) }} disabled={false} />
-        <DefaultButtons.ViewButton onView={() => { }} disabled={true} />
+        <DefaultButtons.SaveButton onSave={() => { }} disabled />
+        <DefaultButtons.EditButton onEdit={() => { history.push(`/ui/client/${clientId}/edit`) }} />
+        <DefaultButtons.ViewButton onView={() => { }} disabled/>
         <DefaultButtons.DeleteButton onDelete={() => {
           if (clientId) {
-            dispatch(deleteClient(clientId));
-            history.push('/ui/client/list');
+            dispatch(deleteClient(clientId, () => history.push('/ui/client/list')));
           }
-        }} disabled={false} />
+        }} />
+        <DefaultButtons.Splitter />
+        <DefaultButtons.ListButton onList={() => {
+          dispatch(setCurrentRecord(undefined, () => {
+            if (searchRequest) {
+              history.push('/ui/client/list');
+            } else {
+              history.push('/ui/client/search');
+            }
+          }))
+        }} />
+        <DefaultButtons.SearchButton onSearch={() => {
+          dispatch(setCurrentRecord(undefined, () => history.push('/ui/client/search')));
+        }} />
+        <DefaultButtons.DoSearchButton onDoSearch={() => { }} disabled />
       </ToolBar>
       <Content>
         <VerticalLayout>

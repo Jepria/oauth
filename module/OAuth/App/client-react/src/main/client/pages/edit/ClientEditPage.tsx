@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import { ToolBar } from '../../../../components/toolbar';
 import * as DefaultButtons from '../../../../components/toolbar/ToolBarButtons';
 import { useHistory, useParams } from 'react-router-dom';
@@ -6,9 +6,9 @@ import { Content, Page } from '../../../../components/page/Layout';
 import { TabPanel, SelectedTab, Tab } from '../../../../components/tabpanel/TabPanel';
 import { ComboBox, ComboBoxPopup, ComboBoxInput, ComboBoxList, ComboBoxOption } from '../../../../components/form/input/combobox';
 import { useDispatch, useSelector } from 'react-redux';
-import { Client } from '../../types';
+import { Client, ClientState } from '../../types';
 import { AppState } from '../../../store';
-import { getClientById, updateClient, setCurrentRecord, deleteClient } from '../../state/actions';
+import { getClientById, updateClient, setCurrentRecord, deleteClient } from '../../state/redux/actions';
 import { Formik, Form, Field, FieldProps } from 'formik';
 import { FormField, Label } from '../../../../components/form/Field';
 import { TextInput } from '../../../../components/form/input/TextInput';
@@ -19,8 +19,7 @@ const ClientEditPage: React.FC = () => {
   const dispatch = useDispatch();
   const history = useHistory();
   const { clientId } = useParams();
-  const current = useSelector<AppState, Client | undefined>(state => state.client.current);
-  const currentRef = useRef(current);
+  const { current, searchRequest } = useSelector<AppState, ClientState>(state => state.client);
   let formRef: any;
 
   useEffect(() => {
@@ -28,14 +27,6 @@ const ClientEditPage: React.FC = () => {
       dispatch(getClientById(clientId));
     }
   }, [current, clientId, dispatch]);
-
-  useEffect(
-    () => {
-      if (currentRef.current && current && currentRef.current !== current) {
-        history.push(`/ui/client/${current.clientId}/view/`);
-      }
-    }, [current, history]
-  );
 
   const initialValues: Client = current ? {
     clientName: current.clientName,
@@ -47,6 +38,7 @@ const ClientEditPage: React.FC = () => {
       applicationType: '',
       grantTypes: []
     }
+
   return (
     <Page>
       <TabPanel>
@@ -54,19 +46,29 @@ const ClientEditPage: React.FC = () => {
         <Tab onClick={() => history.push('/client/client-uri')}>URL</Tab>
       </TabPanel>
       <ToolBar>
-        <DefaultButtons.CreateButton onCreate={() => {
-          dispatch(setCurrentRecord(undefined));
-          history.push('/ui/client/create');
-        }} />
+        <DefaultButtons.CreateButton onCreate={() => dispatch(setCurrentRecord(undefined, () => history.push('/ui/client/create')))} />
         <DefaultButtons.SaveButton onSave={() => { formRef.handleSubmit() }} />
         <DefaultButtons.EditButton onEdit={() => { }} disabled />
         <DefaultButtons.ViewButton onView={() => { history.push(`/ui/client/${clientId}/view`) }} />
         <DefaultButtons.DeleteButton onDelete={() => {
           if (clientId) {
-            dispatch(deleteClient(clientId));
-            history.push('/ui/client/list');
+            dispatch(deleteClient(clientId, () => history.push('/ui/client/list')));
           }
         }} />
+        <DefaultButtons.Splitter />
+        <DefaultButtons.ListButton onList={() => {
+          dispatch(setCurrentRecord(undefined, () => {
+            if (searchRequest) {
+              history.push('/ui/client/list');
+            } else {
+              history.push('/ui/client/search');
+            }
+          }))
+        }} />
+        <DefaultButtons.SearchButton onSearch={() => {
+          dispatch(setCurrentRecord(undefined, () => history.push('/ui/client/search')));
+        }} />
+        <DefaultButtons.DoSearchButton onDoSearch={() => { }} disabled />
       </ToolBar>
       <Content>
         <Formik enableReinitialize
@@ -74,7 +76,9 @@ const ClientEditPage: React.FC = () => {
           initialValues={initialValues}
           onSubmit={(values: Client) => {
             if (clientId) {
-              dispatch(updateClient(clientId, values));
+              dispatch(updateClient(clientId, values, (client: Client) => {
+                history.push(`/ui/client/${client.clientId}/view/`);
+              }));
             }
           }}
           validate={(values) => {
@@ -138,8 +142,6 @@ const ClientEditPage: React.FC = () => {
                           return applicationType.map(grantType =>
                             <ListBoxOption key={grantType} value={grantType} name={GrantType[grantType]} />
                           );
-                        } else {
-                          return (<React.Fragment />)
                         }
                       }}
                     </ListBoxOptionList>

@@ -8,10 +8,9 @@ const ToolBar = styled.div`
   horizontal-align: left;
   margin: 0;
   padding: 2px;
-  min-height: 20px;
   border-style: solid;
   border-color: #99BBE8;
-  border-width: 0 1px 1px 1px;
+  border-width:  0 0 1px 0 ;
   overflow: hidden;
   background-color: #D0DEF0;
   background-image: url(${bg});
@@ -21,7 +20,7 @@ const ToolBar = styled.div`
 const ToolBarItem = styled.div`
   float: left;
   vertical-align: top;
-  height: 100%;
+  min-height: 22px;
 `;
 
 const Button = styled.button`
@@ -46,6 +45,7 @@ const Button = styled.button`
     opacity:0.5;
     cursor: default;
   }
+  min-height: 22px;
 `
 
 

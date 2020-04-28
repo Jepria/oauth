@@ -11,6 +11,8 @@ import { AppState } from '../store';
 import { useSelector } from 'react-redux';
 import { LoadingPanel } from '../../components/mask';
 import { ClientState } from './types';
+import ClientSearchPage from './pages/search/ClientSearchPage';
+import { ClientListPage } from './pages/list/ClientListPage';
 
 const ClientRoute: React.FC = () => {
 
@@ -21,20 +23,27 @@ const ClientRoute: React.FC = () => {
     <React.Fragment>
       {isLoading && <LoadingPanel text={message} />}
       <Switch>
-        <Route path={`${path}/create`}>
-          <ClientCreatePage />
+        <Route path={`${path}/:clientId/client-uri`}>
+          <div>Client Uri</div>
         </Route>
-        <Route path={`${path}/:clientId/edit`}>
-          <ClientEditPage />
-        </Route>
-        <Route path={`${path}/:clientId/view`}>
-          <ClientViewPage />
-        </Route>
-        <Route path={`${path}/search`}>
-          <div>Client Search</div>
-        </Route>
-        <Route path={`${path}/list`}>
-          <div>Client List</div>
+        <Route path={`${path}/*`}>
+          <Switch>
+            <Route path={`${path}/create`}>
+              <ClientCreatePage />
+            </Route>
+            <Route path={`${path}/:clientId/edit`}>
+              <ClientEditPage />
+            </Route>
+            <Route path={`${path}/:clientId/view`}>
+              <ClientViewPage />
+            </Route>
+            <Route path={`${path}/search`}>
+              <ClientSearchPage/>
+            </Route>
+            <Route path={`${path}/list`}>
+              <ClientListPage/>
+            </Route>
+          </Switch>
         </Route>
       </Switch>
     </React.Fragment>

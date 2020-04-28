@@ -2,7 +2,7 @@ package org.jepria.oauth.token.rest;
 
 import org.jepria.oauth.authentication.AuthenticationServerFactory;
 import org.jepria.oauth.exception.OAuthRuntimeException;
-import org.jepria.oauth.main.security.AllowAllOrigin;
+import org.jepria.oauth.main.security.CrossOrigin;
 import org.jepria.oauth.authentication.AuthenticationService;
 import org.jepria.oauth.token.TokenService;
 import org.jepria.oauth.token.dto.TokenDto;
@@ -42,7 +42,6 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
   }
 
   @POST
-  @AllowAllOrigin
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   public Response createToken(
     @HeaderParam("Authorization") String authHeader,
@@ -117,7 +116,6 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
   @POST
   @Path("/introspect")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-  @AllowAllOrigin
   public Response getTokenInfo(
     @HeaderParam("Authorization") String authHeader,
     @FormParam("client_id") String clientId,
@@ -137,7 +135,6 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
   @POST
   @Path("/revoke")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-  @AllowAllOrigin
   public Response deleteToken(
     @HeaderParam("Authorization") String authHeader,
     @FormParam("client_id") String clientId,

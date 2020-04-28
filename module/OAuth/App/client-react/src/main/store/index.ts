@@ -1,7 +1,7 @@
 import { all } from 'redux-saga/effects';
-import clientSaga from '../client/state/saga/watchers';
+import clientSaga from '../client/state/redux/saga/watchers';
 import { combineReducers, Reducer } from 'redux';
-import { clientReducer, initialState as clientInitialState} from '../client/state/reducer';
+import { clientReducer, initialState as clientInitialState} from '../client/state/redux/reducer';
 import { ClientState } from '../client/types';
 
 export default function* sagas() {

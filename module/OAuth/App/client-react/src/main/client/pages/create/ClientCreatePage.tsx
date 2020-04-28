@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ToolBar } from '../../../../components/toolbar';
 import * as DefaultButtons from '../../../../components/toolbar/ToolBarButtons';
 import { useHistory } from 'react-router-dom';
-import { Page, Content } from '../../../../components/page/Layout';
+import { Page, Content, Header } from '../../../../components/page/Layout';
 import { TabPanel, SelectedTab } from '../../../../components/tabpanel/TabPanel';
 import { ComboBox, ComboBoxPopup, ComboBoxOption, ComboBoxInput, ComboBoxList } from '../../../../components/form/input/combobox';
 import { FormField, Label } from '../../../../components/form/Field';
@@ -10,71 +10,80 @@ import { ListBox, ListBoxOptionList, ListBoxOption, SelectAllCheckBox } from '..
 import { Formik, Form, Field, FieldProps } from 'formik';
 import { TextInput } from '../../../../components/form/input/TextInput';
 import { useSelector, useDispatch } from 'react-redux';
-import { Client } from '../../types';
-import { createClient } from '../../state/actions';
+import { Client, ClientState } from '../../types';
+import { createClient, setCurrentRecord } from '../../state/redux/actions';
 import { AppState } from '../../../store';
 import { ApplicationGrantType, GrantType } from '../../../../security/OAuth';
 
 const ClientCreatePage: React.FC = () => {
   const dispatch = useDispatch();
   const history = useHistory();
-  const current = useSelector<AppState, Client | undefined>(state => state.client.current);
+  const { searchRequest } = useSelector<AppState, ClientState>(state => state.client);
   let formRef: any;
-
-  useEffect(
-    () => {
-      if (current) {
-        history.push(`/ui/client/${current.clientId}/view/`);
-      }
-    }, [current, history]
-  );
 
   return (
     <Page>
-      <TabPanel>
-        <SelectedTab>Клиент</SelectedTab>
-      </TabPanel>
-      <ToolBar>
-        <DefaultButtons.CreateButton onCreate={() => { }} disabled={true} />
-        <DefaultButtons.SaveButton onSave={() => { formRef.handleSubmit(); }} disabled={false} />
-        <DefaultButtons.EditButton onEdit={() => { }} disabled={true} />
-        <DefaultButtons.ViewButton onView={() => { }} disabled={true} />
-        <DefaultButtons.DeleteButton onDelete={() => { }} disabled={true} />
-        <DefaultButtons.Splitter />
-      </ToolBar>
+      <Header>
+        <TabPanel>
+          <SelectedTab>Клиент</SelectedTab>
+        </TabPanel>
+        <ToolBar>
+          <DefaultButtons.CreateButton onCreate={() => { }} disabled />
+          <DefaultButtons.SaveButton onSave={() => { formRef.handleSubmit() }} />
+          <DefaultButtons.EditButton onEdit={() => { }} disabled />
+          <DefaultButtons.ViewButton onView={() => { }} disabled />
+          <DefaultButtons.DeleteButton onDelete={() => { }} disabled />
+          <DefaultButtons.Splitter />
+          <DefaultButtons.ListButton onList={() => {
+            dispatch(setCurrentRecord(undefined, () => {
+              if (searchRequest) {
+                history.push('/ui/client/list');
+              } else {
+                history.push('/ui/client/search');
+              }
+            }))
+          }} />
+          <DefaultButtons.SearchButton onSearch={() => {
+            dispatch(setCurrentRecord(undefined, () => history.push('/ui/client/search')));
+          }} />
+          <DefaultButtons.DoSearchButton onDoSearch={() => { }} disabled />
+        </ToolBar>
+      </Header>
       <Content>
-        <Formik 
-        innerRef={formik => formRef = formik} 
-        initialValues={{ clientName: '', applicationType: '', grantTypes: [] }} 
-        onSubmit={(values: Client) => {
-          dispatch(createClient(values));
-        }}
-        validate={(values) => {
-          const errors: {clientName?: string, applicationType?: string, grantTypes?: string} = {};
-          
-          if (!values['clientName']) {
-            errors.clientName = 'Поле должно быть заполнено'
-          }
-          if (!values['applicationType']) {
-            errors.applicationType = 'Поле должно быть заполнено'
-          }
-          if (!values['grantTypes'] || values['grantTypes'].length === 0) {
-            errors.grantTypes = 'Поле должно быть заполнено'
-          }
-          return errors;
-        }}>
+        <Formik
+          innerRef={formik => formRef = formik}
+          initialValues={{ clientName: '', applicationType: '', grantTypes: [] }}
+          onSubmit={(values: Client) => {
+            dispatch(createClient(values, (client: Client) => {
+              history.push(`/ui/client/${client.clientId}/view/`);
+            }));
+          }}
+          validate={(values) => {
+            const errors: { clientName?: string, applicationType?: string, grantTypes?: string } = {};
+
+            if (!values['clientName']) {
+              errors.clientName = 'Поле должно быть заполнено'
+            }
+            if (!values['applicationType']) {
+              errors.applicationType = 'Поле должно быть заполнено'
+            }
+            if (!values['grantTypes'] || values['grantTypes'].length === 0) {
+              errors.grantTypes = 'Поле должно быть заполнено'
+            }
+            return errors;
+          }}>
           <Form>
             <FormField>
               <Label width={'250px'}>Имя клиентского приложения:</Label>
               <Field name="clientName">
                 {(props: FieldProps) => (
-                  <TextInput 
-                  name={props.field.name} 
-                  value={props.field.value} 
-                  onChange={props.field.onChange} 
-                  onBlur={props.field.onBlur} 
-                  touched={props.meta.touched} 
-                  error={props.meta.error}/>
+                  <TextInput
+                    name={props.field.name}
+                    value={props.field.value}
+                    onChange={props.field.onChange}
+                    onBlur={props.field.onBlur}
+                    touched={props.meta.touched}
+                    error={props.meta.error} />
                 )}
               </Field>
             </FormField>
@@ -108,12 +117,12 @@ const ClientCreatePage: React.FC = () => {
               <Label width={'250px'}> Доступные гранты:</Label>
               <Field name='grantTypes'>
                 {(props: FieldProps) => (
-                  <ListBox 
-                  name={props.field.name} 
-                  value={props.field.value} 
-                  onChange={props.form.setFieldValue} 
-                  touched={props.meta.touched} 
-                  error={props.meta.error}>
+                  <ListBox
+                    name={props.field.name}
+                    value={props.field.value}
+                    onChange={props.form.setFieldValue}
+                    touched={props.meta.touched}
+                    error={props.meta.error}>
                     <ListBoxOptionList>
                       {() => {
                         const applicationType = ApplicationGrantType[props.form.values["applicationType"]];

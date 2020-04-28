@@ -27,6 +27,7 @@ export const MaskPanel = styled.div`
   background: white;
   color: #444;
   z-index: 7200;
+  display: inline-table;
 `;
 
 const Image = styled.img`

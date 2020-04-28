@@ -11,6 +11,7 @@ import org.jepria.server.service.rest.ExtendedResponse;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
 import org.jepria.server.service.security.HttpBasic;
 import org.jepria.server.service.security.JepSecurityContext;
+import org.jepria.server.service.security.OAuth;
 
 import javax.validation.Valid;
 import javax.ws.rs.*;
@@ -26,7 +27,8 @@ import java.util.List;
 import java.util.UUID;
 
 @Path("/client")
-@HttpBasic(passwordType = HttpBasic.PASSWORD)
+//@HttpBasic(passwordType = HttpBasic.PASSWORD)
+@OAuth
 public class ClientJaxrsAdapter extends JaxrsAdapterBase {
   @Context
   JepSecurityContext securityContext;
@@ -107,7 +109,7 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
 
   @PUT
   @Path("{recordId}")
-  public Response update(@Valid @PathParam("recordId") String recordId, ClientUpdateDto record) {
+  public Response update(@Valid @PathParam("recordId") String recordId, @Valid ClientUpdateDto record) {
     entityEndpointAdapter.update(recordId, record);
     return Response.ok().build();
   }

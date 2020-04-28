@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Page, Content, Footer } from '../page/Layout';
+import { Page, Content, Footer } from '../Layout';
 import { isFunction } from '../../utils';
 import { GridHeader, GridHeaderCell } from './GridHeader';
 import { GridPagingBar, GridPagingBarProps } from './GridPagingBar';

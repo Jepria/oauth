@@ -54,7 +54,6 @@ export class OAuth {
   }
 
   authorize = (responseType: string, state?: string): Promise<string> => {
-    console.log(`authorize-${responseType}-${state}`);
     if (this.authorizeUrl) {
       if (!state) {
         state = Crypto.getRandomString();
@@ -67,19 +66,16 @@ export class OAuth {
   }
 
   getTokenWithAuthCode = (authorizationCode: string): Promise<Object> => {
-    console.log(`getTokenWithAuthCode-${authorizationCode}`);
     const tokenRequest = new TokenRequest(this._clientId, this._redirectUri, this._tokenUrl);
     return tokenRequest.withAuthorizationCode(authorizationCode);
   }
 
   refreshToken = (refreshToken: string): Promise<Object> => {
-    console.log(`refreshToken-${refreshToken}`);
     const tokenRequest = new TokenRequest(this._clientId, this._redirectUri, this._tokenUrl);
     return tokenRequest.withRefreshToken(refreshToken);
   }
 
   getTokenWithUserCredentials = (username: string, password: string): Promise<Object> => {
-    console.log(`getTokenWithUserCredentials-${username}-${password}`);
     const tokenRequest = new TokenRequest(this._clientId, this._redirectUri, this._tokenUrl);
     return tokenRequest.withUserCredentials(username, password);
   }
@@ -102,7 +98,6 @@ class AuthorizationRequest {
   }
 
   private authorizePKCE = (): Promise<string> => {
-    console.log('authorizePKCE');
     if (window) {
       //generate code_verifier && code challenge
       this.codeVerifier = Crypto.getRandomString();
@@ -124,7 +119,6 @@ class AuthorizationRequest {
   }
 
   private authorizeImplicit(): Promise<string> {
-    console.log('authorizeImplicit');
     if (window) {
       return new Promise<string>((resolve, reject) => {
         //build request url
@@ -136,7 +130,6 @@ class AuthorizationRequest {
   }
 
   authorize = (): Promise<string> => {
-    console.log('authorize');
     if (this._responseType === "code") {
       return this.authorizePKCE();
     } else {
@@ -158,7 +151,6 @@ class TokenRequest {
 
 
   withAuthorizationCode(authorizationCode: string): Promise<Object> {
-    console.log(`withAuthorizationCode-${authorizationCode}`);
     let codeVerifier = window.sessionStorage.getItem("codeVerifier");
     return new Promise<Object>((resolve, reject) => {
       axios.post(
@@ -177,7 +169,6 @@ class TokenRequest {
   }  
 
   withRefreshToken(refreshToken: string): Promise<Object> {
-    console.log(`withRefreshToken-${refreshToken}`);
     return new Promise<Object>((resolve, reject) => {
       axios.post(
         this._tokenUrl, 

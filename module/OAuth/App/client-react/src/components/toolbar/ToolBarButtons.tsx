@@ -97,7 +97,7 @@ interface ListButtonProps {
 
 const ListButton: React.FC<ListButtonProps> = ({onList, disabled}) => {
   return (
-    <ToolBarButton onClick={onList} disabled={disabled ? true : false} tooltip='Удалить запись'>
+    <ToolBarButton onClick={onList} disabled={disabled ? true : false} tooltip='Список'>
       Список
     </ToolBarButton>
   );
@@ -110,8 +110,8 @@ interface SearchButtonProps {
 
 const SearchButton: React.FC<SearchButtonProps> = ({onSearch, disabled}) => {
   return (
-    <ToolBarButton onClick={onSearch} disabled={disabled ? true : false} tooltip='Удалить запись'>
-      <img src={search} alt='Удалить запись'/>
+    <ToolBarButton onClick={onSearch} disabled={disabled ? true : false} tooltip='Поиск'>
+      <img src={search} alt='Поиск'/>
     </ToolBarButton>
   );
 }
@@ -123,7 +123,7 @@ interface DoSearchButtonProps {
 
 const DoSearchButton: React.FC<DoSearchButtonProps> = ({onDoSearch, disabled}) => {
   return (
-    <ToolBarButton onClick={onDoSearch} disabled={disabled ? true : false} tooltip='Удалить запись'>
+    <ToolBarButton onClick={onDoSearch} disabled={disabled ? true : false} tooltip='Найти'>
       Найти
     </ToolBarButton>
   );

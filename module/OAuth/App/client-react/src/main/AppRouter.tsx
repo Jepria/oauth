@@ -6,7 +6,7 @@ import {
 } from "react-router-dom";
 import { Provider } from 'react-redux';
 import { OAuthProtectedFragment } from '../security/OAuthSecurityContext';
-import ClientRoute from './client/ClientRoute';
+import ClientRoute from './client/ClientModuleRoute';
 import { configureStore } from '../redux/configureStore';
 import sagas, { reducers } from './store';
 

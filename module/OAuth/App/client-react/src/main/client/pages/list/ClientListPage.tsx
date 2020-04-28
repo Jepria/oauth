@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Page, Content, Header as PageHeader, Footer, Header } from '../../../../components/page/Layout';
+import { Page, Content, Header as PageHeader, Footer, Header } from '../../../../components/Layout';
 import { TabPanel, SelectedTab, Tab } from '../../../../components/tabpanel/TabPanel';
 import { ToolBar } from '../../../../components/toolbar';
 import * as DefaultButtons from '../../../../components/toolbar/ToolBarButtons';
@@ -24,36 +24,13 @@ export const ClientListPage: React.FC = () => {
       dispatch(searchClients(searchId, 25, 1));
     } else if (!searchId && searchRequest) {
       dispatch(postSearchClientRequest(searchRequest));
+    } else {
+      dispatch(postSearchClientRequest({template: {}}));
     }
   }, [searchId, searchRequest, dispatch]);
 
   return (
     <Page>
-      <PageHeader>
-        <TabPanel>
-          <SelectedTab>Клиент</SelectedTab>
-        </TabPanel>
-        <ToolBar>
-          <DefaultButtons.CreateButton onCreate={() => {
-            dispatch(setCurrentRecord(undefined));
-            history.push('/ui/client/create')
-          }} disabled={false} />
-          <DefaultButtons.SaveButton onSave={() => { }} disabled />
-          <DefaultButtons.EditButton onEdit={() => { history.push(`/ui/client/${clientId}/edit`) }} disabled={!current} />
-          <DefaultButtons.ViewButton onView={() => { history.push(`/ui/client/${clientId}/view`) }} disabled={!current} />
-          <DefaultButtons.DeleteButton onDelete={() => {
-            if (current && current.clientId) {
-              dispatch(deleteClient(current.clientId));
-            }
-          }} disabled={!current} />
-          <DefaultButtons.Splitter />
-          <DefaultButtons.ListButton onList={() => { }} disabled />
-          <DefaultButtons.SearchButton onSearch={() => {
-            history.push('/ui/client/search');
-          }} />
-          <DefaultButtons.DoSearchButton onDoSearch={() => { }} disabled />
-        </ToolBar>
-      </PageHeader>
       <Content>
         <Grid>
           <Grid.Table>

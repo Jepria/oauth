@@ -104,12 +104,10 @@ const OAuthSecurityProvider: React.FC<SecurityProviderProps> = ({ clientId, oaut
   const oauth = new OAuth(clientId, redirectUri, oauthContextPath + "/authorize", oauthContextPath + "/token");
 
   const getToken = (authCode: string): Promise<TokenResponse> => {
-    console.log(`getToken-${authCode}`);
     return oauth.getTokenWithAuthCode(authCode) as Promise<TokenResponse>;
   }
 
   const authorize = () => {
-    console.log(`getAuthorizationUrl`);
     dispatch({ type: 'pending' });
     oauth.authorize('code', Crypto.toBase64Url(`path=${window.location.pathname + window.location.search}&otp=${Crypto.getRandomString()}`))
       .then(result => {
@@ -121,7 +119,6 @@ const OAuthSecurityProvider: React.FC<SecurityProviderProps> = ({ clientId, oaut
 
   useEffect(() => {
     if (isOAuthRoute) {
-      console.log(`getTokenFromProvider`);
       let queryParams = new URLSearchParams(window.location.search);
       let authCode = queryParams.get('code');
       let state = queryParams.get('state');

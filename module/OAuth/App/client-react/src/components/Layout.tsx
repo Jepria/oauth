@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { isFunction } from '../../utils';
+import { isFunction } from '../utils';
 
 const Page = styled.div`
   height: 100%;
@@ -20,7 +20,11 @@ const ContentOverflow = styled.div`
   overflow:auto;
 `;
 
-const ContentComponents: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
+const Form = styled.div`
+  padding: 5px;
+`;
+
+const ContentComponent: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
   return (
     <ContentContainer {...props}>
       <ContentOverflow>
@@ -49,4 +53,4 @@ const HorizontalLayout = styled.div`
   display: flex;
 `;
 
-export {Page, ContentComponents as Content, Header, Footer, VerticalLayout, HorizontalLayout}
+export {Page, ContentComponent as Content, Form, Header, Footer, VerticalLayout, HorizontalLayout}

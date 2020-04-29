@@ -1,15 +1,15 @@
 import React, { HTMLAttributes, useImperativeHandle } from 'react';
 import { useHistory } from 'react-router-dom';
-import { Page, Content, Form as FormContainer } from '../../../../components/Layout';
-import { ComboBox, ComboBoxPopup, ComboBoxOption, ComboBoxInput, ComboBoxList } from '../../../../components/form/input/combobox';
-import { FormField, Label } from '../../../../components/form/Field';
-import { ListBox, ListBoxOptionList, ListBoxOption, SelectAllCheckBox } from '../../../../components/form/input/ListBox';
+import { Page, Content, Form as FormContainer } from '../../../components/Layout';
+import { ComboBox, ComboBoxPopup, ComboBoxOption, ComboBoxInput, ComboBoxList } from '../../../components/form/input/combobox';
+import { FormField, Label } from '../../../components/form/Field';
+import { ListBox, ListBoxOptionList, ListBoxOption, SelectAllCheckBox } from '../../../components/form/input/ListBox';
 import { Formik, Form, Field, FieldProps } from 'formik';
-import { TextInput } from '../../../../components/form/input/TextInput';
+import { TextInput } from '../../../components/form/input/TextInput';
 import { useDispatch } from 'react-redux';
-import { Client } from '../../types';
-import { createClient } from '../../state/redux/actions';
-import { ApplicationGrantType, GrantType } from '../../../../security/OAuth';
+import { Client } from '../types';
+import { createClient } from '../state/redux/actions';
+import { ApplicationGrantType, GrantType } from '../../../security/OAuth';
 
 const ClientCreatePage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();

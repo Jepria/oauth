@@ -2,20 +2,29 @@ import { all } from 'redux-saga/effects';
 import clientSaga from '../client/state/redux/saga/watchers';
 import { combineReducers, Reducer } from 'redux';
 import { clientReducer, initialState as clientInitialState} from '../client/state/redux/reducer';
+import { clientUriReducer, initialState as clientUriInitialState} from '../client/client-uri/state/redux/reducer';
 import { ClientState } from '../client/types';
+import { ClientUriState } from '../client/client-uri/types';
+import clientUriSaga from '../client/client-uri/state/redux/saga/watchers';
 
 export default function* sagas() {
-  yield all([clientSaga()]);
+  yield all([
+    clientSaga(),
+    clientUriSaga()
+  ]);
 }
 
 export interface AppState {
-  client: ClientState
+  client: ClientState;
+  clientUri: ClientUriState;
 } 
 
 export const initialState: AppState = {
-  client: clientInitialState
+  client: clientInitialState,
+  clientUri: clientUriInitialState
 }
 
 export const reducers: Reducer<AppState> = combineReducers<AppState>({
-  client: clientReducer
+  client: clientReducer,
+  clientUri: clientUriReducer
 });

@@ -1,16 +1,16 @@
 import React, { useEffect } from 'react';
-import { Page, Content, Header as PageHeader, Footer, Header } from '../../../../components/Layout';
-import { TabPanel, SelectedTab, Tab } from '../../../../components/tabpanel/TabPanel';
-import { ToolBar } from '../../../../components/toolbar';
-import * as DefaultButtons from '../../../../components/toolbar/ToolBarButtons';
-import { setCurrentRecord, searchClients, postSearchClientRequest, deleteClient } from '../../state/redux/actions';
+import { Page, Content, Header as PageHeader, Footer, Header } from '../../../components/Layout';
+import { TabPanel, SelectedTab, Tab } from '../../../components/tabpanel/TabPanel';
+import { ToolBar } from '../../../components/toolbar';
+import * as DefaultButtons from '../../../components/toolbar/ToolBarButtons';
+import { setCurrentRecord, searchClients, postSearchClientRequest, deleteClient } from '../state/redux/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, useParams } from 'react-router-dom';
-import { AppState } from '../../../store';
-import { ClientState } from '../../types';
-import { GrantType, ApplicationType } from '../../../../security/OAuth';
-import { PagingToolBar } from '../../../../components/PagingToolBar';
-import { TextCell, Grid } from '../../../../components/grid';
+import { AppState } from '../../store';
+import { ClientState } from '../types';
+import { GrantType, ApplicationType } from '../../../security/OAuth';
+import { PagingToolBar } from '../../../components/PagingToolBar';
+import { TextCell, Grid } from '../../../components/grid';
 
 export const ClientListPage: React.FC = () => {
 

@@ -6,26 +6,27 @@ import {
   useHistory,
   useLocation
 } from "react-router-dom";
-import ClientCreatePage from './pages/create/ClientCreatePage';
-import ClientEditPage from './pages/edit/ClientEditPage';
-import ClientViewPage from './pages/view/ClientViewPage';
+import ClientCreatePage from './pages/ClientCreatePage';
+import ClientEditPage from './pages/ClientEditPage';
+import ClientViewPage from './pages/ClientViewPage';
 import { AppState } from '../store';
 import { useSelector, useDispatch } from 'react-redux';
 import { LoadingPanel } from '../../components/mask';
 import { ClientState } from './types';
-import ClientSearchPage from './pages/search/ClientSearchPage';
-import { ClientListPage } from './pages/list/ClientListPage';
+import ClientSearchPage from './pages/ClientSearchPage';
+import { ClientListPage } from './pages/ClientListPage';
 import { Page, Content, Header } from '../../components/Layout';
 import { TabPanel, SelectedTab, Tab } from '../../components/tabpanel/TabPanel';
 import { ToolBar } from '../../components/toolbar';
 import * as DefaultButtons from '../../components/toolbar/ToolBarButtons';
 import { setCurrentRecord, deleteClient, searchClients } from './state/redux/actions';
+import { HistoryState } from '../../components/HistoryState';
 
 const ClientRoute: React.FC = () => {
 
   const { path } = useRouteMatch();
   const { pathname } = useLocation();
-  const history = useHistory();
+  const history = useHistory<HistoryState>();
   const dispatch = useDispatch();
   const { isLoading, message, error, current, searchId, searchRequest } = useSelector<AppState, ClientState>(state => state.client)
   let formRef = useRef(null) as any;
@@ -36,7 +37,7 @@ const ClientRoute: React.FC = () => {
       <Header>
         <TabPanel>
           <SelectedTab>Клиент</SelectedTab>
-          {current && <Tab onClick={() => history.push(`/ui/client/${current?.clientId}/client-uri`)}>URL</Tab>}
+          {current && <Tab onClick={() => history.push(`/ui/client/${current?.clientId}/client-uri/list`, {prevRoute: pathname})}>URL</Tab>}
         </TabPanel>
         <ToolBar>
           <DefaultButtons.CreateButton onCreate={() => {

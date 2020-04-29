@@ -5,6 +5,7 @@ import {
   useRouteMatch
 } from "react-router-dom";
 import ClientRoute from './ClientRoute';
+import ClientUriRoute from './client-uri/ClientUriRoute';
 
 const ClientModuleRoute: React.FC = () => {
 
@@ -14,7 +15,7 @@ const ClientModuleRoute: React.FC = () => {
     <React.Fragment>
       <Switch>
         <Route path={`${path}/:clientId/client-uri`}>
-          <div>Client Uri</div>
+          <ClientUriRoute/>
         </Route>
         <Route path={`${path}`}>
           <ClientRoute/>

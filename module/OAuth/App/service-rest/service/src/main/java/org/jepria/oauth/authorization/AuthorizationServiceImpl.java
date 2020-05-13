@@ -136,10 +136,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         throw new OAuthRuntimeException(INVALID_REQUEST, "redirect_uri mismatch");
       }
       throw new RuntimeSQLException(sqlException);
-    } catch (ParseException ex) {
-      /**
-       * Получен битый токен сессии, запрашиваем авторизацию заново без сессии
-       */
+    } catch (Throwable ex) {
       return authorize(responseType, clientId, redirectUri, codeChallenge);
     }
   }

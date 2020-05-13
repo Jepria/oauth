@@ -1,26 +1,21 @@
 package org.jepria.oauth.session.rest;
 
+import org.jepria.oauth.session.SessionServerFactory;
 import org.jepria.oauth.session.dto.SessionDto;
 import org.jepria.oauth.session.dto.SessionSearchDto;
-import org.jepria.oauth.session.SessionServerFactory;
 import org.jepria.server.data.SearchRequestDto;
 import org.jepria.server.service.rest.ExtendedResponse;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
-import org.jepria.server.service.security.HttpBasic;
 import org.jepria.server.service.security.JepSecurityContext;
+import org.jepria.server.service.security.OAuth;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
 @Path("/session")
+@OAuth
 public class SessionJaxrsAdapter extends JaxrsAdapterBase {
   @Context
   JepSecurityContext securityContext;
@@ -33,15 +28,13 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
 
   @DELETE
   @Path("/{sessionId}")
-  @HttpBasic(passwordType = HttpBasic.PASSWORD)
-  public Response block(@PathParam("sessionId") Integer sessionId) {
+  public Response delete(@PathParam("sessionId") Integer sessionId) {
     entityEndpointAdapter.deleteRecordById(String.valueOf(sessionId));
     return Response.ok().build();
   }
 
   @GET
   @Path("/{sessionId}")
-  @HttpBasic(passwordType = HttpBasic.PASSWORD)
   public Response getRecordById(@PathParam("sessionId") Integer sessionId) {
     SessionDto result = (SessionDto) entityEndpointAdapter.getRecordById(String.valueOf(sessionId));
     return Response.ok(result).build();
@@ -51,7 +44,6 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
 
   @POST
   @Path("/search")
-  @HttpBasic(passwordType = HttpBasic.PASSWORD)
   public Response postSearch(SearchRequestDto<SessionSearchDto> searchRequestDto,
                              @HeaderParam(ExtendedResponse.REQUEST_HEADER_NAME) String extendedResponse,
                              @HeaderParam("Cache-Control") String cacheControl) {
@@ -61,7 +53,6 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
 
   @GET
   @Path("/search/{searchId}")
-  @HttpBasic(passwordType = HttpBasic.PASSWORD)
   public Response getSearchRequest(
     @PathParam("searchId") String searchId) {
     SearchRequestDto<SessionSearchDto> result = (SearchRequestDto<SessionSearchDto>) searchEndpointAdapter.getSearchRequest(searchId);
@@ -79,7 +70,6 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
 
   @GET
   @Path("/search/{searchId}/resultset-size")
-  @HttpBasic(passwordType = HttpBasic.PASSWORD)
   public Response getSearchResultsetSize(@PathParam("searchId") String searchId,
                                          @HeaderParam("Cache-Control") String cacheControl) {
     int result = searchEndpointAdapter.getSearchResultsetSize(searchId, cacheControl);
@@ -88,7 +78,6 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
 
   @GET
   @Path("/search/{searchId}/resultset")
-  @HttpBasic(passwordType = HttpBasic.PASSWORD)
   public Response getResultset(
     @PathParam("searchId") String searchId,
     @QueryParam("pageSize") Integer pageSize,
@@ -100,7 +89,6 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
 
   @GET
   @Path("/search/{searchId}/resultset/paged-by-{pageSize:\\d+}/{page}")
-  @HttpBasic(passwordType = HttpBasic.PASSWORD)
   public Response getResultsetPaged(
     @PathParam("searchId") String searchId,
     @PathParam("pageSize") Integer pageSize,

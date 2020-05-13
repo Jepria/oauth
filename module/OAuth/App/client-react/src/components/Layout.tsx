@@ -17,7 +17,7 @@ const ContentContainer = styled.div`
 
 const ContentOverflow = styled.div`
   height: inherit;
-  overflow:auto;
+  overflow: auto;
 `;
 
 const Form = styled.div`
@@ -35,11 +35,11 @@ const ContentComponent: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props)
 }
 
 const Header = styled.div`
-  display: table-header;
+  display: table-header-group;
 `;
 
 const Footer = styled.div`
-  display: table-footer;
+  display: table-footer-group;
 `;
 
 const VerticalLayout = styled.div`

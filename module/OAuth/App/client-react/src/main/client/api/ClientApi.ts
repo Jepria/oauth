@@ -6,7 +6,7 @@ export default class ClientApi {
   private url: string;
 
   constructor(url: string) {
-    this.url = url;
+    this.url = `${url}/client`;
     axios.defaults.withCredentials = true;
   }
 
@@ -74,7 +74,7 @@ export default class ClientApi {
               reject(response);
             }
           }).catch(error => reject(error));
-        }else {
+        } else {
           reject(response);
         }
       }).catch(error => reject(error));
@@ -95,6 +95,29 @@ export default class ClientApi {
         response.status === 200 ? resolve() : reject(response);
       }).catch(error => reject(error));
     })
+  }
+
+  getClients = (clientName?: string): Promise<Array<Client>> => {
+    return new Promise<Array<Client>>((resolve, reject) => {
+      axios.get(
+        this.url + `?clientName=${clientName}`,
+        {
+          headers: {
+            'Accept': 'application/json;charset=utf-8',
+            'Content-Type': 'application/json;charset=utf-8',
+            'Cache-Control': 'no-cache'
+          }
+        }
+      ).then(response => {
+        if (response.status === 200) {
+          resolve(response.data);
+        } else if (response.status === 204) {
+          resolve([]);
+        } else {
+          reject(response);
+        }
+      }).catch(error => reject(error));
+    });
   }
 
   postSearchRequest = (searchRequest: SearchRequest<ClientSearchTemplate>) => {

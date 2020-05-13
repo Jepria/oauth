@@ -9,7 +9,6 @@ import org.jepria.oauth.client.dto.ClientUpdateDto;
 import org.jepria.server.data.SearchRequestDto;
 import org.jepria.server.service.rest.ExtendedResponse;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
-import org.jepria.server.service.security.HttpBasic;
 import org.jepria.server.service.security.JepSecurityContext;
 import org.jepria.server.service.security.OAuth;
 
@@ -69,6 +68,16 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
   public Response getApplicationGrantType(@NotEmpty @QueryParam("applicationType") String applicationTypeCode) {
     List<String> result = ClientServerFactory.getInstance().getService().getApplicationGrantTypes(applicationTypeCode);
     return Response.ok(result).build();
+  }
+  
+  @GET
+  public Response getClients(@QueryParam("clientName") String clientName) {
+    List<ClientDto> result = ClientServerFactory.getInstance().getService().getClient(clientName, securityContext.getCredential().getOperatorId());
+    if (result.isEmpty()) {
+      return Response.noContent().build();
+    } else {
+      return Response.ok(result).build();
+    }
   }
 
   //------------ entity methods ------------//

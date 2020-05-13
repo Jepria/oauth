@@ -8,6 +8,7 @@ import org.jepria.oauth.client.rest.ClientJaxrsAdapter;
 import org.jepria.oauth.clienturi.rest.ClientUriJaxrsAdapter;
 import org.jepria.oauth.key.rest.KeyJaxrsAdapter;
 import org.jepria.oauth.main.exception.OAuthExceptionMapper;
+import org.jepria.oauth.main.rest.MainJaxrsAdapter;
 import org.jepria.oauth.main.rest.jersey.inject.ClientLocaleFeature;
 import org.jepria.oauth.main.rest.jersey.inject.ClientLocaleSupplier;
 import org.jepria.oauth.session.rest.SessionJaxrsAdapter;
@@ -23,6 +24,7 @@ public class Application extends ApplicationConfigBase {
     super();
     register(JepOAuthDynamicFeature.class);
     register(RequestLogFilter.class);
+    register(MainJaxrsAdapter.class);
     register(AuthorizationJaxrsAdapter.class);
     register(SessionJaxrsAdapter.class);
     register(AuthenticationJaxrsAdapter.class);
@@ -30,7 +32,6 @@ public class Application extends ApplicationConfigBase {
     register(ClientJaxrsAdapter.class);
     register(ClientUriJaxrsAdapter.class);
     register(KeyJaxrsAdapter.class);
-    register(new ValidationExceptionMapper());
     register(ClientLocaleFeature.class);
     register(new AbstractBinder() {
       @Override
@@ -42,10 +43,6 @@ public class Application extends ApplicationConfigBase {
           .in(RequestScoped.class);
       }
     });
-  }
-
-  @Override
-  protected void registerValidation() {
   }
 
   @Override

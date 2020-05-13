@@ -14,7 +14,8 @@ type LabelProps = {
 
 const Label = styled.div`
   text-align: right;
-  width: ${(props: LabelProps) => props.width ? props.width : '200px'};
+  max-width: ${(props: LabelProps) => props.width ? props.width : '200px'};
+  width: 100%;
   min-height: 20px;
   padding: 2px;
   font-family: tahoma, arial, helvetica, sans-serif;
@@ -27,11 +28,14 @@ type TextProps = {
 
 
 const Text = styled.div`
+  display: inline;
   min-height: 20px;
-  width: ${(props: TextProps) => props.width ? props.width : '200px'};
+  max-width: ${(props: TextProps) => props.width ? props.width : '200px'};
+  width: 100%;
   padding: 2px;
   font-family: tahoma, arial, helvetica, sans-serif;
   font-size: 12px;
+  word-wrap: break-word;
 `;
 
 export {Field as FormField, Label, Text}

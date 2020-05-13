@@ -9,6 +9,8 @@ import { OAuthProtectedFragment } from '../security/OAuthSecurityContext';
 import ClientRoute from './client/ClientModuleRoute';
 import { configureStore } from '../redux/configureStore';
 import sagas, { reducers } from './store';
+import SessionRoute from './session/SessionRoute';
+import KeyRoute from './key/KeyRoute';
 
 const AppRouter: React.FC = () => {
 
@@ -23,10 +25,10 @@ const AppRouter: React.FC = () => {
               <ClientRoute />
             </Route>
             <Route path="/ui/key">
-              <div>Key</div>
+              <KeyRoute/>
             </Route>
             <Route path="/ui/session">
-              <div>Session</div>
+              <SessionRoute/>
             </Route>
           </Switch>
         </Router>

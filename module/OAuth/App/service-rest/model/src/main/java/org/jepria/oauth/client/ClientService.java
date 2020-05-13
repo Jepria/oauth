@@ -1,5 +1,7 @@
 package org.jepria.oauth.client;
 
+import org.jepria.oauth.client.dto.ClientDto;
+
 import java.util.List;
 
 public interface ClientService {
@@ -32,4 +34,6 @@ public interface ClientService {
   List<String> getApplicationTypes();
 
   List<String> getApplicationGrantTypes(String applicationTypeCodes);
+  
+  List<ClientDto> getClient(String clientName, Integer operatorId);
 }

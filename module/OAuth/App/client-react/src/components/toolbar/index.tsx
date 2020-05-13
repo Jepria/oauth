@@ -52,7 +52,7 @@ const Button = styled.button`
 type ToolBarButtonComponentProps = {
   onClick(): any;
   tooltip: string;
-  disabled: boolean;
+  disabled?: boolean;
 }
 
 const ToolBarButtonComponent: React.FC<ToolBarButtonComponentProps> = ({onClick, tooltip, disabled, children}) => {

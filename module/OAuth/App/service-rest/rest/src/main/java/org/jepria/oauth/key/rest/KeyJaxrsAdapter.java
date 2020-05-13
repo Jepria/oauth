@@ -5,6 +5,7 @@ import org.jepria.oauth.key.KeyService;
 import org.jepria.oauth.key.dto.KeyDto;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
 import org.jepria.server.service.security.HttpBasic;
+import org.jepria.server.service.security.OAuth;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
@@ -13,7 +14,7 @@ import javax.ws.rs.core.Response;
  * Authentication Endpoint takes care of authentication business logic part for Authorization Code Flow and Implicit Flow.
  */
 @Path("/key")
-@HttpBasic(passwordType = HttpBasic.PASSWORD)
+@OAuth
 public class KeyJaxrsAdapter extends JaxrsAdapterBase {
   
   KeyService service = KeyServerFactory.getInstance().getService();
@@ -23,7 +24,8 @@ public class KeyJaxrsAdapter extends JaxrsAdapterBase {
   public Response getKeyById(@PathParam("kid") String keyId) {
     KeyDto keyDto = service.getKeys(keyId, securityContext.getCredential());
     if (keyDto != null) {
-      return Response.ok(keyDto.getPublicKey()).build();
+      keyDto.setPrivateKey("");
+      return Response.ok(keyDto).build();
     } else {
       return null;
     }
@@ -33,7 +35,8 @@ public class KeyJaxrsAdapter extends JaxrsAdapterBase {
   public Response getKey() {
     KeyDto keyDto = service.getKeys(null, securityContext.getCredential());
     if (keyDto != null) {
-      return Response.ok(keyDto.getPublicKey()).build();
+      keyDto.setPrivateKey("");
+      return Response.ok(keyDto).build();
     } else {
       return null;
     }

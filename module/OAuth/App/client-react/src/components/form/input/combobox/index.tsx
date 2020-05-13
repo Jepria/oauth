@@ -1,4 +1,4 @@
-import React, { useReducer, createContext, useContext, useEffect } from 'react';
+import React, { useReducer, createContext, useContext, useEffect, ReactNode } from 'react';
 import styled from 'styled-components';
 import openIcon from './openIcon.gif';
 import exclamation from '../images/exclamation.gif';
@@ -21,7 +21,7 @@ interface ComboBoxInputProps {
 }
 
 const ComboBoxInput = styled.input`
-  height: 20px;
+  height: 21px;
   padding: 0px;
   margin: 0px;
   width: ${(props: ComboBoxInputProps) => props.withButton ? 'calc(100% - 17px)' : '100%'};
@@ -150,7 +150,7 @@ const ComboBoxOptionComponent: React.FC<ComboBoxOptionComponentProps> = ({ name,
 
 }
 
-const ComboBoxListComponent: React.FC = ({ children }) => {
+const ComboBoxListComponent: React.FC = ({children }) => {
   return (
     <CompoBoxList>{isFunction(children) ? children() : children}</CompoBoxList>
   );
@@ -174,11 +174,18 @@ const ComboBoxInputComponent: React.FC<ComboBoxInputComponent> = ({ placeholder,
 
   const context = useContext(ComboBoxContext);
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (onChange) {
+      onChange(e);
+    }
+    context.handleChange(e.target.value)
+  }
+
   return (
     <React.Fragment>
       <ComboBoxInput type='text'
         placeholder={placeholder}
-        onChange={onChange ? onChange : e => context.handleChange(e.target.value)}
+        onChange={handleChange}
         onFocus={context.handleFocus}
         onBlur={e => { e.stopPropagation() }}
         value={context.text}

@@ -11,7 +11,7 @@ import { onLoading, onFailure,
   SetCurrentRecordAction, setCurrentRecordSuccess } from '../actions';
 import { put, call } from 'redux-saga/effects';
 
-const api = new ClientApi(`${TEST_API_PATH}/client`);
+const api = new ClientApi(TEST_API_PATH);
 
 export function* create(action: CreateClientAction) {
   try {

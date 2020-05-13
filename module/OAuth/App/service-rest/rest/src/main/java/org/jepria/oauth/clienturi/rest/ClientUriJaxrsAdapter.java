@@ -7,6 +7,7 @@ import org.jepria.oauth.clienturi.dto.ClientUriDto;
 import org.jepria.oauth.clienturi.dto.ClientUriSearchDto;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
 import org.jepria.server.service.security.HttpBasic;
+import org.jepria.server.service.security.OAuth;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -21,7 +22,7 @@ import java.util.List;
 
 
 @Path("/client/{clientId}/client-uri")
-@HttpBasic(passwordType = HttpBasic.PASSWORD)
+@OAuth
 public class ClientUriJaxrsAdapter extends JaxrsAdapterBase {
 
   @Context

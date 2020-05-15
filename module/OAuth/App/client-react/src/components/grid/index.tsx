@@ -1,22 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useLayoutEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { Page, Content, Footer } from '../Layout';
 import { isFunction } from '../../utils';
 import { GridHeader, GridHeaderCell } from './GridHeader';
 import { GridPagingBar, GridPagingBarProps } from './GridPagingBar';
 
-export const TableContainer = styled.div`
-  width: 100%;
-  overflow: auto;
-`;
-
 export const Table = styled.table`
   box-sizing: border-box;
+  position:relative;
   border-collapse: collapse;
   margin: 0;
   padding: 0;
   table-layout: fixed;
   width: 100%;
+  height: 100%;
   @media only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-width: 1024px) {
     border: 0;
   }
@@ -24,6 +21,7 @@ export const Table = styled.table`
 `;
 
 export const TableHeader = styled.thead`
+  display: block;
   @media only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-width: 1024px) {
     display: none; 
   }
@@ -48,7 +46,15 @@ export const TableHeaderCell = styled.th`
   text-align: center;
 `
 
-export const TableBody = styled.tbody`
+interface TableBodyProps {
+  height?: string;
+}
+
+export const TableBody = styled.tbody<TableBodyProps>`
+  width: 100%;
+  display: block;
+  overflow: auto;
+  ${props => props.height ? `position: absolute; height: ${props.height};` : ''}
 `;
 
 interface TableRowProps extends React.HTMLAttributes<HTMLTableRowElement> {
@@ -57,6 +63,10 @@ interface TableRowProps extends React.HTMLAttributes<HTMLTableRowElement> {
 
 export const TableRow = styled.tr<TableRowProps>`
   padding: .35em;
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+  cursor: pointer;
   @media only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-width: 1024px) {
     display: block;
     margin-bottom: .625em;
@@ -173,13 +183,25 @@ export const Grid: Grid = ({ children }) => {
   );
 }
 
+const ContentContainer = styled.div`
+  height: 100%;
+  display: table-row;
+`;
+
+const ContentOverflow = styled.div`
+  height: inherit;
+  overflow: hidden;
+`;
+
 Grid.Table = ({ children }) => {
   return (
-    <Content>
-      <Table>
-        {isFunction(children) ? children() : children}
-      </Table>
-    </Content>
+    <ContentContainer>
+      <ContentOverflow>
+        <Table>
+          {isFunction(children) ? children() : children}
+        </Table>
+      </ContentOverflow>
+    </ContentContainer>
   );
 }
 
@@ -199,11 +221,36 @@ Grid.HeaderCell = ({ children }) => {
   );
 }
 
-Grid.Body = ({ children }) => {
+const GridBody: React.FC = ({ children }) => {
+
+  const ref = useRef<HTMLTableSectionElement>(null);
+  const [height, setHeight] = useState<number | undefined>(undefined);
+
+  useLayoutEffect(() => {
+    function updateSize() {
+      //console.log(ref.current?.parentElement?.offsetHeight);
+      let tableSize = ref.current?.parentElement?.offsetHeight;
+      let thead = ref.current?.parentElement?.getElementsByTagName('thead')[0];
+      setHeight(thead?.offsetHeight && tableSize ? tableSize - thead.offsetHeight : tableSize)
+    }
+    window.addEventListener('resize', updateSize);
+    updateSize();
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
+
+  console.log(height);
   return (
-    <TableBody>
+    <TableBody ref={ref} height={height ? `${height}px` : undefined}>
       {isFunction(children) ? children() : children}
     </TableBody>
+  );
+}
+
+Grid.Body = ({ children }) => {
+  return (
+    <GridBody>
+      {isFunction(children) ? children() : children}
+    </GridBody>
   );
 }
 
@@ -226,8 +273,6 @@ Grid.Column = (props) => {
 
 Grid.PagingBar = (props: GridPagingBarProps) => {
   return (
-    <Footer>
-      <GridPagingBar {...props} />
-    </Footer>
+    <GridPagingBar {...props} />
   );
 }

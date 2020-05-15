@@ -10,8 +10,7 @@ import split from './images/split.gif';
 import styled from 'styled-components';
 
 const Splitter = styled.span`
-  float: left;
-  vertical-align: top;
+  display: inline-block;
   background-position: center;
   background-repeat: repeat;
   height: 22px;
@@ -19,10 +18,6 @@ const Splitter = styled.span`
   margin-left: 2px;
   margin-right: 2px;
   background-image: url(${split});
-`;
-
-const Text = styled.div`
-  height: 100%;
 `;
 
 interface CreateButtonProps {

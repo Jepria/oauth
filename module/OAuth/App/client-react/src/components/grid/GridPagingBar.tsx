@@ -18,7 +18,6 @@ const Container = styled(PagingBar)`
   display: table;
   width: 100%;
   @media only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-width: 1024px) {
-    display: block;
     text-align: center;
     background-image: none;
     background-color: #D7E4F3;
@@ -29,7 +28,7 @@ const Left = styled.div`
   display: table-cell;
   width: 33.33%;
   @media only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-width: 1024px) {
-    display: block;
+    display: table-row;
     text-align: center;
     width: 100%;
     margin: 2px 0;
@@ -42,7 +41,7 @@ const Center = styled.div`
   text-align: center;
   width: 33.33%;
   @media only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-width: 1024px) {
-    display: block;
+    display: table-row;
     text-align: center;
     width: 100%;
     margin: 2px 0;
@@ -55,7 +54,7 @@ const Right = styled.div`
   text-align: right;
   width: 33.33%;
   @media only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-width: 1024px) {
-    display: block;
+    display: table-row;
     text-align: center;
     width: 100%;
     margin: 2px 0;

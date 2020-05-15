@@ -4,21 +4,18 @@ import bg from './images/bg.gif'
 
 const ToolBar = styled.div`
   font: 11px arial,tahoma,helvetica,sans-serif;
-  vertical-align: middle;
-  horizontal-align: left;
   margin: 0;
   padding: 2px;
   border-style: solid;
   border-color: #99BBE8;
-  border-width:  0 0 1px 0 ;
-  overflow: hidden;
+  border-width: 0 1px 1px 1px;
   background-color: #D0DEF0;
   background-image: url(${bg});
   background-position: 0 5%;
 `;
 
 const ToolBarItem = styled.div`
-  float: left;
+  display: inline-block;
   vertical-align: top;
   min-height: 22px;
 `;
@@ -55,7 +52,7 @@ type ToolBarButtonComponentProps = {
   disabled?: boolean;
 }
 
-const ToolBarButtonComponent: React.FC<ToolBarButtonComponentProps> = ({onClick, tooltip, disabled, children}) => {
+const ToolBarButtonComponent: React.FC<ToolBarButtonComponentProps> = ({ onClick, tooltip, disabled, children }) => {
   return (
     <ToolBarItem>
       <Button onClick={onClick} title={tooltip} disabled={disabled}>{children}</Button>
@@ -63,7 +60,7 @@ const ToolBarButtonComponent: React.FC<ToolBarButtonComponentProps> = ({onClick,
   );
 }
 
-const ToolBarComponent: React.FC = ({children}) => {
+const ToolBarComponent: React.FC = ({ children }) => {
   return (
     <ToolBar>
       {children}
@@ -71,4 +68,4 @@ const ToolBarComponent: React.FC = ({children}) => {
   );
 }
 
-export {ToolBarComponent as ToolBar, ToolBarButtonComponent as ToolBarButton, ToolBarItem}
+export { ToolBarComponent as ToolBar, ToolBarButtonComponent as ToolBarButton, ToolBarItem }

@@ -34,7 +34,7 @@ const SessionRoute: React.FC = () => {
       {isLoading && <LoadingPanel text={message} />}
       <Header>
         <TabPanel>
-          <SelectedTab>Клиент</SelectedTab>
+          <SelectedTab>Сессия</SelectedTab>
         </TabPanel>
         <ToolBar>
           <DefaultButtons.ViewButton onView={() => { history.push(`/ui/session/${current?.sessionId}/view`) }} disabled={!current || pathname.endsWith('view')} />

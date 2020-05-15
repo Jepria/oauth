@@ -1,16 +1,12 @@
 import React, { useEffect } from 'react';
 import { Page, Content, Header as PageHeader, Footer, Header } from '../../../components/Layout';
-import { TabPanel, SelectedTab, Tab } from '../../../components/tabpanel/TabPanel';
-import { ToolBar } from '../../../components/toolbar';
-import * as DefaultButtons from '../../../components/toolbar/ToolBarButtons';
 import { setCurrentRecord, searchClients, postSearchClientRequest, deleteClient } from '../state/redux/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, useParams } from 'react-router-dom';
 import { AppState } from '../../store';
 import { ClientState } from '../types';
 import { GrantType, ApplicationType } from '../../../security/OAuth';
-import { PagingToolBar } from '../../../components/PagingToolBar';
-import { TextCell, Grid } from '../../../components/grid';
+import { Grid, TextCell } from '../../../components/grid';
 
 export const ClientListPage: React.FC = () => {
 
@@ -79,58 +75,6 @@ export const ClientListPage: React.FC = () => {
           }} />
         </Grid>
       </Content>
-      {/* <Content>
-        <TableContainer>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHeaderCell>ID клиентского приложения</TableHeaderCell>
-                <TableHeaderCell>Секретное слово</TableHeaderCell>
-                <TableHeaderCell>Наименование</TableHeaderCell>
-                <TableHeaderCell>Наименование (англ)</TableHeaderCell>
-                <TableHeaderCell>Тип приложения</TableHeaderCell>
-                <TableHeaderCell>Разрешенные типы авторизации</TableHeaderCell>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {records && records.map(record => {
-                return (
-                  <TableRow key={record.clientId}
-                    onClick={() => dispatch(setCurrentRecord(record))}
-                    onDoubleClick={() => current !== record ? dispatch(setCurrentRecord(record,
-                      () => history.push(`/ui/client/${record.clientId}/view`))) : history.push(`/ui/client/${record.clientId}/view`)}
-                    selected={record === current}>
-                    <TableColumn label="ID клиентского приложения">
-                      <TextCell>{record.clientId}</TextCell>
-                    </TableColumn>
-                    <TableColumn label="Секретное слово">
-                      <TextCell>{record.clientSecret}</TextCell>
-                    </TableColumn>
-                    <TableColumn label="Наименование">
-                      <TextCell>{record.clientName}</TextCell>
-                    </TableColumn>
-                    <TableColumn label="Наименование (англ)">
-                      <TextCell>{record.clientNameEn}</TextCell>
-                    </TableColumn>
-                    <TableColumn label="Тип приложения">
-                      <TextCell>{ApplicationType[record.applicationType]}</TextCell>
-                    </TableColumn>
-                    <TableColumn label="Разрешенные типы авторизации">
-                      <TextCell wrapText>{record.grantTypes.map((grantType) => GrantType[grantType]).join(', ')}</TextCell>
-                    </TableColumn>
-                  </TableRow>);
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Content>
-      <Footer>
-        <GridPagingBar maxRowCount={resultSetSize} onChange={(page, pageSize) => {
-          if (searchId) {
-            dispatch(searchClients(searchId, pageSize, page))
-          }
-        }}/>
-      </Footer> */}
     </Page>
   );
 }

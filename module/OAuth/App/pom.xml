@@ -15,6 +15,7 @@
     </properties>
 
     <modules>
+        <module>client-react</module>
         <module>client-html</module>
         <module>service-rest</module>
         <module>main-web</module>

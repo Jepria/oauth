@@ -39,7 +39,7 @@ export const ClientListPage: React.FC = () => {
               <Grid.HeaderCell>Разрешенные типы авторизации</Grid.HeaderCell>
             </Grid.Header>
             <Grid.Body>
-              {records && records.map(record => {
+              {records ? records.map(record => {
                 return (
                   <Grid.Row key={record.clientId}
                     onClick={() => dispatch(setCurrentRecord(record))}
@@ -65,7 +65,7 @@ export const ClientListPage: React.FC = () => {
                       <TextCell wrapText>{record.grantTypes.map((grantType) => GrantType[grantType]).join(', ')}</TextCell>
                     </Grid.Column>
                   </Grid.Row>);
-              })}
+              }) : null}
             </Grid.Body>
           </Grid.Table>
           <Grid.PagingBar maxRowCount={resultSetSize} onChange={(page, pageSize) => {

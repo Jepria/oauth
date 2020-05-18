@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import bg from './images/bg.gif';
 import { PagingToolBar } from '../PagingToolBar';
@@ -75,10 +75,42 @@ export const GridPagingBar: React.FC<GridPagingBarProps> = ({ currentPage = 1, m
   const [_currentPage, setCurrentPage] = useState<number>(currentPage);
   const visibleRowCountInputRef = React.createRef<HTMLInputElement>();
   const pageCount = maxRowCount ? Math.ceil(maxRowCount / _visibleRowCount) : 1;
+  const [_maxRowCount, setMaxRowCount] = useState(maxRowCount);
+
+  useEffect(() => {
+    console.log(maxRowCount)
+    setMaxRowCount(maxRowCount);
+  }, [maxRowCount]);
 
   const onChangeValues = (pageNumber?: number, pageSize?: number) => {
     if (pageNumber && pageSize && pageSize >= 1 && onChange) {
       onChange(pageNumber, pageSize);
+    }
+  }
+
+  const onKeyUp = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      let value = visibleRowCountInputRef.current?.value;
+      let intValue: number;
+      if (value) {
+        intValue = parseInt(value);
+        if (intValue < 0) {
+          intValue = visibleRowCount;
+        }
+      } else {
+        intValue = visibleRowCount;
+      }
+      if (visibleRowCountInputRef.current) {
+        visibleRowCountInputRef.current.value = `${intValue}`;
+      }
+      setVisibleRowCount(intValue);
+      onChangeValues(_currentPage, intValue);
+    }
+  }
+
+  const onBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (e.target.value && parseInt(e.target.value) > 0) {
+      setVisibleRowCount(parseInt(e.target.value))
     }
   }
 
@@ -91,41 +123,18 @@ export const GridPagingBar: React.FC<GridPagingBarProps> = ({ currentPage = 1, m
         }} />
       </Left>
       <Center>
-        {maxRowCount ?
-          (_visibleRowCount <= maxRowCount ? `Записи ${_visibleRowCount * _currentPage - _visibleRowCount + 1} - ${_visibleRowCount * _currentPage}` : `1 - ${maxRowCount} из ${maxRowCount}`) :
+        {_maxRowCount ? `Записи ${_visibleRowCount * _currentPage - _visibleRowCount + 1} - ${_visibleRowCount * _currentPage} из ${_maxRowCount}` :
           'Записей не найдено'}
       </Center>
       <Right>
         <label>Записей на странице: <input
           ref={visibleRowCountInputRef}
           type='number'
-          style={{ width: '60px' }}
-          min={1} max={maxRowCount}
+          width='60px'
+          min={1} max={_maxRowCount}
           defaultValue={_visibleRowCount}
-          onBlur={e => {
-            if (e.target.value && parseInt(e.target.value) > 0) {
-              setVisibleRowCount(parseInt(e.target.value))
-            }
-          }}
-          onKeyUp={e => {
-            if (e.key === "Enter") {
-              let value = visibleRowCountInputRef.current?.value;
-              let intValue: number;
-              if (value) {
-                intValue = parseInt(value);
-                if (intValue < 0) {
-                  intValue = visibleRowCount;
-                }
-              } else {
-                intValue = visibleRowCount;
-              }
-              if (visibleRowCountInputRef.current) {
-                visibleRowCountInputRef.current.value = `${intValue}`;
-              }
-              setVisibleRowCount(intValue);
-              onChangeValues(_currentPage, intValue);
-            }
-          }} />
+          onBlur={onBlur}
+          onKeyUp={onKeyUp} />
         </label>
       </Right>
     </Container>

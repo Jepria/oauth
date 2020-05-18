@@ -1,9 +1,10 @@
-import React, { useState, useLayoutEffect, useRef } from 'react';
+import React, { useState, useLayoutEffect, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { Page, Content, Footer } from '../Layout';
 import { isFunction } from '../../utils';
 import { GridHeader, GridHeaderCell } from './GridHeader';
 import { GridPagingBar, GridPagingBarProps } from './GridPagingBar';
+import { throttle } from 'lodash';
 
 export const Table = styled.table`
   box-sizing: border-box;
@@ -53,7 +54,7 @@ interface TableBodyProps {
 export const TableBody = styled.tbody<TableBodyProps>`
   width: 100%;
   display: block;
-  overflow: auto;
+  overflow-y: auto;
   ${props => props.height ? `position: absolute; height: ${props.height};` : ''}
 `;
 
@@ -190,7 +191,8 @@ const ContentContainer = styled.div`
 
 const ContentOverflow = styled.div`
   height: inherit;
-  overflow: hidden;
+  overflow-y: hidden;
+  overflow-x: auto;
 `;
 
 Grid.Table = ({ children }) => {
@@ -226,19 +228,21 @@ const GridBody: React.FC = ({ children }) => {
   const ref = useRef<HTMLTableSectionElement>(null);
   const [height, setHeight] = useState<number | undefined>(undefined);
 
+  const resize = () => {
+    let tableSize = ref.current?.parentElement?.offsetHeight;
+    let thead = ref.current?.parentElement?.getElementsByTagName('thead')[0];
+    setHeight(thead?.offsetHeight && tableSize ? tableSize - thead.offsetHeight : tableSize);
+  }
+
   useLayoutEffect(() => {
-    function updateSize() {
-      //console.log(ref.current?.parentElement?.offsetHeight);
-      let tableSize = ref.current?.parentElement?.offsetHeight;
-      let thead = ref.current?.parentElement?.getElementsByTagName('thead')[0];
-      setHeight(thead?.offsetHeight && tableSize ? tableSize - thead.offsetHeight : tableSize)
-    }
-    window.addEventListener('resize', updateSize);
-    updateSize();
-    return () => window.removeEventListener('resize', updateSize);
+    const handleResize = throttle(() => {
+      resize();
+    }, 50);
+    resize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  console.log(height);
   return (
     <TableBody ref={ref} height={height ? `${height}px` : undefined}>
       {isFunction(children) ? children() : children}
@@ -253,7 +257,6 @@ Grid.Body = ({ children }) => {
     </GridBody>
   );
 }
-
 
 Grid.Row = (props) => {
   return (

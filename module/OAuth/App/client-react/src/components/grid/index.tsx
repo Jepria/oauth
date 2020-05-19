@@ -43,7 +43,6 @@ export const TableHeaderCell = styled.th`
   background-color: #ededed;
   padding: .625em;
   text-align: center;
-  width: 200px;
 `
 
 interface TableBodyProps {
@@ -113,7 +112,6 @@ export const TableColumn = styled.td<TableColumnProps>`
     border-top-color: #fafafa;
     border-top-style: solid;
     border-top-width: 1px;
-    width: 200px;
   }
   @media only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-width: 1024px) {
     display: block;
@@ -320,8 +318,6 @@ const GridBody: React.FC = ({ children }) => {
       refThis.current.scrollLeft = parentScrollLeft ? parentScrollLeft : 0;
     }
   }
-
-
 
   return (
     <React.Fragment>

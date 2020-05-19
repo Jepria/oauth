@@ -54,7 +54,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
                       <ComboBoxInput onChange={e => dispatch(getOperators(e.target.value))} placeholder='Введите имя пользователя' />
                       <ComboBoxPopup>
                         <ComboBoxList>
-                          <ComboBoxOption name="" value="" />
+                          <ComboBoxOption name="" value={undefined} />
                           {operators?.map(operator => <ComboBoxOption key={operator.value} name={operator.name} value={operator.value} />)}
                         </ComboBoxList>
                       </ComboBoxPopup>
@@ -65,12 +65,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
                 <Label>Приложение:</Label>
                 <Field name="clientId">
                   {(props: FieldProps) => (
-                    <ComboBox name={props.field.name} value={props.field.value} touched={props.meta.touched} error={props.meta.error} onChange={(field, value) => {
-                      if (value !== props.field.value) {
-                        props.form.setFieldValue('grantTypes', []);
-                        props.form.setFieldValue(field, value);
-                      }
-                    }} width='250px'>
+                    <ComboBox name={props.field.name} value={props.field.value} touched={props.meta.touched} error={props.meta.error} width='250px'>
                       <ComboBoxInput onChange={e => dispatch(getClients(e.target.value))} placeholder='Введите имя приложения' />
                       <ComboBoxPopup>
                         <ComboBoxList>

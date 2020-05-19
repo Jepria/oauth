@@ -1,6 +1,6 @@
 import React, { useState, useLayoutEffect, useRef, useEffect } from 'react';
 import styled from 'styled-components';
-import { Page, Content, Footer } from '../Layout';
+import { Page, Footer } from '../Layout';
 import { isFunction } from '../../utils';
 import { GridHeader, GridHeaderCell } from './GridHeader';
 import { GridPagingBar, GridPagingBarProps } from './GridPagingBar';
@@ -8,7 +8,6 @@ import { throttle } from 'lodash';
 
 export const Table = styled.table`
   box-sizing: border-box;
-  position:relative;
   border-collapse: collapse;
   margin: 0;
   padding: 0;
@@ -18,7 +17,6 @@ export const Table = styled.table`
   @media only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-width: 1024px) {
     border: 0;
   }
-}
 `;
 
 export const TableHeader = styled.thead`
@@ -45,6 +43,7 @@ export const TableHeaderCell = styled.th`
   background-color: #ededed;
   padding: .625em;
   text-align: center;
+  width: 200px;
 `
 
 interface TableBodyProps {
@@ -55,7 +54,9 @@ export const TableBody = styled.tbody<TableBodyProps>`
   width: 100%;
   display: block;
   overflow-y: auto;
-  ${props => props.height ? `position: absolute; height: ${props.height};` : ''}
+  overflow-x: hidden;
+  ${props => props.height ? `position: absolute; height: ${props.height}; right: -17px; width: calc(100% + 17px);` : ''}
+  z-index: 1;
 `;
 
 interface TableRowProps extends React.HTMLAttributes<HTMLTableRowElement> {
@@ -112,6 +113,7 @@ export const TableColumn = styled.td<TableColumnProps>`
     border-top-color: #fafafa;
     border-top-style: solid;
     border-top-width: 1px;
+    width: 200px;
   }
   @media only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-width: 1024px) {
     display: block;
@@ -223,30 +225,113 @@ Grid.HeaderCell = ({ children }) => {
   );
 }
 
+interface ScrollDivProps {
+  height?: number;
+}
+
+const ScrollDiv = styled.div<ScrollDivProps>`
+  position: absolute;
+  width: 17px;
+  background-color: transparent;
+  right: 0;
+  height: ${props => props.height ? props.height : 0}px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  opacity: 0.5;
+  z-index: 2;
+`;
+
+const ScrollDivContent = styled.div<ScrollDivProps>`
+  width: 17px;
+  background-color: transparent;
+  height: ${props => props.height ? props.height : 0}px;
+`;
+
 const GridBody: React.FC = ({ children }) => {
 
-  const ref = useRef<HTMLTableSectionElement>(null);
+  const refThis = useRef<HTMLTableSectionElement>(null);
+  const refScroll = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState<number | undefined>(undefined);
+  const [scrollHeight, setScrollHeight] = useState<number | undefined>(undefined);
 
   const resize = () => {
-    let tableSize = ref.current?.parentElement?.offsetHeight;
-    let thead = ref.current?.parentElement?.getElementsByTagName('thead')[0];
-    setHeight(thead?.offsetHeight && tableSize ? tableSize - thead.offsetHeight : tableSize);
+    let tableSize = refThis.current?.parentElement?.offsetHeight;
+    let thead = refThis.current?.parentElement?.getElementsByTagName('thead')[0];
+    let newHeight = thead?.offsetHeight && tableSize ? tableSize - thead.offsetHeight : tableSize;
+    if (height !== newHeight) {
+      setHeight(newHeight);
+    }
   }
+
+  useLayoutEffect(() => {
+    if (scrollHeight !== refThis.current?.scrollHeight) {
+      setScrollHeight(refThis.current?.scrollHeight);
+    }
+  });
 
   useLayoutEffect(() => {
     const handleResize = throttle(() => {
       resize();
-    }, 50);
-    resize();
+    }, 100);
     window.addEventListener("resize", handleResize);
+    resize();
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  useLayoutEffect(() => {
+    const ref = refThis.current;
+    ref?.parentElement?.parentElement?.addEventListener("scroll", onParentScroll);
+    return () => ref?.parentElement?.parentElement?.removeEventListener("scroll", onParentScroll);
+  }, []);
+
+
+  useLayoutEffect(() => {
+    const refTbody = refThis.current;
+    const refDiv = refScroll.current;
+    let ignoreScrollEvents = false;
+    const handleScroll = (e: Event) => {
+      const onScroll = () => {
+        if (refScroll.current && refThis.current) {
+          let ignore = ignoreScrollEvents
+          ignoreScrollEvents = false
+          if (ignore) return
+
+          ignoreScrollEvents = true
+          if (e.target === refThis.current) {
+            refScroll.current.scrollTop = refThis.current.scrollTop;
+          } else {
+            refThis.current.scrollTop = refScroll.current.scrollTop;
+          }
+        }
+      }
+      onScroll();
+    }
+    refTbody?.addEventListener("scroll", handleScroll);
+    refDiv?.addEventListener("scroll", handleScroll);
+    return () => {
+      refTbody?.removeEventListener("scroll", handleScroll)
+      refDiv?.removeEventListener("scroll", handleScroll)
+    };
+  }, []);
+
+  const onParentScroll = () => {
+    if (refThis.current) {
+      let parentScrollLeft = refThis.current?.parentElement?.parentElement?.scrollLeft;
+      refThis.current.scrollLeft = parentScrollLeft ? parentScrollLeft : 0;
+    }
+  }
+
+
+
   return (
-    <TableBody ref={ref} height={height ? `${height}px` : undefined}>
-      {isFunction(children) ? children() : children}
-    </TableBody>
+    <React.Fragment>
+      <TableBody ref={refThis} height={height ? `${height}px` : undefined}>
+        {isFunction(children) ? children() : children}
+      </TableBody>
+      <ScrollDiv ref={refScroll} height={height}>
+        <ScrollDivContent height={scrollHeight} />
+      </ScrollDiv>
+    </React.Fragment>
   );
 }
 

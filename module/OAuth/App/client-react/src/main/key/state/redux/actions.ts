@@ -4,8 +4,8 @@ export const GET_KEY = 'GET_KEY';
 export const GET_KEY_SUCCESS = 'GET_KEY_SUCCESS';
 export const UPDATE_KEY = 'UPDATE_KEY';
 export const UPDATE_KEY_SUCCESS = 'UPDATE_KEY_SUCCESS';
-export const LOADING = 'LOADING';
-export const FAILURE = 'FAILURE';
+export const KEY_LOADING = 'KEY_LOADING';
+export const KEY_FAILURE = 'KEY_FAILURE';
 
 
 export interface GetKeyAction {
@@ -28,12 +28,12 @@ export interface UpdateKeySuccessAction {
 }
 
 export interface LoadingAction {
-  type: typeof LOADING
+  type: typeof KEY_LOADING
   message: string
 }
 
 export interface FailureAction {
-  type: typeof FAILURE
+  type: typeof KEY_FAILURE
   error: Error
 }
 
@@ -75,14 +75,14 @@ export function updateKeySuccess(): KeyActionTypes {
 
 export function onLoading(message: string): KeyActionTypes {
   return {
-    type: LOADING,
+    type: KEY_LOADING,
     message: message
   }
 }
 
 export function onFailure(error: Error): KeyActionTypes {
   return {
-    type: FAILURE,
+    type: KEY_FAILURE,
     error: error
   }
 }

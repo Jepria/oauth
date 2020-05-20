@@ -78,7 +78,6 @@ export const GridPagingBar: React.FC<GridPagingBarProps> = ({ currentPage = 1, m
   const [_maxRowCount, setMaxRowCount] = useState(maxRowCount);
 
   useEffect(() => {
-    console.log(maxRowCount)
     setMaxRowCount(maxRowCount);
   }, [maxRowCount]);
 

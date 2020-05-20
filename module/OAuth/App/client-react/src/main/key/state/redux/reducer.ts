@@ -1,4 +1,4 @@
-import { LOADING, FAILURE, KeyActionTypes, GET_KEY_SUCCESS, UPDATE_KEY_SUCCESS } from "./actions";
+import { KEY_LOADING, KEY_FAILURE, KeyActionTypes, GET_KEY_SUCCESS, UPDATE_KEY_SUCCESS } from "./actions";
 import { KeyState } from "../../types";
 
 export const initialState: KeyState = {
@@ -19,13 +19,13 @@ export function keyReducer(state: KeyState = initialState, action: KeyActionType
           isLoading: false,
           current: undefined
         }
-    case LOADING:
+    case KEY_LOADING:
       return {
         ...state,
         isLoading: true,
         message: action.message
       }
-    case FAILURE:
+    case KEY_FAILURE:
       return {
         ...state,
         isLoading: false

@@ -15,8 +15,8 @@ export const GET_CLIENTS = 'GET_CLIENTS';
 export const GET_CLIENTS_SUCCESS = 'GET_CLIENTS_SUCCESS';
 export const GET_OPERATORS = 'GET_OPERATORS';
 export const GET_OPERATORS_SUCCESS = 'GET_OPERATORS_SUCCESS';
-export const LOADING = 'LOADING';
-export const FAILURE = 'FAILURE';
+export const SESSION_LOADING = 'SESSION_LOADING';
+export const SESSION_FAILURE = 'SESSION_FAILURE';
 
 export interface DeleteSessionAction {
   type: typeof DELETE_SESSION;
@@ -64,12 +64,12 @@ export interface GetSessionByIdSuccessAction {
 }
 
 export interface LoadingAction {
-  type: typeof LOADING
+  type: typeof SESSION_LOADING
   message: string
 }
 
 export interface FailureAction {
-  type: typeof FAILURE
+  type: typeof SESSION_FAILURE
   error: Error
 }
 
@@ -184,14 +184,14 @@ export function getSessionByIdSuccess(session: Session): SessionActionTypes {
 
 export function onLoading(message: string): SessionActionTypes {
   return {
-    type: LOADING,
+    type: SESSION_LOADING,
     message: message
   }
 }
 
 export function onFailure(error: Error): SessionActionTypes {
   return {
-    type: FAILURE,
+    type: SESSION_FAILURE,
     error: error
   }
 }

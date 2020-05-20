@@ -10,8 +10,8 @@ export const GET_CLIENT_URI_BY_ID = 'GET_CLIENT_URI_BY_ID';
 export const GET_CLIENT_URI_BY_ID_SUCCESS = 'GET_CLIENT_URI_BY_ID_SUCCESS';
 export const SET_CURRENT_RECORD = 'SET_CURRENT_RECORD';
 export const SET_CURRENT_RECORD_SUCCESS = 'SET_CURRENT_RECORD_SUCCESS';
-export const LOADING = 'LOADING';
-export const FAILURE = 'FAILURE';
+export const CLIENT_URI_LOADING = 'CLIENT_URI_LOADING';
+export const CLIENT_URI_FAILURE = 'CLIENT_URI_FAILURE';
 
 export interface CreateClientUriAction {
   type: typeof CREATE_CLIENT_URI;
@@ -60,12 +60,12 @@ export interface GetClientUriByIdSuccessAction {
 }
 
 export interface LoadingAction {
-  type: typeof LOADING
+  type: typeof CLIENT_URI_LOADING
   message: string
 }
 
 export interface FailureAction {
-  type: typeof FAILURE
+  type: typeof CLIENT_URI_FAILURE
   error: Error
 }
 
@@ -158,14 +158,14 @@ export function getClientUriByIdSuccess(ClientUri: ClientUri): ClientUriActionTy
 
 export function onLoading(message: string): ClientUriActionTypes {
   return {
-    type: LOADING,
+    type: CLIENT_URI_LOADING,
     message: message
   }
 }
 
 export function onFailure(error: Error): ClientUriActionTypes {
   return {
-    type: FAILURE,
+    type: CLIENT_URI_FAILURE,
     error: error
   }
 }

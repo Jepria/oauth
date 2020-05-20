@@ -2,9 +2,7 @@ import React, { useRef } from 'react';
 import {
   Switch,
   Route,
-  useRouteMatch,
-  useHistory,
-  useLocation
+  useRouteMatch
 } from "react-router-dom";
 import SessionViewPage from './pages/KeyViewPage';
 import { AppState } from '../store';
@@ -14,10 +12,7 @@ import { KeyState } from './types';
 import { Page, Content, Header } from '../../components/Layout';
 import { TabPanel, SelectedTab } from '../../components/tabpanel/TabPanel';
 import { ToolBar, ToolBarButton } from '../../components/toolbar';
-import * as DefaultButtons from '../../components/toolbar/ToolBarButtons';
 import { updateKey, getKey } from './state/redux/actions';
-import { HistoryState } from '../../components/HistoryState';
-import { search } from '../client/state/redux/saga/workers';
 import change_password from './change_password.png';
 
 const KeyRoute: React.FC = () => {

@@ -14,8 +14,8 @@ export const GET_CLIENT_BY_ID = 'GET_CLIENT_BY_ID';
 export const GET_CLIENT_BY_ID_SUCCESS = 'GET_CLIENT_BY_ID_SUCCESS';
 export const SET_CURRENT_RECORD = 'SET_CURRENT_RECORD';
 export const SET_CURRENT_RECORD_SUCCESS = 'SET_CURRENT_RECORD_SUCCESS';
-export const LOADING = 'LOADING';
-export const FAILURE = 'FAILURE';
+export const CLIENT_LOADING = 'CLIENT_LOADING';
+export const CLIENT_FAILURE = 'CLIENT_FAILURE';
 
 export interface CreateClientAction {
   type: typeof CREATE_CLIENT;
@@ -86,12 +86,12 @@ export interface GetClientByIdSuccessAction {
 }
 
 export interface LoadingAction {
-  type: typeof LOADING
+  type: typeof CLIENT_LOADING
   message: string
 }
 
 export interface FailureAction {
-  type: typeof FAILURE
+  type: typeof CLIENT_FAILURE
   error: Error
 }
 
@@ -218,14 +218,14 @@ export function getClientByIdSuccess(client: Client): ClientActionTypes {
 
 export function onLoading(message: string): ClientActionTypes {
   return {
-    type: LOADING,
+    type: CLIENT_LOADING,
     message: message
   }
 }
 
 export function onFailure(error: Error): ClientActionTypes {
   return {
-    type: FAILURE,
+    type: CLIENT_FAILURE,
     error: error
   }
 }

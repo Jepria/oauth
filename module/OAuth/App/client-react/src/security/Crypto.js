@@ -1,3 +1,6 @@
+import Base64 from 'crypto-js/enc-base64';
+import SHA256 from 'crypto-js/sha256';
+
 const getCrypto = () => {
   let crypto;
   if (window) {
@@ -38,32 +41,18 @@ const fromBase64Url = (encodedStr) => {
 }
 
 const sha256 = async (str) => {
-  const crypto = getCrypto();
-  if (crypto && crypto.subtle.digest) {
-    const data = textEncode(str);
-    let digest = await crypto.subtle.digest('SHA-256', data);
-    return new Promise((resolve, reject) => {
-      if (digest.result) {
-        var binary = '';
-        var bytes = new Uint8Array(digest.result);
-        var len = bytes.byteLength;
-        for (var i = 0; i < len; i++) {
-          binary += String.fromCharCode(bytes[i]);
-        }
-        resolve(toBase64Url(binary))
-      } else {
-        var binary = '';
-        var bytes = new Uint8Array(digest);
-        var len = bytes.byteLength;
-        for (var i = 0; i < len; i++) {
-          binary += String.fromCharCode(bytes[i]);
-        }
-        resolve(toBase64Url(binary))
-      }
-    });
-  } else {
-    throw new Error("Digest API is not available");
-  }
+  return new Promise((resolve, reject) => {
+    try {
+      let hash = SHA256(str);
+      let encoded = Base64.stringify(hash);
+      encoded = encoded.replace(/\+/gi, '-');
+      encoded = encoded.replace(/\//gi, '_');
+      encoded = encoded.replace(/=/gi, '');
+      resolve(encoded);
+    } catch (e) {
+      reject(e);
+    }
+  });
 }
 
 const getRandomString = () => {
@@ -79,4 +68,4 @@ const getRandomString = () => {
 
 }
 
-export { getCrypto, toBase64Url, fromBase64Url, textEncode, sha256, getRandomString };
+export { toBase64Url, fromBase64Url, textEncode, sha256, getRandomString };

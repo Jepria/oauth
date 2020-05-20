@@ -19,7 +19,7 @@ const AppRouter: React.FC = () => {
   return (
     <OAuthProtectedFragment>
       <Provider store={store}>
-        <Router>
+        <Router basename={'/oauth-react' || ''}>
           <Switch>
             <Route path="/ui/client">
               <ClientRoute />

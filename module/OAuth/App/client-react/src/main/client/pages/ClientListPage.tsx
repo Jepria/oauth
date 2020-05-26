@@ -6,7 +6,8 @@ import { useHistory, useParams } from 'react-router-dom';
 import { AppState } from '../../store';
 import { ClientState } from '../types';
 import { GrantType, ApplicationType } from '../../../security/OAuth';
-import { Grid, TextCell } from '../../../components/grid';
+import { TextCell } from '../../../components/cell/TextCell';
+import { Grid, GridTable, GridHeader, GridHeaderCell, GridBody, GridRow, GridRowCell, GridPagingBar } from '../../../components/grid/StyledGrid';
 
 export const ClientListPage: React.FC = () => {
 
@@ -29,46 +30,46 @@ export const ClientListPage: React.FC = () => {
     <Page>
       <Content>
         <Grid>
-          <Grid.Table>
-            <Grid.Header>
-              <Grid.HeaderCell>ID клиентского приложения</Grid.HeaderCell>
-              <Grid.HeaderCell>Секретное слово</Grid.HeaderCell>
-              <Grid.HeaderCell>Наименование</Grid.HeaderCell>
-              <Grid.HeaderCell>Наименование (англ)</Grid.HeaderCell>
-              <Grid.HeaderCell>Тип приложения</Grid.HeaderCell>
-              <Grid.HeaderCell>Разрешенные типы авторизации</Grid.HeaderCell>
-            </Grid.Header>
-            <Grid.Body>
+          <GridTable>
+            <GridHeader>
+              <GridHeaderCell>ID клиентского приложения</GridHeaderCell>
+              <GridHeaderCell>Секретное слово</GridHeaderCell>
+              <GridHeaderCell>Наименование</GridHeaderCell>
+              <GridHeaderCell>Наименование (англ)</GridHeaderCell>
+              <GridHeaderCell>Тип приложения</GridHeaderCell>
+              <GridHeaderCell>Разрешенные типы авторизации</GridHeaderCell>
+            </GridHeader>
+            <GridBody>
               {records ? records.map(record => {
                 return (
-                  <Grid.Row key={record.clientId}
+                  <GridRow key={record.clientId}
                     onClick={() => dispatch(setCurrentRecord(record))}
                     onDoubleClick={() => current !== record ? dispatch(setCurrentRecord(record,
                       () => history.push(`/ui/client/${record.clientId}/view`))) : history.push(`/ui/client/${record.clientId}/view`)}
                     selected={record === current}>
-                    <Grid.Column label="ID клиентского приложения">
+                    <GridRowCell label="ID клиентского приложения">
                       <TextCell>{record.clientId}</TextCell>
-                    </Grid.Column>
-                    <Grid.Column label="Секретное слово">
+                    </GridRowCell>
+                    <GridRowCell label="Секретное слово">
                       <TextCell>{record.clientSecret}</TextCell>
-                    </Grid.Column>
-                    <Grid.Column label="Наименование">
+                    </GridRowCell>
+                    <GridRowCell label="Наименование">
                       <TextCell>{record.clientName}</TextCell>
-                    </Grid.Column>
-                    <Grid.Column label="Наименование (англ)">
+                    </GridRowCell>
+                    <GridRowCell label="Наименование (англ)">
                       <TextCell>{record.clientNameEn}</TextCell>
-                    </Grid.Column>
-                    <Grid.Column label="Тип приложения">
+                    </GridRowCell>
+                    <GridRowCell label="Тип приложения">
                       <TextCell>{ApplicationType[record.applicationType]}</TextCell>
-                    </Grid.Column>
-                    <Grid.Column label="Разрешенные типы авторизации">
+                    </GridRowCell>
+                    <GridRowCell label="Разрешенные типы авторизации">
                       <TextCell wrapText>{record.grantTypes.map((grantType) => GrantType[grantType]).join(', ')}</TextCell>
-                    </Grid.Column>
-                  </Grid.Row>);
+                    </GridRowCell>
+                  </GridRow>);
               }) : null}
-            </Grid.Body>
-          </Grid.Table>
-          <Grid.PagingBar maxRowCount={resultSetSize} onChange={(page, pageSize) => {
+            </GridBody>
+          </GridTable>
+          <GridPagingBar rowCount={records?.length} totalRowCount={resultSetSize} onRefresh={(page, pageSize) => {
             if (searchId) {
               dispatch(searchClients(searchId, pageSize, page))
             }

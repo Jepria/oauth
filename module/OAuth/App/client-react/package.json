@@ -33,7 +33,8 @@
     "redux-saga": "^1.1.3",
     "react-fast-compare": "^3.0.1",
     "lodash": "^4.17.15",
-    "crypto-js": "^4.0.0"
+    "crypto-js": "^4.0.0",
+    "jfront-components": "0.1.0"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -48,7 +49,8 @@
     "production": [
       ">0.2%",
       "not dead",
-      "not op_mini all"
+      "not op_mini all",
+      "IE >= 10"
     ],
     "development": [
       "last 1 chrome version",
@@ -56,6 +58,5 @@
       "last 1 safari version",
       "IE 11"
     ]
-  },
-  "homepage": "."
+  }
 }

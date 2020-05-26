@@ -5,8 +5,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, useParams, useLocation } from 'react-router-dom';
 import { AppState } from '../../../store';
 import { ClientUriState } from '../types';
-import { TextCell, Grid } from '../../../../components/grid';
 import { HistoryState } from '../../../../components/HistoryState';
+import { Grid, GridTable, GridHeader, GridHeaderCell, GridBody, GridRow, GridRowCell, GridPagingBar } from '../../../../components/grid/StyledGrid';
+import { TextCell } from '../../../../components/cell/TextCell';
 
 export const ClientUriListPage: React.FC = () => {
 
@@ -26,34 +27,34 @@ export const ClientUriListPage: React.FC = () => {
     <Page>
       <Content>
         <Grid>
-          <Grid.Table>
-            <Grid.Header>
-              <Grid.HeaderCell>ID клиентского приложения</Grid.HeaderCell>
-              <Grid.HeaderCell>ID записи</Grid.HeaderCell>
-              <Grid.HeaderCell>URL для переадресации</Grid.HeaderCell>
-            </Grid.Header>
-            <Grid.Body>
+          <GridTable>
+            <GridHeader>
+              <GridHeaderCell>ID клиентского приложения</GridHeaderCell>
+              <GridHeaderCell>ID записи</GridHeaderCell>
+              <GridHeaderCell>URL для переадресации</GridHeaderCell>
+            </GridHeader>
+            <GridBody>
               {records && records.map(record => {
                 return (
-                  <Grid.Row key={record.clientUriId}
+                  <GridRow key={record.clientUriId}
                     onClick={() => dispatch(setCurrentRecord(record))}
                     onDoubleClick={() => current !== record ? dispatch(setCurrentRecord(record,
                       () => history.push(`/ui/client/${clientId}/client-uri/${record.clientUriId}/view`, state))) : history.push(`/ui/client/${clientId}/client-uri/${record.clientUriId}/view`, state)}
                     selected={record === current}>
-                    <Grid.Column label="ID клиентского приложения">
-                      <TextCell>{clientId}</TextCell>
-                    </Grid.Column>
-                    <Grid.Column label="ID записи">
+                    <GridRowCell label="ID записи">
                       <TextCell>{record.clientUriId}</TextCell>
-                    </Grid.Column>
-                    <Grid.Column label="URL для переадресации">
+                    </GridRowCell>
+                    <GridRowCell label="ID клиентского приложения">
+                      <TextCell>{clientId}</TextCell>
+                    </GridRowCell>
+                    <GridRowCell label="URL для переадресации">
                       <TextCell>{record.clientUri}</TextCell>
-                    </Grid.Column>
-                  </Grid.Row>);
+                    </GridRowCell>
+                  </GridRow>);
               })}
-            </Grid.Body>
-          </Grid.Table>
-          <Grid.PagingBar maxRowCount={records?.length} onChange={() => {
+            </GridBody>
+          </GridTable>
+          <GridPagingBar rowCount={records?.length} totalRowCount={records?.length} onChange={() => {
             if (clientId) {
               dispatch(searchClientUri(clientId))
             }

@@ -8,7 +8,7 @@ function* watchers() {
   yield takeLatest(GET_KEY, getKey);
 }
 
-export default function* keySaga() {
+export function* keySaga() {
   yield all([
     watchers()
   ]);

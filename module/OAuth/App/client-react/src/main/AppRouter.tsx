@@ -2,13 +2,14 @@ import React from 'react';
 import {
   BrowserRouter as Router,
   Switch,
-  Route
+  Route,
+  useRouteMatch
 } from "react-router-dom";
 import { Provider } from 'react-redux';
 import { OAuthProtectedFragment } from '../security/OAuthSecurityContext';
 import ClientRoute from './client/ClientModuleRoute';
 import { configureStore } from '../redux/configureStore';
-import sagas, { reducers } from './store';
+import { sagas, reducers } from './store';
 import SessionRoute from './session/SessionRoute';
 import KeyRoute from './key/KeyRoute';
 
@@ -19,7 +20,7 @@ const AppRouter: React.FC = () => {
   return (
     <OAuthProtectedFragment>
       <Provider store={store}>
-        <Router basename={'/oauth-react' || ''}>
+        <Router>
           <Switch>
             <Route path="/ui/client">
               <ClientRoute />

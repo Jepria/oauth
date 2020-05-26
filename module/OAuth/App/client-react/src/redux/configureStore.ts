@@ -1,7 +1,7 @@
-import { createStore, applyMiddleware, combineReducers, PreloadedState, AnyAction } from 'redux';
 import createSagaMiddleware, { Saga } from 'redux-saga';
 import logger from 'redux-logger';
 import { Reducer } from 'react';
+import { PreloadedState, createStore, applyMiddleware } from 'redux';
 
 export function configureStore(initialState: PreloadedState<any>, saga: Saga, reducer: Reducer<any, any> ) {
   

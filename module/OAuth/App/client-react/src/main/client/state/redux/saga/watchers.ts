@@ -16,7 +16,7 @@ function* searchWatcher() {
   yield takeLatest(SEARCH_CLIENTS, search);
 }
 
-export default function* clientSaga() {
+export function* clientSaga() {
   yield all([
     entityWatcher(),
     searchWatcher()

@@ -16,7 +16,7 @@ function* searchWatcher() {
   yield takeLatest(GET_OPERATORS, getOperators);
 }
 
-export default function* sessionSaga() {
+export function* sessionSaga() {
   yield all([
     entityWatcher(),
     searchWatcher()

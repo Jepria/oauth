@@ -1,5 +1,5 @@
 import React, { createContext, useEffect, useReducer, useContext } from 'react';
-import { OAuth } from './OAuth';
+import { OAuth, TokenResponse, ApplicationState } from './OAuth';
 import * as Crypto from './Crypto';
 import axios, { AxiosRequestConfig, AxiosInstance, AxiosResponse, AxiosError } from 'axios';
 import { LoadingPanel } from '../components/mask';
@@ -15,13 +15,6 @@ export interface SecurityProviderProps {
 interface ISecurityContext {
   accessToken?: string;
   authorize(): void
-}
-
-type TokenResponse = {
-  token_type: string;
-  expires_in: bigint;
-  access_token: string;
-  refresh_token?: string;
 }
 
 const OAuthSecurityContext = createContext<ISecurityContext | null>(null);
@@ -115,12 +108,12 @@ const OAuthSecurityProvider: React.FC<SecurityProviderProps> = ({ clientId, oaut
 
   const oauth = new OAuth(clientId, redirectUri, oauthContextPath + "/authorize", oauthContextPath + "/token");
 
-  const getToken = (authCode: string): Promise<TokenResponse> => {
-    return oauth.getTokenWithAuthCode(authCode) as Promise<TokenResponse>;
+  const getToken = (authCode: string, state: string): Promise<TokenResponse> => {
+    return oauth.getTokenWithAuthCode(authCode, state);
   }
 
   const authorize = () => {
-    oauth.authorize('code', Crypto.toBase64Url(`path=${window.location.pathname + window.location.search}&otp=${Crypto.getRandomString()}`))
+    oauth.authorize('code', window.location.pathname + window.location.search)
       .then(result => {
         window.location.replace(result);
       }).catch(error => {
@@ -131,24 +124,33 @@ const OAuthSecurityProvider: React.FC<SecurityProviderProps> = ({ clientId, oaut
   useEffect(() => {
     if (isOAuthRoute) {
       let queryParams = new URLSearchParams(window.location.search);
-      let authCode = queryParams.get('code');
-      let state = queryParams.get('state');
-      if (window.sessionStorage.getItem("state") === state) {
-        getToken(authCode as string).then(result => {
-          if (result.token_type === 'Bearer') {
-            let stateParams = new URLSearchParams(Crypto.fromBase64Url(state));
-            window.history.replaceState(window.history.state, '', stateParams.get("path"));
-            dispatch({ type: 'tokenResponse', result })
-          } else {
-            dispatch({ type: 'failure', error: new Error("Unsupported token type") });
-          }
-        }).catch(error => {
-          dispatch({ type: 'failure', error })
-        });
-      } else {
-        dispatch({ type: 'failure', error: new Error("State is malformed") });
+      let authCodeParam = queryParams.get('code');
+      let stateParam = queryParams.get('state');
+      if (!authCodeParam) {
+        dispatch({ type: 'failure', error: new Error("code param is empty") });
+        return;
       }
+      if (!stateParam) {
+        dispatch({ type: 'failure', error: new Error("state param is empty") });
+        return;
+      }
+      let stringState = window.sessionStorage.getItem(stateParam);
+      getToken(authCodeParam, stateParam).then(result => {
+        if (!stringState) {
+          throw new Error("state not found");
+        }
+        let state: ApplicationState = JSON.parse(stringState);
+        if (result.token_type === 'Bearer') {
+          window.history.replaceState(window.history.state, '', state.currentPath);
+          dispatch({ type: 'tokenResponse', result })
+        } else {
+          dispatch({ type: 'failure', error: new Error("Unsupported token type") });
+        }
+      }).catch(error => {
+        dispatch({ type: 'failure', error })
+      });
     }
+
   }, []);
 
   if (configureAxios && accessToken) {

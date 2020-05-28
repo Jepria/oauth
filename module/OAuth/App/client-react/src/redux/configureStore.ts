@@ -10,10 +10,9 @@ export function configureStore(initialState: PreloadedState<any>, saga: Saga, re
   const store = createStore(
     reducer,
     initialState,
-    applyMiddleware(logger, sagaMiddleware)
+    process.env.NODE_ENV === 'development' ? applyMiddleware(logger, sagaMiddleware) : applyMiddleware(sagaMiddleware)
   );
 
-  
   sagaMiddleware.run(saga);
 
   return store;

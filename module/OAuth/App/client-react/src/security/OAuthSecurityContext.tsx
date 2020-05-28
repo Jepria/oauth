@@ -29,14 +29,14 @@ const OAuthSecurityContext = createContext<ISecurityContext | null>(null);
 const useOAuth = () => {
   const context = useContext(OAuthSecurityContext) as ISecurityContext;
 
-  if (!context.accessToken ){
+  if (!context.accessToken) {
     context.authorize();
   }
 
   return context;
 }
 
-const withOAuth = (WrappedComponent: React.ComponentType)  => {
+const withOAuth = (WrappedComponent: React.ComponentType) => {
   return class extends React.Component {
     static contextType = OAuthSecurityContext;
 
@@ -48,25 +48,33 @@ const withOAuth = (WrappedComponent: React.ComponentType)  => {
 
     render() {
       return (
-        <WrappedComponent {...this.props}/>
+        <WrappedComponent {...this.props} />
       );
     }
   }
 }
 
-const OAuthProtectedFragment: React.FC = ({children}) => {
+const OAuthProtectedFragment: React.FC = ({ children }) => {
 
-  const context = useContext(OAuthSecurityContext) as ISecurityContext;
+  const { accessToken, authorize } = useContext(OAuthSecurityContext) as ISecurityContext
 
-  if (!context.accessToken ){
-    context.authorize();
+  useEffect(() => {
+    if (!accessToken) {
+      authorize();
+    }
+  }, [accessToken, authorize]);
+
+  if (accessToken) {
+    return (
+      <React.Fragment>
+        {children}
+      </React.Fragment>
+    );
+  } else {
+    return (
+      <LoadingPanel header='OAuth' text='Загрузка приложения, пожалуйста, подождите...' />
+    );
   }
-
-  return (
-    <React.Fragment>
-      {children}
-    </React.Fragment>
-  );
 }
 
 
@@ -95,11 +103,15 @@ const OAuthStateReducer = (state: OAuthState, action: Action) => {
   }
 }
 
-const OAuthSecurityProvider: React.FC<SecurityProviderProps> = ({ clientId, oauthContextPath, redirectUri, children, configureAxios = true, axiosInstance}) => {
+const OAuthSecurityProvider: React.FC<SecurityProviderProps> = ({ clientId, oauthContextPath, redirectUri, children, configureAxios = true, axiosInstance }) => {
+
+  console.log(window.location.href);
 
   const [{ isLoading, accessToken, error }, dispatch] = useReducer(OAuthStateReducer, { isLoading: false })
 
   let isOAuthRoute = window.location.pathname.endsWith('/oauth') || window.location.pathname.endsWith("/oauth/");
+
+  console.log(isOAuthRoute);
 
   const oauth = new OAuth(clientId, redirectUri, oauthContextPath + "/authorize", oauthContextPath + "/token");
 
@@ -108,12 +120,11 @@ const OAuthSecurityProvider: React.FC<SecurityProviderProps> = ({ clientId, oaut
   }
 
   const authorize = () => {
-    dispatch({ type: 'pending' });
     oauth.authorize('code', Crypto.toBase64Url(`path=${window.location.pathname + window.location.search}&otp=${Crypto.getRandomString()}`))
       .then(result => {
         window.location.replace(result);
       }).catch(error => {
-        dispatch({type: 'failure', error})
+        dispatch({ type: 'failure', error })
       });
   }
 
@@ -127,19 +138,21 @@ const OAuthSecurityProvider: React.FC<SecurityProviderProps> = ({ clientId, oaut
           if (result.token_type === 'Bearer') {
             let stateParams = new URLSearchParams(Crypto.fromBase64Url(state));
             window.history.replaceState(window.history.state, '', stateParams.get("path"));
-            dispatch({type: 'tokenResponse', result})
+            dispatch({ type: 'tokenResponse', result })
           } else {
-            dispatch({type: 'failure', error: new Error("Unsupported token type")});
+            dispatch({ type: 'failure', error: new Error("Unsupported token type") });
           }
+        }).catch(error => {
+          dispatch({ type: 'failure', error })
         });
       } else {
-        dispatch({type: 'failure', error: new Error("State is malformed")});
+        dispatch({ type: 'failure', error: new Error("State is malformed") });
       }
     }
-  });
+  }, []);
 
   if (configureAxios && accessToken) {
-    let currentAxios: AxiosInstance = axiosInstance ?  axiosInstance : axios;
+    let currentAxios: AxiosInstance = axiosInstance ? axiosInstance : axios;
     currentAxios.interceptors.request.use((config: AxiosRequestConfig) => {
       config.headers['Authorization'] = `Bearer ${accessToken}`;
       return config;
@@ -153,7 +166,7 @@ const OAuthSecurityProvider: React.FC<SecurityProviderProps> = ({ clientId, oaut
 
   if (isLoading || isOAuthRoute) {
     return (
-      <LoadingPanel header='OAuth' text='Загрузка приложения, пожалуйста, подождите...'/>
+      <LoadingPanel header='OAuth' text='Загрузка приложения, пожалуйста, подождите...' />
     );
   } if (error) {
     return (<span>{error.message}</span>);

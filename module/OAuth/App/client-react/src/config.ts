@@ -1,4 +1,4 @@
-export const BASE_PATH: string = `${window.location.origin}/${window.location.pathname.length === 1 ? window.location.pathname : window.location.pathname.split('/')[0]}`
-export const API_PATH: string = `${BASE_PATH}/api`
+const TEST_API_PATH: string = 'http://localhost:8082/oauth'
 
-export const TEST_API_PATH: string = 'http://localhost:8082/oauth/api'
+export const API_PATH: string = `${process.env.NODE_ENV === 'development' ? TEST_API_PATH : process.env.API_PATH ? process.env.API_PATH : process.env.PUBLIC_URL}/api`
+

@@ -1,10 +1,9 @@
-import { API_PATH } from '../../../../../config'
-import { TEST_API_PATH } from '../../../../../config'
+import { API_PATH } from '../../../../../config';
 import { onLoading, onFailure, GetKeyAction, UpdateKeyAction, getKeySuccess, updateKeySuccess } from '../actions';
 import { put, call } from 'redux-saga/effects';
 import KeyApi from '../../../api/KeyApi';
 
-const api = new KeyApi(TEST_API_PATH);
+const api = new KeyApi(API_PATH);
 
 export function* getKey(action: GetKeyAction) {
   try {

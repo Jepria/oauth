@@ -1,4 +1,4 @@
-import { TEST_API_PATH } from '../../../../../../config'
+import { API_PATH } from '../../../../../../config'
 import { onLoading, onFailure, 
   CreateClientUriAction, createClientUriSuccess, 
   DeleteClientUriAction, deleteClientUriSuccess, 
@@ -8,7 +8,7 @@ import { onLoading, onFailure,
 import { put, call } from 'redux-saga/effects';
 import ClientUriApi from '../../../api/ClientUriApi';
 
-const api = new ClientUriApi(`${TEST_API_PATH}/client`);
+const api = new ClientUriApi(`${API_PATH}/client`);
 
 export function* create(action: CreateClientUriAction) {
   try {

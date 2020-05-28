@@ -1,6 +1,5 @@
-import SessionApi from '../../../api/SessionApi'
-import { API_PATH} from '../../../../../config'
-import { TEST_API_PATH } from '../../../../../config'
+import SessionApi from '../../../api/SessionApi';
+import { API_PATH} from '../../../../../config';
 import { onLoading, onFailure, 
   DeleteSessionAction, deleteSessionSuccess, 
   GetSessionByIdAction, getSessionByIdSuccess, 
@@ -11,9 +10,9 @@ import { put, call } from 'redux-saga/effects';
 import ClientApi from '../../../../client/api/ClientApi';
 import OperatorApi from '../../../api/OperatorApi';
 
-const api = new SessionApi(TEST_API_PATH);
-const clientApi = new ClientApi(TEST_API_PATH);
-const operatorApi = new OperatorApi(TEST_API_PATH);
+const api = new SessionApi(API_PATH);
+const clientApi = new ClientApi(API_PATH);
+const operatorApi = new OperatorApi(API_PATH);
 
 export function* remove(action: DeleteSessionAction) {
   try {

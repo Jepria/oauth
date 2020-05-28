@@ -2,8 +2,7 @@ import React from 'react';
 import {
   BrowserRouter as Router,
   Switch,
-  Route,
-  useRouteMatch
+  Route
 } from "react-router-dom";
 import { Provider } from 'react-redux';
 import { OAuthProtectedFragment } from '../security/OAuthSecurityContext';
@@ -20,7 +19,7 @@ const AppRouter: React.FC = () => {
   return (
     <OAuthProtectedFragment>
       <Provider store={store}>
-        <Router>
+        <Router basename={`${process.env.NODE_ENV === 'development' ? '' : process.env.PUBLIC_URL}`}>
           <Switch>
             <Route path="/ui/client">
               <ClientRoute />

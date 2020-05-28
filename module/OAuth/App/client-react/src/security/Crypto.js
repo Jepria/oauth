@@ -1,32 +1,9 @@
 import Base64 from 'crypto-js/enc-base64';
+import Utf8 from 'crypto-js/enc-utf8';
 import SHA256 from 'crypto-js/sha256';
 
-const getCrypto = () => {
-  let crypto;
-  if (window) {
-    crypto = window.crypto || window.msCrypto;
-  }
-  if (crypto) {
-    return crypto;
-  } else {
-    throw new Error("Crypto API is not available");
-  }
-}
-
-const textEncode = (str) => {
-  if (window.TextEncoder) {
-    return new TextEncoder('utf-8').encode(str);
-  }
-  var utf8 = unescape(encodeURIComponent(str));
-  var result = new Uint8Array(utf8.length);
-  for (var i = 0; i < utf8.length; i++) {
-    result[i] = utf8.charCodeAt(i);
-  }
-  return result;
-}
-
 const toBase64Url = (str) => {
-  let encoded = btoa(str);
+  let encoded = Base64.stringify(Utf8.parse(str));
   encoded = encoded.replace(/\+/gi, '-');
   encoded = encoded.replace(/\//gi, '_');
   encoded = encoded.replace(/=/gi, '');
@@ -36,8 +13,8 @@ const toBase64Url = (str) => {
 const fromBase64Url = (encodedStr) => {
   encodedStr = encodedStr.replace(/-/gi, '+');
   encodedStr = encodedStr.replace(/_/gi, '/');
-  let str = atob(encodedStr);
-  return str;
+  let str = Base64.parse(encodedStr);
+  return Utf8.stringify(str);
 }
 
 const sha256 = async (str) => {
@@ -58,14 +35,21 @@ const sha256 = async (str) => {
 const getRandomString = () => {
   const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let result = "";
-  let crypto = getCrypto();
-  let values = new Uint32Array(16);
-  crypto.getRandomValues(values);
-  for (let i = 0; i < 16; i++) {
-    result += charset[values[i] % charset.length];
+  let crypto;
+  if (window) {
+    crypto = window.crypto || window.msCrypto;
   }
-  return result;
+  if (crypto) {
+    let values = new Uint32Array(16);
+    crypto.getRandomValues(values);
+    for (let i = 0; i < 16; i++) {
+      result += charset[values[i] % charset.length];
+    }
+    return result;
+  } else {
+    return Array(16).join().split(',').map(function() { return charset.charAt(Math.floor(Math.random() * charset.length)); }).join('');
+  }
 
 }
 
-export { toBase64Url, fromBase64Url, textEncode, sha256, getRandomString };
+export { toBase64Url, fromBase64Url, sha256, getRandomString };

@@ -56,64 +56,6 @@ const PageContext = createContext<PageContextValues>(
   }
 );
 
-// const Page: React.FC<HTMLAttributes<HTMLDivElement>> = (props) => {
-
-//   const headerRef = useRef<HTMLElement>(null);
-//   const footerRef = useRef<HTMLElement>(null);
-
-//   return (
-//     <PageContext.Provider value={{ headerRef, footerRef }}>
-//       <PageContainer {...props}>{props.children}</PageContainer>
-//     </PageContext.Provider>
-//   )
-// }
-
-// const Header: React.FC<HTMLAttributes<HTMLDivElement>> = (props) => {
-
-//   const context = useContext(PageContext);
-
-//   return (
-//     <HeaderPanel {...props} ref={context.headerRef}>{props.children}</HeaderPanel>
-//   );
-// }
-
-// const Content: React.FC<HTMLAttributes<HTMLDivElement>> = (props) => {
-
-//   const ref = useRef<HTMLElement>(null);
-//   const [height, setHeight] = useState<number | undefined>(undefined);
-//   const { headerRef, footerRef } = useContext(PageContext);
-
-//   useLayoutEffect(
-//     () => {
-//       let newHeight = 0;
-//       console.log(`Page: ${newHeight}`);
-//       console.log(`Head ${headerRef.current?.offsetHeight}`);
-//       console.log(`Foot: ${footerRef.current?.offsetHeight}`);
-//       if (headerRef.current) {
-//         newHeight = newHeight + headerRef.current.offsetHeight;
-//       }
-//       if (footerRef.current) {
-//         newHeight = newHeight + footerRef.current.offsetHeight;
-//       }
-//       console.log(`Content: ${newHeight}`);
-//       setHeight(newHeight);
-//     // eslint-disable-next-line react-hooks/exhaustive-deps
-//     }, [headerRef.current, footerRef.current]
-//   );
-//   return (
-//     <ContentPanel {...props} ref={ref} height={height ? `calc(100% - ${height}px)` : undefined}>{props.children}</ContentPanel>
-//   );
-// }
-
-// const Footer: React.FC<HTMLAttributes<HTMLDivElement>> = (props) => {
-
-//   const context = useContext(PageContext);
-
-//   return (
-//     <FooterPanel {...props} ref={context.footerRef}>{props.children}</FooterPanel>
-//   );
-// }
-
 const Page = styled.div`
   width: 100%;
   height: 100%;

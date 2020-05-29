@@ -8,7 +8,7 @@ import { SessionState } from '../types';
 import { TextCell } from '../../../components/cell/TextCell';
 import { DateCell } from '../../../components/cell/DateCell';
 import { NumberCell } from '../../../components/cell/NumberCell';
-import { Grid, GridTable, GridHeader, GridHeaderCell, GridBody, GridRow, GridRowCell, GridPagingBar } from '../../../components/grid/StyledGrid';
+import { JepGrid, JepGridTable, JepGridHeader, JepGridHeaderCell, JepGridBody, JepGridRow, JepGridRowCell, JepGridPagingBar } from 'jfront-components';
 
 const SessionListPage: React.FC = () => {
 
@@ -29,60 +29,60 @@ const SessionListPage: React.FC = () => {
   return (
     <Page>
       <Content>
-        <Grid>
-          <GridTable>
-            <GridHeader>
-              <GridHeaderCell>ID сессии</GridHeaderCell>
-              <GridHeaderCell>Код авторизации</GridHeaderCell>
-              <GridHeaderCell>Дата создания</GridHeaderCell>
-              <GridHeaderCell>Логин оператора</GridHeaderCell>
-              <GridHeaderCell>ID оператора</GridHeaderCell>
-              <GridHeaderCell>URL переадресации</GridHeaderCell>
-              <GridHeaderCell>Имя клиентского приложения</GridHeaderCell>
-              <GridHeaderCell>ID клиентского приложения</GridHeaderCell>
-            </GridHeader>
-            <GridBody>
+        <JepGrid>
+          <JepGridTable>
+            <JepGridHeader>
+              <JepGridHeaderCell>ID сессии</JepGridHeaderCell>
+              <JepGridHeaderCell>Код авторизации</JepGridHeaderCell>
+              <JepGridHeaderCell>Дата создания</JepGridHeaderCell>
+              <JepGridHeaderCell>Логин оператора</JepGridHeaderCell>
+              <JepGridHeaderCell>ID оператора</JepGridHeaderCell>
+              <JepGridHeaderCell>URL переадресации</JepGridHeaderCell>
+              <JepGridHeaderCell>Имя клиентского приложения</JepGridHeaderCell>
+              <JepGridHeaderCell>ID клиентского приложения</JepGridHeaderCell>
+            </JepGridHeader>
+            <JepGridBody>
               {records ? records.map(record => {
                 return (
-                  <GridRow key={record.sessionId}
+                  <JepGridRow key={record.sessionId}
                     onClick={() => dispatch(setCurrentRecord(record))}
                     onDoubleClick={() => current !== record ? dispatch(setCurrentRecord(record,
                       () => history.push(`/ui/session/${record.sessionId}/view`))) : history.push(`/ui/session/${record.sessionId}/view`)}
                     selected={record === current}>
-                    <GridRowCell label="ID сессии">
+                    <JepGridRowCell label="ID сессии">
                       <TextCell>{record.sessionId}</TextCell>
-                    </GridRowCell>
-                    <GridRowCell label="Код авторизации">
+                    </JepGridRowCell>
+                    <JepGridRowCell label="Код авторизации">
                       <TextCell>{record.authorizationCode}</TextCell>
-                    </GridRowCell>
-                    <GridRowCell label="Дата создания">
+                    </JepGridRowCell>
+                    <JepGridRowCell label="Дата создания">
                       <DateCell>{record.dateIns}</DateCell>
-                    </GridRowCell>
-                    <GridRowCell label="Логин оператора">
+                    </JepGridRowCell>
+                    <JepGridRowCell label="Логин оператора">
                       <TextCell>{record.operatorLogin}</TextCell>
-                    </GridRowCell>
-                    <GridRowCell label="ID оператора">
+                    </JepGridRowCell>
+                    <JepGridRowCell label="ID оператора">
                       <NumberCell>{record.operator?.value}</NumberCell>
-                    </GridRowCell>
-                    <GridRowCell label="URL переадресации">
+                    </JepGridRowCell>
+                    <JepGridRowCell label="URL переадресации">
                       <TextCell>{record.redirectUri}</TextCell>
-                    </GridRowCell>
-                    <GridRowCell label="Имя клиентского приложения">
+                    </JepGridRowCell>
+                    <JepGridRowCell label="Имя клиентского приложения">
                       <TextCell>{record.client?.name}</TextCell>
-                    </GridRowCell>
-                    <GridRowCell label="ID клиентского приложения">
+                    </JepGridRowCell>
+                    <JepGridRowCell label="ID клиентского приложения">
                       <TextCell>{record.client?.value}</TextCell>
-                    </GridRowCell>
-                  </GridRow>);
+                    </JepGridRowCell>
+                  </JepGridRow>);
               }): null}
-            </GridBody>
-          </GridTable>
-          <GridPagingBar rowCount={records?.length} totalRowCount={resultSetSize} onRefresh={(page, pageSize) => {
+            </JepGridBody>
+          </JepGridTable>
+          <JepGridPagingBar rowCount={records?.length} totalRowCount={resultSetSize} onRefresh={(page, pageSize) => {
             if (searchId) {
               dispatch(searchSessions(searchId, pageSize, page))
             }
           }} />
-        </Grid>
+        </JepGrid>
       </Content>
     </Page>
   );

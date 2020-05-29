@@ -7,7 +7,7 @@ import { AppState } from '../../store';
 import { ClientState } from '../types';
 import { GrantType, ApplicationType } from '../../../security/OAuth';
 import { TextCell } from '../../../components/cell/TextCell';
-import { Grid, GridTable, GridHeader, GridHeaderCell, GridBody, GridRow, GridRowCell, GridPagingBar } from '../../../components/grid/StyledGrid';
+import { JepGrid, JepGridTable, JepGridHeader, JepGridHeaderCell, JepGridBody, JepGridRow, JepGridRowCell, JepGridPagingBar } from 'jfront-components';
 
 export const ClientListPage: React.FC = () => {
 
@@ -29,52 +29,52 @@ export const ClientListPage: React.FC = () => {
   return (
     <Page>
       <Content>
-        <Grid>
-          <GridTable>
-            <GridHeader>
-              <GridHeaderCell>ID клиентского приложения</GridHeaderCell>
-              <GridHeaderCell>Секретное слово</GridHeaderCell>
-              <GridHeaderCell>Наименование</GridHeaderCell>
-              <GridHeaderCell>Наименование (англ)</GridHeaderCell>
-              <GridHeaderCell>Тип приложения</GridHeaderCell>
-              <GridHeaderCell>Разрешенные типы авторизации</GridHeaderCell>
-            </GridHeader>
-            <GridBody>
+        <JepGrid>
+          <JepGridTable>
+            <JepGridHeader>
+              <JepGridHeaderCell>ID клиентского приложения</JepGridHeaderCell>
+              <JepGridHeaderCell>Секретное слово</JepGridHeaderCell>
+              <JepGridHeaderCell>Наименование</JepGridHeaderCell>
+              <JepGridHeaderCell>Наименование (англ)</JepGridHeaderCell>
+              <JepGridHeaderCell>Тип приложения</JepGridHeaderCell>
+              <JepGridHeaderCell>Разрешенные типы авторизации</JepGridHeaderCell>
+            </JepGridHeader>
+            <JepGridBody>
               {records ? records.map(record => {
                 return (
-                  <GridRow key={record.clientId}
+                  <JepGridRow key={record.clientId}
                     onClick={() => dispatch(setCurrentRecord(record))}
                     onDoubleClick={() => current !== record ? dispatch(setCurrentRecord(record,
                       () => history.push(`/ui/client/${record.clientId}/view`))) : history.push(`/ui/client/${record.clientId}/view`)}
                     selected={record === current}>
-                    <GridRowCell label="ID клиентского приложения">
+                    <JepGridRowCell label="ID клиентского приложения">
                       <TextCell>{record.clientId}</TextCell>
-                    </GridRowCell>
-                    <GridRowCell label="Секретное слово">
+                    </JepGridRowCell>
+                    <JepGridRowCell label="Секретное слово">
                       <TextCell>{record.clientSecret}</TextCell>
-                    </GridRowCell>
-                    <GridRowCell label="Наименование">
+                    </JepGridRowCell>
+                    <JepGridRowCell label="Наименование">
                       <TextCell>{record.clientName}</TextCell>
-                    </GridRowCell>
-                    <GridRowCell label="Наименование (англ)">
+                    </JepGridRowCell>
+                    <JepGridRowCell label="Наименование (англ)">
                       <TextCell>{record.clientNameEn}</TextCell>
-                    </GridRowCell>
-                    <GridRowCell label="Тип приложения">
+                    </JepGridRowCell>
+                    <JepGridRowCell label="Тип приложения">
                       <TextCell>{ApplicationType[record.applicationType]}</TextCell>
-                    </GridRowCell>
-                    <GridRowCell label="Разрешенные типы авторизации">
+                    </JepGridRowCell>
+                    <JepGridRowCell label="Разрешенные типы авторизации">
                       <TextCell wrapText>{record.grantTypes.map((grantType) => GrantType[grantType]).join(', ')}</TextCell>
-                    </GridRowCell>
-                  </GridRow>);
+                    </JepGridRowCell>
+                  </JepGridRow>);
               }) : null}
-            </GridBody>
-          </GridTable>
-          <GridPagingBar rowCount={records?.length} totalRowCount={resultSetSize} onRefresh={(page, pageSize) => {
+            </JepGridBody>
+          </JepGridTable>
+          <JepGridPagingBar rowCount={records?.length} totalRowCount={resultSetSize} onRefresh={(page, pageSize) => {
             if (searchId) {
               dispatch(searchClients(searchId, pageSize, page))
             }
           }} />
-        </Grid>
+        </JepGrid>
       </Content>
     </Page>
   );

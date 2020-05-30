@@ -15,12 +15,12 @@ import { LoadingPanel } from '../../components/mask';
 import { ClientState } from './types';
 import ClientSearchPage from './pages/ClientSearchPage';
 import { ClientListPage } from './pages/ClientListPage';
-import { Page, Content, Header } from '../../components/Layout';
 import { TabPanel, SelectedTab, Tab } from '../../components/tabpanel/TabPanel';
 import { ToolBar } from '../../components/toolbar';
 import * as DefaultButtons from '../../components/toolbar/ToolBarButtons';
 import { setCurrentRecord, deleteClient, searchClients } from './state/redux/actions';
 import { HistoryState } from '../../components/HistoryState';
+import { Page, Header, Content } from 'jfront-components';
 
 const ClientRoute: React.FC = () => {
 

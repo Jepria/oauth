@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { Page, Content } from '../../../components/Layout';
 import { setCurrentRecord, searchSessions, postSearchSessionRequest } from '../state/redux/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
@@ -8,7 +7,7 @@ import { SessionState } from '../types';
 import { TextCell } from '../../../components/cell/TextCell';
 import { DateCell } from '../../../components/cell/DateCell';
 import { NumberCell } from '../../../components/cell/NumberCell';
-import { JepGrid, JepGridTable, JepGridHeader, JepGridHeaderCell, JepGridBody, JepGridRow, JepGridRowCell, JepGridPagingBar } from 'jfront-components';
+import { JepGrid, JepGridTable, JepGridHeader, JepGridHeaderCell, JepGridBody, JepGridRow, JepGridRowCell, JepGridPagingBar, Page, Content } from 'jfront-components';
 
 const SessionListPage: React.FC = () => {
 

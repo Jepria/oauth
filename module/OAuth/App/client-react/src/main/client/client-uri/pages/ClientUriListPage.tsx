@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { Page, Content } from '../../../../components/Layout';
 import { setCurrentRecord, searchClientUri } from '../state/redux/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, useParams, useLocation } from 'react-router-dom';
@@ -7,7 +6,7 @@ import { AppState } from '../../../store';
 import { ClientUriState } from '../types';
 import { HistoryState } from '../../../../components/HistoryState';
 import { TextCell } from '../../../../components/cell/TextCell';
-import { JepGrid, JepGridTable, JepGridHeader, JepGridHeaderCell, JepGridBody, JepGridRow, JepGridRowCell, JepGridPagingBar } from 'jfront-components';
+import { JepGrid, JepGridTable, JepGridHeader, JepGridHeaderCell, JepGridBody, JepGridRow, JepGridRowCell, JepGridPagingBar, Page, Content } from 'jfront-components';
 
 export const ClientUriListPage: React.FC = () => {
 

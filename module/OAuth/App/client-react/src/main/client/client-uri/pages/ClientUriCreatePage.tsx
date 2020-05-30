@@ -1,12 +1,12 @@
 import React, { HTMLAttributes, useImperativeHandle } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
-import { Page, Content, Form as FormContainer } from '../../../../components/Layout';
 import { FormField, Label } from '../../../../components/form/Field';
 import { Formik, Form, Field, FieldProps } from 'formik';
 import { TextInput } from '../../../../components/form/input/TextInput';
 import { useDispatch } from 'react-redux';
 import { ClientUri } from '../types';
 import { createClientUri } from '../state/redux/actions';
+import { Page, Content, FormContainer } from 'jfront-components';
 
 export const ClientUriCreatePage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();

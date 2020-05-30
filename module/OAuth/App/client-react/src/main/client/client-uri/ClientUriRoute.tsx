@@ -14,12 +14,12 @@ import { useSelector, useDispatch } from 'react-redux';
 import { LoadingPanel } from '../../../components/mask';
 import { ClientUriState } from './types';
 import { ClientUriListPage } from './pages/ClientUriListPage';
-import { Page, Content, Header } from '../../../components/Layout';
 import { TabPanel, SelectedTab, Tab } from '../../../components/tabpanel/TabPanel';
 import { ToolBar } from '../../../components/toolbar';
 import * as DefaultButtons from '../../../components/toolbar/ToolBarButtons';
 import { setCurrentRecord, deleteClientUri, searchClientUri } from './state/redux/actions';
 import { HistoryState } from '../../../components/HistoryState';
+import { Page, Header, Content } from 'jfront-components';
 
 const ClientUriRoute: React.FC = () => {
 

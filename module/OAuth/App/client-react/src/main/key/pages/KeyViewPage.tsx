@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
-import { Page, Content, VerticalLayout, Form as FormContainer } from '../../../components/Layout';
 import { FormField, Label, Text } from '../../../components/form/Field';
 import { AppState } from '../../store';
 import { KeyState } from '../types';
 import { useSelector, useDispatch } from 'react-redux';
 import { getKey } from '../state/redux/actions';
+import { Page, Content, FormContainer, VerticalLayout } from 'jfront-components';
 
 const KeyViewPage: React.FC = () => {
 

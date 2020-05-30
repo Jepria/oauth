@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Page, Content, VerticalLayout, Form as FormContainer } from '../../../components/Layout';
 import { FormField, Label, Text } from '../../../components/form/Field';
 import { AppState } from '../../store';
 import { SessionState } from '../types';
 import { useSelector, useDispatch } from 'react-redux';
 import { getSessionById } from '../state/redux/actions';
+import { Page, Content, FormContainer, VerticalLayout } from 'jfront-components';
 
 const SessionViewPage: React.FC = () => {
 

@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Page, Content, VerticalLayout, Form as FormContainer } from '../../../../components/Layout';
 import { FormField, Label, Text } from '../../../../components/form/Field';
 import { AppState } from '../../../store';
 import { ClientUriState } from '../types';
 import { useSelector, useDispatch } from 'react-redux';
 import { getClientUriById } from '../state/redux/actions';
+import { Page, Content, FormContainer, VerticalLayout } from 'jfront-components';
 
 export const ClientUriViewPage: React.FC = () => {
 

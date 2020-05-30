@@ -1,19 +1,17 @@
 import React, { useEffect } from 'react';
-import { Page, Content, Header as PageHeader, Footer, Header } from '../../../components/Layout';
-import { setCurrentRecord, searchClients, postSearchClientRequest, deleteClient } from '../state/redux/actions';
+import { setCurrentRecord, searchClients, postSearchClientRequest } from '../state/redux/actions';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory, useParams } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { AppState } from '../../store';
 import { ClientState } from '../types';
 import { GrantType, ApplicationType } from '../../../security/OAuth';
 import { TextCell } from '../../../components/cell/TextCell';
-import { JepGrid, JepGridTable, JepGridHeader, JepGridHeaderCell, JepGridBody, JepGridRow, JepGridRowCell, JepGridPagingBar } from 'jfront-components';
+import { JepGrid, JepGridTable, JepGridHeader, JepGridHeaderCell, JepGridBody, JepGridRow, JepGridRowCell, JepGridPagingBar, Page, Content } from 'jfront-components';
 
 export const ClientListPage: React.FC = () => {
 
   const dispatch = useDispatch();
   const history = useHistory();
-  const { clientId } = useParams();
   const { records, current, searchId, searchRequest, resultSetSize } = useSelector<AppState, ClientState>(state => state.client);
 
   useEffect(() => {

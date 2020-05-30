@@ -9,11 +9,11 @@ import { AppState } from '../store';
 import { useSelector, useDispatch } from 'react-redux';
 import { LoadingPanel } from '../../components/mask';
 import { KeyState } from './types';
-import { Page, Content, Header } from '../../components/Layout';
 import { TabPanel, SelectedTab } from '../../components/tabpanel/TabPanel';
 import { ToolBar, ToolBarButton } from '../../components/toolbar';
 import { updateKey, getKey } from './state/redux/actions';
 import change_password from './change_password.png';
+import { Page, Header, Content } from 'jfront-components';
 
 const KeyRoute: React.FC = () => {
 

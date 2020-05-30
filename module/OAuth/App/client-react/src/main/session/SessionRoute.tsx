@@ -13,12 +13,12 @@ import { LoadingPanel } from '../../components/mask';
 import { SessionState } from './types';
 import SessionSearchPage from './pages/SessionSearchPage';
 import SessionListPage from './pages/SessionListPage';
-import { Page, Content, Header } from '../../components/Layout';
 import { TabPanel, SelectedTab } from '../../components/tabpanel/TabPanel';
 import { ToolBar } from '../../components/toolbar';
 import * as DefaultButtons from '../../components/toolbar/ToolBarButtons';
 import { setCurrentRecord, deleteSession, searchSessions } from './state/redux/actions';
 import { HistoryState } from '../../components/HistoryState';
+import { Page, Header, Content } from 'jfront-components';
 
 const SessionRoute: React.FC = () => {
 

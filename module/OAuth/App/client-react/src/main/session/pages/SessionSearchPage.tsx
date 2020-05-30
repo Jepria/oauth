@@ -1,6 +1,5 @@
 import React, { HTMLAttributes, useImperativeHandle, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
-import { Page, Content, Form as FormContainer } from '../../../components/Layout';
 import { FormField, Label } from '../../../components/form/Field';
 import { Formik, Form, Field, FieldProps } from 'formik';
 import { TextInput } from '../../../components/form/input/TextInput';
@@ -9,6 +8,7 @@ import { SessionSearchTemplate, SessionState } from '../types';
 import { postSearchSessionRequest, getClients, getOperators } from '../state/redux/actions';
 import { AppState } from '../../store';
 import { ComboBox, ComboBoxInput, ComboBoxPopup, ComboBoxList, ComboBoxOption } from '../../../components/form/input/combobox';
+import { Page, Content, FormContainer } from 'jfront-components';
 
 const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();

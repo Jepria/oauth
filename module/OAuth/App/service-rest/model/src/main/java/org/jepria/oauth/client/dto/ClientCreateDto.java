@@ -11,8 +11,8 @@ import java.util.List;
 @ApplicationGrantType
 public class ClientCreateDto {
 
+  @NotBlank
   String clientId;
-  String clientSecret;
   @NotBlank
   String clientName;
   String clientNameEn;
@@ -28,14 +28,6 @@ public class ClientCreateDto {
 
   public void setClientId(String clientId) {
     this.clientId = clientId;
-  }
-
-  public String getClientSecret() {
-    return clientSecret;
-  }
-
-  public void setClientSecret(String clientSecret) {
-    this.clientSecret = clientSecret;
   }
 
   public String getClientName() {

@@ -59,7 +59,6 @@ public class ClientControlIT extends DaoTestBase {
     clientCreateDto.setClientId(clientId);
     byte[] clientSecretBytes = new byte[16];
     sr.nextBytes(clientSecretBytes);
-    clientCreateDto.setClientSecret(encoder.encodeToString(clientSecretBytes));
     clientCreateDto.setClientName("created" + new Date().getTime());
     clientCreateDto.setClientNameEn("createdEn" + new Date().getTime());
     clientCreateDto.setApplicationType(ApplicationType.WEB);
@@ -69,7 +68,7 @@ public class ClientControlIT extends DaoTestBase {
       put(ClientFieldNames.CLIENT_ID, clientId);
     }}, 1).get(0);
     assertEquals(clientId, clientDto.getClientId());
-    assertEquals(clientCreateDto.getClientSecret(), clientDto.getClientSecret());
+    assertNotNull(clientDto.getClientSecret());
     assertEquals(clientCreateDto.getClientName(), clientDto.getClientName());
     assertEquals(clientCreateDto.getClientNameEn(), clientDto.getClientNameEn());
     assertEquals(clientCreateDto.getApplicationType(), clientDto.getApplicationType());

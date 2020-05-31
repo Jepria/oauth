@@ -16,7 +16,7 @@ function getOrigin() {
 function App() {
   return (
     <OAuthSecurityProvider
-        clientId={'test'}
+        clientId={'OAuthRFI'}
         redirectUri={`${getOrigin()}${process.env.NODE_ENV === 'development' ? '' : `${process.env.PUBLIC_URL}`}/oauth`}
         oauthContextPath={`${process.env.NODE_ENV === 'development' ? 'http://localhost:8082/oauth/api' : `${getOrigin()}/oauth/api`}`}>
       <AppRouter/>

@@ -13,7 +13,7 @@
         <module>model</module>
         <module>dao</module>
         <module>service</module>
-        <module>rest</module>
+        <module>jax-rs</module>
     </modules>
 
     <parent>

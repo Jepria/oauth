@@ -47,11 +47,11 @@ public class ClientUriDaoImpl implements Dao {
   public List<ClientUriDto> find(Object template, Integer operatorId) {
     //language=Oracle
     String findSqlQuery =
-      "select ct.CLIENT_CODE as CLIENT_ID, cu.client_uri_id, cu.client_uri " +
+      "select ct.SHORT_NAME as CLIENT_ID, cu.client_uri_id, cu.client_uri " +
         "from OA_CLIENT_URI cu " +
           "inner join OA_CLIENT ct " +
             "on cu.client_id = ct.client_id " +
-        "where ct.client_code like ?";
+        "where ct.short_name like ?";
     ClientUriSearchDto dto = (ClientUriSearchDto) template;
     Db db = getDb();
     CallableStatement statement = db.prepare(findSqlQuery);
@@ -83,11 +83,11 @@ public class ClientUriDaoImpl implements Dao {
     Db db = getDb();
     //language=Oracle
     String findSqlQuery =
-      "select ct.CLIENT_CODE as CLIENT_ID, cu.client_uri_id, cu.client_uri " +
+      "select ct.SHORT_NAME as CLIENT_ID, cu.client_uri_id, cu.client_uri " +
         "from OA_CLIENT_URI cu " +
         "inner join OA_CLIENT ct " +
         "      on cu.client_id = ct.client_id " +
-        "where ct.client_code = ? and cu.client_uri_id = ?";
+        "where ct.short_name = ? and cu.client_uri_id = ?";
     CallableStatement statement = db.prepare(findSqlQuery);
     List<ClientUriDto> result = null;
     try {
@@ -122,7 +122,7 @@ public class ClientUriDaoImpl implements Dao {
       "values ((" +
         "select ct.client_id " +
         "from OA_CLIENT ct " +
-        "where ct.client_code = ?" +
+        "where ct.short_name = ?" +
       "), ?, ?)";
     CallableStatement insertStatement = db.prepare(insertSqlQuery);
     Integer result = null;

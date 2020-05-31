@@ -31,12 +31,7 @@ const ClientEditPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((p
     }
   }, [current, clientId, dispatch]);
 
-  const initialValues: Client = current ? {
-    clientName: current.clientName,
-    clientNameEn: current.clientNameEn,
-    applicationType: current.applicationType,
-    grantTypes: current.grantTypes.slice()
-  } : {
+  const initialValues: Client = current ? current : {
       clientName: '',
       applicationType: '',
       grantTypes: []
@@ -71,6 +66,24 @@ const ClientEditPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((p
               return errors;
             }}>
             <Form {...props}>
+              <FormField>
+                <Label width={'250px'}>Краткое наименование приложения:</Label>
+                <Field name="clientId">
+                  {(props: FieldProps) => (
+                      <TextInput
+                          name={props.field.name}
+                          value={props.field.value}
+                          onChange={props.field.onChange}
+                          onBlur={props.field.onBlur}
+                          touched={props.meta.touched}
+                          error={props.meta.error}
+                          maxLength={16}
+                          pattern="[A-Za-z0-9]{16}"
+                          disabled
+                      />
+                  )}
+                </Field>
+              </FormField>
               <FormField>
                 <Label width={'250px'}>Имя клиентского приложения:</Label>
                 <Field name="clientName">

@@ -35,8 +35,17 @@ const ClientCreatePage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
               }));
             }}
             validate={(values) => {
-              const errors: { clientName?: string, applicationType?: string, grantTypes?: string } = {};
-
+              const errors: { clientId?: string, clientName?: string, applicationType?: string, grantTypes?: string } = {};
+              if (!values['clientId']) {
+                errors.clientId = 'Поле должно быть заполнено'
+              } else {
+                if (!/[A-Za-z0-9]/.test(values['clientId'])) {
+                  errors.clientId = 'Значение должно состоять из букв английского алфавита и цифр'
+                }
+                if (values['clientId'].length > 16) {
+                  errors.clientId = 'Максимальная длина значения не больше 16 символов'
+                }
+              }
               if (!values['clientName']) {
                 errors.clientName = 'Поле должно быть заполнено'
               }
@@ -49,6 +58,21 @@ const ClientCreatePage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
               return errors;
             }}>
             <Form {...props}>
+              <FormField>
+                <Label width={'250px'}>Имя клиентского приложения:</Label>
+                <Field name="clientId">
+                  {(props: FieldProps) => (
+                      <TextInput
+                          name={props.field.name}
+                          value={props.field.value}
+                          onChange={props.field.onChange}
+                          onBlur={props.field.onBlur}
+                          touched={props.meta.touched}
+                          error={props.meta.error}
+                      />
+                  )}
+                </Field>
+              </FormField>
               <FormField>
                 <Label width={'250px'}>Имя клиентского приложения:</Label>
                 <Field name="clientName">

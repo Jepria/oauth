@@ -48,7 +48,7 @@ public class SessionDaoImpl implements Dao {
     "begin " +
       "open rc for select " +
           "ss.SESSION_ID," +
-          "cl.CLIENT_CODE as CLIENT_ID," +
+          "cl.SHORT_NAME as CLIENT_ID," +
           "cl.CLIENT_NAME," +
           "ss.REDIRECT_URI," +
           "ss.AUTHORIZATION_CODE," +
@@ -74,7 +74,7 @@ public class SessionDaoImpl implements Dao {
           "(ss.SESSION_ID = sessionId or sessionId is null) " +
           "and (ss.AUTHORIZATION_CODE like authCode or authCode is null) " +
           "and (ss.OPERATOR_ID = operatorId or operatorId is null) " +
-          "and (cl.CLIENT_CODE like clientCode or clientCode is null) " +
+          "and (cl.SHORT_NAME like clientCode or clientCode is null) " +
           "and (ss.REDIRECT_URI like redirectUri or redirectUri is null) " +
           "and (ss.SESSION_TOKEN_ID like sessionTokenId or sessionTokenId is null) " +
           "and (ss.REFRESH_TOKEN_ID like refreshTokenId or refreshTokenId is null) " +
@@ -223,7 +223,7 @@ public class SessionDaoImpl implements Dao {
         "err_num NUMBER;" +
         "err_msg VARCHAR2(100);" +
       "begin " +
-        "select count(*) into clientCount from OA_CLIENT cl where cl.CLIENT_CODE like clientId; " +
+        "select count(*) into clientCount from OA_CLIENT cl where cl.SHORT_NAME like clientId; " +
         "if clientId is not null and clientCount <> 1 then " +
           "raise_application_error(-20001, 'Нет клиентского приложения с указанным ID'); " +
         "end if;" +
@@ -245,7 +245,7 @@ public class SessionDaoImpl implements Dao {
         "values (" +
           "authCode, " +
           "redirectUri, " +
-          "(select cl.CLIENT_ID from OA_CLIENT cl where cl.CLIENT_CODE like clientId), " +
+          "(select cl.CLIENT_ID from OA_CLIENT cl where cl.SHORT_NAME like clientId), " +
           "operatorId, " +
           "accessTokenId, " +
           "accessTokenDateIns, " +

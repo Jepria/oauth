@@ -44,7 +44,7 @@ public class AuthenticationDaoImpl implements AuthenticationDao {
   @Override
   public Integer loginByClientSecret(String clientId, String clientSecret) {
     //language=Oracle
-    String sqlQuery = "select cl.client_id from OA_CLIENT cl where cl.CLIENT_CODE like ? and cl.CLIENT_SECRET like ?";
+    String sqlQuery = "select cl.client_id from OA_CLIENT cl where cl.SHORT_NAME like ? and cl.CLIENT_SECRET like ?";
     Db db = getDb();
     CallableStatement callableStatement = db.prepare(sqlQuery);
     try {

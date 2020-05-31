@@ -2,7 +2,7 @@ package org.jepria.oauth.client;
 
 public class ClientFieldNames {
   public static final String CLIENT_ID = "client_id";
-  public static final String CLIENT_CODE = "client_code";
+  public static final String SHORT_NAME = "short_name";
   public static final String CLIENT_SECRET = "client_secret";
   public static final String CLIENT_NAME = "client_name";
   public static final String CLIENT_NAME_EN = "client_name_en";

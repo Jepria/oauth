@@ -10,6 +10,11 @@ import org.jepria.oauth.client.dto.ClientUpdateDto;
 import org.jepria.oauth.sdk.ApplicationType;
 import org.jepria.server.data.RuntimeSQLException;
 
+import javax.xml.bind.DatatypeConverter;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SecureRandom;
 import java.sql.CallableStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,11 +25,14 @@ import java.util.Map;
 import static org.jepria.oauth.client.ClientFieldNames.*;
 
 public class ClientDaoImpl implements ClientDao {
-  
+
   private String jndiName = "jdbc/RFInfoDS";
-  
-  public ClientDaoImpl(){};
-  
+
+  public ClientDaoImpl() {
+  }
+
+  ;
+
   public ClientDaoImpl(String jndName) {
     this.jndiName = jndName;
   }
@@ -36,20 +44,20 @@ public class ClientDaoImpl implements ClientDao {
   //language=Oracle
   private String findSqlQuery = "declare " +
     "rc sys_refcursor;" +
-    "clientCode varchar(64) := ?;" +
+    "shortName varchar(64) := ?;" +
     "clientName varchar(100) := ?;" +
     "clientNameEn varchar(100) := ?;" +
     "begin " +
     "open rc for select " +
     //"ct.client_id," +
-    "ct.client_code," +
+    "ct.short_name," +
     "ct.client_secret," +
     "ct.client_name," +
     "ct.client_name_en," +
     "ct.application_type_code " +
     "from OA_CLIENT ct " +
     "where ct.is_deleted = 0 " +
-    "and (ct.client_code like clientCode or clientCode is null) " +
+    "and (ct.short_name like shortName or shortName is null) " +
     "and (ct.client_name like clientName or clientName is null) " +
     "and (ct.client_name_en like clientNameEn or clientNameEn is null);" +
     "? := rc; " +
@@ -58,7 +66,7 @@ public class ClientDaoImpl implements ClientDao {
   private ResultSetMapper mapper = new ResultSetMapper<ClientDto>() {
     @Override
     public void map(ResultSet rs, ClientDto dto) throws SQLException {
-      dto.setClientId(rs.getString(CLIENT_CODE));
+      dto.setClientId(rs.getString(SHORT_NAME));
       dto.setClientSecret(rs.getString(CLIENT_SECRET));
       dto.setClientName(rs.getString(CLIENT_NAME));
       dto.setClientNameEn(rs.getString(CLIENT_NAME_EN));
@@ -142,12 +150,19 @@ public class ClientDaoImpl implements ClientDao {
     Db db = getDb();
     //language=Oracle
     ClientCreateDto dto = (ClientCreateDto) record;
-    String insertSqlQuery = "insert into OA_CLIENT(CLIENT_CODE, CLIENT_SECRET, CLIENT_NAME, CLIENT_NAME_EN, APPLICATION_TYPE_CODE, OPERATOR_ID_INS) " +
+    String insertSqlQuery = "insert into OA_CLIENT(SHORT_NAME, CLIENT_SECRET, CLIENT_NAME, CLIENT_NAME_EN, APPLICATION_TYPE_CODE, OPERATOR_ID_INS) " +
       "values (?, ?, ?, ?, ?, ?)";
     CallableStatement insertStatement = db.prepare(insertSqlQuery);
     try {
       insertStatement.setString(1, dto.getClientId());
-      insertStatement.setString(2, dto.getClientSecret());
+      SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
+      MessageDigest md = MessageDigest.getInstance("SHA-256");
+      byte[] salt = new byte[16];
+      random.nextBytes(salt);
+      md.update(salt);
+      byte[] secret = new byte[32];
+      random.nextBytes(secret);
+      insertStatement.setString(2, DatatypeConverter.printHexBinary(md.digest(secret)));
       insertStatement.setString(3, dto.getClientName());
       insertStatement.setString(4, dto.getClientNameEn());
       insertStatement.setString(5, dto.getApplicationType());
@@ -194,10 +209,10 @@ public class ClientDaoImpl implements ClientDao {
       e.printStackTrace();
       db.rollback();
       throw new RuntimeSQLException(e);
-    } catch (Throwable th) {
+    } catch (NoSuchAlgorithmException | NoSuchProviderException th) {
       th.printStackTrace();
       db.rollback();
-      throw th;
+      throw new RuntimeException(th);
     } finally {
       db.closeAll();
     }
@@ -217,7 +232,7 @@ public class ClientDaoImpl implements ClientDao {
       if (!old.getApplicationType().equals(dto.getApplicationType())) {
         //language=Oracle
         String deleteGrantsSqlString = "delete from OA_CLIENT_GRANT_TYPE cgt " +
-          "where cgt.client_id = (select ct.client_id from OA_CLIENT ct where ct.client_code like ?)";
+          "where cgt.client_id = (select ct.client_id from OA_CLIENT ct where ct.short_name like ?)";
         CallableStatement deleteGrantTypeStatement = db.prepare(deleteGrantsSqlString);
         deleteGrantTypeStatement.setString(1, (String) primaryKey.get(CLIENT_ID));
         deleteGrantTypeStatement.executeQuery();
@@ -226,7 +241,7 @@ public class ClientDaoImpl implements ClientDao {
       //language=Oracle
       String updateSqlQuery = "UPDATE OA_CLIENT t " +
         "SET CLIENT_NAME = ?, CLIENT_NAME_EN = ?, APPLICATION_TYPE_CODE = ? " +
-        "WHERE t.CLIENT_CODE = ?";
+        "WHERE t.SHORT_NAME = ?";
       CallableStatement updateStatement = db.prepare(updateSqlQuery);
 
       updateStatement.setString(1, dto.getClientName());
@@ -242,7 +257,7 @@ public class ClientDaoImpl implements ClientDao {
         "where cgt.client_id in (" +
         "select ct.client_id " +
         "from OA_CLIENT ct " +
-        "where ct.CLIENT_CODE = ?)";
+        "where ct.SHORT_NAME = ?)";
       CallableStatement deleteGrantTypeStatement = db.prepare(deleteGrantsSqlString);
       deleteGrantTypeStatement.setString(1, (String) primaryKey.get(CLIENT_ID));
       deleteGrantTypeStatement.execute();
@@ -250,7 +265,7 @@ public class ClientDaoImpl implements ClientDao {
       //language=Oracle
       String insertGrantSqlString =
         "insert into OA_CLIENT_GRANT_TYPE (CLIENT_ID, GRANT_TYPE_CODE) " +
-          "values ((select ct.client_id from OA_CLIENT ct where ct.CLIENT_CODE = ?) ,?)";
+          "values ((select ct.client_id from OA_CLIENT ct where ct.SHORT_NAME = ?) ,?)";
       CallableStatement insertGrantTypeStatement = db.prepare(insertGrantSqlString);
       List<String> grantTypes;
       if (dto.getGrantTypes() != null && dto.getGrantTypes().size() > 0) {
@@ -284,7 +299,7 @@ public class ClientDaoImpl implements ClientDao {
     //language=Oracle
     String updateSqlQuery = "UPDATE OA_CLIENT t " +
       "SET IS_DELETED = ? " +
-      "WHERE t.CLIENT_CODE = ?";
+      "WHERE t.SHORT_NAME = ?";
     CallableStatement updateStatement = db.prepare(updateSqlQuery);
     try {
       updateStatement.setInt(1, 1);
@@ -312,8 +327,8 @@ public class ClientDaoImpl implements ClientDao {
     //language=Oracle
     String sqlString = "select cgt.grant_type_code " +
       "from OA_CLIENT_GRANT_TYPE cgt " +
-        "inner join OA_CLIENT clt on clt.CLIENT_ID = cgt.CLIENT_ID " +
-      "where clt.CLIENT_CODE like ?";
+      "inner join OA_CLIENT clt on clt.CLIENT_ID = cgt.CLIENT_ID " +
+      "where clt.SHORT_NAME like ?";
     Db db = getDb();
     CallableStatement statement = db.prepare(sqlString);
     List<String> result = new ArrayList<>();

@@ -18,7 +18,7 @@ function createWelcomeMessage() {
     if (clientName) {
         var clientNameParagraphElement = document.createElement('p');
         var clientNameElement = document.createElement('em');
-        clientNameElement.innerText = clientName;
+        clientNameElement.innerText = decodeURIComponent(clientName);
         clientNameParagraphElement.appendChild(clientNameElement);
         var requestParagraphElement = document.createElement('p');
         requestParagraphElement.innerHTML += 'запрашивает доступ к вашей учетной записи';

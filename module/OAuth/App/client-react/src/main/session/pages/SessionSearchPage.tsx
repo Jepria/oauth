@@ -7,8 +7,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { SessionSearchTemplate, SessionState } from '../types';
 import { postSearchSessionRequest, getClients, getOperators } from '../state/redux/actions';
 import { AppState } from '../../store';
-import { ComboBox, ComboBoxInput, ComboBoxPopup, ComboBoxList, ComboBoxOption } from '../../../components/form/input/combobox';
-import { Page, Content, FormContainer } from 'jfront-components';
+import { Page, Content, FormContainer, ComboBox, ComboBoxInput, ComboBoxList, ComboBoxOption } from 'jfront-components';
 
 const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();
@@ -25,7 +24,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
   useEffect(() => {
     dispatch(getOperators(""));
     dispatch(getClients(""));
-  },[]);
+  }, []);
 
   return (
     <Page>
@@ -52,12 +51,10 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
                       }
                     }} width='250px'>
                       <ComboBoxInput onChange={e => dispatch(getOperators(e.target.value))} placeholder='Введите имя пользователя' />
-                      <ComboBoxPopup>
-                        <ComboBoxList>
-                          <ComboBoxOption name="" value={undefined} />
-                          {operators?.map(operator => <ComboBoxOption key={operator.value} name={operator.name} value={operator.value} />)}
-                        </ComboBoxList>
-                      </ComboBoxPopup>
+                      <ComboBoxList>
+                        <ComboBoxOption name="" value={undefined} />
+                        {operators?.map(operator => <ComboBoxOption key={operator.value} name={operator.name} value={operator.value} />)}
+                      </ComboBoxList>
                     </ComboBox>)}
                 </Field>
               </FormField>
@@ -67,12 +64,10 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
                   {(props: FieldProps) => (
                     <ComboBox name={props.field.name} value={props.field.value} touched={props.meta.touched} error={props.meta.error} width='250px'>
                       <ComboBoxInput onChange={e => dispatch(getClients(e.target.value))} placeholder='Введите имя приложения' />
-                      <ComboBoxPopup>
-                        <ComboBoxList>
-                          <ComboBoxOption name="" value="" />
-                          {clients?.map(client => <ComboBoxOption key={client.clientId} name={client.clientName} value={client.clientId} />)}
-                        </ComboBoxList>
-                      </ComboBoxPopup>
+                      <ComboBoxList>
+                        <ComboBoxOption name="" value="" />
+                        {clients?.map(client => <ComboBoxOption key={client.clientId} name={client.clientName} value={client.clientId} />)}
+                      </ComboBoxList>
                     </ComboBox>)}
                 </Field>
               </FormField>

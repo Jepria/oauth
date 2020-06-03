@@ -1,15 +1,13 @@
 import React, { HTMLAttributes, useImperativeHandle } from 'react';
 import { useHistory } from 'react-router-dom';
-import { ComboBox, ComboBoxPopup, ComboBoxOption, ComboBoxInput, ComboBoxList } from '../../../components/form/input/combobox';
 import { FormField, Label } from '../../../components/form/Field';
-import { ListBox, ListBoxOptionList, ListBoxOption, SelectAllCheckBox } from '../../../components/form/input/ListBox';
 import { Formik, Form, Field, FieldProps } from 'formik';
 import { TextInput } from '../../../components/form/input/TextInput';
 import { useDispatch } from 'react-redux';
 import { Client } from '../types';
 import { createClient } from '../state/redux/actions';
 import { ApplicationGrantType, GrantType } from '../../../security/OAuth';
-import { Page, Content, FormContainer } from 'jfront-components';
+import { Page, Content, FormContainer, ComboBox, ComboBoxInput, ComboBoxList, ComboBoxOption, CheckBoxList, CheckBoxOptionList, CheckBoxOption, SelectAllCheckBox } from 'jfront-components';
 
 const ClientCreatePage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();
@@ -62,14 +60,14 @@ const ClientCreatePage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
                 <Label width={'250px'}>Имя клиентского приложения:</Label>
                 <Field name="clientId">
                   {(props: FieldProps) => (
-                      <TextInput
-                          name={props.field.name}
-                          value={props.field.value}
-                          onChange={props.field.onChange}
-                          onBlur={props.field.onBlur}
-                          touched={props.meta.touched}
-                          error={props.meta.error}
-                      />
+                    <TextInput
+                      name={props.field.name}
+                      value={props.field.value}
+                      onChange={props.field.onChange}
+                      onBlur={props.field.onBlur}
+                      touched={props.meta.touched}
+                      error={props.meta.error}
+                    />
                   )}
                 </Field>
               </FormField>
@@ -102,14 +100,12 @@ const ClientCreatePage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
                       }
                     }} width='250px'>
                       <ComboBoxInput />
-                      <ComboBoxPopup>
-                        <ComboBoxList>
-                          <ComboBoxOption name="Native" value="native" />
-                          <ComboBoxOption name="WEB application" value="web" />
-                          <ComboBoxOption name="Browser (client-side) application" value="browser" />
-                          <ComboBoxOption name="Service" value="service" />
-                        </ComboBoxList>
-                      </ComboBoxPopup>
+                      <ComboBoxList>
+                        <ComboBoxOption name="Native" value="native" />
+                        <ComboBoxOption name="WEB application" value="web" />
+                        <ComboBoxOption name="Browser (client-side) application" value="browser" />
+                        <ComboBoxOption name="Service" value="service" />
+                      </ComboBoxList>
                     </ComboBox>)}
                 </Field>
               </FormField>
@@ -117,26 +113,26 @@ const ClientCreatePage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
                 <Label width={'250px'}> Доступные гранты:</Label>
                 <Field name='grantTypes'>
                   {(props: FieldProps) => (
-                    <ListBox
+                    <CheckBoxList
                       name={props.field.name}
                       value={props.field.value}
                       onChange={props.form.setFieldValue}
                       touched={props.meta.touched}
                       error={props.meta.error}>
-                      <ListBoxOptionList>
+                      <CheckBoxOptionList>
                         {() => {
                           const applicationType = ApplicationGrantType[props.form.values["applicationType"]];
                           if (applicationType) {
                             return applicationType.map(grantType =>
-                              <ListBoxOption key={grantType} value={grantType} name={GrantType[grantType]} />
+                              <CheckBoxOption key={grantType} value={grantType} name={GrantType[grantType]} />
                             );
                           } else {
-                            return (<React.Fragment />)
+                            return null;
                           }
                         }}
-                      </ListBoxOptionList>
+                      </CheckBoxOptionList>
                       <SelectAllCheckBox />
-                    </ListBox>
+                    </CheckBoxList>
                   )}
                 </Field>
               </FormField>

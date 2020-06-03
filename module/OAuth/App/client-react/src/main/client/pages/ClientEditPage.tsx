@@ -1,6 +1,5 @@
 import React, { useEffect, HTMLAttributes, useImperativeHandle } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
-import { ComboBox, ComboBoxPopup, ComboBoxInput, ComboBoxList, ComboBoxOption } from '../../../components/form/input/combobox';
 import { useDispatch, useSelector } from 'react-redux';
 import { Client, ClientState } from '../types';
 import { AppState } from '../../store';
@@ -8,9 +7,8 @@ import { getClientById, updateClient } from '../state/redux/actions';
 import { Formik, Form, Field, FieldProps } from 'formik';
 import { FormField, Label } from '../../../components/form/Field';
 import { TextInput } from '../../../components/form/input/TextInput';
-import { ListBox, ListBoxOptionList, ListBoxOption, SelectAllCheckBox } from '../../../components/form/input/ListBox';
 import { ApplicationGrantType, GrantType } from '../../../security/OAuth';
-import { Page, Content, FormContainer } from 'jfront-components';
+import { Page, Content, FormContainer, ComboBox, ComboBoxInput, ComboBoxList, ComboBoxOption, SelectAllCheckBox, CheckBoxList, CheckBoxOptionList, CheckBoxOption } from 'jfront-components';
 
 const ClientEditPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();
@@ -107,14 +105,12 @@ const ClientEditPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((p
                       }
                     }} width='250px'>
                       <ComboBoxInput />
-                      <ComboBoxPopup>
                         <ComboBoxList>
                           <ComboBoxOption name="Native" value="native" />
                           <ComboBoxOption name="WEB application" value="web" />
                           <ComboBoxOption name="Browser (client-side) application" value="browser" />
                           <ComboBoxOption name="Service" value="service" />
                         </ComboBoxList>
-                      </ComboBoxPopup>
                     </ComboBox>)}
                 </Field>
               </FormField>
@@ -122,19 +118,19 @@ const ClientEditPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((p
                 <Label width={'250px'}> Доступные гранты:</Label>
                 <Field name='grantTypes'>
                   {(props: FieldProps) => (
-                    <ListBox name={props.field.name} value={props.field.value} onChange={props.form.setFieldValue}>
-                      <ListBoxOptionList>
+                    <CheckBoxList name={props.field.name} value={props.field.value} onChange={props.form.setFieldValue}>
+                      <CheckBoxOptionList>
                         {() => {
                           const applicationType = ApplicationGrantType[props.form.values["applicationType"]];
                           if (applicationType) {
                             return applicationType.map(grantType =>
-                              <ListBoxOption key={grantType} value={grantType} name={GrantType[grantType]} />
+                              <CheckBoxOption key={grantType} value={grantType} name={GrantType[grantType]} />
                             );
                           }
                         }}
-                      </ListBoxOptionList>
+                      </CheckBoxOptionList>
                       <SelectAllCheckBox />
-                    </ListBox>
+                    </CheckBoxList>
                   )}
                 </Field>
               </FormField>

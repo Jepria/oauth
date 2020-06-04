@@ -26,3 +26,6 @@
 /module/OAuth/App/client-react/.vscode
 /module/OAuth/App/client-react/node_modules
 /module/OAuth/App/client-react/target
+/module/OAuth/App/service-rest/jax-rs/target
+/module/OAuth/App/client-react/client-react.iml
+/module/OAuth/App/client-react/build

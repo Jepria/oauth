@@ -1,4 +1,4 @@
--- script: Install/Data/Last/AccessOperatorDb/op_role.sql
+-- script: Install/Data/Last/op_role.sql
 -- Создает роли, используемые модулем.
 --
 
@@ -46,70 +46,70 @@ declare
 -- main
 begin
   mergeRole(
-    roleShortName => 'OAViewClient'
+    roleShortName => pkg_OAuth.OAViewClient_RoleSName
     , roleName    =>
         'OAuth: просмотр зарегистрированных клиентских приложений'
     , roleNameEn  =>
         'OAuth: OAViewClient'
   );
   mergeRole(
-    roleShortName => 'OACreateClient'
+    roleShortName => pkg_OAuth.OACreateClient_RoleSName
     , roleName    =>
         'OAuth: регистрация клиентских приложений'
     , roleNameEn  =>
         'OAuth: OACreateClient'
   );
   mergeRole(
-    roleShortName => 'OAEditClient'
+    roleShortName => pkg_OAuth.OAEditClient_RoleSName
     , roleName    =>
         'OAuth: редактирование учетных данных клиентских приложений'
     , roleNameEn  =>
         'OAuth: OAEditClient'
   );
   mergeRole(
-    roleShortName => 'OADeleteClient'
+    roleShortName => pkg_OAuth.OADeleteClient_RoleSName
     , roleName    =>
         'OAuth: удаление клиентских приложений'
     , roleNameEn  =>
         'OAuth: OADeleteClient'
   );
   mergeRole(
-    roleShortName => 'OAViewSession'
+    roleShortName => pkg_OAuth.OAViewSession_RoleSName
     , roleName    =>
         'OAuth: просмотр пользовательских сессий'
     , roleNameEn  =>
         'OAuth: OAViewSession'
   );
   mergeRole(
-    roleShortName => 'OACreateSession'
+    roleShortName => pkg_OAuth.OACreateSession_RoleSName
     , roleName    =>
         'OAuth: создание пользовательских сессий'
     , roleNameEn  =>
         'OAuth: OACreateSession'
   );
   mergeRole(
-    roleShortName => 'OAEditSession'
+    roleShortName => pkg_OAuth.OAEditSession_RoleSName
     , roleName    =>
         'OAuth: редактирование пользовательских сессий'
     , roleNameEn  =>
         'OAuth: OAEditSession'
   );
   mergeRole(
-    roleShortName => 'OADeleteSession'
+    roleShortName => pkg_OAuth.OADeleteSession_RoleSName
     , roleName    =>
         'OAuth: удаление пользовательских сессий'
     , roleNameEn  =>
         'OAuth: OADeleteSession'
   );
   mergeRole(
-    roleShortName => 'OAUpdateKey'
+    roleShortName => pkg_OAuth.OAUpdateKey_RoleSName
     , roleName    =>
         'OAuth: обновление ключей'
     , roleNameEn  =>
         'OAuth: OAUpdateKey'
   );
   mergeRole(
-    roleShortName => 'OAViewKey'
+    roleShortName => pkg_OAuth.OAViewKey_RoleSName
     , roleName    =>
         'OAuth: просмотр ключей'
     , roleNameEn  =>

@@ -4,11 +4,11 @@ create table
   oa_client
 (
   client_id                       integer                             not null
-  , client_uuid                   varchar2(32)                        not null
-  , client_secret                 varchar2(100)
+  , client_short_name             varchar2(50)                        not null
+  , client_secret                 varchar2(160)
   , client_name                   varchar2(100)                       not null
   , client_name_en                varchar2(100)                       not null
-  , application_type              varchar2(100)                       not null
+  , application_type              varchar2(20)                        not null
   , date_ins                      timestamp with time zone
                                     default systimestamp              not null
   , operator_id_ins               integer                             not null
@@ -20,11 +20,14 @@ create table
   , constraint oa_client_pk primary key
     ( client_id)
     using index tablespace &indexTablespace
-  , constraint oa_client_uk_uuid unique
-    ( client_uuid)
+  , constraint oa_client_uk_short_name unique
+    ( client_short_name)
     using index tablespace &indexTablespace
+  , constraint oa_client_ck_application_type check
+    ( application_type in ( 'browser', 'web', 'service', 'native'))
 )
 /
+
 
 
 
@@ -34,8 +37,8 @@ comment on table oa_client is
 comment on column oa_client.client_id is
   'Id клиентского приложения'
 /
-comment on column oa_client.client_uuid is
-  'UUID клиентского приложения'
+comment on column oa_client.client_short_name is
+  'Краткое наименование приложения/случайная строка'
 /
 comment on column oa_client.client_secret is
   'Случайная криптографически устойчивая строка'
@@ -66,4 +69,39 @@ comment on column oa_client.operator_id is
 /
 comment on column oa_client.is_deleted is
   'Признак удаления записи'
+/
+
+
+
+-- index: oa_client_ux_upper_short_name
+-- Индекс для поиска по client_short_name без учета регистра.
+create unique index
+  oa_client_ux_upper_short_name
+on
+  oa_client (
+    upper( client_short_name)
+  )
+tablespace &indexTablespace
+/
+
+-- index: oa_client_ix_upper_name
+-- Индекс для поиска по client_name без учета регистра.
+create index
+  oa_client_ix_upper_name
+on
+  oa_client (
+    upper( client_name)
+  )
+tablespace &indexTablespace
+/
+
+-- index: oa_client_ix_upper_name_en
+-- Индекс для поиска по client_name_en без учета регистра.
+create index
+  oa_client_ix_upper_name_en
+on
+  oa_client (
+    upper( client_name_en)
+  )
+tablespace &indexTablespace
 /

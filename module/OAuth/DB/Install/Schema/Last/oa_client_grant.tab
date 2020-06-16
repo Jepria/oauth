@@ -11,6 +11,16 @@ create table
   , constraint oa_client_grant_pk primary key
     ( client_id, grant_type)
     using index tablespace &indexTablespace
+  , constraint oa_client_grant_ck_grant_type check
+    (
+      grant_type in (
+        'authorization_code'
+        , 'implicit'
+        , 'client_credentials'
+        , 'password'
+        , 'refresh_token'
+      )
+    )
 )
 /
 

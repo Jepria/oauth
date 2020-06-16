@@ -1,4 +1,4 @@
--- script: Install/Data/Last/AccessOperatorDb/op_group.sql
+-- script: Install/Data/Last/op_group.sql
 -- Создает группы ролей, используемые модулем.
 --
 

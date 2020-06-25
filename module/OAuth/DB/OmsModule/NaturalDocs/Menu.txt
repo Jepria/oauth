@@ -63,6 +63,12 @@ Group: Пакеты  {
       File: Реализация  (no auto-title, pkg_OAuth.pkb)
       }  # Group: pkg_OAuth
 
+   Group: pkg_OAuthInternal  {
+
+      File: Спецификация  (no auto-title, pkg_OAuthInternal.pks)
+      File: Реализация  (no auto-title, pkg_OAuthInternal.pkb)
+      }  # Group: pkg_OAuthInternal
+
    Group: Test  {
 
       Group: pkg_OAuthTest  {

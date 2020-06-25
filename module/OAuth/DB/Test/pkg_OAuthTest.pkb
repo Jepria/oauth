@@ -11,6 +11,11 @@ create or replace package body pkg_OAuthTest is
 */
 None_Integer constant integer := -9582095482058325832950482954832;
 
+/* iconst: Test_Pr
+  Префикс тестовых данных (используется в client_short_name и др.)
+*/
+Test_Pr constant varchar2(20) := '$OAuth.Test$:';
+
 
 
 /* group: Переменные */
@@ -26,6 +31,43 @@ logger lg_logger_t := lg_logger_t.getLogger(
 
 
 /* group: Функции */
+
+/* proc: clearTestData
+  Удаляет тестовые данные (выполняет commit).
+*/
+procedure clearTestData
+is
+begin
+  delete
+    oa_client t
+  where
+    t.client_short_name like Test_Pr || '%'
+  ;
+  update
+    op_operator op
+  set
+    op.login = op.login || ':$' || to_char( op.operator_id)
+    , op.operator_name = op.operator_name || ':$' || to_char( op.operator_id)
+    , op.date_finish = sysdate
+  where
+    upper( op.login) like upper( Test_Pr || '%')
+    and op.login not like '%:$' || to_char( op.operator_id)
+  ;
+  delete
+    oa_key t
+  where
+    t.public_key like Test_Pr || '%'
+  ;
+  commit;
+exception when others then
+  raise_application_error(
+    pkg_Error.ErrorStackInfo
+    , logger.errorStack(
+        'Ошибка при очистке тестовых данных.'
+      )
+    , true
+  );
+end clearTestData;
 
 /* proc: testUserApi
   Тестирует API функции.
@@ -45,13 +87,16 @@ is
   -- Порядковый номер проверяемого тестового случая
   checkCaseNumber integer := 0;
 
-  -- Префикс тестовых данных (используется в client_short_name)
-  Test_Pr constant varchar2(20) := '$OAuth.Test$:';
-
   -- Оператор по умолчанию для тестов
   testOperId integer := pkg_Operator.getCurrentUserId();
   testOperName op_operator.operator_name%type;
   testOperNameEn op_operator.operator_name_en%type;
+
+  -- Тестовые клиенты
+  webClientSName oa_client.client_short_name%type;
+  webClientId integer;
+  webClientUri oa_client_uri.client_uri%type;
+  webClientUri2 oa_client_uri.client_uri%type;
 
 
 
@@ -60,9 +105,6 @@ is
   */
   procedure prepareTestData
   is
-
-    pragma autonomous_transaction;
-
   begin
     select
       max( t.operator_name)
@@ -73,22 +115,6 @@ is
     where
       t.operator_id = testOperId
     ;
-    delete
-      oa_client t
-    where
-      t.client_short_name like Test_Pr || '%'
-    ;
-    update
-      op_operator op
-    set
-      op.login = op.login || ':$' || to_char( op.operator_id)
-      , op.operator_name = op.operator_name || ':$' || to_char( op.operator_id)
-      , op.date_finish = sysdate
-    where
-      upper( op.login) like upper( Test_Pr || '%')
-      and op.date_finish is null
-    ;
-    commit;
   exception when others then
     raise_application_error(
       pkg_Error.ErrorStackInfo
@@ -108,7 +134,7 @@ is
   is
 
     -- Текущие данные тестовой записи
-    lastClientRec oa_client%rowtype;
+    lastRec oa_client%rowtype;
 
 
 
@@ -157,8 +183,10 @@ is
       resNum integer;
       resRc sys_refcursor;
 
-      clientId integer;
-      clRec oa_client%rowtype;
+      chId integer;
+
+      -- Данные проверяемой записи
+      chRec oa_client%rowtype;
 
 
 
@@ -179,12 +207,12 @@ is
             , '$(testOperName)', testOperName)
             , '$(testOperNameEn)', testOperNameEn)
             , '$(clientSecretDec)'
-                , case when clRec.client_secret is not null then
-                    pkg_OptionCrypto.decrypt( clRec.client_secret)
+                , case when chRec.client_secret is not null then
+                    pkg_OptionCrypto.decrypt( chRec.client_secret)
                   end
               )
-            , '$(dateIns)', to_char( clRec.date_ins))
-            , '$(changeDate)', to_char( clRec.change_date))
+            , '$(dateIns)', to_char( chRec.date_ins))
+            , '$(changeDate)', to_char( chRec.change_date))
         ;
       end replaceMacros;
 
@@ -215,7 +243,7 @@ is
               , roleShortNameList           => roleShortNameList
               , operatorId                  => operatorId
             );
-            clientId := resNum;
+            chId := resNum;
           when 'updateClient' then
             pkg_OAuth.updateClient(
               clientShortName               => Test_Pr || clientShortName
@@ -240,6 +268,12 @@ is
               , clientNameEn                =>
                   nullif( Test_Pr || clientNameEn, Test_Pr)
               , maxRowCount                 => maxRowCount
+              , operatorId                  => operatorId
+            );
+          when 'getClientGrant' then
+            resRc := pkg_OAuth.getClientGrant(
+              clientShortName               =>
+                  nullif( Test_Pr || clientShortName, Test_Pr)
               , operatorId                  => operatorId
             );
           when 'verifyClientCredentials' then
@@ -284,24 +318,24 @@ is
 
       -- Проверка успешного результата
       if not isWaitError and not pkg_TestUtility.isTestFailed() then
-        if clientId is null and clientShortName is not null then
+        if chId is null and clientShortName is not null then
           select
             max( t.client_id)
-          into clientId
+          into chId
           from
             oa_client t
           where
             t.client_short_name = Test_Pr || clientShortName
           ;
         end if;
-        if clientId is not null then
+        if chId is not null then
           select
             t.*
-          into clRec
+          into chRec
           from
             oa_client t
           where
-            t.client_id = clientId
+            t.client_id = chId
           ;
         end if;
         if nullif( None_Integer, resultNumber) is not null then
@@ -341,7 +375,7 @@ from
   oa_client t
 )'
             , filterCondition   =>
-                'client_id=' || coalesce( to_char( clientId), 'null')
+                'client_id=' || coalesce( to_char( chId), 'null')
             , expectedCsv       => replaceMacros( clientCsv)
             , failMessagePrefix => cinfo
           );
@@ -351,7 +385,7 @@ from
             tableName           => 'oa_client_grant'
             , idColumnName      => 'client_id'
             , filterCondition   =>
-                'client_id=' || coalesce( to_char( clientId), 'null')
+                'client_id=' || coalesce( to_char( chId), 'null')
             , orderByExpression => 'grant_type'
             , expectedCsv       => replaceMacros( clientGrantCsv)
             , failMessagePrefix => cinfo
@@ -376,7 +410,7 @@ where
     from
       oa_client cl
     where
-      cl.client_id=' || coalesce( to_char( clientId), 'null') || '
+      cl.client_id=' || coalesce( to_char( chId), 'null') || '
     )
 )'
             , expectedCsv       => replaceMacros( operatorCsv)
@@ -406,7 +440,7 @@ where
     from
       oa_client cl
     where
-      cl.client_id=' || coalesce( to_char( clientId), 'null') || '
+      cl.client_id=' || coalesce( to_char( chId), 'null') || '
     )
 order by
   2
@@ -418,8 +452,8 @@ order by
 
         -- Обновляем после всех проверок (чтобы неявно не изменить возможно
         -- переданное по ссылке значение)
-        if clRec.client_id is not null then
-          lastClientRec := clRec;
+        if chRec.client_id is not null then
+          lastRec := chRec;
         end if;
       end if;
     exception when others then
@@ -506,6 +540,20 @@ OAViewSession
 '
     );
     checkCase(
+      'getClientGrant', 'client1'
+      , clientShortName       => 'client1'
+      , resultCsv =>
+'
+CLIENT_SHORT_NAME  ; GRANT_TYPE
+------------------ ; --------------------
+$(Test_Pr)client1  ; authorization_code
+$(Test_Pr)client1  ; client_credentials
+$(Test_Pr)client1  ; implicit
+$(Test_Pr)client1  ; password
+$(Test_Pr)client1  ; refresh_token
+'
+    );
+    checkCase(
       'findClient', 'all args'
       , clientShortName       => 'client1'
       , clientName            => 'Тестовый клиент 1'
@@ -537,7 +585,7 @@ $(Test_Pr)client1  ; $(clientSecretDec) ; $(Test_Pr)Тестовый клиен�
       'verifyClientCredentials', 'unknown client'
       , clientShortName       => '?unknown?'
       , clientSecret          =>
-          pkg_OptionCrypto.decrypt( lastClientRec.client_secret)
+          pkg_OptionCrypto.decrypt( lastRec.client_secret)
       , execErrorCode         => -20003
       , execErrorMessageMask  =>
           'ORA-20003: Указаны неверные данные клиентского приложения (clientShortName="%").%'
@@ -551,15 +599,15 @@ $(Test_Pr)client1  ; $(clientSecretDec) ; $(Test_Pr)Тестовый клиен�
     checkCase(
       'verifyClientCredentials', 'web-client: bad secret'
       , clientShortName       => 'client1'
-      , clientSecret          => lastClientRec.client_secret
+      , clientSecret          => lastRec.client_secret
       , execErrorCode         => -20003
     );
     checkCase(
       'verifyClientCredentials', 'web-client: good secret'
       , clientShortName       => 'client1'
       , clientSecret          =>
-          pkg_OptionCrypto.decrypt( lastClientRec.client_secret)
-      , resultNumber          => lastClientRec.operator_id
+          pkg_OptionCrypto.decrypt( lastRec.client_secret)
+      , resultNumber          => lastRec.operator_id
     );
     checkCase(
       'updateClient', 'web-клиент 1_1'
@@ -685,6 +733,33 @@ LOGIN                     ; is_DATE_FINISH
 $(Test_Pr)client1         ;              1
 '
     );
+    pkg_TestUtility.compareRowCount (
+      rc                    =>
+          pkg_OAuth.getRoles(
+            roleName      => 'OAuth: регистрация клиентских приложений'
+            , roleNameEn  => 'OAuth: OACreateClient'
+            , maxRowCount => 1
+            , operatorId  => testOperId
+          )
+      , expectedRowCount    => 1
+      , failMessageText     =>
+          'getRoles: all args: Неожиданное число записей в курсоре'
+    );
+
+    -- Тестовые клиенты (создание)
+    checkCase(
+      'createClient', 'webClient'
+      , clientShortName       => 'webClient'
+      , clientName            => 'Тестовый web-клиент'
+      , clientNameEn          => 'Test web-client'
+      , applicationType       => 'web'
+      , grantTypeList         =>
+          'authorization_code,implicit,client_credentials,password,refresh_token'
+      , roleShortNameList     => 'OAViewSession,OACreateSession'
+      , nextCaseUsedCount     => 999
+    );
+    webClientSName := lastRec.client_short_name;
+    webClientId := lastRec.client_id;
   exception when others then
     raise_application_error(
       pkg_Error.ErrorStackInfo
@@ -697,13 +772,1127 @@ $(Test_Pr)client1         ;              1
 
 
 
+  /*
+    Проверяет функции %ClientUri.
+  */
+  procedure checkClientUriApi
+  is
+
+    -- Текущие данные тестовой записи
+    lastRec oa_client_uri%rowtype;
+
+
+
+    /*
+      Проверяет тестовый случай.
+    */
+    procedure checkCase(
+      functionName varchar2
+      , caseDescription varchar2
+      , clientShortName varchar2 := null
+      , clientUri varchar2 := null
+      , clientUriId integer := null
+      , maxRowCount integer := null
+      , operatorId integer := testOperId
+      , resultRowCount integer := null
+      , resultNumber number := None_Integer
+      , resultCsv clob := null
+      , clientUriCount integer := null
+      , clientUriCsv clob := null
+      , execErrorCode integer := null
+      , execErrorMessageMask varchar2 := null
+      , nextCaseUsedCount pls_integer := null
+    )
+    is
+
+      -- Описание тестового случая
+      cinfo varchar2(200) :=
+        'CASE ' || to_char( checkCaseNumber + 1)
+        || ': ' || functionName || ': ' || caseDescription || ': '
+      ;
+
+      -- Ожидается выполнение с ошибкой
+      isWaitError boolean :=
+        execErrorCode is not null or execErrorMessageMask is not null
+      ;
+
+      resErrorCode integer;
+      resErrorMessage varchar2(32000);
+
+      resNum integer;
+      resRc sys_refcursor;
+
+      -- Данные проверяемой записи
+      chId integer;
+      chRec oa_client_uri%rowtype;
+
+
+
+      /*
+        Вполняет подстановку макросов в CSV-данные.
+      */
+      function replaceMacros(
+        srcCsv clob
+      )
+      return clob
+      is
+      begin
+        return
+          replace( replace( replace( replace( replace( replace( replace( replace(
+            srcCsv
+            , '$(Test_Pr)', Test_Pr)
+            , '$(testOperId)', to_char( testOperId))
+            , '$(testOperName)', testOperName)
+            , '$(testOperNameEn)', testOperNameEn)
+            , '$(webClientId)', to_char( webClientId))
+            , '$(webClientSName)', webClientSName)
+            , '$(dateIns)', to_char( chRec.date_ins))
+            , '$(clientUriId)', to_char( clientUriId))
+        ;
+      end replaceMacros;
+
+
+
+    -- checkCase
+    begin
+      checkCaseNumber := checkCaseNumber + 1;
+      if pkg_TestUtility.isTestFailed()
+            or testCaseNumber is not null
+              and testCaseNumber
+                not between checkCaseNumber
+                  and checkCaseNumber + coalesce( nextCaseUsedCount, 0)
+          then
+        return;
+      end if;
+      logger.info( '*** ' || cinfo);
+
+      begin
+        case functionName
+          when 'createClientUri' then
+            resNum := pkg_OAuth.createClientUri(
+              clientShortName               => clientShortName
+              , clientUri                   => clientUri
+              , operatorId                  => operatorId
+            );
+            chId := resNum;
+          when 'deleteClientUri' then
+            pkg_OAuth.deleteClientUri(
+              clientUriId                   => clientUriId
+              , operatorId                  => operatorId
+            );
+          when 'findClientUri' then
+            resRc := pkg_OAuth.findClientUri(
+              clientUriId                   => clientUriId
+              , clientShortName             => clientShortName
+              , maxRowCount                 => maxRowCount
+              , operatorId                  => operatorId
+            );
+        end case;
+        if isWaitError then
+          pkg_TestUtility.failTest(
+            failMessageText   =>
+              cinfo || 'Успешное выполнение вместо ошибки'
+          );
+        end if;
+      exception when others then
+        if isWaitError then
+          resErrorCode := sqlcode;
+          resErrorMessage := logger.getErrorStack();
+          if resErrorMessage not like execErrorMessageMask then
+            pkg_TestUtility.compareChar(
+              actualString        => resErrorMessage
+              , expectedString    => execErrorMessageMask
+              , failMessageText   =>
+                  cinfo || 'Сообщение об ошибке не соответствует маске'
+            );
+          elsif execErrorCode is not null then
+            pkg_TestUtility.compareChar(
+              actualString        => resErrorCode
+              , expectedString    => execErrorCode
+              , failMessageText   =>
+                  cinfo || 'Неожиданный код ошибки'
+            );
+          end if;
+        else
+          pkg_TestUtility.failTest(
+            failMessageText   =>
+              cinfo || 'Выполнение завершилось с ошибкой:'
+              || chr(10) || logger.getErrorStack()
+          );
+        end if;
+      end;
+
+      -- Проверка успешного результата
+      if not isWaitError and not pkg_TestUtility.isTestFailed() then
+        if chId is null and clientUriId is not null then
+          select
+            max( t.client_uri_id)
+          into chId
+          from
+            oa_client_uri t
+          where
+            t.client_uri_id = clientUriId
+          ;
+        end if;
+        if chId is not null then
+          select
+            t.*
+          into chRec
+          from
+            oa_client_uri t
+          where
+            t.client_uri_id = chId
+          ;
+        end if;
+        if nullif( None_Integer, resultNumber) is not null then
+          pkg_TestUtility.compareChar(
+            actualString        => resNum
+            , expectedString    => resultNumber
+            , failMessageText   =>
+                cinfo || 'Неожиданный результат выполнения функции'
+          );
+        end if;
+        if resultRowCount is not null then
+          pkg_TestUtility.compareRowCount(
+            resRc
+            , expectedRowCount => resultRowCount
+            , failMessageText   =>
+                cinfo || 'Неожиданное число записей в курсоре'
+          );
+        end if;
+        if resultCsv is not null then
+          pkg_TestUtility.compareQueryResult(
+            resRc
+            , expectedCsv       => replaceMacros( resultCsv)
+            , failMessagePrefix => cinfo
+          );
+        end if;
+        if clientUriCount is not null then
+          pkg_TestUtility.compareRowCount(
+            tableName           => 'oa_client_uri'
+            , filterCondition   =>
+                'client_uri_id='
+                || coalesce( to_char( clientUriId), 'null')
+            , expectedRowCount  => clientUriCount
+            , failMessageText   =>
+                cinfo || 'Неожиданное число записей в таблице'
+          );
+        end if;
+        if clientUriCsv is not null then
+          pkg_TestUtility.compareQueryResult(
+            tableName           => 'oa_client_uri'
+            , idColumnName      => 'client_uri_id'
+            , filterCondition   =>
+                'client_uri_id=' || coalesce( to_char( chId), 'null')
+            , expectedCsv       => replaceMacros( clientUriCsv)
+            , failMessagePrefix => cinfo
+          );
+        end if;
+
+        -- Обновляем после всех проверок (чтобы неявно не изменить возможно
+        -- переданное по ссылке значение)
+        if chRec.client_uri_id is not null then
+          lastRec := chRec;
+        end if;
+      end if;
+    exception when others then
+      raise_application_error(
+        pkg_Error.ErrorStackInfo
+        , logger.errorStack(
+            'Ошибка при проверке тестового случая ('
+            || ' caseNumber=' || checkCaseNumber
+            || ', functionName="' || functionName || '"'
+            || ', caseDescription="' || caseDescription || '"'
+            || ').'
+          )
+        , true
+      );
+    end checkCase;
+
+
+
+  -- checkClientUriApi
+  begin
+    checkCase(
+      'createClientUri', 'NULL-значения параметров'
+      , execErrorCode         => -20003
+      , execErrorMessageMask  =>
+          'ORA-20003: Указаны неверные данные клиентского приложения (clientShortName="").%'
+    );
+    checkCase(
+      'createClientUri', 'Некорректный clientShortName'
+      , clientShortName       => Test_Pr || 'absent client'
+      , execErrorCode         => -20003
+      , execErrorMessageMask  =>
+          'ORA-20003: Указаны неверные данные клиентского приложения (clientShortName="%absent client").%'
+    );
+    checkCase(
+      'findClientUri', 'нет данных'
+      , clientShortName       => webClientSName
+    );
+    checkCase(
+      'createClientUri', 'webClient'
+      , clientShortName       => webClientSName
+      , clientUri             => 'Тестовый URI 1'
+      , nextCaseUsedCount     => 99
+      , clientUriCsv =>
+'
+CLIENT_ID       ; CLIENT_URI                   ; OPERATOR_ID
+--------------- ; ---------------------------- ; --------------
+$(webClientId)  ; Тестовый URI 1               ; $(testOperId)
+'
+    );
+    checkCase(
+      'findClientUri', 'all args'
+      , clientUriId           => lastRec.client_uri_id
+      , clientShortName       => webClientSName
+      , maxRowCount           => 50
+      , resultCsv             =>
+'
+CLIENT_URI_ID   ; CLIENT_SHORT_NAME  ; CLIENT_URI         ; DATE_INS    ; OPERATOR_ID   ; OPERATOR_NAME    ; OPERATOR_NAME_EN
+--------------- ; ------------------ ; ------------------ ; ----------- ; ------------- ; ---------------- ; ------------------
+$(clientUriId)  ; $(webClientSName)  ; Тестовый URI 1     ; $(dateIns)  ; $(testOperId) ; $(testOperName)  ; $(testOperNameEn)
+'
+    );
+    checkCase(
+      'findClientUri', 'by clientUriId'
+      , clientUriId           => lastRec.client_uri_id
+      , resultRowCount        => 1
+    );
+    checkCase(
+      'findClientUri', 'by clientShortName'
+      , clientShortName       => webClientSName
+      , resultRowCount        => 1
+    );
+    checkCase(
+      'deleteClientUri', 'Тестовый URI 1'
+      , clientUriId           => lastRec.client_uri_id
+      , clientUriCount        => 0
+    );
+    checkCase(
+      'findClientUri', 'after delete'
+      , clientShortName       => webClientSName
+      , resultRowCount        => 0
+    );
+
+    -- Тестовые клиенты (создание)
+    checkCase(
+      'createClientUri', 'webClient: uri'
+      , clientShortName       => webClientSName
+      , clientUri             => 'web/client/uri'
+      , nextCaseUsedCount     => 999
+    );
+    webClientUri := lastRec.client_uri;
+    checkCase(
+      'createClientUri', 'webClient: uri2'
+      , clientShortName       => webClientSName
+      , clientUri             => 'web/client/uri2'
+      , nextCaseUsedCount     => 999
+    );
+    webClientUri2 := lastRec.client_uri;
+  exception when others then
+    raise_application_error(
+      pkg_Error.ErrorStackInfo
+      , logger.errorStack(
+          'Ошибка при проверке функций %ClientUri.'
+        )
+      , true
+    );
+  end checkClientUriApi;
+
+
+
+  /*
+    Проверяет функции %Session.
+  */
+  procedure checkSessionApi
+  is
+
+    -- Текущие данные тестовой записи
+    lastRec oa_session%rowtype;
+
+
+
+    /*
+      Проверяет тестовый случай.
+    */
+    procedure checkCase(
+      functionName varchar2
+      , caseDescription varchar2
+      , authCode varchar2 := null
+      , clientShortName varchar2 := null
+      , redirectUri varchar2 := null
+      , operatorId integer := null
+      , codeChallenge varchar2 := null
+      , accessToken varchar2 := null
+      , accessTokenDateIns timestamp with time zone := null
+      , accessTokenDateFinish timestamp with time zone := null
+      , refreshToken varchar2 := null
+      , refreshTokenDateIns timestamp with time zone := null
+      , refreshTokenDateFinish timestamp with time zone := null
+      , sessionToken varchar2 := null
+      , sessionTokenDateIns timestamp with time zone := null
+      , sessionTokenDateFinish timestamp with time zone := null
+      , operatorIdIns integer := testOperId
+      , sessionId integer := null
+      , maxRowCount integer := null
+      , resultRowCount integer := null
+      , resultNumber number := None_Integer
+      , resultCsv clob := null
+      , sessionCount integer := null
+      , sessionCsv clob := null
+      , execErrorCode integer := null
+      , execErrorMessageMask varchar2 := null
+      , nextCaseUsedCount pls_integer := null
+    )
+    is
+
+      -- Описание тестового случая
+      cinfo varchar2(200) :=
+        'CASE ' || to_char( checkCaseNumber + 1)
+        || ': ' || functionName || ': ' || caseDescription || ': '
+      ;
+
+      -- Ожидается выполнение с ошибкой
+      isWaitError boolean :=
+        execErrorCode is not null or execErrorMessageMask is not null
+      ;
+
+      resErrorCode integer;
+      resErrorMessage varchar2(32000);
+
+      resNum integer;
+      resRc sys_refcursor;
+
+      -- Данные проверяемой записи
+      chId integer;
+      chRec oa_session%rowtype;
+
+
+
+      /*
+        Вполняет подстановку макросов в CSV-данные.
+      */
+      function replaceMacros(
+        srcCsv clob
+      )
+      return clob
+      is
+      begin
+        return
+          replace( replace( replace( replace( replace( replace( replace( replace(
+            replace( replace(
+            srcCsv
+            , '$(Test_Pr)', Test_Pr)
+            , '$(testOperId)', to_char( testOperId))
+            , '$(testOperName)', testOperName)
+            , '$(testOperNameEn)', testOperNameEn)
+            , '$(webClientId)', to_char( webClientId))
+            , '$(webClientSName)', webClientSName)
+            , '$(webClientUri)', webClientUri)
+            , '$(webClientUri2)', webClientUri2)
+            , '$(dateIns)', to_char( chRec.date_ins))
+            , '$(sessionId)', to_char( sessionId))
+        ;
+      end replaceMacros;
+
+
+
+    -- checkCase
+    begin
+      checkCaseNumber := checkCaseNumber + 1;
+      if pkg_TestUtility.isTestFailed()
+            or testCaseNumber is not null
+              and testCaseNumber
+                not between checkCaseNumber
+                  and checkCaseNumber + coalesce( nextCaseUsedCount, 0)
+          then
+        return;
+      end if;
+      logger.info( '*** ' || cinfo);
+
+      begin
+        case functionName
+          when 'createSession' then
+            resNum := pkg_OAuth.createSession(
+              authCode                  =>
+                  nullif( Test_Pr || authCode, Test_Pr)
+              , clientShortName         => clientShortName
+              , redirectUri             => redirectUri
+              , operatorId              => operatorId
+              , codeChallenge           => codeChallenge
+              , accessToken             =>
+                  nullif( Test_Pr || accessToken, Test_Pr)
+              , accessTokenDateIns      => accessTokenDateIns
+              , accessTokenDateFinish   => accessTokenDateFinish
+              , refreshToken            =>
+                  nullif( Test_Pr || refreshToken, Test_Pr)
+              , refreshTokenDateIns     => refreshTokenDateIns
+              , refreshTokenDateFinish  => refreshTokenDateFinish
+              , sessionToken            =>
+                  nullif( Test_Pr || sessionToken, Test_Pr)
+              , sessionTokenDateIns     => sessionTokenDateIns
+              , sessionTokenDateFinish  => sessionTokenDateFinish
+              , operatorIdIns           => operatorIdIns
+            );
+            chId := resNum;
+          when 'updateSession' then
+            pkg_OAuth.updateSession(
+              sessionId                 => sessionId
+              , authCode                =>
+                  nullif( Test_Pr || authCode, Test_Pr)
+              , clientShortName         => clientShortName
+              , redirectUri             => redirectUri
+              , operatorId              => operatorId
+              , codeChallenge           => codeChallenge
+              , accessToken             =>
+                  nullif( Test_Pr || accessToken, Test_Pr)
+              , accessTokenDateIns      => accessTokenDateIns
+              , accessTokenDateFinish   => accessTokenDateFinish
+              , refreshToken            =>
+                  nullif( Test_Pr || refreshToken, Test_Pr)
+              , refreshTokenDateIns     => refreshTokenDateIns
+              , refreshTokenDateFinish  => refreshTokenDateFinish
+              , sessionToken            =>
+                  nullif( Test_Pr || sessionToken, Test_Pr)
+              , sessionTokenDateIns     => sessionTokenDateIns
+              , sessionTokenDateFinish  => sessionTokenDateFinish
+              , operatorIdIns           => operatorIdIns
+            );
+          when 'blockSession' then
+            pkg_OAuth.blockSession(
+              sessionId                     => sessionId
+              , operatorId                  =>
+                  coalesce( operatorId, testOperId)
+            );
+          when 'findSession' then
+            resRc := pkg_OAuth.findSession(
+              sessionId                 => sessionId
+              , authCode                => authCode
+              , clientShortName         => clientShortName
+              , redirectUri             => redirectUri
+              , operatorId              => operatorId
+              , codeChallenge           => codeChallenge
+              , accessToken             => accessToken
+              , refreshToken            => refreshToken
+              , sessionToken            => sessionToken
+              , maxRowCount             => maxRowCount
+              , operatorIdIns           => operatorIdIns
+            );
+        end case;
+        if isWaitError then
+          pkg_TestUtility.failTest(
+            failMessageText   =>
+              cinfo || 'Успешное выполнение вместо ошибки'
+          );
+        end if;
+      exception when others then
+        if isWaitError then
+          resErrorCode := sqlcode;
+          resErrorMessage := logger.getErrorStack();
+          if resErrorMessage not like execErrorMessageMask then
+            pkg_TestUtility.compareChar(
+              actualString        => resErrorMessage
+              , expectedString    => execErrorMessageMask
+              , failMessageText   =>
+                  cinfo || 'Сообщение об ошибке не соответствует маске'
+            );
+          elsif execErrorCode is not null then
+            pkg_TestUtility.compareChar(
+              actualString        => resErrorCode
+              , expectedString    => execErrorCode
+              , failMessageText   =>
+                  cinfo || 'Неожиданный код ошибки'
+            );
+          end if;
+        else
+          pkg_TestUtility.failTest(
+            failMessageText   =>
+              cinfo || 'Выполнение завершилось с ошибкой:'
+              || chr(10) || logger.getErrorStack()
+          );
+        end if;
+      end;
+
+      -- Проверка успешного результата
+      if not isWaitError and not pkg_TestUtility.isTestFailed() then
+        if chId is null and sessionId is not null then
+          select
+            max( t.session_id)
+          into chId
+          from
+            oa_session t
+          where
+            t.session_id = sessionId
+          ;
+        end if;
+        if chId is not null then
+          select
+            t.*
+          into chRec
+          from
+            oa_session t
+          where
+            t.session_id = chId
+          ;
+        end if;
+        if nullif( None_Integer, resultNumber) is not null then
+          pkg_TestUtility.compareChar(
+            actualString        => resNum
+            , expectedString    => resultNumber
+            , failMessageText   =>
+                cinfo || 'Неожиданный результат выполнения функции'
+          );
+        end if;
+        if resultRowCount is not null then
+          pkg_TestUtility.compareRowCount(
+            resRc
+            , expectedRowCount => resultRowCount
+            , failMessageText   =>
+                cinfo || 'Неожиданное число записей в курсоре'
+          );
+        end if;
+        if resultCsv is not null then
+          pkg_TestUtility.compareQueryResult(
+            resRc
+            , expectedCsv       => replaceMacros( resultCsv)
+            , failMessagePrefix => cinfo
+          );
+        end if;
+        if sessionCount is not null then
+          pkg_TestUtility.compareRowCount(
+            tableName           => 'oa_session'
+            , filterCondition   =>
+                'session_id='
+                || coalesce( to_char( sessionId), to_char( chId), 'null')
+            , expectedRowCount  => sessionCount
+            , failMessageText   =>
+                cinfo || 'Неожиданное число записей в таблице'
+          );
+        end if;
+        if sessionCsv is not null then
+          pkg_TestUtility.compareQueryResult(
+            tableName           => 'oa_session'
+            , idColumnName      => 'session_id'
+            , filterCondition   =>
+                'session_id=' || coalesce( to_char( chId), 'null')
+            , expectedCsv       => replaceMacros( sessionCsv)
+            , failMessagePrefix => cinfo
+          );
+        end if;
+
+        -- Обновляем после всех проверок (чтобы неявно не изменить возможно
+        -- переданное по ссылке значение)
+        if chRec.session_id is not null then
+          lastRec := chRec;
+        end if;
+      end if;
+    exception when others then
+      raise_application_error(
+        pkg_Error.ErrorStackInfo
+        , logger.errorStack(
+            'Ошибка при проверке тестового случая ('
+            || ' caseNumber=' || checkCaseNumber
+            || ', functionName="' || functionName || '"'
+            || ', caseDescription="' || caseDescription || '"'
+            || ').'
+          )
+        , true
+      );
+    end checkCase;
+
+
+
+  -- checkSessionApi
+  begin
+    checkCase(
+      'createSession', 'NULL-значения параметров'
+      , execErrorCode         => -20004
+      , execErrorMessageMask  =>
+          'ORA-20004: Указаны неверные данные клиентского приложения (clientShortName="").%'
+    );
+    checkCase(
+      'createSession', 'Некорректный clientShortName'
+      , clientShortName       => Test_Pr || 'absent client'
+      , execErrorCode         => -20004
+      , execErrorMessageMask  =>
+          'ORA-20004: Указаны неверные данные клиентского приложения (clientShortName="%absent client").%'
+    );
+    checkCase(
+      'createSession', 'Некорректный URI'
+      , authCode              => 'new auth_code'
+      , clientShortName       => webClientSName
+      , redirectUri           => 'absent uri'
+      , execErrorCode         => -20004
+      , execErrorMessageMask  =>
+          'ORA-20004: Ошибка при создании пользовательской сессии %'
+          || '%OA_SESSION_FK_CLIENT_URI%'
+    );
+    checkCase(
+      'findSession', 'нет данных'
+      , clientShortName       => webClientSName
+    );
+    checkCase(
+      'createSession', 'all args'
+      , authCode                => 'auth code'
+      , clientShortName         => webClientSName
+      , redirectUri             => webClientUri
+      , operatorId              => testOperId
+      , codeChallenge           => 'code challenge'
+      , accessToken             => 'access token'
+      , accessTokenDateIns      =>
+          to_timestamp_tz(
+            '24.06.2020 15:11:20.405 +03:00', 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'
+          )
+      , accessTokenDateFinish   =>
+          to_timestamp_tz(
+            '23.07.2020 17:11:20.406 +03:00', 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'
+          )
+      , refreshToken            => 'refresh token'
+      , refreshTokenDateIns     =>
+          to_timestamp_tz(
+            '27.06.2020 15:11:21.407 +03:00', 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'
+          )
+      , refreshTokenDateFinish  =>
+          to_timestamp_tz(
+            '28.07.2020 17:11:22.701 +03:00', 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'
+          )
+      , sessionToken            => 'session token'
+      , sessionTokenDateIns     =>
+          to_timestamp_tz(
+            '29.06.2020 15:11:23.702 +03:00', 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'
+          )
+      , sessionTokenDateFinish  =>
+          to_timestamp_tz(
+            '28.08.2020 17:11:24.703 +03:00', 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'
+          )
+      , nextCaseUsedCount       => 99
+      , sessionCsv =>
+'
+AUTH_CODE               ; CLIENT_ID      ; REDIRECT_URI    ; OPERATOR_ID   ; CODE_CHALLENGE  ; ACCESS_TOKEN               ; ACCESS_TOKEN_DATE_INS            ; ACCESS_TOKEN_DATE_FINISH         ; REFRESH_TOKEN               ; REFRESH_TOKEN_DATE_INS           ; REFRESH_TOKEN_DATE_FINISH        ; SESSION_TOKEN               ; SESSION_TOKEN_DATE_INS           ; SESSION_TOKEN_DATE_FINISH        ; IS_MANUAL_BLOCKED ; DATE_FINISH  ; DATE_INS                         ; OPERATOR_ID_INS
+----------------------- ; -------------- ; --------------- ; ------------- ; --------------- ; -------------------------- ; -------------------------------- ; -------------------------------- ; --------------------------- ; -------------------------------- ; -------------------------------- ; --------------------------- ; -------------------------------- ; -------------------------------- ; ----------------- ; ------------ ; -------------------------------- ; ---------------
+$(Test_Pr)auth code     ; $(webClientId) ; web/client/uri  ; $(testOperId) ; code challenge  ; $(Test_Pr)access token     ; 24.06.20 15:11:20,405000 +03:00  ; 23.07.20 17:11:20,406000 +03:00  ; $(Test_Pr)refresh token     ; 27.06.20 15:11:21,407000 +03:00  ; 28.07.20 17:11:22,701000 +03:00  ; $(Test_Pr)session token     ; 29.06.20 15:11:23,702000 +03:00  ; 28.08.20 17:11:24,703000 +03:00  ;                   ;              ; $(dateIns)                       ; $(testOperId)
+'
+    );
+    checkCase(
+      'findSession', 'all args'
+      , sessionId             => lastRec.session_id
+      , clientShortName       => webClientSName
+      , maxRowCount           => 50
+      , resultCsv             =>
+'
+SESSION_ID      ; AUTH_CODE               ; CLIENT_SHORT_NAME     ; REDIRECT_URI    ; OPERATOR_ID   ; CODE_CHALLENGE  ; ACCESS_TOKEN               ; ACCESS_TOKEN_DATE_INS            ; ACCESS_TOKEN_DATE_FINISH         ; REFRESH_TOKEN               ; REFRESH_TOKEN_DATE_INS           ; REFRESH_TOKEN_DATE_FINISH        ; SESSION_TOKEN               ; SESSION_TOKEN_DATE_INS           ; SESSION_TOKEN_DATE_FINISH        ; DATE_INS                         ; OPERATOR_ID_INS
+--------------- ; ----------------------- ; --------------------- ; --------------- ; ------------- ; --------------- ; -------------------------- ; -------------------------------- ; -------------------------------- ; --------------------------- ; -------------------------------- ; -------------------------------- ; --------------------------- ; -------------------------------- ; -------------------------------- ; -------------------------------- ; ---------------
+$(sessionId)    ; $(Test_Pr)auth code     ; $(webClientSName)     ; $(webClientUri) ; $(testOperId) ; code challenge  ; $(Test_Pr)access token     ; 24.06.20 15:11:20,405000 +03:00  ; 23.07.20 17:11:20,406000 +03:00  ; $(Test_Pr)refresh token     ; 27.06.20 15:11:21,407000 +03:00  ; 28.07.20 17:11:22,701000 +03:00  ; $(Test_Pr)session token     ; 29.06.20 15:11:23,702000 +03:00  ; 28.08.20 17:11:24,703000 +03:00  ; $(dateIns)                       ; $(testOperId)
+'
+    );
+    checkCase(
+      'createSession', 'Неуникальный accessToken'
+      , authCode              => 'new auth_code'
+      , clientShortName       => webClientSName
+      , redirectUri           => webClientUri
+      , accessToken           => 'access token'
+      , execErrorCode         => -20005
+      , execErrorMessageMask  =>
+          'ORA-20005: Ошибка при создании пользовательской сессии %'
+          || '%OA_SESSION_UK_ACCESS_TOKEN%'
+    );
+    checkCase(
+      'createSession', 'Неуникальный refreshToken'
+      , authCode              => 'new auth_code'
+      , clientShortName       => webClientSName
+      , redirectUri           => webClientUri
+      , refreshToken          => 'refresh token'
+      , execErrorCode         => -20006
+      , execErrorMessageMask  =>
+          'ORA-20006: Ошибка при создании пользовательской сессии %'
+          || '%OA_SESSION_UK_REFRESH_TOKEN%'
+    );
+    checkCase(
+      'updateSession', 'Некорректный clientShortName'
+      , sessionId             => lastRec.session_id
+      , clientShortName       => Test_Pr || 'absent client'
+      , execErrorCode         => -20004
+      , execErrorMessageMask  =>
+          'ORA-20004: Указаны неверные данные клиентского приложения (clientShortName="%absent client").%'
+    );
+    checkCase(
+      'updateSession', 'Некорректный URI'
+      , sessionId             => lastRec.session_id
+      , authCode              => 'new auth_code'
+      , clientShortName       => webClientSName
+      , redirectUri           => 'absent uri'
+      , execErrorCode         => -20004
+      , execErrorMessageMask  =>
+          'ORA-20004: Ошибка при обновлении пользовательской сессии %'
+          || '%OA_SESSION_FK_CLIENT_URI%'
+    );
+    checkCase(
+      'updateSession', 'all args'
+      , sessionId               => lastRec.session_id
+      , authCode                => 'auth code2'
+      , clientShortName         => webClientSName
+      , redirectUri             => webClientUri2
+      , operatorId              => testOperId
+      , codeChallenge           => 'code challenge2'
+      , accessToken             => 'access token2'
+      , accessTokenDateIns      =>
+          to_timestamp_tz(
+            '24.06.2020 15:21:20.405 +03:00', 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'
+          )
+      , accessTokenDateFinish   =>
+          to_timestamp_tz(
+            '23.07.2020 17:21:20.406 +03:00', 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'
+          )
+      , refreshToken            => 'refresh token2'
+      , refreshTokenDateIns     =>
+          to_timestamp_tz(
+            '27.06.2020 15:21:21.407 +03:00', 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'
+          )
+      , refreshTokenDateFinish  =>
+          to_timestamp_tz(
+            '28.07.2020 17:21:22.701 +03:00', 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'
+          )
+      , sessionToken            => 'session token2'
+      , sessionTokenDateIns     =>
+          to_timestamp_tz(
+            '29.06.2020 15:21:23.702 +03:00', 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'
+          )
+      , sessionTokenDateFinish  =>
+          to_timestamp_tz(
+            '28.08.2020 17:21:24.703 +03:00', 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'
+          )
+      , sessionCsv =>
+'
+AUTH_CODE               ; CLIENT_ID      ; REDIRECT_URI     ; OPERATOR_ID   ; CODE_CHALLENGE  ; ACCESS_TOKEN               ; ACCESS_TOKEN_DATE_INS            ; ACCESS_TOKEN_DATE_FINISH         ; REFRESH_TOKEN               ; REFRESH_TOKEN_DATE_INS           ; REFRESH_TOKEN_DATE_FINISH        ; SESSION_TOKEN               ; SESSION_TOKEN_DATE_INS           ; SESSION_TOKEN_DATE_FINISH        ; IS_MANUAL_BLOCKED ; DATE_FINISH  ; DATE_INS                         ; OPERATOR_ID_INS
+----------------------- ; -------------- ; ---------------- ; ------------- ; --------------- ; -------------------------- ; -------------------------------- ; -------------------------------- ; --------------------------- ; -------------------------------- ; -------------------------------- ; --------------------------- ; -------------------------------- ; -------------------------------- ; ----------------- ; ------------ ; -------------------------------- ; ---------------
+$(Test_Pr)auth code2    ; $(webClientId) ; $(webClientUri2) ; $(testOperId) ; code challenge2 ; $(Test_Pr)access token2    ; 24.06.20 15:21:20,405000 +03:00  ; 23.07.20 17:21:20,406000 +03:00  ; $(Test_Pr)refresh token2    ; 27.06.20 15:21:21,407000 +03:00  ; 28.07.20 17:21:22,701000 +03:00  ; $(Test_Pr)session token2    ; 29.06.20 15:21:23,702000 +03:00  ; 28.08.20 17:21:24,703000 +03:00  ;                   ;              ; $(dateIns)                       ; $(testOperId)
+'
+    );
+    checkCase(
+      'findSession', 'by sessionId'
+      , sessionId           => lastRec.session_id
+      , resultRowCount        => 1
+    );
+    checkCase(
+      'findSession', 'by clientShortName'
+      , clientShortName       => webClientSName
+      , resultRowCount        => 1
+    );
+    checkCase(
+      'blockSession', 'block session'
+      , sessionId           => lastRec.session_id
+      , sessionCsv          =>
+'
+SESSION_ID      ; IS_MANUAL_BLOCKED
+--------------- ; -----------------
+$(sessionId)    ;                 1
+'
+    );
+    checkCase(
+      'findSession', 'after block'
+      , clientShortName       => webClientSName
+      , resultRowCount        => 0
+    );
+    checkCase(
+      'createSession', 'session #3'
+      , authCode                => 'auth code3'
+      , clientShortName         => webClientSName
+      , accessToken             => 'access token3'
+      , refreshToken            => 'refresh token3'
+      , nextCaseUsedCount       => 99
+      , sessionCount            => 1
+    );
+    checkCase(
+      'updateSession', 'Неуникальный accessToken'
+      , sessionId             => lastRec.session_id
+      , authCode              => 'new auth_code'
+      , clientShortName       => webClientSName
+      , redirectUri           => webClientUri
+      , accessToken           => 'access token2'
+      , execErrorCode         => -20005
+      , execErrorMessageMask  =>
+          'ORA-20005: Ошибка при обновлении пользовательской сессии %'
+          || '%OA_SESSION_UK_ACCESS_TOKEN%'
+    );
+    checkCase(
+      'updateSession', 'Неуникальный refreshToken'
+      , sessionId             => lastRec.session_id
+      , authCode              => 'new auth_code'
+      , clientShortName       => webClientSName
+      , redirectUri           => webClientUri
+      , refreshToken          => 'refresh token2'
+      , execErrorCode         => -20006
+      , execErrorMessageMask  =>
+          'ORA-20006: Ошибка при обновлении пользовательской сессии %'
+          || '%OA_SESSION_UK_REFRESH_TOKEN%'
+    );
+  exception when others then
+    raise_application_error(
+      pkg_Error.ErrorStackInfo
+      , logger.errorStack(
+          'Ошибка при проверке функций %Session.'
+        )
+      , true
+    );
+  end checkSessionApi;
+
+
+
+  /*
+    Проверяет функции %Key.
+  */
+  procedure checkKeyApi
+  is
+
+    -- Текущие данные тестовой записи
+    lastRec oa_key%rowtype;
+
+
+
+    /*
+      Проверяет тестовый случай.
+    */
+    procedure checkCase(
+      functionName varchar2
+      , caseDescription varchar2
+      , publicKey varchar2 := null
+      , privateKey varchar2 := null
+      , isExpired integer := null
+      , operatorId integer := testOperId
+      , resultRowCount integer := null
+      , resultNumber number := None_Integer
+      , resultCsv clob := null
+      , keyCsv clob := null
+      , execErrorCode integer := null
+      , execErrorMessageMask varchar2 := null
+      , nextCaseUsedCount pls_integer := null
+    )
+    is
+
+      -- Описание тестового случая
+      cinfo varchar2(200) :=
+        'CASE ' || to_char( checkCaseNumber + 1)
+        || ': ' || functionName || ': ' || caseDescription || ': '
+      ;
+
+      -- Ожидается выполнение с ошибкой
+      isWaitError boolean :=
+        execErrorCode is not null or execErrorMessageMask is not null
+      ;
+
+      resErrorCode integer;
+      resErrorMessage varchar2(32000);
+
+      resNum integer;
+      resRc sys_refcursor;
+
+      -- Данные проверяемой записи
+      chId integer;
+      chRec oa_key%rowtype;
+
+
+
+      /*
+        Вполняет подстановку макросов в CSV-данные.
+      */
+      function replaceMacros(
+        srcCsv clob
+      )
+      return clob
+      is
+      begin
+        return
+          replace( replace( replace( replace( replace( replace( replace(
+            srcCsv
+            , '$(Test_Pr)', Test_Pr)
+            , '$(testOperId)', to_char( testOperId))
+            , '$(testOperName)', testOperName)
+            , '$(testOperNameEn)', testOperNameEn)
+            , '$(dateIns)', to_char( chRec.date_ins))
+            , '$(l.dateIns)', to_char( lastRec.date_ins))
+            , '$(l.keyId)', to_char( lastRec.key_id))
+        ;
+      end replaceMacros;
+
+
+
+    -- checkCase
+    begin
+      checkCaseNumber := checkCaseNumber + 1;
+      if pkg_TestUtility.isTestFailed()
+            or testCaseNumber is not null
+              and testCaseNumber
+                not between checkCaseNumber
+                  and checkCaseNumber + coalesce( nextCaseUsedCount, 0)
+          then
+        return;
+      end if;
+      logger.info( '*** ' || cinfo);
+
+      begin
+        case functionName
+          when 'setKey' then
+            resNum := pkg_OAuth.setKey(
+              publicKey       => nullif( Test_Pr || publicKey, Test_Pr)
+              , privateKey    => privateKey
+              , operatorId    => operatorId
+            );
+            chId := resNum;
+          when 'getKey' then
+            resRc := pkg_OAuth.getKey(
+              isExpired       => isExpired
+              , operatorId    => operatorId
+            );
+        end case;
+        if isWaitError then
+          pkg_TestUtility.failTest(
+            failMessageText   =>
+              cinfo || 'Успешное выполнение вместо ошибки'
+          );
+        end if;
+      exception when others then
+        if isWaitError then
+          resErrorCode := sqlcode;
+          resErrorMessage := logger.getErrorStack();
+          if resErrorMessage not like execErrorMessageMask then
+            pkg_TestUtility.compareChar(
+              actualString        => resErrorMessage
+              , expectedString    => execErrorMessageMask
+              , failMessageText   =>
+                  cinfo || 'Сообщение об ошибке не соответствует маске'
+            );
+          elsif execErrorCode is not null then
+            pkg_TestUtility.compareChar(
+              actualString        => resErrorCode
+              , expectedString    => execErrorCode
+              , failMessageText   =>
+                  cinfo || 'Неожиданный код ошибки'
+            );
+          end if;
+        else
+          pkg_TestUtility.failTest(
+            failMessageText   =>
+              cinfo || 'Выполнение завершилось с ошибкой:'
+              || chr(10) || logger.getErrorStack()
+          );
+        end if;
+      end;
+
+      -- Проверка успешного результата
+      if not isWaitError and not pkg_TestUtility.isTestFailed() then
+        if chId is not null then
+          select
+            t.*
+          into chRec
+          from
+            oa_key t
+          where
+            t.key_id = chId
+          ;
+        end if;
+        if nullif( None_Integer, resultNumber) is not null then
+          pkg_TestUtility.compareChar(
+            actualString        => resNum
+            , expectedString    => resultNumber
+            , failMessageText   =>
+                cinfo || 'Неожиданный результат выполнения функции'
+          );
+        end if;
+        if resultRowCount is not null then
+          pkg_TestUtility.compareRowCount(
+            resRc
+            , expectedRowCount => resultRowCount
+            , failMessageText   =>
+                cinfo || 'Неожиданное число записей в курсоре'
+          );
+        end if;
+        if resultCsv is not null then
+          pkg_TestUtility.compareQueryResult(
+            resRc
+            , expectedCsv       => replaceMacros( resultCsv)
+            , failMessagePrefix => cinfo
+          );
+        end if;
+        if keyCsv is not null then
+          pkg_TestUtility.compareQueryResult(
+            tableName           => 'oa_key'
+            , idColumnName      => 'key_id'
+            , filterCondition   =>
+                'key_id=' || coalesce( to_char( chId), 'null')
+            , expectedCsv       => replaceMacros( keyCsv)
+            , failMessagePrefix => cinfo
+          );
+        end if;
+
+        -- Обновляем после всех проверок (чтобы неявно не изменить возможно
+        -- переданное по ссылке значение)
+        if chRec.key_id is not null then
+          lastRec := chRec;
+        end if;
+      end if;
+    exception when others then
+      raise_application_error(
+        pkg_Error.ErrorStackInfo
+        , logger.errorStack(
+            'Ошибка при проверке тестового случая ('
+            || ' caseNumber=' || checkCaseNumber
+            || ', functionName="' || functionName || '"'
+            || ', caseDescription="' || caseDescription || '"'
+            || ').'
+          )
+        , true
+      );
+    end checkCase;
+
+
+
+  -- checkKeyApi
+  begin
+    checkCase(
+      'setKey', 'new key'
+      , publicKey             => 'public key'
+      , privateKey            => 'private key'
+      , nextCaseUsedCount     => 99
+      , keyCsv =>
+'
+PUBLIC_KEY              ; PRIVATE_KEY   ; IS_ACTUAL  ; OPERATOR_ID_INS
+----------------------- ; ------------- ; ---------- ; ---------------
+$(Test_Pr)public key    ; private key   ;          1 ; $(testOperId)
+'
+    );
+    checkCase(
+      'getKey', 'new key'
+      , resultCsv             =>
+'
+KEY_ID     ; PUBLIC_KEY              ; PRIVATE_KEY   ; IS_EXPIRED ; DATE_INS
+---------- ; ----------------------- ; ------------- ; ---------- ; ------------
+$(l.keyId) ; $(Test_Pr)public key    ; private key   ;            ; $(l.dateIns)
+'
+    );
+  exception when others then
+    raise_application_error(
+      pkg_Error.ErrorStackInfo
+      , logger.errorStack(
+          'Ошибка при проверке функций %Key.'
+        )
+      , true
+    );
+  end checkKeyApi;
+
+
+
 -- testUserApi
 begin
-  prepareTestData();
+  clearTestData();
   savepoint pkg_OAuthTest_testUserApi;
+  prepareTestData();
   pkg_TestUtility.beginTest( 'user API');
 
   checkClientApi();
+  checkClientUriApi();
+  checkSessionApi();
+  checkKeyApi();
 
   pkg_TestUtility.endTest();
   if coalesce( saveDataFlag, 0) != 1 then
@@ -721,6 +1910,446 @@ exception when others then
     , true
   );
 end testUserApi;
+
+/* proc: testInternal
+  Тестирует служебные функции.
+
+  Параметры:
+  testCaseNumber              - Номер проверяемого тестового случая
+                                (по умолчанию без ограничений)
+  saveDataFlag                - Флаг сохранения тестовых данных
+                                (1 да, 0 нет ( по умолчанию))
+*/
+procedure testInternal(
+  testCaseNumber integer := null
+  , saveDataFlag integer := null
+)
+is
+
+  -- Порядковый номер проверяемого тестового случая
+  checkCaseNumber integer := 0;
+
+  -- Оператор по умолчанию для тестов
+  testOperId integer := pkg_Operator.getCurrentUserId();
+
+  -- Тестовые клиенты
+  testClientSName oa_client.client_short_name%type := Test_Pr || 'internal';
+  testClientUri oa_client_uri.client_uri%type := 'test uri';
+
+
+
+  /*
+    Подготовка данных для теста.
+  */
+  procedure prepareTestData
+  is
+
+    tmpId integer;
+
+  begin
+    tmpId := pkg_OAuth.createClient(
+      clientShortName       => testClientSName
+      , clientName          => testClientSName
+      , clientNameEn        => testClientSName
+      , applicationType     => 'native'
+      , grantTypeList       => null
+      , roleShortNameList   => null
+      , operatorId          => testOperId
+    );
+    tmpId := pkg_OAuth.createClientUri(
+      clientShortName       => testClientSName
+      , clientUri           => testClientUri
+      , operatorId          => testOperId
+    );
+  exception when others then
+    raise_application_error(
+      pkg_Error.ErrorStackInfo
+      , logger.errorStack(
+          'Ошибка при подготовке данных для теста.'
+        )
+      , true
+    );
+  end prepareTestData;
+
+
+
+  /*
+    Добавляет заблокированные сессии.
+  */
+  procedure addBlockSession(
+    rowCount integer
+    , dateFinish timestamp with time zone
+  )
+  is
+
+    tmpId integer;
+    tmpUid varchar2(20);
+
+    oldTime timestamp with time zone := systimestamp - INTERVAL '1' SECOND;
+
+  begin
+    for i in 1 .. rowCount loop
+      tmpUid := to_char( oa_session_seq.nextval);
+      tmpId := pkg_OAuth.createSession(
+        authCode                  => Test_Pr || tmpUid
+        , clientShortName         => testClientSName
+        , redirectUri             => testClientUri
+        , operatorId              => null
+        , codeChallenge           => null
+        , accessToken             => Test_Pr || tmpUid
+        , accessTokenDateIns      => oldTime
+        , accessTokenDateFinish   => oldTime
+        , refreshToken            => null
+        , refreshTokenDateIns     => null
+        , refreshTokenDateFinish  => null
+        , sessionToken            => null
+        , sessionTokenDateIns     => null
+        , sessionTokenDateFinish  => null
+        , operatorIdIns           => testOperId
+      );
+      if dateFinish is not null then
+        update
+          oa_session d
+        set
+          d.is_manual_blocked = 1
+          , d.date_finish = dateFinish
+        where
+          d.session_id = tmpId
+        ;
+      end if;
+    end loop;
+  exception when others then
+    raise_application_error(
+      pkg_Error.ErrorStackInfo
+      , logger.errorStack(
+          'Ошибка при добавлении заблокированных сессий.'
+        )
+      , true
+    );
+  end addBlockSession;
+
+
+
+  /*
+    Добавляет неактуальные ключи.
+  */
+  procedure addNonactualKey(
+    rowCount integer
+  )
+  is
+
+    tmpId integer;
+    tmpUid varchar2(20);
+
+  begin
+    for i in 1 .. rowCount loop
+      tmpId := oa_key_seq.nextval;
+      tmpUid := to_char( tmpId);
+      insert into
+        oa_key
+      (
+        key_id
+        , public_key
+        , private_key
+        , is_actual
+        , operator_id_ins
+      )
+      values
+      (
+        tmpId
+        , Test_Pr || tmpUid
+        , Test_Pr || tmpUid
+        , 0
+        , testOperId
+      );
+    end loop;
+  exception when others then
+    raise_application_error(
+      pkg_Error.ErrorStackInfo
+      , logger.errorStack(
+          'Ошибка при добавлении неактуальных ключей.'
+        )
+      , true
+    );
+  end addNonactualKey;
+
+
+
+  /*
+    Проверяет тестовый случай.
+  */
+  procedure checkCase(
+    functionName varchar2
+    , caseDescription varchar2
+    , toTime timestamp with time zone := null
+    , saveKeyCount integer := null
+    , maxExecTime interval day to second := null
+    , addBlockSessionCount integer := null
+    , addBlockSessionDateFinish timestamp with time zone := null
+    , addNonactualKeyCount integer := null
+    , resultNumber number := None_Integer
+    , blockSessionCount integer := null
+    , oldSessionCount integer := null
+    , nonactulKeyCount integer := null
+    , execErrorCode integer := null
+    , execErrorMessageMask varchar2 := null
+    , nextCaseUsedCount pls_integer := null
+  )
+  is
+
+    -- Описание тестового случая
+    cinfo varchar2(200) :=
+      'CASE ' || to_char( checkCaseNumber + 1)
+      || ': ' || functionName || ': ' || caseDescription || ': '
+    ;
+
+    -- Ожидается выполнение с ошибкой
+    isWaitError boolean :=
+      execErrorCode is not null or execErrorMessageMask is not null
+    ;
+
+    resErrorCode integer;
+    resErrorMessage varchar2(32000);
+
+    resNum integer;
+
+  -- checkCase
+  begin
+    checkCaseNumber := checkCaseNumber + 1;
+    if pkg_TestUtility.isTestFailed()
+          or testCaseNumber is not null
+            and testCaseNumber
+              not between checkCaseNumber
+                and checkCaseNumber + coalesce( nextCaseUsedCount, 0)
+        then
+      return;
+    end if;
+    logger.info( '*** ' || cinfo);
+
+    if addBlockSessionCount > 0 then
+      addBlockSession(
+        dateFinish  => addBlockSessionDateFinish
+        , rowCount  => addBlockSessionCount
+      );
+    end if;
+    if addNonactualKeyCount > 0 then
+      addNonactualKey(
+        rowCount  => addNonactualKeyCount
+      );
+    end if;
+    begin
+      case functionName
+        when 'setSessionDateFinish' then
+          resNum := pkg_OAuthInternal.setSessionDateFinish();
+        when 'clearOldData' then
+          resNum := pkg_OAuthInternal.clearOldData(
+            toTime          => toTime
+            , saveKeyCount  => saveKeyCount
+            , maxExecTime   => maxExecTime
+          );
+      end case;
+      if isWaitError then
+        pkg_TestUtility.failTest(
+          failMessageText   =>
+            cinfo || 'Успешное выполнение вместо ошибки'
+        );
+      end if;
+    exception when others then
+      if isWaitError then
+        resErrorCode := sqlcode;
+        resErrorMessage := logger.getErrorStack();
+        if resErrorMessage not like execErrorMessageMask then
+          pkg_TestUtility.compareChar(
+            actualString        => resErrorMessage
+            , expectedString    => execErrorMessageMask
+            , failMessageText   =>
+                cinfo || 'Сообщение об ошибке не соответствует маске'
+          );
+        elsif execErrorCode is not null then
+          pkg_TestUtility.compareChar(
+            actualString        => resErrorCode
+            , expectedString    => execErrorCode
+            , failMessageText   =>
+                cinfo || 'Неожиданный код ошибки'
+          );
+        end if;
+      else
+        pkg_TestUtility.failTest(
+          failMessageText   =>
+            cinfo || 'Выполнение завершилось с ошибкой:'
+            || chr(10) || logger.getErrorStack()
+        );
+      end if;
+    end;
+
+    -- Проверка успешного результата
+    if not isWaitError and not pkg_TestUtility.isTestFailed() then
+      if nullif( None_Integer, resultNumber) is not null then
+        pkg_TestUtility.compareChar(
+          actualString        => resNum
+          , expectedString    => resultNumber
+          , failMessageText   =>
+              cinfo || 'Неожиданный результат выполнения функции'
+        );
+      end if;
+      if blockSessionCount is not null then
+        pkg_TestUtility.compareRowCount(
+          tableName           => 'v_oa_session'
+          , filterCondition   => 'is_blocked=1'
+          , expectedRowCount  => blockSessionCount
+          , failMessageText   =>
+              cinfo || 'Неожиданное число заблокированных сессий'
+        );
+      end if;
+      if oldSessionCount is not null then
+        pkg_TestUtility.compareRowCount(
+          tableName           => 'oa_session'
+          , filterCondition   =>
+'date_finish < to_timestamp_tz('''
+|| to_char( toTime, 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm')
+|| ''', ''dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'')'
+          , expectedRowCount  => oldSessionCount
+          , failMessageText   =>
+              cinfo || 'Неожиданное число старых сессий'
+        );
+      end if;
+      if nonactulKeyCount is not null then
+        pkg_TestUtility.compareRowCount(
+          tableName           => 'oa_key'
+          , filterCondition   => 'is_actual=0'
+          , expectedRowCount  => nonactulKeyCount
+          , failMessageText   =>
+              cinfo || 'Неожиданное число неактуальных ключей'
+        );
+      end if;
+    end if;
+  exception when others then
+    raise_application_error(
+      pkg_Error.ErrorStackInfo
+      , logger.errorStack(
+          'Ошибка при проверке тестового случая ('
+          || ' caseNumber=' || checkCaseNumber
+          || ', functionName="' || functionName || '"'
+          || ', caseDescription="' || caseDescription || '"'
+          || ').'
+        )
+      , true
+    );
+  end checkCase;
+
+
+
+  /*
+    Проверяет функцию setSessionDateFinish.
+  */
+  procedure checkSetSessionDateFinish
+  is
+  begin
+    checkCase(
+      'setSessionDateFinish', 'подготовка'
+      , blockSessionCount     => 0
+      , nextCaseUsedCount     => 2
+    );
+    checkCase(
+      'setSessionDateFinish', 'повторный запуск'
+      , resultNumber          => 0
+      , blockSessionCount     => 0
+      , nextCaseUsedCount     => 1
+    );
+    checkCase(
+      'setSessionDateFinish', 'есть данные для обработки'
+      , addBlockSessionCount  => 2
+      , resultNumber          => 2
+      , blockSessionCount     => 0
+    );
+  exception when others then
+    raise_application_error(
+      pkg_Error.ErrorStackInfo
+      , logger.errorStack(
+          'Ошибка при проверке функции setSessionDateFinish.'
+        )
+      , true
+    );
+  end checkSetSessionDateFinish;
+
+
+
+  /*
+    Проверяет функцию clearOldData.
+  */
+  procedure checkClearOldData
+  is
+
+    toTime timestamp with time zone := systimestamp - INTERVAL '10' YEAR;
+    oldTime toTime%type := toTime - INTERVAL '1' SECOND;
+
+  begin
+    checkCase(
+      'clearOldData', 'подготовка'
+      , addNonactualKeyCount  => 15
+      , toTime                => toTime
+      , saveKeyCount          => 9
+      , oldSessionCount       => 0
+      , nonactulKeyCount      => 9
+      , nextCaseUsedCount     => 2
+    );
+    checkCase(
+      'clearOldData', 'повторный запуск'
+      , toTime                => toTime
+      , saveKeyCount          => 9
+      , resultNumber          => 0
+      , oldSessionCount       => 0
+      , nextCaseUsedCount     => 1
+    );
+    checkCase(
+      'clearOldData', 'есть данные для обработки'
+      , addBlockSessionCount  => 2
+      , addBlockSessionDateFinish  => oldTime
+      , addNonactualKeyCount  => 3
+      , toTime                => toTime
+      , saveKeyCount          => 9
+      , resultNumber          => 5
+      , oldSessionCount       => 0
+      , nonactulKeyCount      => 9
+    );
+  exception when others then
+    raise_application_error(
+      pkg_Error.ErrorStackInfo
+      , logger.errorStack(
+          'Ошибка при проверке функции clearOldData.'
+        )
+      , true
+    );
+  end checkClearOldData;
+
+
+
+-- testInternal
+begin
+  clearTestData();
+  savepoint pkg_OAuthTest_testInternal;
+  prepareTestData();
+  pkg_TestUtility.beginTest( 'internal functions');
+
+  checkSetSessionDateFinish();
+  checkClearOldData();
+
+  pkg_TestUtility.endTest();
+  if coalesce( saveDataFlag, 0) != 1 then
+    rollback to pkg_OAuthTest_testInternal;
+  end if;
+exception when others then
+  raise_application_error(
+    pkg_Error.ErrorStackInfo
+    , logger.errorStack(
+        'Ошибка при тестировании служебных функций ('
+        || 'testCaseNumber=' || testCaseNumber
+        || ', saveDataFlag=' || saveDataFlag
+        || ').'
+      )
+    , true
+  );
+end testInternal;
 
 end pkg_OAuthTest;
 /

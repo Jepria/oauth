@@ -40,3 +40,4 @@ end;
 set feedback on
 
 @oms-run Test/AutoTest/user-api.sql
+@oms-run Test/AutoTest/internal.sql

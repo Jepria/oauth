@@ -7,7 +7,7 @@ create table
   , grant_type                    varchar2(20)                        not null
   , date_ins                      timestamp with time zone
                                     default systimestamp              not null
-  , operator_id                   integer
+  , operator_id                   integer                             not null
   , constraint oa_client_grant_pk primary key
     ( client_id, grant_type)
     using index tablespace &indexTablespace

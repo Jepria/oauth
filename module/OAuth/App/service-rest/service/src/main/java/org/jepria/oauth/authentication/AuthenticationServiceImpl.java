@@ -21,6 +21,7 @@ import org.jepria.server.data.RuntimeSQLException;
 import org.jepria.server.service.security.Credential;
 
 import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -137,7 +138,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     Integer operatorId = loginByPassword(username, password);
     KeyDto keyDto = keyService.getKeys(null, serverCredential);
     Token sessionToken = generateSessionToken(username, operatorId, host, keyDto.getPrivateKey(), null);
-    updateSession(session.getSessionId(),
+    updateSession(session,
       operatorId,
       sessionToken.getJti(),
       sessionToken.getIssueTime(),
@@ -201,15 +202,25 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
   }
 
-  private void updateSession(Integer sessionId,
+  private void updateSession(SessionDto sessionDto,
                              Integer operatorId,
                              String sessionTokenId,
                              Date sessionDateIns,
                              Date sessionDateFinish,
                              Credential serverCredential) {
     SessionUpdateDto updateDto = new SessionUpdateDto();
-    updateDto.setSessionId(sessionId);
+    updateDto.setSessionId(sessionDto.getSessionId());
+    updateDto.setAuthorizationCode(sessionDto.getAuthorizationCode());
+    updateDto.setClientId(sessionDto.getClient().getValue());
+    updateDto.setRedirectUri(sessionDto.getRedirectUri());
+    updateDto.setCodeChallenge(sessionDto.getCodeChallenge());
     updateDto.setOperatorId(operatorId);
+    updateDto.setAccessTokenId(sessionDto.getAccessTokenId());
+    updateDto.setAccessTokenDateIns(sessionDto.getSessionTokenDateIns());
+    updateDto.setAccessTokenDateFinish(sessionDto.getAccessTokenDateFinish());
+    updateDto.setAccessTokenId(sessionDto.getRefreshTokenId());
+    updateDto.setAccessTokenDateIns(sessionDto.getRefreshTokenDateIns());
+    updateDto.setAccessTokenDateFinish(sessionDto.getRefreshTokenDateFinish());
     updateDto.setSessionTokenId(sessionTokenId);
     updateDto.setSessionTokenDateIns(sessionDateIns);
     updateDto.setSessionTokenDateFinish(sessionDateFinish);
@@ -221,10 +232,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       /**
        * Generate uuid for token ID
        */
-      MessageDigest cryptoProvider = MessageDigest.getInstance("SHA-256");
-      UUID randomUuid = UUID.randomUUID();
-      cryptoProvider.update(randomUuid.toString().getBytes());
-      String tokenId = Base64.getUrlEncoder().encodeToString(cryptoProvider.digest());
+      String tokenId = UUID.randomUUID().toString().replaceAll("-", "");
       /**
        * Create token with JWT lib
        */

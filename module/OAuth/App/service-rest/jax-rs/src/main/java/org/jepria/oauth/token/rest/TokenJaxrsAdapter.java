@@ -84,7 +84,7 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
         } else {
           throw new OAuthRuntimeException(ACCESS_DENIED, "Request authorization failed");
         }
-        tokenService.create(clientId, userId, getHostContext());
+        result = tokenService.create(clientId, userId, getHostContext());
         break;
       }
       case GrantType.PASSWORD: {

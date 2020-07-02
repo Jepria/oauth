@@ -6,6 +6,7 @@ import org.jepria.oauth.client.dto.ClientDto;
 import org.jepria.oauth.client.dto.ClientSearchDto;
 import org.jepria.oauth.sdk.ApplicationType;
 import org.jepria.oauth.sdk.GrantType;
+import org.jepria.server.data.OptionDto;
 
 import java.util.List;
 
@@ -26,11 +27,11 @@ public class ClientServiceImpl implements ClientService {
   }
 
   public List<String> getClientGrantTypes(String clientId) {
-    return dao.getClientGrantTypes(clientId);
+    return dao.getClientGrantTypes(clientId, 1);
   }
 
   public List<String> getClientResponseTypes(String clientId) {
-    return GrantType.getGrantResponseTypes(dao.getClientGrantTypes(clientId));
+    return GrantType.getGrantResponseTypes(dao.getClientGrantTypes(clientId, 1));
   }
 
   @Override
@@ -48,5 +49,10 @@ public class ClientServiceImpl implements ClientService {
     ClientSearchDto searchDto = new ClientSearchDto();
     searchDto.setClientName(clientName);
     return (List<ClientDto>) dao.find(searchDto, operatorId);
+  }
+
+  @Override
+  public List<OptionDto<String>> getRoles(String roleName, String roleNameEn, Integer maxRowCount, Integer operatorId) {
+    return dao.getRoles(roleName, roleNameEn, maxRowCount, operatorId);
   }
 }

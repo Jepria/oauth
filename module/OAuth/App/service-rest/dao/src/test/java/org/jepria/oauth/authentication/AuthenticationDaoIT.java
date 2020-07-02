@@ -1,9 +1,10 @@
 package org.jepria.oauth.authentication;
 
+import com.technology.jep.jepria.server.dao.CallContext;
 import org.jepria.oauth.DaoTestBase;
+import org.jepria.oauth.authentication.dao.AuthenticationDao;
 import org.jepria.oauth.authentication.dao.AuthenticationDaoImpl;
 import org.jepria.oauth.session.dao.SessionDaoImpl;
-import org.jepria.oauth.authentication.dao.AuthenticationDao;
 import org.jepria.oauth.session.dto.SessionCreateDto;
 import org.jepria.server.data.Dao;
 import org.junit.jupiter.api.AfterEach;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.sql.SQLException;
 import java.util.Base64;
 import java.util.HashMap;
 
@@ -20,46 +22,59 @@ import static org.jepria.oauth.session.SessionFieldNames.SESSION_ID;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AuthenticationDaoIT extends DaoTestBase {
-  
+
   AuthenticationDao dao;
-  
+
   @BeforeEach
-  public void beforeTest(){
-    dao = new AuthenticationDaoImpl(properties.getProperty("datasource.jndiName"));
+  public void beforeTest() {
+    dao = new AuthenticationDaoImpl();
   }
-  
+
   @AfterEach
   public void afterTest() {
     dao = null;
   }
-  
+
   @Test
-  public void clientAuthTest() {
-    dao.loginByClientSecret(properties.getProperty("client.id"), properties.getProperty("client.secret"));
+  public void clientAuthTest() throws SQLException {
+    try {
+      CallContext.begin(properties.getProperty("datasource.jndiName"), AuthenticationDaoIT.class.getCanonicalName());
+      dao.loginByClientSecret(properties.getProperty("client.id"), properties.getProperty("client.secret"));
+    } finally {
+      CallContext.rollback();
+      CallContext.end();
+    }
   }
-  
+
   @Test
-  public void pkceTest() throws NoSuchAlgorithmException {
-    Base64.Encoder encoder = Base64.getUrlEncoder().withoutPadding();
-    SecureRandom sr = SecureRandom.getInstanceStrong();
-    byte[] codeVerifierBytes = new byte[32];
-    sr.nextBytes(codeVerifierBytes);
-    String codeVerifier = encoder.encodeToString(codeVerifierBytes);
-    MessageDigest md = MessageDigest.getInstance("SHA-256");
-    String codeChallenge = encoder.encodeToString(md.digest(codeVerifier.getBytes()));
-    Dao sessionDao = new SessionDaoImpl(properties.getProperty("datasource.jndiName"));
-    SessionCreateDto sessionCreateDto = new SessionCreateDto();
-    byte[] authCodeBytes = new byte[16];
-    sr.nextBytes(authCodeBytes);
-    String authCode = encoder.encodeToString(authCodeBytes);
-    sessionCreateDto.setAuthorizationCode(authCode);
-    sessionCreateDto.setCodeChallenge(codeChallenge);
-    Integer sessionId = (Integer) sessionDao.create(sessionCreateDto, 1);
-    Boolean result = dao.verifyPKCE(authCode, codeVerifier);
-    sessionDao.delete(new HashMap<String, Integer>(){{
-      put(SESSION_ID, sessionId);
-    }}, 1);
-    assertTrue(result);
+  public void pkceTest() throws NoSuchAlgorithmException, SQLException {
+    try {
+      CallContext.begin(properties.getProperty("datasource.jndiName"), AuthenticationDaoIT.class.getCanonicalName());
+      Base64.Encoder encoder = Base64.getUrlEncoder().withoutPadding();
+      SecureRandom sr = SecureRandom.getInstanceStrong();
+      byte[] codeVerifierBytes = new byte[32];
+      sr.nextBytes(codeVerifierBytes);
+      String codeVerifier = encoder.encodeToString(codeVerifierBytes);
+      MessageDigest md = MessageDigest.getInstance("SHA-256");
+      String codeChallenge = encoder.encodeToString(md.digest(codeVerifier.getBytes()));
+      Dao sessionDao = new SessionDaoImpl();
+      SessionCreateDto sessionCreateDto = new SessionCreateDto();
+      byte[] authCodeBytes = new byte[16];
+      sr.nextBytes(authCodeBytes);
+      String authCode = encoder.encodeToString(authCodeBytes);
+      sessionCreateDto.setAuthorizationCode(authCode);
+      sessionCreateDto.setClientId(properties.getProperty("client.id"));
+      sessionCreateDto.setCodeChallenge(codeChallenge);
+      Integer sessionId = (Integer) sessionDao.create(sessionCreateDto, 1);
+      Boolean result = dao.verifyPKCE(authCode, codeVerifier);
+      sessionDao.delete(new HashMap<String, Integer>() {{
+        put(SESSION_ID, sessionId);
+      }}, 1);
+      assertTrue(result);
+    } finally {
+      CallContext.rollback();
+      CallContext.end();
+    }
   }
-  
+
 }

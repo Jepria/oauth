@@ -1,6 +1,7 @@
 package org.jepria.oauth.client;
 
 import org.jepria.oauth.client.dto.ClientDto;
+import org.jepria.server.data.OptionDto;
 
 import java.util.List;
 
@@ -36,4 +37,6 @@ public interface ClientService {
   List<String> getApplicationGrantTypes(String applicationTypeCodes);
   
   List<ClientDto> getClient(String clientName, Integer operatorId);
+
+  List<OptionDto<String>> getRoles(String roleName, String roleNameEn, Integer maxRowCount, Integer operatorId);
 }

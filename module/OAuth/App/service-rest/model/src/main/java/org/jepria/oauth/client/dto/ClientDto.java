@@ -1,5 +1,6 @@
 package org.jepria.oauth.client.dto;
 
+import org.jepria.server.data.OptionDto;
 import org.jepria.server.data.PrimaryKey;
 
 import java.util.List;
@@ -15,6 +16,7 @@ public class ClientDto {
   String tokenAuthMethod;
   List<String> grantTypes;
   List<String> responseTypes;
+  List<OptionDto<String>> scopes;
 
   public String getClientId() {
     return clientId;
@@ -78,5 +80,13 @@ public class ClientDto {
 
   public void setResponseTypes(List<String> responseTypes) {
     this.responseTypes = responseTypes;
+  }
+
+  public List<OptionDto<String>> getScopes() {
+    return scopes;
+  }
+
+  public void setScopes(List<OptionDto<String>> scopes) {
+    this.scopes = scopes;
   }
 }

@@ -69,11 +69,11 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
           codeChallenge,
           sessionToken,
           getHostContext());
-      if (!session.getBlocked() && session.getSessionTokenId() != null && new Date().before(session.getSessionTokenDateFinish()) && session.getOperator() != null) {
+      if (session.getSessionTokenId() != null && new Date().before(session.getSessionTokenDateFinish()) && session.getOperator() != null) {
         if (ResponseType.CODE.equals(responseType)) {
           response = Response
               .status(302)
-              .location(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + session.getAuthorizationCode() + "&" + (state != null ? STATE + "=" + state : "")))
+              .location(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + session.getAuthorizationCode() + (state != null ? "&" + STATE + "=" + state : "")))
               .build();
         } else {
           TokenDto tokenDto = TokenServerFactory.getInstance().getService().create(responseType, clientId, getHostContext(), session.getAuthorizationCode(), URI.create(redirectUri));

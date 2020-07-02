@@ -25,7 +25,6 @@ public class SessionDto {
   String codeChallenge;
   String redirectUri;
   OptionDto<String> client;
-  Boolean isBlocked;
 
   public Integer getSessionId() {
     return sessionId;
@@ -161,13 +160,5 @@ public class SessionDto {
 
   public void setClient(OptionDto<String> client) {
     this.client = client;
-  }
-
-  public Boolean getBlocked() {
-    return isBlocked;
-  }
-
-  public void setBlocked(Boolean blocked) {
-    isBlocked = blocked;
   }
 }

@@ -46,7 +46,7 @@ public class ClientUriJaxrsAdapter extends JaxrsAdapterBase {
   @GET
   @Path("{clientUriId}")
   public Response getRecordById(@PathParam("clientId") String clientId, @PathParam("clientUriId") Integer clientUriId) {
-    String complexKey = ClientUriFieldNames.CLIENT_ID + "=" + clientId + "~" + ClientUriFieldNames.CLIENT_URI_ID + "=" + clientUriId;
+    String complexKey = ClientUriFieldNames.CLIENT_SHORT_NAME + "=" + clientId + "~" + ClientUriFieldNames.CLIENT_URI_ID + "=" + clientUriId;
     ClientUriDto result = (ClientUriDto) entityEndpointAdapter.getRecordById(complexKey);
     return Response.ok().entity(result).build();
   }
@@ -67,7 +67,7 @@ public class ClientUriJaxrsAdapter extends JaxrsAdapterBase {
   @DELETE
   @Path("{clientUriId}")
   public Response deleteRecordById(@PathParam("clientId") String clientId, @PathParam("clientUriId") Integer clientUriId) {
-    String complexKey = ClientUriFieldNames.CLIENT_ID + "=" + clientId + "~" + ClientUriFieldNames.CLIENT_URI_ID + "=" + clientUriId;
+    String complexKey = ClientUriFieldNames.CLIENT_SHORT_NAME + "=" + clientId + "~" + ClientUriFieldNames.CLIENT_URI_ID + "=" + clientUriId;
     entityEndpointAdapter.deleteRecordById(complexKey);
     return Response.ok().build();
   }

@@ -1,353 +1,233 @@
 package org.jepria.oauth.client.dao;
 
 import com.technology.jep.jepria.server.dao.ResultSetMapper;
-import com.technology.jep.jepria.server.db.Db;
-import oracle.jdbc.OracleTypes;
 import org.jepria.oauth.client.dto.ClientCreateDto;
 import org.jepria.oauth.client.dto.ClientDto;
 import org.jepria.oauth.client.dto.ClientSearchDto;
 import org.jepria.oauth.client.dto.ClientUpdateDto;
-import org.jepria.oauth.sdk.ApplicationType;
-import org.jepria.server.data.RuntimeSQLException;
+import org.jepria.server.data.DaoSupport;
+import org.jepria.server.data.DtoUtil;
+import org.jepria.server.data.OptionDto;
 
-import javax.xml.bind.DatatypeConverter;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SecureRandom;
-import java.sql.CallableStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.jepria.oauth.client.ClientFieldNames.*;
 
 public class ClientDaoImpl implements ClientDao {
 
-  private String jndiName = "jdbc/RFInfoDS";
-
-  public ClientDaoImpl() {
-  }
-
-  ;
-
-  public ClientDaoImpl(String jndName) {
-    this.jndiName = jndName;
-  }
-
-  private Db getDb() {
-    return new Db(jndiName);
-  }
-
-  //language=Oracle
-  private String findSqlQuery = "declare " +
-    "rc sys_refcursor;" +
-    "shortName varchar(64) := ?;" +
-    "clientName varchar(100) := ?;" +
-    "clientNameEn varchar(100) := ?;" +
-    "begin " +
-    "open rc for select " +
-    //"ct.client_id," +
-    "ct.short_name," +
-    "ct.client_secret," +
-    "ct.client_name," +
-    "ct.client_name_en," +
-    "ct.application_type_code " +
-    "from OA_CLIENT ct " +
-    "where ct.is_deleted = 0 " +
-    "and (ct.short_name like shortName or shortName is null) " +
-    "and (ct.client_name like clientName or clientName is null) " +
-    "and (ct.client_name_en like clientNameEn or clientNameEn is null);" +
-    "? := rc; " +
-    "end;";
-
-  private ResultSetMapper mapper = new ResultSetMapper<ClientDto>() {
-    @Override
-    public void map(ResultSet rs, ClientDto dto) throws SQLException {
-      dto.setClientId(rs.getString(SHORT_NAME));
-      dto.setClientSecret(rs.getString(CLIENT_SECRET));
-      dto.setClientName(rs.getString(CLIENT_NAME));
-      dto.setClientNameEn(rs.getString(CLIENT_NAME_EN));
-      dto.setApplicationType(rs.getString(APPLICATION_TYPE_CODE));
-      dto.setGrantTypes(getClientGrantTypes(dto.getClientId()));
-    }
-  };
-
-
   @Override
   public List<?> find(Object template, Integer operatorId) {
-    ClientSearchDto dto = (ClientSearchDto) template;
-    Db db = getDb();
-    CallableStatement statement = db.prepare(findSqlQuery);
-    List<ClientDto> result = new ArrayList<>();
-    try {
-      statement.setString(1, dto.getClientId());
-      if (dto.getClientName() != null) {
-        statement.setString(2, dto.getClientName() + "%");
-      } else {
-        statement.setNull(2, OracleTypes.VARCHAR);
-      }
-      if (dto.getClientNameEn() != null) {
-        statement.setString(3, dto.getClientNameEn() + "%");
-      } else {
-        statement.setNull(3, OracleTypes.VARCHAR);
-      }
-      statement.registerOutParameter(4, OracleTypes.CURSOR);
-      statement.executeQuery();
-      try (ResultSet rs = (ResultSet) statement.getObject(4)) {
-        while (rs.next()) {
-          ClientDto resultDto = new ClientDto();
-          mapper.map(rs, resultDto);
-          result.add(resultDto);
+    ClientSearchDto searchTemplate = (ClientSearchDto) template;
+    String sqlQuery =
+      "begin  "
+        + "? := pkg_OAuth.findClient("
+        + "clientShortName => ? "
+        + ", clientName => ? "
+        + ", clientNameEn => ? "
+        + ", maxRowCount => ? "
+        + ", operatorId => ? "
+        + ");"
+        + " end;";
+    List<ClientDto> records = null;
+    records = DaoSupport.getInstance().find(sqlQuery,
+      new ResultSetMapper<ClientDto>() {
+        @Override
+        public void map(ResultSet rs, ClientDto dto) throws SQLException {
+          dto.setClientId(rs.getString(CLIENT_SHORT_NAME));
+          dto.setClientSecret(rs.getString(CLIENT_SECRET));
+          dto.setClientName(rs.getString(CLIENT_NAME));
+          dto.setClientNameEn(rs.getString(CLIENT_NAME_EN));
+          dto.setApplicationType(rs.getString(APPLICATION_TYPE));
+          dto.setGrantTypes(getClientGrantTypes(dto.getClientId(), operatorId));
+//          dto.setScopes(getClientRoles(getInteger(rs, OPERATOR_ID))); TODO
         }
       }
-    } catch (SQLException e) {
-      e.printStackTrace();
-      throw new RuntimeSQLException(e);
-    } catch (Throwable th) {
-      th.printStackTrace();
-      throw th;
-    } finally {
-      db.closeAll();
-    }
-    return result;
+      , ClientDto.class
+      , searchTemplate.getClientId()
+      , DtoUtil.startsWith(searchTemplate.getClientName())
+      , DtoUtil.startsWith(searchTemplate.getClientNameEn())
+      , searchTemplate.getMaxRowCount()
+      , operatorId);
+    return records;
   }
 
   @Override
   public List<ClientDto> findByPrimaryKey(Map<String, ?> primaryKeyMap, Integer operatorId) {
-    Db db = getDb();
-    CallableStatement statement = db.prepare(findSqlQuery);
-    List<ClientDto> result = new ArrayList<>();
-    try {
-      statement.setString(1, (String) primaryKeyMap.get(CLIENT_ID));
-      statement.setNull(2, OracleTypes.VARCHAR);
-      statement.setNull(3, OracleTypes.VARCHAR);
-      statement.registerOutParameter(4, OracleTypes.CURSOR);
-      statement.executeQuery();
-      try (ResultSet rs = (ResultSet) statement.getObject(4)) {
-        while (rs.next()) {
-          ClientDto resultDto = new ClientDto();
-          mapper.map(rs, resultDto);
-          result.add(resultDto);
+    String sqlQuery =
+      "begin  "
+        + "? := pkg_OAuth.findClient("
+        + "clientShortName => ? "
+        + ", clientName => ? "
+        + ", clientNameEn => ? "
+        + ", maxRowCount => ? "
+        + ", operatorId => ? "
+        + ");"
+        + " end;";
+    List<ClientDto> records = null;
+    records = DaoSupport.getInstance().find(sqlQuery,
+      new ResultSetMapper<ClientDto>() {
+        @Override
+        public void map(ResultSet rs, ClientDto dto) throws SQLException {
+          dto.setClientId(rs.getString(CLIENT_SHORT_NAME));
+          dto.setClientSecret(rs.getString(CLIENT_SECRET));
+          dto.setClientName(rs.getString(CLIENT_NAME));
+          dto.setClientNameEn(rs.getString(CLIENT_NAME_EN));
+          dto.setApplicationType(rs.getString(APPLICATION_TYPE));
+          dto.setGrantTypes(getClientGrantTypes(dto.getClientId(), operatorId));
         }
       }
-    } catch (SQLException e) {
-      e.printStackTrace();
-      throw new RuntimeSQLException(e);
-    } catch (Throwable th) {
-      th.printStackTrace();
-      throw th;
-    } finally {
-      db.closeAll();
-    }
-    return result;
+      , ClientDto.class
+      , primaryKeyMap.get(CLIENT_ID)
+      , null
+      , null
+      , null
+      , operatorId);
+    return records;
   }
 
   @Override
   public Object create(Object record, Integer operatorId) {
-    Db db = getDb();
-    //language=Oracle
     ClientCreateDto dto = (ClientCreateDto) record;
-    String insertSqlQuery = "insert into OA_CLIENT(SHORT_NAME, CLIENT_SECRET, CLIENT_NAME, CLIENT_NAME_EN, APPLICATION_TYPE_CODE, OPERATOR_ID_INS) " +
-      "values (?, ?, ?, ?, ?, ?)";
-    CallableStatement insertStatement = db.prepare(insertSqlQuery);
-    try {
-      insertStatement.setString(1, dto.getClientId());
-      SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
-      MessageDigest md = MessageDigest.getInstance("SHA-256");
-      byte[] salt = new byte[16];
-      random.nextBytes(salt);
-      md.update(salt);
-      byte[] secret = new byte[32];
-      random.nextBytes(secret);
-      insertStatement.setString(2, DatatypeConverter.printHexBinary(md.digest(secret)));
-      insertStatement.setString(3, dto.getClientName());
-      insertStatement.setString(4, dto.getClientNameEn());
-      insertStatement.setString(5, dto.getApplicationType());
-      insertStatement.setInt(6, operatorId);
-      int addedRecordCount = insertStatement.executeUpdate();
-      if (addedRecordCount == 1) {
-        //language=Oracle
-        String sqlGetIndex = "select OA_CLIENT_SEQ.currval from dual";
-        CallableStatement getIndexStatement = db.prepare(sqlGetIndex);
-        ResultSet rs = getIndexStatement.executeQuery();
-        Integer clientId = null;
-        if (rs.next()) {
-          clientId = rs.getInt(1);
-        }
-        /*
-         Add grantTypes
-         */
-        //language=Oracle
-        CallableStatement insertGrantTypeStatement;
-        if (dto.getGrantTypes() != null && dto.getGrantTypes().size() != 0) {
-          String insertGrantSqlString = "insert into OA_CLIENT_GRANT_TYPE (CLIENT_ID, GRANT_TYPE_CODE) values (?,?)";
-          insertGrantTypeStatement = db.prepare(insertGrantSqlString);
-          for (String grantType : dto.getGrantTypes()) {
-            insertGrantTypeStatement.setInt(1, clientId);
-            insertGrantTypeStatement.setString(2, grantType);
-            insertGrantTypeStatement.addBatch();
-          }
-          insertGrantTypeStatement.executeBatch();
-        } else {
-          String insertGrantSqlString =
-            "insert into OA_CLIENT_GRANT_TYPE (CLIENT_ID, GRANT_TYPE_CODE) " +
-              "values (?,?)";
-          insertGrantTypeStatement = db.prepare(insertGrantSqlString);
-          for (String grantType : ApplicationType.getApplicationGrantTypes(dto.getApplicationType())) {
-            insertGrantTypeStatement.setInt(1, clientId);
-            insertGrantTypeStatement.setString(2, grantType);
-            insertGrantTypeStatement.addBatch();
-          }
-          insertGrantTypeStatement.executeBatch();
-        }
-        db.commit();
-      }
-    } catch (SQLException e) {
-      e.printStackTrace();
-      db.rollback();
-      throw new RuntimeSQLException(e);
-    } catch (NoSuchAlgorithmException | NoSuchProviderException th) {
-      th.printStackTrace();
-      db.rollback();
-      throw new RuntimeException(th);
-    } finally {
-      db.closeAll();
-    }
-    return dto.getClientId();
+    String sqlQuery =
+      "begin "
+        + "? := pkg_OAuth.createClient("
+        + "clientShortName => ? "
+        + ", clientName => ? "
+        + ", clientNameEn => ? "
+        + ", applicationType => ? "
+        + ", grantTypeList => ? "
+        + ", roleShortNameList => ? "
+        + ", operatorId => ? "
+        + ");"
+        + "end;";
+    String result = null;
+    result = DaoSupport.getInstance().create(sqlQuery,
+      String.class
+      , dto.getClientId()
+      , dto.getClientName()
+      , dto.getClientNameEn()
+      , dto.getApplicationType()
+      , dto.getGrantTypes() != null ? dto.getGrantTypes().stream().collect(Collectors.joining(",")) : null
+      , dto.getScope() != null ? dto.getScope().stream().collect(Collectors.joining(",")) : null
+      , operatorId
+    );
+    return result;
   }
 
   @Override
   public void update(Map<String, ?> primaryKey, Object record, Integer operatorId) {
-    Db db = getDb();
     ClientUpdateDto dto = (ClientUpdateDto) record;
-    try {
-      /*
-      check applicationTypeCode diff.
-      if incoming value is new, clear client grant types
-       */
-      ClientDto old = findByPrimaryKey(primaryKey, operatorId).get(0);
-      if (!old.getApplicationType().equals(dto.getApplicationType())) {
-        //language=Oracle
-        String deleteGrantsSqlString = "delete from OA_CLIENT_GRANT_TYPE cgt " +
-          "where cgt.client_id = (select ct.client_id from OA_CLIENT ct where ct.short_name like ?)";
-        CallableStatement deleteGrantTypeStatement = db.prepare(deleteGrantsSqlString);
-        deleteGrantTypeStatement.setString(1, (String) primaryKey.get(CLIENT_ID));
-        deleteGrantTypeStatement.executeQuery();
-      }
-
-      //language=Oracle
-      String updateSqlQuery = "UPDATE OA_CLIENT t " +
-        "SET CLIENT_NAME = ?, CLIENT_NAME_EN = ?, APPLICATION_TYPE_CODE = ? " +
-        "WHERE t.SHORT_NAME = ?";
-      CallableStatement updateStatement = db.prepare(updateSqlQuery);
-
-      updateStatement.setString(1, dto.getClientName());
-      updateStatement.setString(2, dto.getClientNameEn());
-      updateStatement.setString(3, dto.getApplicationType());
-      updateStatement.setString(4, (String) primaryKey.get(CLIENT_ID));
-      updateStatement.executeUpdate();
-      /*
-       update grantTypes
-      */
-      //language=Oracle
-      String deleteGrantsSqlString = "delete from OA_CLIENT_GRANT_TYPE cgt " +
-        "where cgt.client_id in (" +
-        "select ct.client_id " +
-        "from OA_CLIENT ct " +
-        "where ct.SHORT_NAME = ?)";
-      CallableStatement deleteGrantTypeStatement = db.prepare(deleteGrantsSqlString);
-      deleteGrantTypeStatement.setString(1, (String) primaryKey.get(CLIENT_ID));
-      deleteGrantTypeStatement.execute();
-
-      //language=Oracle
-      String insertGrantSqlString =
-        "insert into OA_CLIENT_GRANT_TYPE (CLIENT_ID, GRANT_TYPE_CODE) " +
-          "values ((select ct.client_id from OA_CLIENT ct where ct.SHORT_NAME = ?) ,?)";
-      CallableStatement insertGrantTypeStatement = db.prepare(insertGrantSqlString);
-      List<String> grantTypes;
-      if (dto.getGrantTypes() != null && dto.getGrantTypes().size() > 0) {
-        grantTypes = dto.getGrantTypes();
-      } else {
-        grantTypes = ApplicationType.getApplicationGrantTypes(dto.getApplicationType());
-      }
-      for (String grantType : grantTypes) {
-        insertGrantTypeStatement.setString(1, (String) primaryKey.get(CLIENT_ID));
-        insertGrantTypeStatement.setString(2, grantType);
-        insertGrantTypeStatement.addBatch();
-      }
-      insertGrantTypeStatement.executeBatch();
-      db.commit();
-    } catch (SQLException e) {
-      e.printStackTrace();
-      db.rollback();
-      throw new RuntimeSQLException(e);
-    } catch (Throwable th) {
-      th.printStackTrace();
-      db.rollback();
-      throw th;
-    } finally {
-      db.closeAll();
-    }
+    String sqlQuery =
+      "begin "
+        + "pkg_OAuth.updateClient("
+        + "clientShortName => ? "
+        + ", clientName => ? "
+        + ", clientNameEn => ? "
+        + ", applicationType => ? "
+        + ", grantTypeList => ? "
+        + ", roleShortNameList => ? "
+        + ", operatorId => ? "
+        + ");"
+        + "end;";
+    DaoSupport.getInstance().update(sqlQuery
+      , primaryKey.get(CLIENT_ID)
+      , dto.getClientName()
+      , dto.getClientNameEn()
+      , dto.getApplicationType()
+      , dto.getGrantTypes() != null ? dto.getGrantTypes().stream().collect(Collectors.joining(",")) : null
+      , dto.getScope() != null ? dto.getScope().stream().collect(Collectors.joining(",")) : null
+      , operatorId
+    );
   }
 
   @Override
   public void delete(Map<String, ?> primaryKey, Integer operatorId) {
-    Db db = getDb();
-    //language=Oracle
-    String updateSqlQuery = "UPDATE OA_CLIENT t " +
-      "SET IS_DELETED = ? " +
-      "WHERE t.SHORT_NAME = ?";
-    CallableStatement updateStatement = db.prepare(updateSqlQuery);
-    try {
-      updateStatement.setInt(1, 1);
-      updateStatement.setString(2, (String) primaryKey.get(CLIENT_ID));
-      int updatedRecordCount = updateStatement.executeUpdate();
-      if (updatedRecordCount == 1) {
-        db.commit();
-      }
-    } catch (SQLException e) {
-      e.printStackTrace();
-      db.rollback();
-      throw new RuntimeSQLException(e);
-    } catch (Throwable th) {
-      th.printStackTrace();
-      db.rollback();
-      throw th;
-    } finally {
-      db.closeAll();
-    }
+    String sqlQuery =
+      "begin "
+        + "pkg_OAuth.deleteClient("
+        + "clientShortName => ? "
+        + ", operatorId => ? "
+        + ");"
+        + "end;";
+    DaoSupport.getInstance().delete(sqlQuery
+      , primaryKey.get(CLIENT_ID)
+      , operatorId
+    );
   }
 
 
   @Override
-  public List<String> getClientGrantTypes(String clientId) {
-    //language=Oracle
-    String sqlString = "select cgt.grant_type_code " +
-      "from OA_CLIENT_GRANT_TYPE cgt " +
-      "inner join OA_CLIENT clt on clt.CLIENT_ID = cgt.CLIENT_ID " +
-      "where clt.SHORT_NAME like ?";
-    Db db = getDb();
-    CallableStatement statement = db.prepare(sqlString);
-    List<String> result = new ArrayList<>();
-    try {
-      statement.setString(1, clientId);
-      statement.executeQuery();
-      ResultSet rs = statement.getResultSet();
-      while (rs.next()) {
-        result.add(rs.getString(GRANT_TYPE_CODE));
+  public List<String> getClientGrantTypes(String clientId, Integer operatorId) {
+    String sqlQuery =
+      "begin  "
+        + "? := pkg_OAuth.getClientGrant("
+        + "clientShortName => ? "
+        + ", operatorId => ? "
+        + ");"
+        + " end;";
+    List<OptionDto<String>> grantTypes = DaoSupport.getInstance().find(sqlQuery,
+      new ResultSetMapper<OptionDto<String>>() {
+        @Override
+        public void map(ResultSet rs, OptionDto<String> result) throws SQLException {
+          result.setValue(rs.getString(GRANT_TYPE));
+        }
       }
-    } catch (SQLException e) {
-      e.printStackTrace();
-      throw new RuntimeSQLException(e);
-    } catch (Throwable th) {
-      th.printStackTrace();
-      throw th;
-    } finally {
-      db.closeAll();
-    }
+      , OptionDto.class
+      , clientId
+      , operatorId);
+    return grantTypes.stream().map(OptionDto::getValue).collect(Collectors.toList());
+  }
+
+  @Override
+  public List<OptionDto<String>> getRoles(String roleName, String roleNameEn, Integer maxRowCount, Integer operatorId) {
+    String sqlQuery =
+      "begin  "
+        + "? := pkg_OAuth.getRoles("
+        + ", roleName => ? "
+        + ", roleNameEn => ? "
+        + ", maxRowCount => ? "
+        + ", operatorId => ? "
+        + ");"
+        + " end;";
+    List<OptionDto<String>> result = null;
+    result = DaoSupport.getInstance().find(sqlQuery,
+      new ResultSetMapper<OptionDto<String>>() {
+        @Override
+        public void map(ResultSet rs, OptionDto<String> result) throws SQLException {
+          result.setValue(rs.getString(SHORT_NAME));
+          result.setName(rs.getString(ROLE_NAME));
+        }
+      }
+      , OptionDto.class
+      , DtoUtil.startsWith(roleName)
+      , DtoUtil.startsWith(roleNameEn)
+      , maxRowCount
+      , operatorId);
+    return result;
+  }
+
+  public List<OptionDto<String>> getClientRoles(Integer clientOperatorId) {
+    String sqlQuery =
+      "begin  "
+        + "? := pkg_operator.getRoles("
+          + "operatorId => ? "
+        + ");"
+        + " end;";
+    List<OptionDto<String>> result = null;
+    result = DaoSupport.getInstance().find(sqlQuery,
+      new ResultSetMapper<OptionDto<String>>() {
+        @Override
+        public void map(ResultSet rs, OptionDto<String> result) throws SQLException {
+          result.setValue(rs.getString(SHORT_NAME));
+          result.setName(rs.getString(ROLE_NAME));
+        }
+      }
+      , OptionDto.class
+      , clientOperatorId);
     return result;
   }
 }

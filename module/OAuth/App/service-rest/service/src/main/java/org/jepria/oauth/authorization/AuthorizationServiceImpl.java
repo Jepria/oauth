@@ -75,7 +75,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     sessionDto.setRedirectUri(redirectUri);
     sessionDto.setCodeChallenge(codeChallenge);
     try {
-      return (SessionDto) sessionService.getRecordById(String.valueOf(sessionService.create(sessionDto, serverCredential)), serverCredential);
+      String sessionId = String.valueOf(sessionService.create(sessionDto, serverCredential));
+      return (SessionDto) sessionService.getRecordById(sessionId, serverCredential);
     } catch (RuntimeSQLException ex) {
       SQLException sqlException = ex.getSQLException();
       if (sqlException.getErrorCode() == 20001) {
@@ -143,13 +144,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
   
   private String generateCode() {
     try {
-      UUID randomUuid = UUID.randomUUID();
-      MessageDigest md = MessageDigest.getInstance("SHA-256");
-      SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
-      byte[] salt = new byte[16];
-      random.nextBytes(salt);
-      md.update(salt);
-      return Base64.getUrlEncoder().withoutPadding().encodeToString(md.digest(randomUuid.toString().getBytes()));
+      return UUID.randomUUID().toString().replaceAll("-", "");
     } catch (Throwable th) {
       throw new OAuthRuntimeException(SERVER_ERROR, th);
     }

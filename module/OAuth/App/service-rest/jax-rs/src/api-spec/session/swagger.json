@@ -300,6 +300,43 @@
           }
         }
       }
+    },
+    "/session/operator": {
+      "get": {
+        "tags": ["session: operators"],
+        "summary": "Get operators",
+        "description": "",
+        "operationId": "getOperators",
+        "parameters": [
+          {
+            "name": "operatorName",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "maxRowCount",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json;charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchRequestDto"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

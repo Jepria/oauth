@@ -6,6 +6,7 @@ import org.jepria.oauth.client.dto.ClientCreateDto;
 import org.jepria.oauth.client.dto.ClientDto;
 import org.jepria.oauth.client.dto.ClientSearchDto;
 import org.jepria.oauth.client.dto.ClientUpdateDto;
+import org.jepria.server.data.OptionDto;
 import org.jepria.server.data.SearchRequestDto;
 import org.jepria.server.service.rest.ExtendedResponse;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
@@ -62,7 +63,7 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
     List<String> result = ClientServerFactory.getInstance().getService().getApplicationGrantTypes(applicationTypeCode);
     return Response.ok(result).build();
   }
-  
+
   @GET
   public Response getClients(@QueryParam("clientName") String clientName) {
     List<ClientDto> result = ClientServerFactory.getInstance().getService().getClient(clientName, securityContext.getCredential().getOperatorId());
@@ -114,8 +115,8 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
   @GET
   @Path("search/{searchId}")
   public Response getSearchRequest(
-          @PathParam("searchId") String searchId) {
-    SearchRequestDto<ClientSearchDto> result = (SearchRequestDto<ClientSearchDto>)searchEndpointAdapter.getSearchRequest(searchId);
+    @PathParam("searchId") String searchId) {
+    SearchRequestDto<ClientSearchDto> result = (SearchRequestDto<ClientSearchDto>) searchEndpointAdapter.getSearchRequest(searchId);
     return Response.ok(result).build();
   }
 
@@ -130,22 +131,33 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
   @GET
   @Path("search/{searchId}/resultset")
   public Response getResultset(
-          @PathParam("searchId") String searchId,
-          @QueryParam("pageSize") Integer pageSize,
-          @QueryParam("page") Integer page,
-          @HeaderParam("Cache-Control") String cacheControl) {
-    List<ClientDto> result = (List<ClientDto>)searchEndpointAdapter.getResultset(searchId, pageSize, page, cacheControl);
+    @PathParam("searchId") String searchId,
+    @QueryParam("pageSize") Integer pageSize,
+    @QueryParam("page") Integer page,
+    @HeaderParam("Cache-Control") String cacheControl) {
+    List<ClientDto> result = (List<ClientDto>) searchEndpointAdapter.getResultset(searchId, pageSize, page, cacheControl);
     return Response.ok(result).build();
   }
 
   @GET
   @Path("search/{searchId}/resultset/paged-by-{pageSize:\\d+}/{page}")
   public Response getResultsetPaged(
-          @PathParam("searchId") String searchId,
-          @PathParam("pageSize") Integer pageSize,
-          @PathParam("page") Integer page,
-          @HeaderParam("Cache-Control") String cacheControl) {
-    List<ClientDto> result = (List<ClientDto>)searchEndpointAdapter.getResultsetPaged(searchId, pageSize, page, cacheControl);
+    @PathParam("searchId") String searchId,
+    @PathParam("pageSize") Integer pageSize,
+    @PathParam("page") Integer page,
+    @HeaderParam("Cache-Control") String cacheControl) {
+    List<ClientDto> result = (List<ClientDto>) searchEndpointAdapter.getResultsetPaged(searchId, pageSize, page, cacheControl);
+    return Response.ok(result).build();
+  }
+
+  @GET
+  @Path("role")
+  public Response getRoles(
+    @QueryParam("rolenName") String roleName,
+    @QueryParam("roleNameEn") String roleNameEn,
+    @QueryParam("maxRowCount") Integer maxRowCount
+  ) {
+    List<OptionDto<String>> result = ClientServerFactory.getInstance().getService().getRoles(roleName, roleNameEn, maxRowCount, securityContext.getCredential().getOperatorId());
     return Response.ok(result).build();
   }
 }

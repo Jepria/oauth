@@ -36,7 +36,7 @@ public class SessionDaoImpl implements Dao {
         + ", accessToken => ? "
         + ", refreshToken => ? "
         + ", sessionToken => ? "
-//        + ", maxRowCount => ? "
+        + ", maxRowCount => ? "
         + ", operatorIdIns => ? "
         + ");"
         + " end;";
@@ -82,7 +82,7 @@ public class SessionDaoImpl implements Dao {
       , searchTemplate.getAccessTokenId()
       , searchTemplate.getRefreshTokenId()
       , searchTemplate.getSessionTokenId()
-//      , 25
+      , searchTemplate.getMaxRowCount()
       , operatorId);
     return records;
   }

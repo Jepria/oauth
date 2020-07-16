@@ -14,7 +14,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
-        <jepria.version>11.1.0-SNAPSHOT</jepria.version>
+        <jepria-rest.version>12.1.0-SNAPSHOT</jepria-rest.version>
         <bin.home>${env.BIN_HOME}</bin.home>
     </properties>
 
@@ -42,8 +42,8 @@
         <!-- JepRia -->
         <dependency>
             <groupId>org.jepria</groupId>
-            <artifactId>jepria</artifactId>
-            <version>${jepria.version}</version>
+            <artifactId>jepria-rest</artifactId>
+            <version>${jepria-rest.version}</version>
             <scope>compile</scope>
         </dependency>
         <!--Hibernate validator-->

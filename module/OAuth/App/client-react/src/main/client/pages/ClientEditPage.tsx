@@ -7,8 +7,8 @@ import { getClientById, updateClient } from '../state/redux/actions';
 import { Formik, Form, Field, FieldProps } from 'formik';
 import { FormField, Label } from '../../../components/form/Field';
 import { TextInput } from '../../../components/form/input/TextInput';
-import { ApplicationGrantType, GrantType } from '../../../security/OAuth';
-import { Page, Content, FormContainer, ComboBox, ComboBoxInput, ComboBoxList, ComboBoxOption, SelectAllCheckBox, CheckBoxList, CheckBoxOptionList, CheckBoxOption } from 'jfront-components';
+import { ApplicationGrantType, GrantType, ApplicationType } from '../../../security/OAuth';
+import { Page, Content, FormContainer, ComboBoxField, CheckBoxListField } from 'jfront-components';
 
 const ClientEditPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();
@@ -16,6 +16,12 @@ const ClientEditPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((p
   const { clientId } = useParams();
   const { current } = useSelector<AppState, ClientState>(state => state.client);
   let formikRef: any;
+  const applicationTypeOptions = [
+    { name: "Native", value: "native" },
+    { name: "WEB application", value: "web" },
+    { name: "Browser (client-side) application", value: "browser" },
+    { name: "Service", value: "service" },
+  ]
 
   useImperativeHandle(ref, () => ({
     handleSubmit: () => {
@@ -29,11 +35,16 @@ const ClientEditPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((p
     }
   }, [current, clientId, dispatch]);
 
-  const initialValues: Client = current ? current : {
-      clientName: '',
-      applicationType: '',
-      grantTypes: []
-    }
+  const initialValues: Client = {
+    clientId: '',
+    clientName: '',
+    clientNameEn: '',
+    applicationType: '',
+    grantTypes: [],
+    ...current
+  }
+
+  console.log(initialValues)
 
   return (
     <Page>
@@ -68,17 +79,17 @@ const ClientEditPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((p
                 <Label width={'250px'}>Краткое наименование приложения:</Label>
                 <Field name="clientId">
                   {(props: FieldProps) => (
-                      <TextInput
-                          name={props.field.name}
-                          value={props.field.value}
-                          onChange={props.field.onChange}
-                          onBlur={props.field.onBlur}
-                          touched={props.meta.touched}
-                          error={props.meta.error}
-                          maxLength={16}
-                          pattern="[A-Za-z0-9]{16}"
-                          disabled
-                      />
+                    <TextInput
+                      name={props.field.name}
+                      value={props.field.value}
+                      onChange={props.field.onChange}
+                      onBlur={props.field.onBlur}
+                      touched={props.meta.touched}
+                      error={props.meta.error}
+                      maxLength={16}
+                      pattern="[A-Za-z0-9]{16}"
+                      disabled
+                    />
                   )}
                 </Field>
               </FormField>
@@ -94,44 +105,41 @@ const ClientEditPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((p
                 <Label width={'250px'}>Имя клиентского приложения(англ):</Label>
                 <Field name="clientNameEn" as={TextInput} />
               </FormField>
+
               <FormField>
                 <Label width={'250px'}>Тип приложения:</Label>
                 <Field name="applicationType">
                   {(props: FieldProps) => (
-                    <ComboBox name={props.field.name} value={props.field.value} onChange={(field, value) => {
-                      if (value !== props.field.value) {
-                        props.form.setFieldValue('grantTypes', []);
-                        props.form.setFieldValue(field, value);
-                      }
-                    }} width='250px'>
-                      <ComboBoxInput />
-                        <ComboBoxList>
-                          <ComboBoxOption name="Native" value="native" />
-                          <ComboBoxOption name="WEB application" value="web" />
-                          <ComboBoxOption name="Browser (client-side) application" value="browser" />
-                          <ComboBoxOption name="Service" value="service" />
-                        </ComboBoxList>
-                    </ComboBox>)}
+                    <ComboBoxField
+                      options={applicationTypeOptions}
+                      name={props.field.name}
+                      initialValue={props.field.value ? {name: ApplicationType[props.field.value], value: props.field.value} : undefined}
+                      hasEmptyOption
+                      touched={props.meta.touched}
+                      error={props.meta.error}
+                      onChangeValue={(field, value) => {
+                        if (value !== props.field.value) {
+                          props.form.setFieldValue('grantTypes', []);
+                          props.form.setFieldValue(field, value);
+                        }
+                      }} width='250px' />)}
                 </Field>
               </FormField>
               <FormField>
                 <Label width={'250px'}> Доступные гранты:</Label>
                 <Field name='grantTypes'>
-                  {(props: FieldProps) => (
-                    <CheckBoxList name={props.field.name} value={props.field.value} onChange={props.form.setFieldValue}>
-                      <CheckBoxOptionList>
-                        {() => {
-                          const applicationType = ApplicationGrantType[props.form.values["applicationType"]];
-                          if (applicationType) {
-                            return applicationType.map(grantType =>
-                              <CheckBoxOption key={grantType} value={grantType} name={GrantType[grantType]} />
-                            );
-                          }
-                        }}
-                      </CheckBoxOptionList>
-                      <SelectAllCheckBox />
-                    </CheckBoxList>
-                  )}
+                  {(props: FieldProps) => {
+                    const grantTypeOptions = ApplicationGrantType[props.form.values["applicationType"]]?.map(grantType => ({name: GrantType[grantType], value: grantType}));
+                    return (
+                      <CheckBoxListField
+                        options={grantTypeOptions ? grantTypeOptions : []}
+                        name={props.field.name}
+                        initialValue={props.field.value?.map((value: any) => ({name: GrantType[value], value: value}))}
+                        onChangeValue={props.form.setFieldValue}
+                        touched={props.meta.touched}
+                        error={props.meta.error} />
+                    );
+                  }}
                 </Field>
               </FormField>
             </Form>

@@ -3,12 +3,14 @@ package org.jepria.oauth.session.rest;
 import org.jepria.oauth.session.SessionServerFactory;
 import org.jepria.oauth.session.dto.SessionDto;
 import org.jepria.oauth.session.dto.SessionSearchDto;
+import org.jepria.server.data.OptionDto;
 import org.jepria.server.data.SearchRequestDto;
 import org.jepria.server.service.rest.ExtendedResponse;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
 import org.jepria.server.service.security.JepSecurityContext;
 import org.jepria.server.service.security.OAuth;
 
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -96,5 +98,16 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
     @HeaderParam("Cache-Control") String cacheControl) {
     List<SessionDto> result = (List<SessionDto>) searchEndpointAdapter.getResultsetPaged(searchId, pageSize, page, cacheControl);
     return Response.ok(result).build();
+  }
+
+  @GET
+  @Path("/operators")
+  public Response getOperators(@QueryParam("operatorName") String operatorName, @NotNull @QueryParam("maxRowCount") Integer maxRowCount) {
+    List<OptionDto<String>> result = SessionServerFactory.getInstance().getService().getOperators(operatorName, maxRowCount);
+    if (!result.isEmpty()) {
+      return Response.ok(result).build();
+    } else {
+      return Response.noContent().build();
+    }
   }
 }

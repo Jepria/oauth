@@ -6,7 +6,7 @@ export default class OperatorApi {
   private url: string;
 
   constructor(url: string) {
-    this.url = `${url}/operators`;
+    this.url = `${url}/session/operators`;
     axios.defaults.withCredentials = true;
   }
 

@@ -2,7 +2,6 @@ package org.jepria.oauth.token.rest;
 
 import org.jepria.oauth.authentication.AuthenticationServerFactory;
 import org.jepria.oauth.exception.OAuthRuntimeException;
-import org.jepria.oauth.main.security.CrossOrigin;
 import org.jepria.oauth.authentication.AuthenticationService;
 import org.jepria.oauth.token.TokenService;
 import org.jepria.oauth.token.dto.TokenDto;

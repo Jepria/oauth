@@ -1,5 +1,6 @@
 package org.jepria.oauth.session;
 
+import org.jepria.oauth.session.dao.SessionDao;
 import org.jepria.oauth.session.dao.SessionDaoImpl;
 import org.jepria.server.ServerFactory;
 import org.jepria.server.data.Dao;
@@ -9,7 +10,7 @@ import org.jepria.server.service.rest.SearchServiceImpl;
 import javax.servlet.http.HttpSession;
 import java.util.function.Supplier;
 
-public class SessionServerFactory extends ServerFactory<Dao> {
+public class SessionServerFactory extends ServerFactory<SessionDao> {
 
   private static SessionServerFactory instance;
 

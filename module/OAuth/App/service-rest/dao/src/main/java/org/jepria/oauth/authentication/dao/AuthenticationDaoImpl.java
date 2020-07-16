@@ -1,8 +1,8 @@
 package org.jepria.oauth.authentication.dao;
 
-import com.technology.jep.jepcommon.security.pkg_Operator;
-import com.technology.jep.jepria.server.db.Db;
+import org.jepria.compat.server.db.Db;
 import org.jepria.server.data.RuntimeSQLException;
+import org.jepria.server.service.security.pkg_Operator;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -14,11 +14,14 @@ import java.util.Base64;
 import java.util.List;
 
 public class AuthenticationDaoImpl implements AuthenticationDao {
-  
+
   private String jndiName = "jdbc/RFInfoDS";
-  
-  public AuthenticationDaoImpl(){};
-  
+
+  public AuthenticationDaoImpl() {
+  }
+
+  ;
+
   public AuthenticationDaoImpl(String jndName) {
     this.jndiName = jndName;
   }
@@ -83,10 +86,10 @@ public class AuthenticationDaoImpl implements AuthenticationDao {
       if (result.size() == 1) {
         MessageDigest cryptoProvider = MessageDigest.getInstance("SHA-256");
         if (result.get(0)
-          .equals(Base64
-            .getUrlEncoder()
-            .withoutPadding()
-            .encodeToString(cryptoProvider.digest(codeVerifier.getBytes())))) {
+            .equals(Base64
+                .getUrlEncoder()
+                .withoutPadding()
+                .encodeToString(cryptoProvider.digest(codeVerifier.getBytes())))) {
           return Boolean.TRUE;
         }
       } else {

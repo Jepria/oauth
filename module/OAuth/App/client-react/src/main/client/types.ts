@@ -21,6 +21,7 @@ export interface ClientSearchTemplate {
   clientId?: string;
   clientName?: string;
   clientNameEn?: string;
+  maxRowCount?: number;
 }
 
 export interface ClientState {

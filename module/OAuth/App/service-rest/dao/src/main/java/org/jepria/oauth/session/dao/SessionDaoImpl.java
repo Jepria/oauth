@@ -1,13 +1,14 @@
 package org.jepria.oauth.session.dao;
 
-import com.technology.jep.jepria.server.dao.ResultSetMapper;
-import com.technology.jep.jepria.server.db.Db;
 import oracle.jdbc.OracleTypes;
+import org.jepria.compat.server.dao.ResultSetMapper;
+import org.jepria.compat.server.db.Db;
+import org.jepria.oauth.session.OperatorOptions;
 import org.jepria.oauth.session.dto.SessionCreateDto;
 import org.jepria.oauth.session.dto.SessionDto;
 import org.jepria.oauth.session.dto.SessionSearchDto;
 import org.jepria.oauth.session.dto.SessionUpdateDto;
-import org.jepria.server.data.Dao;
+import org.jepria.server.data.DaoSupport;
 import org.jepria.server.data.OptionDto;
 import org.jepria.server.data.RuntimeSQLException;
 
@@ -18,7 +19,7 @@ import java.util.Map;
 
 import static org.jepria.oauth.session.SessionFieldNames.*;
 
-public class SessionDaoImpl implements Dao {
+public class SessionDaoImpl implements SessionDao {
   
   private String jndiName = "jdbc/RFInfoDS";
   
@@ -436,5 +437,29 @@ public class SessionDaoImpl implements Dao {
     } finally {
       db.closeAll();
     }
+  }
+
+  @Override
+  public List<OptionDto<String>> getOperators(String operatorName, Integer maxRowCount) {
+    String sqlQuery =
+        " begin "
+            + " ? := pkg_operator.getOperator("
+            + "operatorName => ?"
+            + ", maxRowCount => ? "
+            + ");"
+            + " end;";
+
+    return DaoSupport.getInstance().find(
+        sqlQuery,
+        new ResultSetMapper<OptionDto<String>>() {
+          public void map(ResultSet rs, OptionDto<String> dto) throws SQLException {
+            dto.setValue(rs.getString(OperatorOptions.OPERATOR_ID));
+            dto.setName(rs.getString(OperatorOptions.OPERATOR_NAME));
+          }
+        },
+        OptionDto.class,
+        operatorName + "%",
+        maxRowCount
+    );
   }
 }

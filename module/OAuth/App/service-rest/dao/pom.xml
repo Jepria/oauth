@@ -15,7 +15,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
         <oracle.version>11.2.0.4</oracle.version>
-        <jepria.version>11.1.0-SNAPSHOT</jepria.version>
+        <jepria-rest.version>12.1.0-SNAPSHOT</jepria-rest.version>
         <oauth.version>1.0.0-SNAPSHOT</oauth.version>
         <bin.home>${env.BIN_HOME}</bin.home>
     </properties>
@@ -51,8 +51,8 @@
         <!-- JepRia -->
         <dependency>
             <groupId>org.jepria</groupId>
-            <artifactId>jepria</artifactId>
-            <version>${jepria.version}</version>
+            <artifactId>jepria-rest</artifactId>
+            <version>${jepria-rest.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -82,12 +82,6 @@
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
             <version>1.2.17</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.gwt</groupId>
-            <artifactId>gwt-user</artifactId>
-            <version>2.8.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>

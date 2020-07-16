@@ -98,13 +98,9 @@ const OAuthStateReducer = (state: OAuthState, action: Action) => {
 
 const OAuthSecurityProvider: React.FC<SecurityProviderProps> = ({ clientId, oauthContextPath, redirectUri, children, configureAxios = true, axiosInstance }) => {
 
-  console.log(window.location.href);
-
   const [{ isLoading, accessToken, error }, dispatch] = useReducer(OAuthStateReducer, { isLoading: false })
 
   let isOAuthRoute = window.location.pathname.endsWith('/oauth') || window.location.pathname.endsWith("/oauth/");
-
-  console.log(isOAuthRoute);
 
   const oauth = new OAuth(clientId, redirectUri, oauthContextPath + "/authorize", oauthContextPath + "/token");
 

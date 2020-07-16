@@ -1,28 +1,26 @@
 package org.jepria.oauth.session.dao;
 
-import com.technology.jep.jepria.server.dao.ResultSetMapper;
-import com.technology.jep.jepria.server.db.Db;
-import oracle.jdbc.OracleTypes;
+import org.jepria.compat.server.dao.ResultSetMapper;
+import org.jepria.oauth.session.OperatorOptions;
 import org.jepria.oauth.session.dto.SessionCreateDto;
 import org.jepria.oauth.session.dto.SessionDto;
 import org.jepria.oauth.session.dto.SessionSearchDto;
 import org.jepria.oauth.session.dto.SessionUpdateDto;
-import org.jepria.server.data.Dao;
 import org.jepria.server.data.DaoSupport;
 import org.jepria.server.data.OptionDto;
-import org.jepria.server.data.RuntimeSQLException;
 
-import java.sql.*;
-import java.util.ArrayList;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
 import static org.jepria.oauth.session.SessionFieldNames.*;
 
-public class SessionDaoImpl implements Dao {
+public class SessionDaoImpl implements SessionDao {
 
   @Override
   public List<SessionDto> find(Object template, Integer operatorId) {
+
     SessionSearchDto searchTemplate = (SessionSearchDto) template;
     String sqlQuery =
       "begin  "
@@ -89,6 +87,7 @@ public class SessionDaoImpl implements Dao {
 
   @Override
   public List<SessionDto> findByPrimaryKey(Map<String, ?> primaryKeyMap, Integer operatorId) {
+
     String sqlQuery =
       "begin  "
         + "? := pkg_OAuth.findSession("
@@ -156,6 +155,7 @@ public class SessionDaoImpl implements Dao {
   @Override
   public Object create(Object record, Integer operatorId) {
     SessionCreateDto dto = (SessionCreateDto) record;
+
     String sqlQuery =
       "begin  "
         + "? := pkg_OAuth.createSession("
@@ -250,5 +250,29 @@ public class SessionDaoImpl implements Dao {
     DaoSupport.getInstance().delete(sqlQuery
       , primaryKey.get(SESSION_ID)
       , operatorId);
+  }
+
+  @Override
+  public List<OptionDto<String>> getOperators(String operatorName, Integer maxRowCount) {
+    String sqlQuery =
+        " begin "
+            + " ? := pkg_operator.getOperator("
+            + "operatorName => ?"
+            + ", maxRowCount => ? "
+            + ");"
+            + " end;";
+
+    return DaoSupport.getInstance().find(
+        sqlQuery,
+        new ResultSetMapper<OptionDto<String>>() {
+          public void map(ResultSet rs, OptionDto<String> dto) throws SQLException {
+            dto.setValue(rs.getString(OperatorOptions.OPERATOR_ID));
+            dto.setName(rs.getString(OperatorOptions.OPERATOR_NAME));
+          }
+        },
+        OptionDto.class,
+        operatorName + "%",
+        maxRowCount
+    );
   }
 }

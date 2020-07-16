@@ -1,7 +1,7 @@
 package org.jepria.oauth.clienturi.dao;
 
-import com.technology.jep.jepria.server.dao.ResultSetMapper;
-import com.technology.jep.jepria.server.db.Db;
+import org.jepria.compat.server.dao.ResultSetMapper;
+import org.jepria.compat.server.db.Db;
 import org.jepria.oauth.clienturi.dto.ClientUriCreateDto;
 import org.jepria.oauth.clienturi.dto.ClientUriDto;
 import org.jepria.oauth.clienturi.dto.ClientUriSearchDto;

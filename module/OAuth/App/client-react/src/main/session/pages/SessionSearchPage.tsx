@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { SessionSearchTemplate, SessionState } from '../types';
 import { postSearchSessionRequest, getClients, getOperators } from '../state/redux/actions';
 import { AppState } from '../../store';
-import { Page, Content, FormContainer, ComboBox, ComboBoxInput, ComboBoxList, ComboBoxOption } from 'jfront-components';
+import { Page, Content, FormContainer, ComboBoxField } from 'jfront-components';
 
 const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();
@@ -24,6 +24,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
   useEffect(() => {
     dispatch(getOperators(""));
     dispatch(getClients(""));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -32,7 +33,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
         <FormContainer>
           <Formik
             innerRef={formik => formikRef = formik}
-            initialValues={searchRequest?.template ? searchRequest.template : { maxRowCount: 25 }}
+            initialValues={{ maxRowCount: 25, ...searchRequest?.template, operatorId: undefined, clientId: undefined}}
             onSubmit={(values: SessionSearchTemplate) => {
               dispatch(postSearchSessionRequest({
                 template: values
@@ -44,31 +45,33 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
                 <Label>Пользователь:</Label>
                 <Field name="operatorId">
                   {(props: FieldProps) => (
-                    <ComboBox name={props.field.name} value={props.field.value} touched={props.meta.touched} error={props.meta.error} onChange={(field, value) => {
-                      if (value !== props.field.value) {
-                        props.form.setFieldValue('grantTypes', []);
-                        props.form.setFieldValue(field, value);
-                      }
-                    }} width='250px'>
-                      <ComboBoxInput onChange={e => dispatch(getOperators(e.target.value))} placeholder='Введите имя пользователя' />
-                      <ComboBoxList>
-                        <ComboBoxOption name="" value={undefined} />
-                        {operators?.map(operator => <ComboBoxOption key={operator.value} name={operator.name} value={operator.value} />)}
-                      </ComboBoxList>
-                    </ComboBox>)}
+                    <ComboBoxField
+                      options={operators ? operators : []}
+                      name={props.field.name}
+                      hasEmptyOption
+                      touched={props.meta.touched}
+                      error={props.meta.error}
+                      placeholder='Введите имя пользователя'
+                      onChange={e => dispatch(getOperators(e.target.value))}
+                      onChangeValue={props.form.setFieldValue} width='250px' />)}
                 </Field>
               </FormField>
               <FormField>
                 <Label>Приложение:</Label>
                 <Field name="clientId">
                   {(props: FieldProps) => (
-                    <ComboBox name={props.field.name} value={props.field.value} touched={props.meta.touched} error={props.meta.error} width='250px'>
-                      <ComboBoxInput onChange={e => dispatch(getClients(e.target.value))} placeholder='Введите имя приложения' />
-                      <ComboBoxList>
-                        <ComboBoxOption name="" value="" />
-                        {clients?.map(client => <ComboBoxOption key={client.clientId} name={client.clientName} value={client.clientId} />)}
-                      </ComboBoxList>
-                    </ComboBox>)}
+                    <ComboBoxField
+                      options={clients ? clients : []}
+                      name={props.field.name}
+                      hasEmptyOption
+                      touched={props.meta.touched}
+                      error={props.meta.error}
+                      onChange={e => dispatch(getClients(e.target.value))}
+                      getOptionName={option => {
+                        return option.clientName;
+                      }}
+                      getOptionValue={option => option.clientId}
+                      onChangeValue={props.form.setFieldValue} width='250px' />)}
                 </Field>
               </FormField>
               <FormField>

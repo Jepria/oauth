@@ -6,12 +6,18 @@ import { TextInput } from '../../../components/form/input/TextInput';
 import { useDispatch } from 'react-redux';
 import { Client } from '../types';
 import { createClient } from '../state/redux/actions';
-import { ApplicationGrantType, GrantType } from '../../../security/OAuth';
-import { Page, Content, FormContainer, ComboBox, ComboBoxInput, ComboBoxList, ComboBoxOption, CheckBoxList, CheckBoxOptionList, CheckBoxOption, SelectAllCheckBox } from 'jfront-components';
+import { ApplicationGrantType, ApplicationType, GrantType } from '../../../security/OAuth';
+import { Page, Content, FormContainer, ComboBoxField, CheckBoxListField } from 'jfront-components';
 
 const ClientCreatePage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();
   const history = useHistory();
+  const applicationTypeOptions = [
+    { name: "Native", value: "native" },
+    { name: "WEB application", value: "web" },
+    { name: "Browser (client-side) application", value: "browser" },
+    { name: "Service", value: "service" },
+  ]
   let formikRef: any;
 
   useImperativeHandle(ref, () => ({
@@ -26,7 +32,7 @@ const ClientCreatePage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
         <FormContainer>
           <Formik
             innerRef={instance => formikRef = instance}
-            initialValues={{ clientName: '', applicationType: '', grantTypes: [] }}
+            initialValues={{clientId: '', clientName: '', clientNameEn: '', applicationType: '', grantTypes: [] }}
             onSubmit={(values: Client) => {
               dispatch(createClient(values, (client: Client) => {
                 history.push(`/ui/client/${client.clientId}/view/`);
@@ -93,47 +99,35 @@ const ClientCreatePage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
                 <Label width={'250px'}>Тип приложения:</Label>
                 <Field name="applicationType">
                   {(props: FieldProps) => (
-                    <ComboBox name={props.field.name} value={props.field.value} touched={props.meta.touched} error={props.meta.error} onChange={(field, value) => {
-                      if (value !== props.field.value) {
-                        props.form.setFieldValue('grantTypes', []);
-                        props.form.setFieldValue(field, value);
-                      }
-                    }} width='250px'>
-                      <ComboBoxInput />
-                      <ComboBoxList>
-                        <ComboBoxOption name="Native" value="native" />
-                        <ComboBoxOption name="WEB application" value="web" />
-                        <ComboBoxOption name="Browser (client-side) application" value="browser" />
-                        <ComboBoxOption name="Service" value="service" />
-                      </ComboBoxList>
-                    </ComboBox>)}
+                    <ComboBoxField
+                      options={applicationTypeOptions}
+                      name={props.field.name}
+                      initialValue={props.field.value ? {name: ApplicationType[props.field.value], value: props.field.value} : undefined}
+                      touched={props.meta.touched}
+                      error={props.meta.error}
+                      onChangeValue={(field, value) => {
+                        if (value !== props.field.value) {
+                          props.form.setFieldValue('grantTypes', []);
+                          props.form.setFieldValue(field, value);
+                        }
+                      }} width='250px' />)}
                 </Field>
               </FormField>
               <FormField>
                 <Label width={'250px'}> Доступные гранты:</Label>
                 <Field name='grantTypes'>
-                  {(props: FieldProps) => (
-                    <CheckBoxList
-                      name={props.field.name}
-                      value={props.field.value}
-                      onChange={props.form.setFieldValue}
-                      touched={props.meta.touched}
-                      error={props.meta.error}>
-                      <CheckBoxOptionList>
-                        {() => {
-                          const applicationType = ApplicationGrantType[props.form.values["applicationType"]];
-                          if (applicationType) {
-                            return applicationType.map(grantType =>
-                              <CheckBoxOption key={grantType} value={grantType} name={GrantType[grantType]} />
-                            );
-                          } else {
-                            return null;
-                          }
-                        }}
-                      </CheckBoxOptionList>
-                      <SelectAllCheckBox />
-                    </CheckBoxList>
-                  )}
+                  {(props: FieldProps) => {
+                    const grantTypeOptions = ApplicationGrantType[props.form.values["applicationType"]]?.map(grantType => ({name: GrantType[grantType], value: grantType}));
+                    return (
+                      <CheckBoxListField
+                        options={grantTypeOptions ? grantTypeOptions : []}
+                        name={props.field.name}
+                        initialValue={props.field.value?.map((value: any) => ({name: GrantType[value], value: value}))}
+                        onChangeValue={props.form.setFieldValue}
+                        touched={props.meta.touched}
+                        error={props.meta.error} />
+                    );
+                  }}
                 </Field>
               </FormField>
             </Form>

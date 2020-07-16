@@ -29,14 +29,19 @@
 #
 
 pkg_OAuth.pkb.$(lu): \
-  pkg_OAuth.pks.$(lu)
+  pkg_OAuth.pks.$(lu) \
+
+
+pkg_OAuthInternal.pkb.$(lu): \
+  pkg_OAuthInternal.pks.$(lu) \
+  Install/Schema/Last/v_oa_session.vw.$(lu) \
 
 
 Install/Schema/Last/v_oa_session.vw.$(lu): \
   Install/Schema/Last/set-session-comment.sql \
 
 
-Install/Data/Last/AccessOperatorDb/op_group.sql.$(lu2): \
-  Install/Data/Last/AccessOperatorDb/op_role.sql.$(lu2) \
+Install/Data/Last/op_group.sql.$(lu2): \
+  Install/Data/Last/op_role.sql.$(lu2) \
 
 

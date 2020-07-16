@@ -6,10 +6,7 @@ import org.jepria.oauth.session.dto.SessionDto;
 import org.jepria.oauth.token.dto.TokenDto;
 import org.jepria.oauth.sdk.ResponseType;
 import org.jepria.oauth.token.TokenServerFactory;
-import org.jepria.server.service.rest.ErrorDto;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
-import org.jepria.server.service.rest.jersey.ExceptionManager;
-import org.jepria.server.service.rest.jersey.ExceptionManagerImpl;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -30,7 +27,6 @@ import static org.jepria.oauth.sdk.OAuthConstants.*;
 public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
   @Context
   HttpServletRequest request;
-  ExceptionManager exceptionManager = new ExceptionManagerImpl();
 
   private String getHostContext() {
     return URI.create(request.getRequestURL().toString()).resolve(request.getContextPath()).toString();
@@ -38,7 +34,7 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
 
   @GET
   @Path("/authorize")
-  @Consumes({MediaType.TEXT_HTML, "text/x-gwt-rpc"})
+  @Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.TEXT_HTML, "text/x-gwt-rpc"})
 // TODO delete after getting off GWT (cause GWT send redirect query with 'content-type: text/x-gwt-rpc' in IE
   public Response authorize(@QueryParam("response_type") String responseType,
                             @QueryParam("client_id") String clientId,
@@ -47,13 +43,9 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
                             @QueryParam("state") String state,
                             @CookieParam(SESSION_ID) String sessionToken) {
     String redirectUri;
-    try {
-      redirectUri = new String(Base64.getUrlDecoder().decode(redirectUriEncoded));
-      if (!isValidUri(redirectUri)) {
-        ErrorDto errorDto = exceptionManager.registerExceptionAndPrepareErrorDto(new IllegalArgumentException("redirect_uri is invalid"));
-        return Response.status(Response.Status.BAD_REQUEST).entity(errorDto).build();
-      }
-    } catch (Throwable th) {
+
+    redirectUri = new String(Base64.getUrlDecoder().decode(redirectUriEncoded));
+    if (!isValidUri(redirectUri)) {
       throw new OAuthRuntimeException(INVALID_REQUEST, "redirect_uri is null or invalid");
     }
     Response response = null;
@@ -61,14 +53,14 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
 
     if (sessionToken != null) {
       session = AuthorizationServerFactory
-        .getInstance()
-        .getService()
-        .authorize(responseType,
-          clientId,
-          redirectUri,
-          codeChallenge,
-          sessionToken,
-          getHostContext());
+          .getInstance()
+          .getService()
+          .authorize(responseType,
+              clientId,
+              redirectUri,
+              codeChallenge,
+              sessionToken,
+              getHostContext());
       if (session.getSessionTokenId() != null && new Date().before(session.getSessionTokenDateFinish()) && session.getOperator() != null) {
         if (ResponseType.CODE.equals(responseType)) {
           response = Response
@@ -95,32 +87,32 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
       } else {
         try {
           response = Response.status(302).location(URI.create("/oauth/login/?"
-            + RESPONSE_TYPE + "=" + responseType
-            + "&" + CODE + "=" + session.getAuthorizationCode()
-            + "&" + REDIRECT_URI + "=" + redirectUriEncoded
-            + "&" + CLIENT_ID + "=" + session.getClient().getValue()
-            + "&" + CLIENT_NAME + "=" + URLEncoder.encode(session.getClient().getName(), StandardCharsets.UTF_8.name()).replaceAll("\\+","%20")
-            + "&" + STATE + "=" + state)).build();
+              + RESPONSE_TYPE + "=" + responseType
+              + "&" + CODE + "=" + session.getAuthorizationCode()
+              + "&" + REDIRECT_URI + "=" + redirectUriEncoded
+              + "&" + CLIENT_ID + "=" + session.getClient().getValue()
+              + "&" + CLIENT_NAME + "=" + URLEncoder.encode(session.getClient().getName(), StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20")
+              + "&" + STATE + "=" + state)).build();
         } catch (UnsupportedEncodingException e) {
           e.printStackTrace();
         }
       }
     } else {
       session = AuthorizationServerFactory
-        .getInstance()
-        .getService()
-        .authorize(responseType,
-          clientId,
-          redirectUri,
-          codeChallenge);
+          .getInstance()
+          .getService()
+          .authorize(responseType,
+              clientId,
+              redirectUri,
+              codeChallenge);
       try {
         response = Response.status(302).location(URI.create("/oauth/login/?"
-          + RESPONSE_TYPE + "=" + responseType
-          + "&" + CODE + "=" + session.getAuthorizationCode()
-          + "&" + REDIRECT_URI + "=" + redirectUriEncoded
-          + "&" + CLIENT_ID + "=" + session.getClient().getValue()
-          + "&" + CLIENT_NAME + "=" + URLEncoder.encode(session.getClient().getName(), StandardCharsets.UTF_8.name()).replaceAll("\\+","%20")
-          + "&" + STATE + "=" + state)).build();
+            + RESPONSE_TYPE + "=" + responseType
+            + "&" + CODE + "=" + session.getAuthorizationCode()
+            + "&" + REDIRECT_URI + "=" + redirectUriEncoded
+            + "&" + CLIENT_ID + "=" + session.getClient().getValue()
+            + "&" + CLIENT_NAME + "=" + URLEncoder.encode(session.getClient().getName(), StandardCharsets.UTF_8.name()).replaceAll("\\+","%20")
+            + "&" + STATE + "=" + state)).build();
       } catch (UnsupportedEncodingException e) {
         e.printStackTrace();
       }

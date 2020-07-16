@@ -12,6 +12,17 @@ on delete cascade
 alter table
   oa_session
 add constraint
+  oa_session_fk_client_uri
+foreign key
+  ( client_id, redirect_uri)
+references
+  oa_client_uri ( client_id, client_uri)
+on delete cascade
+/
+
+alter table
+  oa_session
+add constraint
   oa_session_fk_operator_id
 foreign key
   ( operator_id)

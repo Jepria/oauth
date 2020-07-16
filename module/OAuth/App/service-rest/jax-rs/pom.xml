@@ -15,7 +15,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <jersey.version>2.29</jersey.version>
         <antcontrib.version>1.0b3</antcontrib.version>
-        <jepria.version>11.1.0-SNAPSHOT</jepria.version>
+        <jepria-rest.version>12.1.0-SNAPSHOT</jepria-rest.version>
         <jepriatoolkit.version>7.16.0-SNAPSHOT</jepriatoolkit.version>
         <tomcat.version>7.0.68</tomcat.version>
         <log4j.version>1.2.17</log4j.version>
@@ -185,8 +185,8 @@
         <!-- JepRia -->
         <dependency>
             <groupId>org.jepria</groupId>
-            <artifactId>jepria</artifactId>
-            <version>${jepria.version}</version>
+            <artifactId>jepria-rest</artifactId>
+            <version>${jepria-rest.version}</version>
         </dependency>
         <!-- JepRia Toolkit -->
         <!-- javax needs for compilation -->

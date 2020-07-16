@@ -1,6 +1,6 @@
 package org.jepria.oauth.authentication;
 
-import com.technology.jep.jepria.server.dao.CallContext;
+import org.jepria.compat.server.dao.CallContext;
 import org.jepria.oauth.DaoTestBase;
 import org.jepria.oauth.authentication.dao.AuthenticationDao;
 import org.jepria.oauth.authentication.dao.AuthenticationDaoImpl;

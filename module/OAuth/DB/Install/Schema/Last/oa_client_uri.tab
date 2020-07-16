@@ -8,7 +8,7 @@ create table
   , client_uri                    varchar2(4000)                      not null
   , date_ins                      timestamp with time zone
                                     default systimestamp              not null
-  , operator_id                   integer
+  , operator_id                   integer                             not null
   , constraint oa_client_uri_pk primary key
     ( client_uri_id)
     using index tablespace &indexTablespace

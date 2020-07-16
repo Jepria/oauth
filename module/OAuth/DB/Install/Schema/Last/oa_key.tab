@@ -9,7 +9,7 @@ create table
   , date_ins                      timestamp with time zone
                                     default systimestamp              not null
   , is_actual                     number(1)       default 1           not null
-  , operator_id_ins               integer
+  , operator_id_ins               integer                             not null
   , constraint oa_key_pk primary key
     ( key_id)
     using index tablespace &indexTablespace
@@ -30,7 +30,7 @@ create index
 on
   oa_key (
     is_actual
-    , date_ins
+    , date_ins desc
   )
 tablespace &indexTablespace
 /

@@ -54,6 +54,19 @@ on
 tablespace &indexTablespace
 /
 
+-- index: oa_session_ix_up_actual_ruri
+-- Индекс для поиска актуальных записей по redirect_uri.
+create index
+  oa_session_ix_up_actual_ruri
+on
+  oa_session (
+    upper(
+      case when date_finish is null then redirect_uri end
+    )
+  )
+tablespace &indexTablespace
+/
+
 -- index: oa_session_ix_session_token
 -- Индекс для выборки записей по session_token.
 create index
@@ -61,6 +74,17 @@ create index
 on
   oa_session (
     session_token
+  )
+tablespace &indexTablespace
+/
+
+-- index: oa_session_ix_date_finish
+-- Индекс для выборки устаревших записей.
+create index
+  oa_session_ix_date_finish
+on
+  oa_session (
+    date_finish
   )
 tablespace &indexTablespace
 /

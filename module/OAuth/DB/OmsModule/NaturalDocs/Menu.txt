@@ -63,6 +63,22 @@ Group: Пакеты  {
       File: Реализация  (no auto-title, pkg_OAuth.pkb)
       }  # Group: pkg_OAuth
 
+   Group: pkg_OAuthInternal  {
+
+      File: Спецификация  (no auto-title, pkg_OAuthInternal.pks)
+      File: Реализация  (no auto-title, pkg_OAuthInternal.pkb)
+      }  # Group: pkg_OAuthInternal
+
+   Group: Test  {
+
+      Group: pkg_OAuthTest  {
+
+         File: Спецификация  (no auto-title, Test/pkg_OAuthTest.pks)
+         File: Реализация  (no auto-title, Test/pkg_OAuthTest.pkb)
+         }  # Group: pkg_OAuthTest
+
+      }  # Group: Test
+
    }  # Group: Пакеты
 
 Group: Скрипты  {
@@ -73,12 +89,8 @@ Group: Скрипты  {
 
          Group: Last  {
 
-            Group: AccessOperatorDb  {
-
-               File: op_group  (no auto-title, Install/Data/Last/AccessOperatorDb/op_group.sql)
-               File: op_role  (no auto-title, Install/Data/Last/AccessOperatorDb/op_role.sql)
-               }  # Group: AccessOperatorDb
-
+            File: op_group  (no auto-title, Install/Data/Last/op_group.sql)
+            File: op_role  (no auto-title, Install/Data/Last/op_role.sql)
             }  # Group: Last
 
          }  # Group: Data
@@ -106,6 +118,11 @@ Group: Скрипты  {
 
       }  # Group: Install
 
+   Group: Test  {
+
+      File: run  (no auto-title, Test/run.sql)
+      }  # Group: Test
+
    }  # Group: Скрипты
 
 Group: Индекс  {
@@ -121,8 +138,16 @@ Group: Индекс  {
    Group: Открытые объявления  {
 
       Constant Index: Константы
+      Function public Index: Функции
       }  # Group: Открытые объявления
 
+   Group: Закрытые объявления  {
+
+      Constant internal Index: Константы
+      Variable internal Index: Переменные
+      }  # Group: Закрытые объявления
+
+   Function Index: Функции
    File Index: Скрипты
    Index: Все вместе
    }  # Group: Индекс

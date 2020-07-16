@@ -36,12 +36,20 @@ const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
             }}>
             <Form {...props}>
               <FormField>
+                <Label width={'250px'}>ID клиентского приложения:</Label>
+                <Field name="clientId" as={TextInput} />
+              </FormField>
+              <FormField>
                 <Label width={'250px'}>Имя клиентского приложения:</Label>
                 <Field name="clientName" as={TextInput} />
               </FormField>
               <FormField>
                 <Label width={'250px'}>Имя клиентского приложения(англ):</Label>
                 <Field name="clientNameEn" as={TextInput} />
+              </FormField>
+              <FormField>
+                <Label>Количество записей:</Label>
+                <Field name="maxRowCount" as={TextInput} />
               </FormField>
             </Form>
           </Formik>

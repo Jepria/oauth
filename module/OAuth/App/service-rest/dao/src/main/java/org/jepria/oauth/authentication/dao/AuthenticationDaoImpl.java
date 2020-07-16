@@ -1,26 +1,21 @@
 package org.jepria.oauth.authentication.dao;
 
-import com.technology.jep.jepcommon.security.pkg_Operator;
-import com.technology.jep.jepria.server.dao.ResultSetMapper;
-import com.technology.jep.jepria.server.db.Db;
-import org.jepria.oauth.clienturi.dto.ClientUriDto;
+import org.jepria.compat.server.dao.ResultSetMapper;
+import org.jepria.compat.server.db.Db;
 import org.jepria.oauth.session.dto.SessionDto;
 import org.jepria.server.data.DaoSupport;
-import org.jepria.server.data.OptionDto;
-import org.jepria.server.data.RuntimeSQLException;
+import org.jepria.server.service.security.pkg_Operator;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.CallableStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
-import static com.technology.jep.jepria.server.JepRiaServerConstant.DEFAULT_DATA_SOURCE_JNDI_NAME;
-import static org.jepria.oauth.clienturi.ClientUriFieldNames.*;
-import static org.jepria.oauth.session.SessionFieldNames.*;
+import static org.jepria.compat.server.JepRiaServerConstant.DEFAULT_DATA_SOURCE_JNDI_NAME;
+import static org.jepria.oauth.session.SessionFieldNames.CODE_CHALLENGE;
+import static org.jepria.oauth.session.SessionFieldNames.SESSION_ID;
 
 public class AuthenticationDaoImpl implements AuthenticationDao {
 
@@ -98,10 +93,10 @@ public class AuthenticationDaoImpl implements AuthenticationDao {
         MessageDigest cryptoProvider = MessageDigest.getInstance("SHA-256");
         if (records.get(0)
           .getCodeChallenge()
-          .equals(Base64
-            .getUrlEncoder()
-            .withoutPadding()
-            .encodeToString(cryptoProvider.digest(codeVerifier.getBytes())))) {
+            .equals(Base64
+                .getUrlEncoder()
+                .withoutPadding()
+                .encodeToString(cryptoProvider.digest(codeVerifier.getBytes())))) {
           return Boolean.TRUE;
         }
       } else {

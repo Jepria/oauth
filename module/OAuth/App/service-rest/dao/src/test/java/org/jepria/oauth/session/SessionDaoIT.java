@@ -1,16 +1,15 @@
 package org.jepria.oauth.session;
 
-import com.technology.jep.jepria.server.dao.CallContext;
+import org.jepria.compat.server.dao.CallContext;
 import org.jepria.oauth.DaoTestBase;
+import org.jepria.oauth.session.dao.SessionDaoImpl;
 import org.jepria.oauth.session.dto.SessionCreateDto;
 import org.jepria.oauth.session.dto.SessionDto;
 import org.jepria.oauth.session.dto.SessionSearchDto;
 import org.jepria.oauth.session.dto.SessionUpdateDto;
-import org.jepria.oauth.session.dao.SessionDaoImpl;
 import org.jepria.server.data.Dao;
 import org.junit.jupiter.api.*;
 
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.sql.SQLException;
 import java.util.Base64;

@@ -1,6 +1,7 @@
 package org.jepria.oauth.client.dao;
 
-import com.technology.jep.jepria.server.dao.ResultSetMapper;
+import org.jepria.compat.server.dao.ResultSetMapper;
+import org.jepria.compat.server.db.Db;
 import org.jepria.oauth.client.dto.ClientCreateDto;
 import org.jepria.oauth.client.dto.ClientDto;
 import org.jepria.oauth.client.dto.ClientSearchDto;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 import static org.jepria.oauth.client.ClientFieldNames.*;
 
 public class ClientDaoImpl implements ClientDao {
+
 
   @Override
   public List<?> find(Object template, Integer operatorId) {
@@ -159,7 +161,6 @@ public class ClientDaoImpl implements ClientDao {
     );
   }
 
-
   @Override
   public List<String> getClientGrantTypes(String clientId, Integer operatorId) {
     String sqlQuery =
@@ -210,7 +211,7 @@ public class ClientDaoImpl implements ClientDao {
     return result;
   }
 
-  public List<OptionDto<String>> getClientRoles(Integer clientOperatorId) {
+  private List<OptionDto<String>> getClientRoles(Integer clientOperatorId) {
     String sqlQuery =
       "begin  "
         + "? := pkg_operator.getRoles("

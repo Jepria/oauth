@@ -27,7 +27,16 @@ const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
         <FormContainer>
           <Formik
             innerRef={formik => formikRef = formik}
-            initialValues={searchTemplate ? searchTemplate : {}}
+            initialValues={searchTemplate ? searchTemplate : { maxRowCount: 25 }}
+            validate={(values) => {
+              const errors: { maxRowCount?: string } = {};
+              if (!values['maxRowCount']) {
+                errors.maxRowCount = 'Поле должно быть заполнено'
+              } else if (!/[0-9]/.test(`${values['maxRowCount']}`)) {
+                errors.maxRowCount = 'Значение должно состоять из цифр'
+              }
+              return errors;
+            }}
             onSubmit={(values: ClientSearchTemplate) => {
               dispatch(postSearchClientRequest({
                 template: values
@@ -36,19 +45,19 @@ const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
             }}>
             <Form {...props}>
               <FormField>
-                <Label width={'250px'}>ID клиентского приложения:</Label>
+                <Label width={'250px'}>ID приложения:</Label>
                 <Field name="clientId" as={TextInput} />
               </FormField>
               <FormField>
-                <Label width={'250px'}>Имя клиентского приложения:</Label>
+                <Label width={'250px'}>Наименование приложения:</Label>
                 <Field name="clientName" as={TextInput} />
               </FormField>
               <FormField>
-                <Label width={'250px'}>Имя клиентского приложения(англ):</Label>
+                <Label width={'250px'}>Наименование приложения (англ.):</Label>
                 <Field name="clientNameEn" as={TextInput} />
               </FormField>
               <FormField>
-                <Label>Количество записей:</Label>
+                <Label width={'250px'}>Количество записей:</Label>
                 <Field name="maxRowCount" as={TextInput} />
               </FormField>
             </Form>

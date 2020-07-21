@@ -20,7 +20,7 @@ export const ClientListPage: React.FC = () => {
     } else if (!searchId && searchRequest) {
       dispatch(postSearchClientRequest(searchRequest));
     } else {
-      dispatch(postSearchClientRequest({template: {}}));
+      dispatch(postSearchClientRequest({template: {maxRowCount: 25}}));
     }
   }, [searchId, searchRequest, dispatch]);
 
@@ -45,7 +45,7 @@ export const ClientListPage: React.FC = () => {
                     onDoubleClick={() => current !== record ? dispatch(setCurrentRecord(record,
                       () => history.push(`/ui/client/${record.clientId}/view`))) : history.push(`/ui/client/${record.clientId}/view`)}
                     selected={record === current}>
-                    <JepGridRowCell label="ID клиентского приложения">
+                    <JepGridRowCell label="ID приложения">
                       <TextCell>{record.clientId}</TextCell>
                     </JepGridRowCell>
                     <JepGridRowCell label="Секретное слово">
@@ -54,13 +54,13 @@ export const ClientListPage: React.FC = () => {
                     <JepGridRowCell label="Наименование">
                       <TextCell>{record.clientName}</TextCell>
                     </JepGridRowCell>
-                    <JepGridRowCell label="Наименование (англ)">
+                    <JepGridRowCell label="Наименование (англ.)">
                       <TextCell>{record.clientNameEn}</TextCell>
                     </JepGridRowCell>
                     <JepGridRowCell label="Тип приложения">
                       <TextCell>{ApplicationType[record.applicationType]}</TextCell>
                     </JepGridRowCell>
-                    <JepGridRowCell label="Разрешенные типы авторизации">
+                    <JepGridRowCell label="Разрешения на авторизацию">
                       <TextCell wrapText>{record.grantTypes.map((grantType) => GrantType[grantType]).join(', ')}</TextCell>
                     </JepGridRowCell>
                   </JepGridRow>);

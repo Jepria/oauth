@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ClientSearchTemplate, SearchRequest, Client } from '../types';
+import { ClientSearchTemplate, SearchRequest, Client, Option } from '../types';
 
 export default class ClientApi {
 
@@ -200,6 +200,29 @@ export default class ClientApi {
       ).then(response => {
         if (response.status === 200) {
           resolve(response.data);
+        } else {
+          reject(response);
+        }
+      }).catch(error => reject(error));
+    });
+  }
+
+  getRoles = (roleName?: string): Promise<Array<Option>> => {
+    return new Promise<Array<Option>>((resolve, reject) => {
+      axios.get(
+        this.url + `/role?roleName=${roleName}&maxRowCount=25`,
+        {
+          headers: {
+            'Accept': 'application/json;charset=utf-8',
+            'Content-Type': 'application/json;charset=utf-8',
+            'Cache-Control': 'no-cache'
+          }
+        }
+      ).then(response => {
+        if (response.status === 200) {
+          resolve(response.data);
+        } else if (response.status === 204) {
+          resolve([]);
         } else {
           reject(response);
         }

@@ -23,7 +23,7 @@ const KeyViewPage: React.FC = () => {
         <FormContainer>
           <VerticalLayout>
             <FormField>
-              <Label width="150px">ID ключа:</Label>
+              <Label width="150px">ID:</Label>
               <Text>{current?.keyId}</Text>
             </FormField>
             <FormField>

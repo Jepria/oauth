@@ -5,6 +5,7 @@ export interface Client {
   clientSecret?: string;
   applicationType: string;
   grantTypes: Array<string>;
+  scopes?: Array<Option>;
 }
 
 export interface ColumnSortConfiguration {
@@ -21,7 +22,7 @@ export interface ClientSearchTemplate {
   clientId?: string;
   clientName?: string;
   clientNameEn?: string;
-  maxRowCount?: number;
+  maxRowCount: number;
 }
 
 export interface ClientState {
@@ -33,4 +34,10 @@ export interface ClientState {
   searchRequest?: SearchRequest<ClientSearchTemplate>;
   message?: string;
   error?: Error;
+  roles?: Array<Option>
+}
+
+export interface Option {
+  name: string;
+  value: string;
 }

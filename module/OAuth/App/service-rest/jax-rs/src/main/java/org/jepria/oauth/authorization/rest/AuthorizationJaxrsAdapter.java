@@ -17,6 +17,7 @@ import javax.ws.rs.core.Response;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -42,9 +43,12 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
                             @QueryParam("code_challenge") String codeChallenge,
                             @QueryParam("state") String state,
                             @CookieParam(SESSION_ID) String sessionToken) {
-    String redirectUri;
-
-    redirectUri = new String(Base64.getUrlDecoder().decode(redirectUriEncoded));
+    String redirectUri = null;
+    try {
+      redirectUri = URLDecoder.decode(redirectUriEncoded.replaceAll("%20", "\\+"), StandardCharsets.UTF_8.name());
+    } catch (UnsupportedEncodingException e) {
+      e.printStackTrace();
+    }
     if (!isValidUri(redirectUri)) {
       throw new OAuthRuntimeException(INVALID_REQUEST, "redirect_uri is null or invalid");
     }

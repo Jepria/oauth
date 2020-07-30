@@ -16,7 +16,10 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 import static org.jepria.oauth.sdk.OAuthConstants.*;
@@ -62,7 +65,7 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
     if (grantType == null) {
       throw new OAuthRuntimeException(INVALID_REQUEST, "Grant type must be not null");
     }
-    TokenDto result = null;
+    TokenDto result;
     switch (grantType) {
       case GrantType.AUTHORIZATION_CODE: {
         if (clientId != null && clientSecret != null) {
@@ -72,7 +75,15 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
         } else {
           throw new OAuthRuntimeException(ACCESS_DENIED, "Request authorization failed");
         }
-        URI redirectUri = URI.create(new String(Base64.getUrlDecoder().decode(redirectUriEncoded)));
+        
+        String redirectUriDecoded = null;
+        try {
+          redirectUriDecoded = URLDecoder.decode(redirectUriEncoded.replaceAll("%20", "\\+"), StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+          e.printStackTrace();
+        }
+        
+        URI redirectUri = URI.create(redirectUriDecoded);
         result = tokenService.create(clientId, authCode, getHostContext(), redirectUri);
         break;
       }

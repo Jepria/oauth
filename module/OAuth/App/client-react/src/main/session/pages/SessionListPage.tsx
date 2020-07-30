@@ -3,7 +3,7 @@ import { setCurrentRecord, searchSessions, postSearchSessionRequest } from '../s
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { AppState } from '../../store';
-import { SessionState } from '../types';
+import { SessionState, ColumnSortConfiguration } from '../types';
 import { TextCell } from '../../../components/cell/TextCell';
 import { DateCell } from '../../../components/cell/DateCell';
 import { NumberCell } from '../../../components/cell/NumberCell';
@@ -25,20 +25,69 @@ const SessionListPage: React.FC = () => {
     }
   }, [searchId, searchRequest, dispatch]);
 
+  let columnConfig: Map<string, string> = new Map();
+
+  const mapColumnConfig = (): Array<ColumnSortConfiguration> => {
+    return (Array.from(columnConfig) as Array<Array<string>>).map(entry => ({ columnName: entry[0], sortOrder: entry[1] }));
+  }
+
+  const onColumnConfigChange = () => {
+    if (searchRequest) {
+      searchRequest.listSortConfiguration = mapColumnConfig();
+      dispatch(postSearchSessionRequest(searchRequest));
+    } else {
+      dispatch(postSearchSessionRequest({ template: { maxRowCount: 25 }, listSortConfiguration: mapColumnConfig() }));
+    }
+  }
+
+  const onSingleColumnSort = (colName: string) => {
+    if (columnConfig.get(colName)) {
+      if (columnConfig.get(colName) === "asc") {
+        columnConfig = new Map([[colName, "desc"]]);
+      } else {
+        columnConfig = new Map([[colName, "asc"]]);
+      }
+    } else {
+      columnConfig = new Map([[colName, "desc"]]);
+    }
+    onColumnConfigChange();
+  }
+
+  const onMultiColumnSort = (colName: string) => {
+    if (columnConfig.get(colName)) {
+      if (columnConfig.get(colName) === "asc") {
+        columnConfig.set(colName, "desc");
+      } else {
+        columnConfig.set(colName, "asc");
+      }
+    } else {
+      columnConfig.set(colName, "desc");
+    }
+    onColumnConfigChange();
+  }
+
+  const onColumnHeaderClick = (e: React.MouseEvent, colName: string) => {
+    if (e.ctrlKey) {
+      onMultiColumnSort(colName);
+    } else {
+      onSingleColumnSort(colName);
+    }
+  }
+
   return (
     <Page>
       <Content>
         <JepGrid>
           <JepGridTable>
             <JepGridHeader>
-              <JepGridHeaderCell>ID сессии</JepGridHeaderCell>
-              <JepGridHeaderCell>Код авторизации</JepGridHeaderCell>
-              <JepGridHeaderCell>Дата создания</JepGridHeaderCell>
-              <JepGridHeaderCell>Логин оператора</JepGridHeaderCell>
-              <JepGridHeaderCell>ID оператора</JepGridHeaderCell>
-              <JepGridHeaderCell>URL переадресации</JepGridHeaderCell>
-              <JepGridHeaderCell>Имя клиентского приложения</JepGridHeaderCell>
-              <JepGridHeaderCell>ID клиентского приложения</JepGridHeaderCell>
+              <JepGridHeaderCell onClick={e => onColumnHeaderClick(e, "sessionId")}>ID сессии</JepGridHeaderCell>
+              <JepGridHeaderCell onClick={e => onColumnHeaderClick(e, "dateIns")}>Дата создания</JepGridHeaderCell>
+              <JepGridHeaderCell onClick={e => onColumnHeaderClick(e, "operatorLogin")}>Логин оператора</JepGridHeaderCell>
+              <JepGridHeaderCell onClick={e => onColumnHeaderClick(e, "operatorName")}>Имя оператора</JepGridHeaderCell>
+              <JepGridHeaderCell onClick={e => onColumnHeaderClick(e, "operatorId")}>ID оператора</JepGridHeaderCell>
+              <JepGridHeaderCell onClick={e => onColumnHeaderClick(e, "redirectUri")}>URL переадресации</JepGridHeaderCell>
+              <JepGridHeaderCell onClick={e => onColumnHeaderClick(e, "clientName")}>Имя клиентского приложения</JepGridHeaderCell>
+              <JepGridHeaderCell onClick={e => onColumnHeaderClick(e, "clientId")}>ID клиентского приложения</JepGridHeaderCell>
             </JepGridHeader>
             <JepGridBody>
               {records ? records.map(record => {

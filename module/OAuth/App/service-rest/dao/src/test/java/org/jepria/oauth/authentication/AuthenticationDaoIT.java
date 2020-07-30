@@ -55,8 +55,17 @@ public class AuthenticationDaoIT extends DaoTestBase {
       byte[] codeVerifierBytes = new byte[32];
       sr.nextBytes(codeVerifierBytes);
       String codeVerifier = encoder.encodeToString(codeVerifierBytes);
-      MessageDigest md = MessageDigest.getInstance("SHA-256");
-      String codeChallenge = encoder.encodeToString(md.digest(codeVerifier.getBytes()));
+      
+      MessageDigest cryptoProvider = MessageDigest.getInstance("SHA-256");
+      byte[] hash = cryptoProvider.digest(codeVerifier.getBytes());
+      StringBuffer hexString = new StringBuffer();
+      for (int i = 0; i < hash.length; i++) {
+        String hex = Integer.toHexString(0xff & hash[i]);
+        if (hex.length() == 1) hexString.append('0');
+        hexString.append(hex);
+      }
+      String codeChallenge = hexString.toString();
+      
       Dao sessionDao = new SessionDaoImpl();
       SessionCreateDto sessionCreateDto = new SessionCreateDto();
       byte[] authCodeBytes = new byte[16];
@@ -65,8 +74,11 @@ public class AuthenticationDaoIT extends DaoTestBase {
       sessionCreateDto.setAuthorizationCode(authCode);
       sessionCreateDto.setClientId(properties.getProperty("client.id"));
       sessionCreateDto.setCodeChallenge(codeChallenge);
+      
       Integer sessionId = (Integer) sessionDao.create(sessionCreateDto, 1);
+      
       Boolean result = dao.verifyPKCE(authCode, codeVerifier);
+      
       sessionDao.delete(new HashMap<String, Integer>() {{
         put(SESSION_ID, sessionId);
       }}, 1);

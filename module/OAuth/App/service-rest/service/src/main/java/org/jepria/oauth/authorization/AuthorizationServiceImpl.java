@@ -1,13 +1,9 @@
 package org.jepria.oauth.authorization;
 
-import org.jepria.oauth.exception.OAuthRuntimeException;
-import org.jepria.oauth.authorization.AuthorizationService;
 import org.jepria.oauth.client.ClientService;
+import org.jepria.oauth.exception.OAuthRuntimeException;
 import org.jepria.oauth.key.KeyService;
 import org.jepria.oauth.key.dto.KeyDto;
-import org.jepria.oauth.session.SessionService;
-import org.jepria.oauth.session.dto.SessionCreateDto;
-import org.jepria.oauth.session.dto.SessionDto;
 import org.jepria.oauth.sdk.ResponseType;
 import org.jepria.oauth.sdk.token.Decryptor;
 import org.jepria.oauth.sdk.token.Token;
@@ -15,14 +11,16 @@ import org.jepria.oauth.sdk.token.TokenImpl;
 import org.jepria.oauth.sdk.token.Verifier;
 import org.jepria.oauth.sdk.token.rsa.DecryptorRSA;
 import org.jepria.oauth.sdk.token.rsa.VerifierRSA;
+import org.jepria.oauth.session.SessionService;
+import org.jepria.oauth.session.dto.SessionCreateDto;
+import org.jepria.oauth.session.dto.SessionDto;
 import org.jepria.server.data.RuntimeSQLException;
 import org.jepria.server.service.security.Credential;
 
-import java.security.MessageDigest;
-import java.security.SecureRandom;
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 import static org.jepria.oauth.sdk.OAuthConstants.*;
 

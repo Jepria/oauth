@@ -18,11 +18,11 @@ import static org.jepria.oauth.session.SessionFieldNames.CODE_CHALLENGE;
 import static org.jepria.oauth.session.SessionFieldNames.SESSION_ID;
 
 public class AuthenticationDaoImpl implements AuthenticationDao {
-
+  
   protected Db getDb() {
     return new Db(DEFAULT_DATA_SOURCE_JNDI_NAME);
   }
-
+  
   @Override
   public Integer loginByPassword(String username, String password) {
     Integer operatorId = null;
@@ -36,7 +36,7 @@ public class AuthenticationDaoImpl implements AuthenticationDao {
     }
     return operatorId;
   }
-
+  
   @Override
   public Integer loginByClientSecret(String clientId, String clientSecret) {
     String sqlQuery =
@@ -51,7 +51,7 @@ public class AuthenticationDaoImpl implements AuthenticationDao {
       , clientId
       , clientSecret);
   }
-
+  
   @Override
   public Boolean verifyPKCE(String authorizationCode, String codeVerifier) {
     String sqlQuery =
@@ -91,12 +91,19 @@ public class AuthenticationDaoImpl implements AuthenticationDao {
     try {
       if (records.size() == 1) {
         MessageDigest cryptoProvider = MessageDigest.getInstance("SHA-256");
+        byte[] hash = cryptoProvider.digest(codeVerifier.getBytes());
+        
+        StringBuffer hexString = new StringBuffer();
+  
+        for (int i = 0; i < hash.length; i++) {
+          String hex = Integer.toHexString(0xff & hash[i]);
+          if (hex.length() == 1) hexString.append('0');
+          hexString.append(hex);
+        }
+  
         if (records.get(0)
           .getCodeChallenge()
-            .equals(Base64
-                .getUrlEncoder()
-                .withoutPadding()
-                .encodeToString(cryptoProvider.digest(codeVerifier.getBytes())))) {
+          .equals(hexString.toString())) {
           return Boolean.TRUE;
         }
       } else {

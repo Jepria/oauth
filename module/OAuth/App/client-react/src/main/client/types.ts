@@ -15,7 +15,7 @@ export interface ColumnSortConfiguration {
 
 export interface SearchRequest<Type> {
   template: Type;
-  listSortConfiguration?: ColumnSortConfiguration;
+  listSortConfiguration?: Array<ColumnSortConfiguration>;
 }
 
 export interface ClientSearchTemplate {

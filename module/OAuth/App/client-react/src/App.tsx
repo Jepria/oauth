@@ -1,6 +1,7 @@
 import React from 'react';
-import { OAuthSecurityProvider } from './security/OAuthSecurityContext';
+import { OAuthWebContext } from 'jfront-oauth';
 import AppRouter from './main/AppRouter';
+import { UserContextProvider } from './user/UserContextProvider';
 
 function getOrigin() {
   if (!window.location.origin) {
@@ -15,12 +16,14 @@ function getOrigin() {
 
 function App() {
   return (
-    <OAuthSecurityProvider
+    <OAuthWebContext
         clientId={'OAuthRFI'}
         redirectUri={`${getOrigin()}${process.env.NODE_ENV === 'development' ? '' : `${process.env.PUBLIC_URL}`}/oauth`}
         oauthContextPath={`${process.env.NODE_ENV === 'development' ? 'http://localhost:8082/oauth/api' : `${getOrigin()}/oauth/api`}`}>
-      <AppRouter/>
-    </OAuthSecurityProvider>
+      <UserContextProvider baseUrl={`${process.env.PUBLIC_URL}`}>
+        <AppRouter/>
+      </UserContextProvider>
+    </OAuthWebContext>
   );
 }
 

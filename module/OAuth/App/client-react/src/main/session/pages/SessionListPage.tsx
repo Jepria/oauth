@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { setCurrentRecord, searchSessions, postSearchSessionRequest } from '../state/redux/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
@@ -7,7 +7,12 @@ import { SessionState, ColumnSortConfiguration } from '../types';
 import { TextCell } from '../../../components/cell/TextCell';
 import { DateCell } from '../../../components/cell/DateCell';
 import { NumberCell } from '../../../components/cell/NumberCell';
+import styled from 'styled-components';
 import { JepGrid, JepGridTable, JepGridHeader, JepGridHeaderCell, JepGridBody, JepGridRow, JepGridRowCell, JepGridPagingBar, Page, Content } from 'jfront-components';
+
+const SortableColumn = styled(JepGridHeaderCell)`
+  cursor: pointer;
+`;
 
 const SessionListPage: React.FC = () => {
 
@@ -24,14 +29,19 @@ const SessionListPage: React.FC = () => {
       dispatch(postSearchSessionRequest({ template: { maxRowCount: 25 } }));
     }
   }, [searchId, searchRequest, dispatch]);
+  const columnConfig = useRef(new Map<string, string>());
 
-  let columnConfig: Map<string, string> = new Map();
 
   const mapColumnConfig = (): Array<ColumnSortConfiguration> => {
-    return (Array.from(columnConfig) as Array<Array<string>>).map(entry => ({ columnName: entry[0], sortOrder: entry[1] }));
+    if (columnConfig.current) {
+      return (Array.from(columnConfig.current) as Array<Array<string>>).map(entry => ({ columnName: entry[0], sortOrder: entry[1] }));
+    } else {
+      return [];
+    }
   }
 
   const onColumnConfigChange = () => {
+    console.log(columnConfig)
     if (searchRequest) {
       searchRequest.listSortConfiguration = mapColumnConfig();
       dispatch(postSearchSessionRequest(searchRequest));
@@ -41,31 +51,33 @@ const SessionListPage: React.FC = () => {
   }
 
   const onSingleColumnSort = (colName: string) => {
-    if (columnConfig.get(colName)) {
-      if (columnConfig.get(colName) === "asc") {
-        columnConfig = new Map([[colName, "desc"]]);
+    if (columnConfig.current?.get(colName)) {
+      if (columnConfig.current?.get(colName) === "asc") {
+        columnConfig.current.clear();
+        columnConfig.current.set(colName, "desc");
       } else {
-        columnConfig = new Map([[colName, "asc"]]);
+        columnConfig.current.clear();
+        columnConfig.current.set(colName, "asc");
       }
     } else {
-      columnConfig = new Map([[colName, "desc"]]);
+      columnConfig.current?.clear();
+      columnConfig.current?.set(colName, "desc");
     }
     onColumnConfigChange();
   }
 
   const onMultiColumnSort = (colName: string) => {
-    if (columnConfig.get(colName)) {
-      if (columnConfig.get(colName) === "asc") {
-        columnConfig.set(colName, "desc");
+    if (columnConfig.current?.get(colName)) {
+      if (columnConfig.current?.get(colName) === "asc") {
+        columnConfig.current.set(colName, "desc");
       } else {
-        columnConfig.set(colName, "asc");
+        columnConfig.current.set(colName, "asc");
       }
     } else {
-      columnConfig.set(colName, "desc");
+      columnConfig.current?.set(colName, "desc");
     }
     onColumnConfigChange();
   }
-
   const onColumnHeaderClick = (e: React.MouseEvent, colName: string) => {
     if (e.ctrlKey) {
       onMultiColumnSort(colName);
@@ -73,21 +85,21 @@ const SessionListPage: React.FC = () => {
       onSingleColumnSort(colName);
     }
   }
-
+  
   return (
     <Page>
       <Content>
         <JepGrid>
           <JepGridTable>
             <JepGridHeader>
-              <JepGridHeaderCell onClick={e => onColumnHeaderClick(e, "sessionId")}>ID сессии</JepGridHeaderCell>
-              <JepGridHeaderCell onClick={e => onColumnHeaderClick(e, "dateIns")}>Дата создания</JepGridHeaderCell>
-              <JepGridHeaderCell onClick={e => onColumnHeaderClick(e, "operatorLogin")}>Логин оператора</JepGridHeaderCell>
-              <JepGridHeaderCell onClick={e => onColumnHeaderClick(e, "operatorName")}>Имя оператора</JepGridHeaderCell>
-              <JepGridHeaderCell onClick={e => onColumnHeaderClick(e, "operatorId")}>ID оператора</JepGridHeaderCell>
-              <JepGridHeaderCell onClick={e => onColumnHeaderClick(e, "redirectUri")}>URL переадресации</JepGridHeaderCell>
-              <JepGridHeaderCell onClick={e => onColumnHeaderClick(e, "clientName")}>Имя клиентского приложения</JepGridHeaderCell>
-              <JepGridHeaderCell onClick={e => onColumnHeaderClick(e, "clientId")}>ID клиентского приложения</JepGridHeaderCell>
+              <SortableColumn onClick={(e: React.MouseEvent<Element, MouseEvent>) => onColumnHeaderClick(e, "sessionId")}>ID сессии</SortableColumn>
+              <SortableColumn onClick={(e: React.MouseEvent<Element, MouseEvent>) => onColumnHeaderClick(e, "dateIns")}>Дата создания</SortableColumn>
+              <SortableColumn onClick={(e: React.MouseEvent<Element, MouseEvent>) => onColumnHeaderClick(e, "operatorLogin")}>Логин оператора</SortableColumn>
+              <SortableColumn onClick={(e: React.MouseEvent<Element, MouseEvent>) => onColumnHeaderClick(e, "operatorName")}>Имя оператора</SortableColumn>
+              <SortableColumn onClick={(e: React.MouseEvent<Element, MouseEvent>) => onColumnHeaderClick(e, "operatorId")}>ID оператора</SortableColumn>
+              <SortableColumn onClick={(e: React.MouseEvent<Element, MouseEvent>) => onColumnHeaderClick(e, "redirectUri")}>URL переадресации</SortableColumn>
+              <SortableColumn onClick={(e: React.MouseEvent<Element, MouseEvent>) => onColumnHeaderClick(e, "clientName")}>Имя клиентского приложения</SortableColumn>
+              <SortableColumn onClick={(e: React.MouseEvent<Element, MouseEvent>) => onColumnHeaderClick(e, "clientId")}>ID клиентского приложения</SortableColumn>
             </JepGridHeader>
             <JepGridBody>
               {records ? records.map(record => {
@@ -125,7 +137,7 @@ const SessionListPage: React.FC = () => {
               }): null}
             </JepGridBody>
           </JepGridTable>
-          <JepGridPagingBar rowCount={records?.length} totalRowCount={resultSetSize} onRefresh={(page, pageSize) => {
+          <JepGridPagingBar rowCount={records?.length} totalRowCount={resultSetSize} onRefresh={(page: number, pageSize: number) => {
             if (searchId) {
               dispatch(searchSessions(searchId, pageSize, page))
             }

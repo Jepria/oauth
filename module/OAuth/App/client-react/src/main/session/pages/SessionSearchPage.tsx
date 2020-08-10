@@ -52,7 +52,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
                       touched={props.meta.touched}
                       error={props.meta.error}
                       placeholder='Введите имя пользователя'
-                      onChange={e => dispatch(getOperators(e.target.value))}
+                      onChange={(e: { target: { value: string | undefined; }; }) => dispatch(getOperators(e.target.value))}
                       onChangeValue={props.form.setFieldValue} width='250px' />)}
                 </Field>
               </FormField>
@@ -66,11 +66,11 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
                       hasEmptyOption
                       touched={props.meta.touched}
                       error={props.meta.error}
-                      onChange={e => dispatch(getClients(e.target.value))}
-                      getOptionName={option => {
+                      onChange={(e: { target: { value: string | undefined; }; }) => dispatch(getClients(e.target.value))}
+                      getOptionName={(option: { clientName: any; }) => {
                         return option.clientName;
                       }}
-                      getOptionValue={option => option.clientId}
+                      getOptionValue={(option: { clientId: any; }) => option.clientId}
                       onChangeValue={props.form.setFieldValue} width='250px' />)}
                 </Field>
               </FormField>

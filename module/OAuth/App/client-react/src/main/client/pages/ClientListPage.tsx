@@ -1,12 +1,17 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { setCurrentRecord, searchClients, postSearchClientRequest } from '../state/redux/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { AppState } from '../../store';
 import { ClientState, ColumnSortConfiguration } from '../types';
-import { GrantType, ApplicationType } from '../../../security/OAuth';
+import { GrantType, ApplicationType } from 'jfront-oauth';
 import { TextCell } from '../../../components/cell/TextCell';
+import styled from 'styled-components';
 import { JepGrid, JepGridTable, JepGridHeader, JepGridHeaderCell, JepGridBody, JepGridRow, JepGridRowCell, JepGridPagingBar, Page, Content } from 'jfront-components';
+
+const SortableColumn = styled(JepGridHeaderCell)`
+  cursor: pointer;
+`;
 
 export const ClientListPage: React.FC = () => {
 
@@ -24,13 +29,19 @@ export const ClientListPage: React.FC = () => {
     }
   }, [searchId, searchRequest, dispatch]);
 
-  let columnConfig: Map<string, string> = new Map();
+  const columnConfig = useRef(new Map<string, string>());
+
 
   const mapColumnConfig = (): Array<ColumnSortConfiguration> => {
-    return (Array.from(columnConfig) as Array<Array<string>>).map(entry => ({ columnName: entry[0], sortOrder: entry[1] }));
+    if (columnConfig.current) {
+      return (Array.from(columnConfig.current) as Array<Array<string>>).map(entry => ({ columnName: entry[0], sortOrder: entry[1] }));
+    } else {
+      return [];
+    }
   }
 
   const onColumnConfigChange = () => {
+    console.log(columnConfig)
     if (searchRequest) {
       searchRequest.listSortConfiguration = mapColumnConfig();
       dispatch(postSearchClientRequest(searchRequest));
@@ -40,31 +51,33 @@ export const ClientListPage: React.FC = () => {
   }
 
   const onSingleColumnSort = (colName: string) => {
-    if (columnConfig.get(colName)) {
-      if (columnConfig.get(colName) === "asc") {
-        columnConfig = new Map([[colName, "desc"]]);
+    if (columnConfig.current?.get(colName)) {
+      if (columnConfig.current?.get(colName) === "asc") {
+        columnConfig.current.clear();
+        columnConfig.current.set(colName, "desc");
       } else {
-        columnConfig = new Map([[colName, "asc"]]);
+        columnConfig.current.clear();
+        columnConfig.current.set(colName, "asc");
       }
     } else {
-      columnConfig = new Map([[colName, "desc"]]);
+      columnConfig.current?.clear();
+      columnConfig.current?.set(colName, "desc");
     }
     onColumnConfigChange();
   }
 
   const onMultiColumnSort = (colName: string) => {
-    if (columnConfig.get(colName)) {
-      if (columnConfig.get(colName) === "asc") {
-        columnConfig.set(colName, "desc");
+    if (columnConfig.current?.get(colName)) {
+      if (columnConfig.current?.get(colName) === "asc") {
+        columnConfig.current.set(colName, "desc");
       } else {
-        columnConfig.set(colName, "asc");
+        columnConfig.current.set(colName, "asc");
       }
     } else {
-      columnConfig.set(colName, "desc");
+      columnConfig.current?.set(colName, "desc");
     }
     onColumnConfigChange();
   }
-
   const onColumnHeaderClick = (e: React.MouseEvent, colName: string) => {
     if (e.ctrlKey) {
       onMultiColumnSort(colName);
@@ -79,11 +92,11 @@ export const ClientListPage: React.FC = () => {
         <JepGrid>
           <JepGridTable>
             <JepGridHeader>
-              <JepGridHeaderCell onClick={e => onColumnHeaderClick(e, "clientId")}>ID клиентского приложения</JepGridHeaderCell>
-              <JepGridHeaderCell onClick={e => onColumnHeaderClick(e, "clientSecret")}>Секретное слово</JepGridHeaderCell>
-              <JepGridHeaderCell onClick={e => onColumnHeaderClick(e, "clientName")}>Наименование</JepGridHeaderCell>
-              <JepGridHeaderCell onClick={e => onColumnHeaderClick(e, "clientNameEn")}>Наименование (англ)</JepGridHeaderCell>
-              <JepGridHeaderCell onClick={e => onColumnHeaderClick(e, "applicationType")}>Тип приложения</JepGridHeaderCell>
+              <SortableColumn onClick={(e: React.MouseEvent<Element, MouseEvent>) => onColumnHeaderClick(e, "clientId")}>ID клиентского приложения</SortableColumn>
+              <SortableColumn onClick={(e: React.MouseEvent<Element, MouseEvent>) => onColumnHeaderClick(e, "clientSecret")}>Секретное слово</SortableColumn>
+              <SortableColumn onClick={(e: React.MouseEvent<Element, MouseEvent>) => onColumnHeaderClick(e, "clientName")}>Наименование</SortableColumn>
+              <SortableColumn onClick={(e: React.MouseEvent<Element, MouseEvent>) => onColumnHeaderClick(e, "clientNameEn")}>Наименование (англ)</SortableColumn>
+              <SortableColumn onClick={(e: React.MouseEvent<Element, MouseEvent>) => onColumnHeaderClick(e, "applicationType")}>Тип приложения</SortableColumn>
               <JepGridHeaderCell>Разрешенные типы авторизации</JepGridHeaderCell>
             </JepGridHeader>
             <JepGridBody>
@@ -116,7 +129,7 @@ export const ClientListPage: React.FC = () => {
               }) : null}
             </JepGridBody>
           </JepGridTable>
-          <JepGridPagingBar rowCount={records?.length} totalRowCount={resultSetSize} onRefresh={(page, pageSize) => {
+          <JepGridPagingBar rowCount={records?.length} totalRowCount={resultSetSize} onRefresh={(page: number, pageSize: number) => {
             if (searchId) {
               dispatch(searchClients(searchId, pageSize, page))
             }

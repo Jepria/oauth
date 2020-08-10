@@ -14,6 +14,7 @@ import { ToolBar, ToolBarButton } from '../../components/toolbar';
 import { updateKey, getKey } from './state/redux/actions';
 import change_password from './change_password.png';
 import { Page, Header, Content } from 'jfront-components';
+import { UserPanel } from '../../components/tabpanel/UserPanel';
 
 const KeyRoute: React.FC = () => {
 
@@ -27,6 +28,7 @@ const KeyRoute: React.FC = () => {
       <Header>
         <TabPanel>
           <SelectedTab>Ключ безопасности</SelectedTab>
+          <UserPanel/>
         </TabPanel>
         <ToolBar>
           <ToolBarButton onClick={() => dispatch(updateKey(() => dispatch(getKey())))} tooltip='Обновить ключ безопасности'>

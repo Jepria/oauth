@@ -6,7 +6,7 @@ import { TextInput } from '../../../components/form/input/TextInput';
 import { useDispatch, useSelector } from 'react-redux';
 import { Client, ClientState } from '../types';
 import { createClient, getRoles } from '../state/redux/actions';
-import { ApplicationGrantType, GrantType, ApplicationType } from '../../../security/OAuth';
+import { GrantType, ApplicationType, ApplicationGrantType } from 'jfront-oauth';
 import { Page, Content, FormContainer, ComboBoxField, CheckBoxListField } from 'jfront-components';
 import { DualListField } from '../../../components/form/input/DualListField';
 import { AppState } from '../../store';
@@ -114,7 +114,7 @@ const ClientCreatePage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
                         initialValue={props.field.value ? { name: ApplicationType[props.field.value], value: props.field.value } : undefined}
                         touched={props.meta.touched}
                         error={props.meta.error}
-                        onChangeValue={(field, value) => {
+                        onChangeValue={(field: string, value: any) => {
                           if (value !== props.field.value) {
                             props.form.setFieldValue('grantTypes', []);
                             props.form.setFieldValue(field, value);

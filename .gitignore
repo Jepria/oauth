@@ -29,3 +29,5 @@
 /module/OAuth/App/service-rest/jax-rs/target
 /module/OAuth/App/client-react/client-react.iml
 /module/OAuth/App/client-react/build
+/module/OAuth/App/client-react/yarn-error.log
+/module/OAuth/App/service-rest/jax-rs/jax-rs.iml

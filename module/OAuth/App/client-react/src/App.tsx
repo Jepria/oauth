@@ -1,5 +1,5 @@
 import React from 'react';
-import { OAuthWebContext } from 'jfront-oauth';
+import { OAuthWebContext } from '@jfront/oauth-ui';
 import AppRouter from './main/AppRouter';
 import { UserContextProvider } from './user/UserContextProvider';
 

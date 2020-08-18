@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { ClientSearchTemplate } from '../types';
 import { postSearchClientRequest } from '../state/redux/actions';
 import { AppState } from '../../store';
-import { Page, Content, FormContainer } from 'jfront-components';
+import { Page, Content, FormContainer } from '@jfront/ui-core';
 
 const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();

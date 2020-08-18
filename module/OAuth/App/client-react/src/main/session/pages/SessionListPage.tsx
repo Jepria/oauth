@@ -8,7 +8,7 @@ import { TextCell } from '../../../components/cell/TextCell';
 import { DateCell } from '../../../components/cell/DateCell';
 import { NumberCell } from '../../../components/cell/NumberCell';
 import styled from 'styled-components';
-import { JepGrid, JepGridTable, JepGridHeader, JepGridHeaderCell, JepGridBody, JepGridRow, JepGridRowCell, JepGridPagingBar, Page, Content } from 'jfront-components';
+import { JepGrid, JepGridTable, JepGridHeader, JepGridHeaderCell, JepGridBody, JepGridRow, JepGridRowCell, JepGridPagingBar, Page, Content } from '@jfront/ui-core';
 
 const SortableColumn = styled(JepGridHeaderCell)`
   cursor: pointer;

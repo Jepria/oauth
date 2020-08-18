@@ -1,13 +1,13 @@
 import React, { HTMLAttributes, useImperativeHandle, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { FormField, Label } from '../../../components/form/Field';
-import { Formik, Form, Field, FieldProps, FormikProps } from 'formik';
+import { Formik, Form, Field, FieldProps } from 'formik';
 import { TextInput } from '../../../components/form/input/TextInput';
 import { useDispatch, useSelector } from 'react-redux';
 import { Client, ClientState } from '../types';
 import { createClient, getRoles } from '../state/redux/actions';
-import { GrantType, ApplicationType, ApplicationGrantType } from 'jfront-oauth';
-import { Page, Content, FormContainer, ComboBoxField, CheckBoxListField } from 'jfront-components';
+import { GrantType, ApplicationType, ApplicationGrantType } from '@jfront/oauth-core';
+import { Page, Content, FormContainer, ComboBoxField, CheckBoxListField } from '@jfront/ui-core';
 import { DualListField } from '../../../components/form/input/DualListField';
 import { AppState } from '../../store';
 

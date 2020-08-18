@@ -6,7 +6,7 @@ import { TextInput } from '../../../../components/form/input/TextInput';
 import { useDispatch } from 'react-redux';
 import { ClientUri } from '../types';
 import { createClientUri } from '../state/redux/actions';
-import { Page, Content, FormContainer } from 'jfront-components';
+import { Page, Content, FormContainer } from '@jfront/ui-core';
 
 export const ClientUriCreatePage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();

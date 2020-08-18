@@ -4,10 +4,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { AppState } from '../../store';
 import { ClientState, ColumnSortConfiguration } from '../types';
-import { GrantType, ApplicationType } from 'jfront-oauth';
+import { GrantType, ApplicationType } from '@jfront/oauth-core';
 import { TextCell } from '../../../components/cell/TextCell';
 import styled from 'styled-components';
-import { JepGrid, JepGridTable, JepGridHeader, JepGridHeaderCell, JepGridBody, JepGridRow, JepGridRowCell, JepGridPagingBar, Page, Content } from 'jfront-components';
+import { JepGrid, JepGridTable, JepGridHeader, JepGridHeaderCell, JepGridBody, JepGridRow, JepGridRowCell, JepGridPagingBar, Page, Content } from '@jfront/ui-core';
 
 const SortableColumn = styled(JepGridHeaderCell)`
   cursor: pointer;

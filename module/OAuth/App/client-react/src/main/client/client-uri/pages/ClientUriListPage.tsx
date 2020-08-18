@@ -6,7 +6,7 @@ import { AppState } from '../../../store';
 import { ClientUriState } from '../types';
 import { HistoryState } from '../../../../components/HistoryState';
 import { TextCell } from '../../../../components/cell/TextCell';
-import { JepGrid, JepGridTable, JepGridHeader, JepGridHeaderCell, JepGridBody, JepGridRow, JepGridRowCell, JepGridPagingBar, Page, Content } from 'jfront-components';
+import { JepGrid, JepGridTable, JepGridHeader, JepGridHeaderCell, JepGridBody, JepGridRow, JepGridRowCell, JepGridPagingBar, Page, Content } from '@jfront/ui-core';
 
 export const ClientUriListPage: React.FC = () => {
 

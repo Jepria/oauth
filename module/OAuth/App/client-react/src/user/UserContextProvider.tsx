@@ -1,5 +1,5 @@
 import React, { useEffect, useReducer, useContext } from 'react';
-import { OAuthContext } from 'jfront-oauth';
+import { OAuthContext } from '@jfront/oauth-context';
 import { UserContext } from './UserContext';
 import { reducer } from './reducer';
 import UserApi from './api/UserApi';
@@ -34,6 +34,7 @@ export const UserContextProvider: React.FC<UserContextProps> = ({ baseUrl, axios
         username: "Guest"
       }));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accessToken]);
 
   const getUser = () => {

@@ -7,8 +7,8 @@ import { getClientById, updateClient, getRoles } from '../state/redux/actions';
 import { Formik, Form, Field, FieldProps } from 'formik';
 import { FormField, Label } from '../../../components/form/Field';
 import { TextInput } from '../../../components/form/input/TextInput';
-import { GrantType, ApplicationType, ApplicationGrantType } from 'jfront-oauth';
-import { Page, Content, FormContainer, ComboBoxField, CheckBoxListField } from 'jfront-components';
+import { GrantType, ApplicationType, ApplicationGrantType } from '@jfront/oauth-core';
+import { Page, Content, FormContainer, ComboBoxField, CheckBoxListField } from '@jfront/ui-core';
 import { DualListField } from '../../../components/form/input/DualListField';
 
 const ClientEditPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {

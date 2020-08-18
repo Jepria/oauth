@@ -1380,6 +1380,103 @@
     "@types/yargs" "^15.0.0"
     chalk "^3.0.0"
 
+"@jfront/oauth-context@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@jfront/oauth-context/-/oauth-context-0.1.0.tgz#6738402c54898e282e8a948c9996aa6ed890ec77"
+  integrity sha512-F7TZKvzx8k3fGkIb9zMfEOXnQCuqb8XGbKDHJChSnXLiAew5LIcet8fgzESA3X1u0wrnLpeNb+TJNxvrQ9Xy9Q==
+  dependencies:
+    "@jfront/oauth-core" "0.1.0"
+
+"@jfront/oauth-core@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@jfront/oauth-core/-/oauth-core-0.1.0.tgz#d14aa65566308f810b827aa64501d1b0c95585fe"
+  integrity sha512-W23svCRUeP0dj7123YLzXELO/3Yx2TaGZZol/gatPvRPquaFFGvOML634Ui7RjcOTt0MUB+5nRcY4lGASPYkMw==
+  dependencies:
+    js-base64 "3.3.3"
+    js-chacha20 "1.1.0"
+    js-sha256 "0.9.0"
+
+"@jfront/oauth-ui@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@jfront/oauth-ui/-/oauth-ui-0.1.0.tgz#d553878c5bee674d11a9de0ae3980a1c384b3e6e"
+  integrity sha512-uUt2HZH+ZPp0YDcLw5lRIBvP6ylP3+hvRF6vWQKemwTi+h/Ln1gZ6txGQOTpfoUip+RP6vnno3WUbCZ99i0mUQ==
+  dependencies:
+    "@jfront/oauth-context" "0.1.0"
+
+"@jfront/ui-app@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@jfront/ui-app/-/ui-app-0.1.0.tgz#e3cb045f056a7042462d7ce4758ae5b50d64246a"
+  integrity sha512-CJbf+yannFQ025jK+X1tuP0CpC1SwHbLbw+AjVgJKuzx00MXuakWm367IF9+Wu/SeN9rNB0L4Caeiuy/wGJZrA==
+
+"@jfront/ui-core@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@jfront/ui-core/-/ui-core-0.1.1.tgz#4284ba29b3ba167b7c1fde7d6a9f66567c858251"
+  integrity sha512-dzkci/HGgIUmm+sPTlhvwH93JNTjSbwGWdlBLsJryxswv5cC50gwRtlw2PlTMOXuIRNUJlaPFg5oL9+g3UkuCg==
+  dependencies:
+    "@jfront/ui-app" "0.1.0"
+    "@jfront/ui-datepicker" "0.1.0"
+    "@jfront/ui-form" "0.1.0"
+    "@jfront/ui-grid" "^0.1.1"
+    "@jfront/ui-hooks" "0.1.0"
+    "@jfront/ui-input" "^0.1.1"
+    "@jfront/ui-layout" "0.1.0"
+    "@jfront/ui-pagingbar" "0.1.0"
+    "@jfront/ui-tabpanel" "0.1.0"
+    "@jfront/ui-toolbar" "0.1.0"
+
+"@jfront/ui-datepicker@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@jfront/ui-datepicker/-/ui-datepicker-0.1.0.tgz#017ef2473f15e802844e1ae4be0b43e73e0d9229"
+  integrity sha512-a75ybSHENyR5p1VBBYtDz9G1xIVWlcIY3t8CQTrTXJNzeAEsXStIWFbC6RHx25uRF3Xh5ag7qRBcXZIan/vSGw==
+  dependencies:
+    "@types/react-datepicker" "^2.11.0"
+    date-fns "^2.14.0"
+    react-datepicker "^2.16.0"
+
+"@jfront/ui-form@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@jfront/ui-form/-/ui-form-0.1.0.tgz#c8ea369f4be45c4a5042e7b1accf98041553fa10"
+  integrity sha512-5ToPDQoC6MBe/AlWuCeSWeeuRIMio/ADfSTjiM+fo2U0QPVxv8hxgw5DNMFDU3HoYMG/fOCXIXszppdqm0jT6g==
+
+"@jfront/ui-grid@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@jfront/ui-grid/-/ui-grid-0.1.1.tgz#0dc1242efe1b759649bf9e16b6222fbaf7d280e1"
+  integrity sha512-Euc+bguwx4BNkL1S3mh6R0xxli1l7pGtWF+jkq2BWWjUktiUxjiURwx6SbxSjryH6a1Ji+yda4t/S281PCQAUg==
+  dependencies:
+    "@jfront/ui-pagingbar" "^0.1.0"
+
+"@jfront/ui-hooks@0.1.0", "@jfront/ui-hooks@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@jfront/ui-hooks/-/ui-hooks-0.1.0.tgz#b03aa480df6d11a0be79488c0177a858fe7e799d"
+  integrity sha512-yv5OhLjRWI3ftlokefeQOZCbOyisf0VnSRmt4axCkH+g5t8i8CLnPJSGS4zq643S8WsgJ1Giup4QUqaQYOk8kg==
+
+"@jfront/ui-input@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@jfront/ui-input/-/ui-input-0.1.1.tgz#1767a1991dde76813609fd3833f53d20ec070779"
+  integrity sha512-X1G7gGkoi249VT+BvPQ/pv3Z8A8DbN2BKz9kAS/Huqb9NkdP22RwRoslo5GF23NZbANXAPEl1zeoEbLkKH3xbA==
+  dependencies:
+    "@jfront/ui-hooks" "^0.1.0"
+
+"@jfront/ui-layout@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@jfront/ui-layout/-/ui-layout-0.1.0.tgz#59df0ca5c7b5ae93c2d2c15b185c187493e0a4b0"
+  integrity sha512-pg+NvYmNBf6yiRa/MLF5mNipvXeGprfimrYG3q5h20dkkfA9NM7Htg/L7ZwrpsUe48deNmzO0KJP8rq86kJewQ==
+
+"@jfront/ui-pagingbar@0.1.0", "@jfront/ui-pagingbar@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@jfront/ui-pagingbar/-/ui-pagingbar-0.1.0.tgz#41a241affc8fe943e969606c045529d486a3de25"
+  integrity sha512-zaoRj2dDFsOC9DqCnrQZdhBTL2zlc7hTMh6aLAhPAhS/jcYyiqYXIrl0DF4ORJufRRhpP7ZAKCFD7ThNKrEZYg==
+
+"@jfront/ui-tabpanel@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@jfront/ui-tabpanel/-/ui-tabpanel-0.1.0.tgz#e81370576d56b87021b5a236ff6a5f67e9673fd2"
+  integrity sha512-5uY4QG2XKGAacpE/5/Q/0NvnhBgOwTllfIXri/Es6kPHEgCHqLqwFapni1kqM76ln4RWkpigGXF9qfX/Vwtftg==
+
+"@jfront/ui-toolbar@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@jfront/ui-toolbar/-/ui-toolbar-0.1.0.tgz#d7b8661c26864f10f1c294370bfa059a25285486"
+  integrity sha512-Myqeq6ZwS/uNpTFhLZHo/r99GMDLpeyobpLYHAKC1VkD35o73+55o63Y6+kmndJsdiDZ6kAlUBwB7kr1ResKZw==
+
 "@mrmlnc/readdir-enhanced@^2.2.1":
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/@mrmlnc/readdir-enhanced/-/readdir-enhanced-2.2.1.tgz#524af240d1a360527b730475ecfa1344aa540dde"
@@ -1728,6 +1825,15 @@
   version "1.5.4"
   resolved "https://registry.yarnpkg.com/@types/q/-/q-1.5.4.tgz#15925414e0ad2cd765bfef58842f7e26a7accb24"
   integrity sha512-1HcDas8SEj4z1Wc696tH56G8OlRaH/sqZOynNNB+HF0WOeXPaxTtbYzJY2oEfiUxjSKjhCKr+MvR7dCHcEelug==
+
+"@types/react-datepicker@^2.11.0":
+  version "2.11.1"
+  resolved "https://registry.yarnpkg.com/@types/react-datepicker/-/react-datepicker-2.11.1.tgz#f7ad70cf935c75ced3d769347cc2212c6234fcd9"
+  integrity sha512-MVz1vcv3ButoDfKPUA40lSxPBGsT1f05zqvUsP4t5997TX9C4btlYyREJ+h9sRw9R10EpokkS08GFK4XI+Q0Qg==
+  dependencies:
+    "@types/react" "*"
+    date-fns "^2.0.1"
+    popper.js "^1.14.1"
 
 "@types/react-dom@*", "@types/react-dom@^16.9.0":
   version "16.9.8"
@@ -3133,6 +3239,11 @@ class-utils@^0.3.5:
     isobject "^3.0.0"
     static-extend "^0.1.1"
 
+classnames@^2.2.6:
+  version "2.2.6"
+  resolved "https://registry.yarnpkg.com/classnames/-/classnames-2.2.6.tgz#43935bffdd291f326dad0a205309b38d00f650ce"
+  integrity sha512-JR/iSQOSt+LQIWwrwEzJ9uk0xfN3mTVYMwt1Ir5mUcSN6pU+V4zQFFaJsclJbPuAUQH+yfWef6tm7l1quW3C8Q==
+
 clean-css@^4.2.3:
   version "4.2.3"
   resolved "https://registry.yarnpkg.com/clean-css/-/clean-css-4.2.3.tgz#507b5de7d97b48ee53d84adb0160ff6216380f78"
@@ -3502,6 +3613,14 @@ create-hmac@^1.1.0, create-hmac@^1.1.4, create-hmac@^1.1.7:
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
 
+create-react-context@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/create-react-context/-/create-react-context-0.3.0.tgz#546dede9dc422def0d3fc2fe03afe0bc0f4f7d8c"
+  integrity sha512-dNldIoSuNSvlTJ7slIKC/ZFGKexBMBrrcc+TTe1NdmROnaASuLPvqpwj9v4XS4uXZ8+YPu0sNmShX2rXI5LNsw==
+  dependencies:
+    gud "^1.0.0"
+    warning "^4.0.3"
+
 cross-spawn@7.0.1:
   version "7.0.1"
   resolved "https://registry.yarnpkg.com/cross-spawn/-/cross-spawn-7.0.1.tgz#0ab56286e0f7c24e153d04cc2aa027e43a9a5d14"
@@ -3818,6 +3937,11 @@ data-urls@^1.0.0, data-urls@^1.1.0:
     whatwg-mimetype "^2.2.0"
     whatwg-url "^7.0.0"
 
+date-fns@^2.0.1, date-fns@^2.14.0:
+  version "2.15.0"
+  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.15.0.tgz#424de6b3778e4e69d3ff27046ec136af58ae5d5f"
+  integrity sha512-ZCPzAMJZn3rNUvvQIMlXhDr4A+Ar07eLeGsGREoWU19a3Pqf5oYa+ccd+B3F6XVtQY6HANMFdOQ8A+ipFnvJdQ==
+
 debug@2.6.9, debug@^2.2.0, debug@^2.3.3, debug@^2.6.0, debug@^2.6.9:
   version "2.6.9"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.9.tgz#5d128515df134ff327e90a4c93f4e077a536341f"
@@ -3861,7 +3985,7 @@ deep-diff@^0.3.5:
   resolved "https://registry.yarnpkg.com/deep-diff/-/deep-diff-0.3.8.tgz#c01de63efb0eec9798801d40c7e0dae25b582c84"
   integrity sha1-wB3mPvsO7JeYgB1Ax+Da4ltYLIQ=
 
-deep-equal@^1.0.1:
+deep-equal@^1.0.1, deep-equal@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/deep-equal/-/deep-equal-1.1.1.tgz#b5c98c942ceffaf7cb051e24e1434a25a2e6076a"
   integrity sha512-yd9c5AdiqVcR+JjcwUQb9DkhJc8ngNr0MahEBGvDiJw8puWab2yZlh+nkasOnZP+EGTAP6rRp2JzJhJZzvNF8g==
@@ -5225,6 +5349,11 @@ growly@^1.3.0:
   resolved "https://registry.yarnpkg.com/growly/-/growly-1.3.0.tgz#f10748cbe76af964b7c96c93c6bcc28af120c081"
   integrity sha1-8QdIy+dq+WS3yWyTxrzCivEgwIE=
 
+gud@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/gud/-/gud-1.0.0.tgz#a489581b17e6a70beca9abe3ae57de7a499852c0"
+  integrity sha512-zGEOVKFM5sVPPrYs7J5/hYEw2Pof8KCyOwyhG8sAF26mCAeUFAcYPu1mwB7hhpIP29zOIBaDqwuHdLp0jvZXjw==
+
 gzip-size@5.1.1:
   version "5.1.1"
   resolved "https://registry.yarnpkg.com/gzip-size/-/gzip-size-5.1.1.tgz#cb9bee692f87c0612b232840a873904e4c135274"
@@ -6511,13 +6640,20 @@ jest@24.9.0:
     import-local "^2.0.0"
     jest-cli "^24.9.0"
 
-"jfront-components@https://github.com/Jepria/jfront-components.git#jfront-components-old":
-  version "0.1.0"
-  resolved "https://github.com/Jepria/jfront-components.git#5c6da836482e69af35012b006fdee6d11581c2c9"
+js-base64@3.3.3:
+  version "3.3.3"
+  resolved "https://registry.yarnpkg.com/js-base64/-/js-base64-3.3.3.tgz#0566cdea2f631ee17e4c770637e30dfc0c70ae72"
+  integrity sha512-bLQW6u9cu9eNKQcgYujmr7314UyLkfggibqAKrVDKbJAW3jMtjj64LKI/fCg6nEprH4Af4n7xuz5aJU4jmXrzA==
 
-"jfront-oauth@https://github.com/Jepria/jfront-oauth.git":
-  version "0.1.0"
-  resolved "https://github.com/Jepria/jfront-oauth.git#32d52645d6626a1eac404eed324763b371f659e3"
+js-chacha20@1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/js-chacha20/-/js-chacha20-1.1.0.tgz#6a92b5393ca65d99eb877204c374cf5ab9c44a21"
+  integrity sha1-apK1OTymXZnrh3IEw3TPWrnESiE=
+
+js-sha256@0.9.0:
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/js-sha256/-/js-sha256-0.9.0.tgz#0b89ac166583e91ef9123644bd3c5334ce9d0966"
+  integrity sha512-sga3MHh9sgQN2+pJ9VYZ+1LPwXOxuBJBA5nrR5/ofPfuiJBE2hnjsaN8se8JznOmGLN2p49Pe5U/ttafcs/apA==
 
 "js-tokens@^3.0.0 || ^4.0.0", js-tokens@^4.0.0:
   version "4.0.0"
@@ -8034,6 +8170,11 @@ pnp-webpack-plugin@1.6.4:
   dependencies:
     ts-pnp "^1.1.6"
 
+popper.js@^1.14.1, popper.js@^1.14.4:
+  version "1.16.1"
+  resolved "https://registry.yarnpkg.com/popper.js/-/popper.js-1.16.1.tgz#2a223cb3dc7b6213d740e40372be40de43e65b1b"
+  integrity sha512-Wb4p1J4zyFTbM+u6WuO4XstYx4Ky9Cewe4DWrel7B0w6VVICvPwdOpotjzcf6eD8TsckVnIMNONQyPIUFOUbCQ==
+
 portfinder@^1.0.25:
   version "1.0.28"
   resolved "https://registry.yarnpkg.com/portfinder/-/portfinder-1.0.28.tgz#67c4622852bd5374dd1dd900f779f53462fac778"
@@ -8787,7 +8928,7 @@ prompts@^2.0.1:
     kleur "^3.0.3"
     sisteransi "^1.0.4"
 
-prop-types@^15.6.2, prop-types@^15.7.2:
+prop-types@^15.6.1, prop-types@^15.6.2, prop-types@^15.7.2:
   version "15.7.2"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.7.2.tgz#52c41e75b8c87e72b9d9360e0206b99dcbffa6c5"
   integrity sha512-8QQikdH7//R2vurIJSutZ1smHYTcLpRWEOlHnzcWHmBYrOGUysKwSsrC89BCiFj3CbrfJ/nXFdJepOVrY1GCHQ==
@@ -8953,6 +9094,17 @@ react-app-polyfill@^1.0.6:
     regenerator-runtime "^0.13.3"
     whatwg-fetch "^3.0.0"
 
+react-datepicker@^2.16.0:
+  version "2.16.0"
+  resolved "https://registry.yarnpkg.com/react-datepicker/-/react-datepicker-2.16.0.tgz#6bd68de94f5fb38c8f6a4370f3c612837c700e4e"
+  integrity sha512-TvcmSY27rn0JKvuJuIXNNS+niGQNdgtuG/CsBttVYhPOA9KmSw7c2PvQBPVEvzkyV+QPNJ8jN/KVJNj9uvopqA==
+  dependencies:
+    classnames "^2.2.6"
+    date-fns "^2.0.1"
+    prop-types "^15.7.2"
+    react-onclickoutside "^6.9.0"
+    react-popper "^1.3.4"
+
 react-dev-utils@^10.2.1:
   version "10.2.1"
   resolved "https://registry.yarnpkg.com/react-dev-utils/-/react-dev-utils-10.2.1.tgz#f6de325ae25fa4d546d09df4bb1befdc6dd19c19"
@@ -9007,6 +9159,24 @@ react-is@^16.12.0, react-is@^16.6.0, react-is@^16.7.0, react-is@^16.8.1, react-i
   version "16.13.1"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
   integrity sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
+
+react-onclickoutside@^6.9.0:
+  version "6.9.0"
+  resolved "https://registry.yarnpkg.com/react-onclickoutside/-/react-onclickoutside-6.9.0.tgz#a54bc317ae8cf6131a5d78acea55a11067f37a1f"
+  integrity sha512-8ltIY3bC7oGhj2nPAvWOGi+xGFybPNhJM0V1H8hY/whNcXgmDeaeoCMPPd8VatrpTsUWjb/vGzrmu6SrXVty3A==
+
+react-popper@^1.3.4:
+  version "1.3.7"
+  resolved "https://registry.yarnpkg.com/react-popper/-/react-popper-1.3.7.tgz#f6a3471362ef1f0d10a4963673789de1baca2324"
+  integrity sha512-nmqYTx7QVjCm3WUZLeuOomna138R1luC4EqkW3hxJUrAe+3eNz3oFCLYdnPwILfn0mX1Ew2c3wctrjlUMYYUww==
+  dependencies:
+    "@babel/runtime" "^7.1.2"
+    create-react-context "^0.3.0"
+    deep-equal "^1.1.1"
+    popper.js "^1.14.4"
+    prop-types "^15.6.1"
+    typed-styles "^0.0.7"
+    warning "^4.0.2"
 
 react-redux@7.2.0:
   version "7.2.0"
@@ -10654,6 +10824,11 @@ type@^2.0.0:
   resolved "https://registry.yarnpkg.com/type/-/type-2.0.0.tgz#5f16ff6ef2eb44f260494dae271033b29c09a9c3"
   integrity sha512-KBt58xCHry4Cejnc2ISQAF7QY+ORngsWfxezO68+12hKV6lQY8P/psIkcbjeHWn7MqcgciWJyCCevFMJdIXpow==
 
+typed-styles@^0.0.7:
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/typed-styles/-/typed-styles-0.0.7.tgz#93392a008794c4595119ff62dde6809dbc40a3d9"
+  integrity sha512-pzP0PWoZUhsECYjABgCGQlRGL1n7tOHsgwYv3oIiEpJwGhFTuty/YNeduxQYzXXa3Ge5BdT6sHYIQYpl4uJ+5Q==
+
 typedarray@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
@@ -10931,6 +11106,13 @@ walker@^1.0.7, walker@~1.0.5:
   integrity sha1-L3+bj9ENZ3JisYqITijRlhjgKPs=
   dependencies:
     makeerror "1.0.x"
+
+warning@^4.0.2, warning@^4.0.3:
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/warning/-/warning-4.0.3.tgz#16e9e077eb8a86d6af7d64aa1e05fd85b4678ca3"
+  integrity sha512-rpJyN222KWIvHJ/F53XSZv0Zl/accqHR8et1kpaMTD/fLCRxtV8iX8czMzY7sVZupTI3zcUTg8eycS2kNF9l6w==
+  dependencies:
+    loose-envify "^1.0.0"
 
 watchpack-chokidar2@^2.0.0:
   version "2.0.0"

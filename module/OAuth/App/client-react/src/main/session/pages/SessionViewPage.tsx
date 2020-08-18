@@ -6,7 +6,7 @@ import { AppState } from '../../store';
 import { SessionState } from '../types';
 import { useSelector, useDispatch } from 'react-redux';
 import { getSessionById } from '../state/redux/actions';
-import { Page, Content, FormContainer, VerticalLayout } from 'jfront-components';
+import { Page, Content, FormContainer, VerticalLayout } from '@jfront/ui-core';
 
 const FieldGroup = styled.div`
   display: flex;

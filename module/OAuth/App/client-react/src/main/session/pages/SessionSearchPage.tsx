@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { SessionSearchTemplate, SessionState } from '../types';
 import { postSearchSessionRequest, getClients, getOperators } from '../state/redux/actions';
 import { AppState } from '../../store';
-import { Page, Content, FormContainer, ComboBoxField } from 'jfront-components';
+import { Page, Content, FormContainer, ComboBoxField } from '@jfront/ui-core';
 
 const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();

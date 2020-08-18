@@ -6,8 +6,8 @@ import { AppState } from '../../store';
 import { ClientState } from '../types';
 import { useSelector, useDispatch } from 'react-redux';
 import { getClientById } from '../state/redux/actions';
-import { Page, Content, FormContainer, VerticalLayout } from 'jfront-components';
-import { GrantType, ApplicationType } from 'jfront-oauth';
+import { Page, Content, FormContainer, VerticalLayout } from '@jfront/ui-core';
+import { GrantType, ApplicationType } from '@jfront/oauth-core';
 
 const List = styled.ul`
   display: inline;

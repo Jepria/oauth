@@ -10,7 +10,7 @@ import { configureStore } from '../redux/configureStore';
 import { sagas, reducers } from './store';
 import SessionRoute from './session/SessionRoute';
 import KeyRoute from './key/KeyRoute';
-import { OAuthSecuredFragment } from 'jfront-oauth';
+import { OAuthSecuredFragment } from '@jfront/oauth-ui';
 
 const AppRouter: React.FC = () => {
 

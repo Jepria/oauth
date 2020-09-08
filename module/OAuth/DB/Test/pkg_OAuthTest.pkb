@@ -1108,6 +1108,9 @@ $(clientUriId)  ; $(webClientSName)  ; Тестовый URI 1     ; $(dateIns)  
   procedure checkSessionApi
   is
 
+    -- Данные для тестов
+    tstRec oa_session%rowtype;
+
     -- Текущие данные тестовой записи
     lastRec oa_session%rowtype;
 
@@ -1181,12 +1184,18 @@ $(clientUriId)  ; $(webClientSName)  ; Тестовый URI 1     ; $(dateIns)  
       begin
         return
           replace( replace( replace( replace( replace( replace( replace( replace(
-            replace( replace(
+            replace( replace( replace( replace( replace( replace( replace( replace(
             srcCsv
             , '$(Test_Pr)', Test_Pr)
             , '$(testOperId)', to_char( testOperId))
             , '$(testOperName)', testOperName)
             , '$(testOperNameEn)', testOperNameEn)
+            , '$(accessTokenDateIns)' , to_char( accessTokenDateIns))
+            , '$(accessTokenDateFinish)' , to_char( accessTokenDateFinish))
+            , '$(refreshTokenDateIns)' , to_char( refreshTokenDateIns))
+            , '$(refreshTokenDateFinish)' , to_char( refreshTokenDateFinish))
+            , '$(sessionTokenDateIns)' , to_char( sessionTokenDateIns))
+            , '$(sessionTokenDateFinish)' , to_char( sessionTokenDateFinish))
             , '$(webClientId)', to_char( webClientId))
             , '$(webClientSName)', webClientSName)
             , '$(webClientUri)', webClientUri)
@@ -1403,8 +1412,60 @@ $(clientUriId)  ; $(webClientSName)  ; Тестовый URI 1     ; $(dateIns)  
 
 
 
+    /*
+      Определяет тестовые значения.
+    */
+    procedure fillTstRec
+    is
+
+      -- На базе текущей даты, т.к. токены не должны быть просрочены
+      baseDate date := trunc(sysdate) - 1;
+
+
+
+      /*
+        Устанавливает время по дате и строке с временем.
+      */
+      procedure setTm(
+        tm out nocopy timestamp with time zone
+        , dateShift number
+        , timeStr varchar2
+      )
+      is
+      begin
+        tm := to_timestamp_tz(
+          to_char( baseDate + dateShift, 'dd.mm.yyyy ')
+            || '15:11:20.405'
+            || ' +03:00'
+          , 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'
+        );
+      end setTm;
+
+
+
+    -- fillTstRec
+    begin
+      setTm( tstRec.access_token_date_ins, 0, '15:11:20.405');
+      setTm( tstRec.access_token_date_finish, 30, '17:11:20.406');
+      setTm( tstRec.refresh_token_date_ins, 3, '15:11:21.407');
+      setTm( tstRec.refresh_token_date_finish, 32, '17:11:22.701');
+      setTm( tstRec.session_token_date_ins, 5, '15:11:23.702');
+      setTm( tstRec.session_token_date_finish, 62, '17:11:24.703');
+    exception when others then
+      raise_application_error(
+        pkg_Error.ErrorStackInfo
+        , logger.errorStack(
+            'Ошибка при определении тестовых значений.'
+          )
+        , true
+      );
+    end fillTstRec;
+
+
+
   -- checkSessionApi
   begin
+    fillTstRec();
     checkCase(
       'createSession', 'NULL-значения параметров'
       , execErrorCode         => -20004
@@ -1440,38 +1501,20 @@ $(clientUriId)  ; $(webClientSName)  ; Тестовый URI 1     ; $(dateIns)  
       , operatorId              => testOperId
       , codeChallenge           => 'code challenge'
       , accessToken             => 'access token'
-      , accessTokenDateIns      =>
-          to_timestamp_tz(
-            '24.06.2020 15:11:20.405 +03:00', 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'
-          )
-      , accessTokenDateFinish   =>
-          to_timestamp_tz(
-            '23.07.2020 17:11:20.406 +03:00', 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'
-          )
+      , accessTokenDateIns      => tstRec.access_token_date_ins
+      , accessTokenDateFinish   => tstRec.access_token_date_finish
       , refreshToken            => 'refresh token'
-      , refreshTokenDateIns     =>
-          to_timestamp_tz(
-            '27.06.2020 15:11:21.407 +03:00', 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'
-          )
-      , refreshTokenDateFinish  =>
-          to_timestamp_tz(
-            '28.07.2020 17:11:22.701 +03:00', 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'
-          )
+      , refreshTokenDateIns     => tstRec.refresh_token_date_ins
+      , refreshTokenDateFinish  => tstRec.refresh_token_date_finish
       , sessionToken            => 'session token'
-      , sessionTokenDateIns     =>
-          to_timestamp_tz(
-            '29.06.2020 15:11:23.702 +03:00', 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'
-          )
-      , sessionTokenDateFinish  =>
-          to_timestamp_tz(
-            '28.08.2020 17:11:24.703 +03:00', 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'
-          )
+      , sessionTokenDateIns     => tstRec.session_token_date_ins
+      , sessionTokenDateFinish  => tstRec.session_token_date_finish
       , nextCaseUsedCount       => 99
       , sessionCsv =>
 '
 AUTH_CODE               ; CLIENT_ID      ; REDIRECT_URI    ; OPERATOR_ID   ; CODE_CHALLENGE  ; ACCESS_TOKEN               ; ACCESS_TOKEN_DATE_INS            ; ACCESS_TOKEN_DATE_FINISH         ; REFRESH_TOKEN               ; REFRESH_TOKEN_DATE_INS           ; REFRESH_TOKEN_DATE_FINISH        ; SESSION_TOKEN               ; SESSION_TOKEN_DATE_INS           ; SESSION_TOKEN_DATE_FINISH        ; IS_MANUAL_BLOCKED ; DATE_FINISH  ; DATE_INS                         ; OPERATOR_ID_INS
 ----------------------- ; -------------- ; --------------- ; ------------- ; --------------- ; -------------------------- ; -------------------------------- ; -------------------------------- ; --------------------------- ; -------------------------------- ; -------------------------------- ; --------------------------- ; -------------------------------- ; -------------------------------- ; ----------------- ; ------------ ; -------------------------------- ; ---------------
-$(Test_Pr)auth code     ; $(webClientId) ; web/client/uri  ; $(testOperId) ; code challenge  ; $(Test_Pr)access token     ; 24.06.20 15:11:20,405000 +03:00  ; 23.07.20 17:11:20,406000 +03:00  ; $(Test_Pr)refresh token     ; 27.06.20 15:11:21,407000 +03:00  ; 28.07.20 17:11:22,701000 +03:00  ; $(Test_Pr)session token     ; 29.06.20 15:11:23,702000 +03:00  ; 28.08.20 17:11:24,703000 +03:00  ;                   ;              ; $(dateIns)                       ; $(testOperId)
+$(Test_Pr)auth code     ; $(webClientId) ; web/client/uri  ; $(testOperId) ; code challenge  ; $(Test_Pr)access token     ; $(accessTokenDateIns)            ; $(accessTokenDateFinish)         ; $(Test_Pr)refresh token     ; $(refreshTokenDateIns)           ; $(refreshTokenDateFinish)        ; $(Test_Pr)session token     ; $(sessionTokenDateIns)           ; $(sessionTokenDateFinish)        ;                   ;              ; $(dateIns)                       ; $(testOperId)
 '
     );
     checkCase(
@@ -1479,11 +1522,19 @@ $(Test_Pr)auth code     ; $(webClientId) ; web/client/uri  ; $(testOperId) ; cod
       , sessionId             => lastRec.session_id
       , clientShortName       => webClientSName
       , maxRowCount           => 50
+      ---- для контроля данных в курсоре
+      , accessTokenDateIns      => tstRec.access_token_date_ins
+      , accessTokenDateFinish   => tstRec.access_token_date_finish
+      , refreshTokenDateIns     => tstRec.refresh_token_date_ins
+      , refreshTokenDateFinish  => tstRec.refresh_token_date_finish
+      , sessionTokenDateIns     => tstRec.session_token_date_ins
+      , sessionTokenDateFinish  => tstRec.session_token_date_finish
+      ----
       , resultCsv             =>
 '
 SESSION_ID      ; AUTH_CODE               ; CLIENT_SHORT_NAME     ; REDIRECT_URI    ; OPERATOR_ID   ; CODE_CHALLENGE  ; ACCESS_TOKEN               ; ACCESS_TOKEN_DATE_INS            ; ACCESS_TOKEN_DATE_FINISH         ; REFRESH_TOKEN               ; REFRESH_TOKEN_DATE_INS           ; REFRESH_TOKEN_DATE_FINISH        ; SESSION_TOKEN               ; SESSION_TOKEN_DATE_INS           ; SESSION_TOKEN_DATE_FINISH        ; DATE_INS                         ; OPERATOR_ID_INS
 --------------- ; ----------------------- ; --------------------- ; --------------- ; ------------- ; --------------- ; -------------------------- ; -------------------------------- ; -------------------------------- ; --------------------------- ; -------------------------------- ; -------------------------------- ; --------------------------- ; -------------------------------- ; -------------------------------- ; -------------------------------- ; ---------------
-$(sessionId)    ; $(Test_Pr)auth code     ; $(webClientSName)     ; $(webClientUri) ; $(testOperId) ; code challenge  ; $(Test_Pr)access token     ; 24.06.20 15:11:20,405000 +03:00  ; 23.07.20 17:11:20,406000 +03:00  ; $(Test_Pr)refresh token     ; 27.06.20 15:11:21,407000 +03:00  ; 28.07.20 17:11:22,701000 +03:00  ; $(Test_Pr)session token     ; 29.06.20 15:11:23,702000 +03:00  ; 28.08.20 17:11:24,703000 +03:00  ; $(dateIns)                       ; $(testOperId)
+$(sessionId)    ; $(Test_Pr)auth code     ; $(webClientSName)     ; $(webClientUri) ; $(testOperId) ; code challenge  ; $(Test_Pr)access token     ; $(accessTokenDateIns)            ; $(accessTokenDateFinish)         ; $(Test_Pr)refresh token     ; $(refreshTokenDateIns)           ; $(refreshTokenDateFinish)        ; $(Test_Pr)session token     ; $(sessionTokenDateIns)           ; $(sessionTokenDateFinish)        ; $(dateIns)                       ; $(testOperId)
 '
     );
     checkCase(
@@ -1537,36 +1588,24 @@ $(sessionId)    ; $(Test_Pr)auth code     ; $(webClientSName)     ; $(webClientU
       , codeChallenge           => 'code challenge2'
       , accessToken             => 'access token2'
       , accessTokenDateIns      =>
-          to_timestamp_tz(
-            '24.06.2020 15:21:20.405 +03:00', 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'
-          )
+          tstRec.access_token_date_ins + INTERVAL '65' SECOND
       , accessTokenDateFinish   =>
-          to_timestamp_tz(
-            '23.07.2020 17:21:20.406 +03:00', 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'
-          )
+          tstRec.access_token_date_finish + INTERVAL '185' SECOND
       , refreshToken            => 'refresh token2'
       , refreshTokenDateIns     =>
-          to_timestamp_tz(
-            '27.06.2020 15:21:21.407 +03:00', 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'
-          )
+          tstRec.refresh_token_date_ins + INTERVAL '111' SECOND
       , refreshTokenDateFinish  =>
-          to_timestamp_tz(
-            '28.07.2020 17:21:22.701 +03:00', 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'
-          )
+          tstRec.refresh_token_date_finish + INTERVAL '118' SECOND
       , sessionToken            => 'session token2'
       , sessionTokenDateIns     =>
-          to_timestamp_tz(
-            '29.06.2020 15:21:23.702 +03:00', 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'
-          )
+          tstRec.session_token_date_ins + INTERVAL '131' SECOND
       , sessionTokenDateFinish  =>
-          to_timestamp_tz(
-            '28.08.2020 17:21:24.703 +03:00', 'dd.mm.yyyy hh24:mi:ss.ff tzh:tzm'
-          )
+          tstRec.session_token_date_finish + INTERVAL '141' SECOND
       , sessionCsv =>
 '
 AUTH_CODE               ; CLIENT_ID      ; REDIRECT_URI     ; OPERATOR_ID   ; CODE_CHALLENGE  ; ACCESS_TOKEN               ; ACCESS_TOKEN_DATE_INS            ; ACCESS_TOKEN_DATE_FINISH         ; REFRESH_TOKEN               ; REFRESH_TOKEN_DATE_INS           ; REFRESH_TOKEN_DATE_FINISH        ; SESSION_TOKEN               ; SESSION_TOKEN_DATE_INS           ; SESSION_TOKEN_DATE_FINISH        ; IS_MANUAL_BLOCKED ; DATE_FINISH  ; DATE_INS                         ; OPERATOR_ID_INS
 ----------------------- ; -------------- ; ---------------- ; ------------- ; --------------- ; -------------------------- ; -------------------------------- ; -------------------------------- ; --------------------------- ; -------------------------------- ; -------------------------------- ; --------------------------- ; -------------------------------- ; -------------------------------- ; ----------------- ; ------------ ; -------------------------------- ; ---------------
-$(Test_Pr)auth code2    ; $(webClientId) ; $(webClientUri2) ; $(testOperId) ; code challenge2 ; $(Test_Pr)access token2    ; 24.06.20 15:21:20,405000 +03:00  ; 23.07.20 17:21:20,406000 +03:00  ; $(Test_Pr)refresh token2    ; 27.06.20 15:21:21,407000 +03:00  ; 28.07.20 17:21:22,701000 +03:00  ; $(Test_Pr)session token2    ; 29.06.20 15:21:23,702000 +03:00  ; 28.08.20 17:21:24,703000 +03:00  ;                   ;              ; $(dateIns)                       ; $(testOperId)
+$(Test_Pr)auth code2    ; $(webClientId) ; $(webClientUri2) ; $(testOperId) ; code challenge2 ; $(Test_Pr)access token2    ; $(accessTokenDateIns)            ; $(accessTokenDateFinish)         ; $(Test_Pr)refresh token2    ; $(refreshTokenDateIns)           ; $(refreshTokenDateFinish)        ; $(Test_Pr)session token2    ; $(sessionTokenDateIns)           ; $(sessionTokenDateFinish)        ;                   ;              ; $(dateIns)                       ; $(testOperId)
 '
     );
     checkCase(

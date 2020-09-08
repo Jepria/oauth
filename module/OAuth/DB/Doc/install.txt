@@ -50,6 +50,11 @@ group: Выполнение тестов
 
 > make test LOAD_USERID=???/???@??? LOAD_OPERATORID=???/???
 
+Если тесты выполняются из консоли с кодировкой CP1251, для корректного
+отображения кириллицы можно указать NLS_LANG:
+
+> make test LOAD_USERID=???/???@??? LOAD_OPERATORID=???/??? NLS_LANG=AMERICAN_CIS.CL8MSWIN1251
+
 
 
 group: Удаление модуля из БД

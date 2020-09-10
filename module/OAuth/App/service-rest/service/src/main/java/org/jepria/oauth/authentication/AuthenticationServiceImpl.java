@@ -58,15 +58,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   };
 
   public Integer loginByPassword(String username, String password) {
+    Integer operatorId;
     try {
-      Integer operatorId = dao.loginByPassword(username, password);
-      if (operatorId == null) {
-        throw new OAuthRuntimeException(ACCESS_DENIED, "Wrong username/password.");
-      } else {
-        return operatorId;
-      }
+      operatorId = dao.loginByPassword(username, password);
     } catch (RuntimeSQLException th) {
       throw new OAuthRuntimeException(SERVER_ERROR, th);
+    }
+    if (operatorId == null) {
+      throw new OAuthRuntimeException(ACCESS_DENIED, "Wrong username/password.");
+    } else {
+      return operatorId;
     }
   }
 
@@ -105,12 +106,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   @Override
   public void loginByAuthorizationCode(String authorizationCode, String clientId, String codeVerifier) {
     loginByClientId(clientId);
+    boolean result = false;
     try {
-      if (!dao.verifyPKCE(authorizationCode, codeVerifier)) {
-        throw new OAuthRuntimeException(ACCESS_DENIED, "PKCE verification failed");
-      }
+      result = dao.verifyPKCE(authorizationCode, codeVerifier);
     } catch (Throwable th) {
       throw new OAuthRuntimeException(SERVER_ERROR, th);
+    }
+    if (!result) {
+      throw new OAuthRuntimeException(ACCESS_DENIED, "PKCE verification failed");
     }
   }
 

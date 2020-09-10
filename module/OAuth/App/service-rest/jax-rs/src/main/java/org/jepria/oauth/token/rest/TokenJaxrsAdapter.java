@@ -26,9 +26,9 @@ import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 /**
  * The token endpoint is used by the client to obtain an access token by
- *    presenting its authorization grant or refresh token.  The token
- *    endpoint is used with every authorization grant except for the
- *    implicit grant type (since an access token is issued directly).
+ * presenting its authorization grant or refresh token.  The token
+ * endpoint is used with every authorization grant except for the
+ * implicit grant type (since an access token is issued directly).
  */
 @Path("/token")
 public class TokenJaxrsAdapter extends JaxrsAdapterBase {
@@ -46,16 +46,16 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
   @POST
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   public Response createToken(
-    @HeaderParam("Authorization") String authHeader,
-    @FormParam("grant_type") String grantType,
-    @FormParam("client_id") String clientId,
-    @FormParam("client_secret") String clientSecret,
-    @FormParam("redirect_uri") String redirectUriEncoded,
-    @FormParam("code") String authCode,
-    @FormParam("username") String username,
-    @FormParam("password") String password,
-    @FormParam("code_verifier") String codeVerifier,
-    @FormParam("refresh_token") String refreshToken) {
+      @HeaderParam("Authorization") String authHeader,
+      @FormParam("grant_type") String grantType,
+      @FormParam("client_id") String clientId,
+      @FormParam("client_secret") String clientSecret,
+      @FormParam("redirect_uri") String redirectUriEncoded,
+      @FormParam("code") String authCode,
+      @FormParam("username") String username,
+      @FormParam("password") String password,
+      @FormParam("code_verifier") String codeVerifier,
+      @FormParam("refresh_token") String refreshToken) {
     if (authHeader != null) {
       authHeader = authHeader.replaceFirst("[Bb]asic ", "");
       String[] clientCredentials = new String(Base64.getUrlDecoder().decode(authHeader)).split(":");
@@ -73,16 +73,16 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
         } else if (clientId != null && clientSecret == null && codeVerifier != null) {
           authenticationService.loginByAuthorizationCode(authCode, clientId, codeVerifier);
         } else {
-          throw new OAuthRuntimeException(ACCESS_DENIED, "Request authorization failed");
+          throw new OAuthRuntimeException(ACCESS_DENIED, "Client authorization failed");
         }
-        
+
         String redirectUriDecoded = null;
         try {
           redirectUriDecoded = URLDecoder.decode(redirectUriEncoded.replaceAll("%20", "\\+"), StandardCharsets.UTF_8.name());
         } catch (UnsupportedEncodingException e) {
           e.printStackTrace();
         }
-        
+
         URI redirectUri = URI.create(redirectUriDecoded);
         result = tokenService.create(clientId, authCode, getHostContext(), redirectUri);
         break;
@@ -92,7 +92,7 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
         if (clientId != null && clientSecret != null) {
           userId = authenticationService.loginByClientSecret(clientId, clientSecret);
         } else {
-          throw new OAuthRuntimeException(ACCESS_DENIED, "Request authorization failed");
+          throw new OAuthRuntimeException(ACCESS_DENIED, "Client authorization failed");
         }
         result = tokenService.create(clientId, userId, getHostContext());
         break;
@@ -100,8 +100,8 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
       case GrantType.PASSWORD: {
         if (clientId != null && clientSecret != null) {
           authenticationService.loginByClientSecret(clientId, clientSecret);
-        } else if (clientId != null && clientSecret == null) {
-          authenticationService.loginByClientId(clientId);
+        } else {
+          throw new OAuthRuntimeException(ACCESS_DENIED, "Client authorization failed");
         }
         Integer userId = authenticationService.loginByPassword(username, password);
         result = tokenService.create(clientId, username, userId, getHostContext());
@@ -110,7 +110,7 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
       case GrantType.REFRESH_TOKEN: {
         if (clientId != null && clientSecret != null) {
           authenticationService.loginByClientSecret(clientId, clientSecret);
-        } else if (clientId != null && clientSecret == null) {
+        } else {
           authenticationService.loginByClientId(clientId);
         }
         result = tokenService.create(clientId, refreshToken, getHostContext());
@@ -127,10 +127,10 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
   @Path("/introspect")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   public Response getTokenInfo(
-    @HeaderParam("Authorization") String authHeader,
-    @FormParam("client_id") String clientId,
-    @FormParam("client_secret") String clientSecret,
-    @FormParam("token") String token) {
+      @HeaderParam("Authorization") String authHeader,
+      @FormParam("client_id") String clientId,
+      @FormParam("client_secret") String clientSecret,
+      @FormParam("token") String token) {
     if (authHeader != null) {
       authHeader = authHeader.replaceFirst("[Bb]asic ", "");
       String[] clientCredentials = new String(Base64.getUrlDecoder().decode(authHeader)).split(":");
@@ -138,7 +138,7 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
       clientSecret = clientCredentials[1];
     }
     authenticationService.loginByClientSecret(clientId, clientSecret);
-    TokenInfoDto result = TokenServerFactory.getInstance().getService().getTokenInfo( getHostContext(), token);
+    TokenInfoDto result = TokenServerFactory.getInstance().getService().getTokenInfo(getHostContext(), token);
     return Response.ok(result).build();
   }
 
@@ -146,10 +146,10 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
   @Path("/revoke")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   public Response deleteToken(
-    @HeaderParam("Authorization") String authHeader,
-    @FormParam("client_id") String clientId,
-    @FormParam("client_secret") String clientSecret,
-    @FormParam("token") String token) {
+      @HeaderParam("Authorization") String authHeader,
+      @FormParam("client_id") String clientId,
+      @FormParam("client_secret") String clientSecret,
+      @FormParam("token") String token) {
     if (authHeader != null) {
       authHeader = authHeader.replaceFirst("[Bb]asic ", "");
       String[] clientCredentials = new String(Base64.getUrlDecoder().decode(authHeader)).split(":");
@@ -158,8 +158,8 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
     }
     authenticationService.loginByClientSecret(clientId, clientSecret);
     TokenServerFactory.getInstance().getService().delete(
-      clientId,
-      token);
+        clientId,
+        token);
     return Response.ok().build();
   }
 

@@ -48,16 +48,13 @@ public class SessionDaoImpl implements SessionDao {
           dto.setDateIns(getTimestamp(rs, DATE_INS));
           dto.setRedirectUri(rs.getString(REDIRECT_URI));
           OptionDto<Integer> operator = new OptionDto<>();
-//          operator.setName(rs.getString(OPERATOR_NAME)); TODO
-          operator.setName("test");
+          operator.setName(rs.getString(OPERATOR_NAME));
           operator.setValue(getInteger(rs, OPERATOR_ID));
           dto.setOperator(operator.getValue() != null ? operator : null);
-          dto.setOperatorLogin("test");
-//          dto.setOperatorLogin(rs.getString(OPERATOR_LOGIN)); TODO
+          dto.setOperatorLogin(rs.getString(OPERATOR_LOGIN));
           OptionDto<String> client = new OptionDto<>();
           client.setValue(rs.getString(CLIENT_SHORT_NAME));
-//          client.setName(rs.getString(CLIENT_NAME));
-          client.setName("test");
+          client.setName(rs.getString(CLIENT_NAME));
           dto.setClient(client);
           dto.setAccessTokenId(rs.getString(ACCESS_TOKEN_ID));
           dto.setAccessTokenDateIns(getTimestamp(rs, ACCESS_TOKEN_DATE_INS));
@@ -114,16 +111,13 @@ public class SessionDaoImpl implements SessionDao {
           dto.setDateIns(getTimestamp(rs, DATE_INS));
           dto.setRedirectUri(rs.getString(REDIRECT_URI));
           OptionDto<Integer> operator = new OptionDto<>();
-//          operator.setName(rs.getString(OPERATOR_NAME)); TODO
-          operator.setName("test");
+          operator.setName(rs.getString(OPERATOR_NAME));
           operator.setValue(getInteger(rs, OPERATOR_ID));
           dto.setOperator(operator.getValue() != null ? operator : null);
-          dto.setOperatorLogin("test");
-//          dto.setOperatorLogin(rs.getString(OPERATOR_LOGIN)); TODO
+          dto.setOperatorLogin(rs.getString(OPERATOR_LOGIN));
           OptionDto<String> client = new OptionDto<>();
           client.setValue(rs.getString(CLIENT_SHORT_NAME));
-//          client.setName(rs.getString(CLIENT_NAME));
-          client.setName("test");
+          client.setName(rs.getString(CLIENT_NAME));
           dto.setClient(client);
           dto.setAccessTokenId(rs.getString(ACCESS_TOKEN_ID));
           dto.setAccessTokenDateIns(getTimestamp(rs, ACCESS_TOKEN_DATE_INS));

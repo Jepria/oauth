@@ -56,6 +56,7 @@ public class ClientJaxRsAdapterIT extends JaxRsAdapterTestBase {
   @Order(1)
   public void createClientTest() {
     ClientCreateDto clientCreateDto = new ClientCreateDto();
+    clientCreateDto.setClientId("createdTestClient_" + new Date().getTime());
     clientCreateDto.setClientName("createdTestClient_" + new Date().getTime());
     clientCreateDto.setClientNameEn("createdTestClientEn_ " + new Date().getTime());
     clientCreateDto.setApplicationType(ApplicationType.WEB);

@@ -45,7 +45,7 @@ public class ClientDaoImpl implements ClientDao {
           dto.setClientNameEn(rs.getString(CLIENT_NAME_EN));
           dto.setApplicationType(rs.getString(APPLICATION_TYPE));
           dto.setGrantTypes(getClientGrantTypes(dto.getClientId(), operatorId));
-//          dto.setScopes(getClientRoles(getInteger(rs, OPERATOR_ID))); TODO
+          dto.setScopes(getClientRoles(getInteger(rs, OPERATOR_ID)));
         }
       }
       , ClientDto.class
@@ -106,8 +106,7 @@ public class ClientDaoImpl implements ClientDao {
         + ", operatorId => ? "
         + ");"
         + "end;";
-    String result = null;
-    result = DaoSupport.getInstance().create(sqlQuery,
+    DaoSupport.getInstance().create(sqlQuery,
       String.class
       , dto.getClientId()
       , dto.getClientName()
@@ -117,7 +116,7 @@ public class ClientDaoImpl implements ClientDao {
       , dto.getScope() != null ? dto.getScope().stream().collect(Collectors.joining(",")) : null
       , operatorId
     );
-    return result;
+    return dto.getClientId();
   }
 
   @Override

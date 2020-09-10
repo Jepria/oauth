@@ -15,7 +15,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <jersey.version>2.29</jersey.version>
         <antcontrib.version>1.0b3</antcontrib.version>
-        <jepria-rest.version>12.1.0-SNAPSHOT</jepria-rest.version>
+        <jepria-rest.version>12.2.0-SNAPSHOT</jepria-rest.version>
         <jepriatoolkit.version>7.16.0-SNAPSHOT</jepriatoolkit.version>
         <tomcat.version>7.0.68</tomcat.version>
         <log4j.version>1.2.17</log4j.version>
@@ -217,33 +217,33 @@
     </dependencies>
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.tomcat.maven</groupId>
-                <artifactId>tomcat7-maven-plugin</artifactId>
-                <version>2.2</version>
-                <configuration>
-                    <url>http://localhost:8082/manager/text</url>
-                    <username>admin</username>
-                    <password>admin</password>
-                    <path>/oauth-rest</path>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>tomcat-deploy-test</id>
-                        <goals>
-                            <goal>redeploy</goal>
-                        </goals>
-                        <phase>pre-integration-test</phase>
-                    </execution>
-                    <execution>
-                        <id>tomcat-undeploy-test</id>
-                        <goals>
-                            <goal>undeploy</goal>
-                        </goals>
-                        <phase>post-integration-test</phase>
-                    </execution>
-                </executions>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.apache.tomcat.maven</groupId>-->
+<!--                <artifactId>tomcat7-maven-plugin</artifactId>-->
+<!--                <version>2.2</version>-->
+<!--                <configuration>-->
+<!--                    <url>http://localhost:8082/manager/text</url>-->
+<!--                    <username>admin</username>-->
+<!--                    <password>admin</password>-->
+<!--                    <path>/oauth-rest</path>-->
+<!--                </configuration>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>tomcat-deploy-test</id>-->
+<!--                        <goals>-->
+<!--                            <goal>redeploy</goal>-->
+<!--                        </goals>-->
+<!--                        <phase>pre-integration-test</phase>-->
+<!--                    </execution>-->
+<!--                    <execution>-->
+<!--                        <id>tomcat-undeploy-test</id>-->
+<!--                        <goals>-->
+<!--                            <goal>undeploy</goal>-->
+<!--                        </goals>-->
+<!--                        <phase>post-integration-test</phase>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>2.22.2</version>

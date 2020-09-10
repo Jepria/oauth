@@ -4,10 +4,12 @@ import org.jepria.oauth.key.KeyServerFactory;
 import org.jepria.oauth.key.KeyService;
 import org.jepria.oauth.key.dto.KeyDto;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
-import org.jepria.server.service.security.OAuth;
+import org.jepria.server.service.security.oauth.OAuth;
 
 import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
 /**

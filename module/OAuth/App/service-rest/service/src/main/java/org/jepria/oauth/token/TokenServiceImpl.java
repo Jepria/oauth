@@ -239,14 +239,14 @@ public class TokenServiceImpl implements TokenService {
   
   @Override
   public TokenDto create(String clientId,
-                         Integer userId,
+                         Integer clientOperatorId,
                          String issuer) {
     List<String> clientGrantTypes = clientService.getClientGrantTypes(clientId);
-    if (userId == null || clientGrantTypes.size() == 0 || !clientGrantTypes.stream().anyMatch(clientGrantType -> clientGrantType.equals(GrantType.CLIENT_CREDENTIALS))) {
+    if (clientOperatorId == null || clientGrantTypes.size() == 0 || !clientGrantTypes.stream().anyMatch(clientGrantType -> clientGrantType.equals(GrantType.CLIENT_CREDENTIALS))) {
       throw new OAuthRuntimeException(UNAUTHORIZED_CLIENT, "Client doesn't have enough permissions to use responseType=" + GrantType.CLIENT_CREDENTIALS);
     }
     KeyDto keyDto = keyService.getKeys(null, serverCredential);
-    return createTokenPair(keyDto.getPrivateKey(), issuer, clientId, clientId, userId);
+    return createTokenPair(keyDto.getPrivateKey(), issuer, clientId, clientId, clientOperatorId);
   }
   
   private TokenDto createTokenPair(String privateKeyString,

@@ -1,21 +1,17 @@
 package org.jepria.oauth.clienturi.rest;
 
-import org.jepria.oauth.clienturi.ClientUriServerFactory;
 import org.jepria.oauth.clienturi.ClientUriFieldNames;
+import org.jepria.oauth.clienturi.ClientUriServerFactory;
 import org.jepria.oauth.clienturi.dto.ClientUriCreateDto;
 import org.jepria.oauth.clienturi.dto.ClientUriDto;
 import org.jepria.oauth.clienturi.dto.ClientUriSearchDto;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
-import org.jepria.server.service.security.OAuth;
+import org.jepria.server.service.security.oauth.OAuth;
 
 import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import javax.ws.rs.POST;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -49,7 +45,7 @@ public class ClientUriJaxrsAdapter extends JaxrsAdapterBase {
   @Path("{clientUriId}")
   @RolesAllowed("OAViewClient")
   public Response getRecordById(@PathParam("clientId") String clientId, @PathParam("clientUriId") Integer clientUriId) {
-    String complexKey = ClientUriFieldNames.CLIENT_SHORT_NAME + "=" + clientId + "~" + ClientUriFieldNames.CLIENT_URI_ID + "=" + clientUriId;
+    String complexKey = ClientUriFieldNames.CLIENT_ID + "=" + clientId + "~" + ClientUriFieldNames.CLIENT_URI_ID + "=" + clientUriId;
     ClientUriDto result = (ClientUriDto) entityEndpointAdapter.getRecordById(complexKey);
     return Response.ok().entity(result).build();
   }
@@ -72,7 +68,7 @@ public class ClientUriJaxrsAdapter extends JaxrsAdapterBase {
   @Path("{clientUriId}")
   @RolesAllowed({"OAEditClient", "OACreateClient"})
   public Response deleteRecordById(@PathParam("clientId") String clientId, @PathParam("clientUriId") Integer clientUriId) {
-    String complexKey = ClientUriFieldNames.CLIENT_SHORT_NAME + "=" + clientId + "~" + ClientUriFieldNames.CLIENT_URI_ID + "=" + clientUriId;
+    String complexKey = ClientUriFieldNames.CLIENT_ID + "=" + clientId + "~" + ClientUriFieldNames.CLIENT_URI_ID + "=" + clientUriId;
     entityEndpointAdapter.deleteRecordById(complexKey);
     return Response.ok().build();
   }

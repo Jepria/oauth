@@ -6,7 +6,7 @@ public class ClientFieldNames {
   public static final String CLIENT_SECRET = "client_secret";
   public static final String CLIENT_NAME = "client_name";
   public static final String CLIENT_NAME_EN = "client_name_en";
-  public static final String OPERATOR_ID = "operator_id";
+  public static final String OPERATOR_ID = "client_operator_id";
   public static final String GRANT_TYPE = "grant_type";
   public static final String SHORT_NAME = "short_name";
   public static final String ROLE_NAME = "role_name";

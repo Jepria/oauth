@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
@@ -22,7 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ImplicitFlowIT extends JaxRsAdapterTestBase {
   
   private static final String authorizationEndpoint = "/authorize";
-  private static final String tokenEndpoint = "/token";
   private static final String authenticationEndpoint = "/authenticate";
   private static final String introspectionEndpoint = "/token/introspect";
   private static final String revocationEndpoint = "/token/revoke";
@@ -34,7 +35,7 @@ public class ImplicitFlowIT extends JaxRsAdapterTestBase {
         .follow(false)
         .param("response_type", ResponseType.TOKEN)
         .param("client_id", properties.getProperty("client.id"))
-        .param("redirect_uri", Base64.getUrlEncoder().withoutPadding().encodeToString(properties.getProperty("client.redirect_uri").getBytes()))
+        .param("redirect_uri", URLEncoder.encode(properties.getProperty("client.redirect_uri"), StandardCharsets.UTF_8.name()).replaceAll("\\+","%20"))
         .param("state", String.valueOf(new Date().getTime()))
         .get(baseUrl + authorizationEndpoint);
     authorizeResponse.then().assertThat().statusCode(302);
@@ -45,7 +46,7 @@ public class ImplicitFlowIT extends JaxRsAdapterTestBase {
         .contentType(ContentType.URLENC)
         .post(authenticateUrl);
     authenticationResponse.then().assertThat().statusCode(302);
-    assertTrue(authenticationResponse.getHeader("Location").startsWith(properties.getProperty("client.redirect_uri")));
+    assertTrue(authenticationResponse.getHeader("Location").startsWith(properties.getProperty("server.url") + properties.getProperty("client.redirect_uri")));
     location = URI.create(authenticationResponse.getHeader("Location"));
     String token = URIUtil.parseParameters(location.getFragment(), "UTF-8").get("access_token");
     assertNotNull(token);
@@ -89,7 +90,7 @@ public class ImplicitFlowIT extends JaxRsAdapterTestBase {
         .follow(false)
         .param("response_type", ResponseType.TOKEN)
         .param("client_id", properties.getProperty("client.id"))
-        .param("redirect_uri", Base64.getUrlEncoder().withoutPadding().encodeToString(properties.getProperty("client.redirect_uri").getBytes()))
+        .param("redirect_uri", URLEncoder.encode(properties.getProperty("client.redirect_uri"), StandardCharsets.UTF_8.name()).replaceAll("\\+","%20"))
         .param("state", String.valueOf(new Date().getTime()))
         .get(baseUrl + authorizationEndpoint);
     authorizeResponse.then().assertThat().statusCode(302);

@@ -13,7 +13,7 @@ import org.jepria.oauth.main.rest.jersey.inject.ClientLocaleSupplier;
 import org.jepria.oauth.session.rest.SessionJaxrsAdapter;
 import org.jepria.oauth.token.rest.TokenJaxrsAdapter;
 import org.jepria.server.service.rest.jersey.ApplicationConfigBase;
-import org.jepria.server.service.security.JepOAuthDynamicFeature;
+import org.jepria.server.service.security.oauth.JepOAuthDynamicFeature;
 
 import java.util.Locale;
 

@@ -44,13 +44,16 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
                             @QueryParam("state") String state,
                             @CookieParam(SESSION_ID) String sessionToken) {
     String redirectUri = null;
+    if (redirectUriEncoded == null) {
+      throw new OAuthRuntimeException(INVALID_REQUEST, "redirect_uri is null");
+    }
     try {
       redirectUri = URLDecoder.decode(redirectUriEncoded.replaceAll("%20", "\\+"), StandardCharsets.UTF_8.name());
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();
     }
     if (!isValidUri(redirectUri)) {
-      throw new OAuthRuntimeException(INVALID_REQUEST, "redirect_uri is null or invalid");
+      throw new OAuthRuntimeException(INVALID_REQUEST, "redirect_uri is invalid");
     }
     Response response = null;
     SessionDto session;

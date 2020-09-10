@@ -6,9 +6,9 @@ import io.restassured.response.Response;
 import org.jepria.oauth.JaxRsAdapterTestBase;
 import org.jepria.oauth.sdk.TokenResponse;
 import org.jepria.server.service.rest.gson.JsonBindingProvider;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class KeyJaxRsAdapterIT extends JaxRsAdapterTestBase {
 
   private String endpointPath = "/key";
@@ -31,28 +31,26 @@ public class KeyJaxRsAdapterIT extends JaxRsAdapterTestBase {
   }
 
   @Test
+  @Order(1)
   public void getActualKey() {
-    RestAssured.given()
+    Response response = RestAssured.given()
       .auth()
       .preemptive().oauth2(accessToken)
       .when()
-      .get(baseUrl + endpointPath)
-      .then()
-      .assertThat()
-      .statusCode(200);
+      .get(baseUrl + endpointPath);
+    response.then().assertThat().statusCode(200);
   }
 
   @Test
+  @Order(2)
   public void updateKey() {
-    RestAssured.given()
+    Response response = RestAssured.given()
       .auth()
       .preemptive().oauth2(accessToken)
       .contentType(ContentType.JSON)
       .when()
-      .post(baseUrl + endpointPath)
-      .then()
-      .assertThat()
-      .statusCode(200);
+      .post(baseUrl + endpointPath);
+    response.then().assertThat().statusCode(200);
   }
 
 }

@@ -15,7 +15,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
         <oracle.version>11.2.0.4</oracle.version>
-        <jepria-rest.version>12.1.0-SNAPSHOT</jepria-rest.version>
+        <jepria-rest.version>12.2.0-SNAPSHOT</jepria-rest.version>
         <oauth.version>1.0.0-SNAPSHOT</oauth.version>
     </properties>
 

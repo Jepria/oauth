@@ -186,6 +186,7 @@ begin
           , 'OAViewSession'
           , 'OADeleteSession'
           , 'OAUpdateKey'
+          , 'OAViewKey'
         )
   );
 

@@ -992,7 +992,6 @@ begin
     cl.client_short_name = clientShortName
     and (
       clientSecret is null
-        and cl.client_secret is null
       or clientSecret is not null
         and cl.client_secret is not null
         and cl.client_secret = pkg_OptionCrypto.encrypt( clientSecret)
@@ -1053,6 +1052,7 @@ end verifyClientCredentials;
   change_operator_id          - Id оператора, изменившего запись
   change_operator_name        - Имя оператора, изменившего запись
   change_operator_name_en     - Имя оператора, изменившего запись на англ.
+  client_operator_id          - ID оператора клиентского приложения
 
   (сортировка по date_ins в обратном порядке)
 */
@@ -1085,6 +1085,7 @@ select
   , a.change_operator_id
   , a.change_operator_name
   , a.change_operator_name_en
+  , a.client_operator_id
 from
   (
   select
@@ -1101,6 +1102,7 @@ from
     , t.change_operator_id
     , cop.operator_name as change_operator_name
     , cop.operator_name_en as change_operator_name_en
+    , t.operator_id as client_operator_id
   from
     oa_client t
     inner join op_operator iop
@@ -1291,12 +1293,9 @@ end getRoles;
 
   Параметры:
   clientShortName             - Краткое наименование приложения
-  notFoundErrorCode           - Код ошибки, выбрасываемой если запись не найдена
-                                (по умолчанию ClientWrong_ErrCode)
 */
 function getClientId(
   clientShortName varchar2
-  , notFoundErrorCode integer := null
 )
 return integer
 is
@@ -1315,7 +1314,7 @@ begin
   ;
   if clientId is null then
     raise_application_error(
-      coalesce( notFoundErrorCode, ClientWrong_ErrCode)
+      ClientWrong_ErrCode
       , 'Указаны неверные данные клиентского приложения ('
         || 'clientShortName="' || clientShortName || '"'
         || ').'
@@ -1581,10 +1580,9 @@ begin
   );
   rec.session_id                  := oa_session_seq.nextval;
   rec.auth_code                   := authCode;
-  rec.client_id := getClientId(
-    clientShortName     => clientShortName
-    , notFoundErrorCode => ClientUriWrong_ErrCode
-  );
+  rec.client_id                   :=
+    getClientId( clientShortName => clientShortName)
+  ;
   rec.redirect_uri                := redirectUri;
   rec.operator_id                 := operatorId;
   rec.code_challenge              := codeChallenge;
@@ -1606,7 +1604,7 @@ begin
   ;
   return rec.session_id;
 exception when others then
-  if sqlcode = ClientUriWrong_ErrCode then
+  if sqlcode = ClientWrong_ErrCode then
     raise;
   else
     raise_application_error(
@@ -1727,10 +1725,7 @@ begin
     , roleShortName => OAEditSession_RoleSName
   );
   lockSession( rec, sessionId);
-  rec.client_id := getClientId(
-    clientShortName     => clientShortName
-    , notFoundErrorCode => ClientUriWrong_ErrCode
-  );
+  rec.client_id := getClientId( clientShortName => clientShortName);
 
   update
     oa_session d
@@ -1756,7 +1751,7 @@ begin
     d.session_id = rec.session_id
   ;
 exception when others then
-  if sqlcode = ClientUriWrong_ErrCode then
+  if sqlcode = ClientWrong_ErrCode then
     raise;
   else
     raise_application_error(
@@ -1868,8 +1863,12 @@ end blockSession;
   session_id                  - Идентификатор записи
   auth_code                   - Авторизационный код (One-Time-Password)
   client_short_name           - Краткое наименование приложения
+  client_name                 - Имя клиентского приложения
+  client_name_en              - Имя клиентского приложения на английском
   redirect_uri                - URI для перенаправления
   operator_id                 - Id пользователя, владельца сессии
+  operator_name               - Имя пользователя, владельца сессии
+  operator_login              - Логин пользователя, владельца сессии
   code_challenge              - Криптографически случайная строка,
                                 используется при авторизации по PKCE
   access_token                - Уникальный UUID токена доступа
@@ -1915,8 +1914,12 @@ from
     t.session_id
     , t.auth_code
     , cl.client_short_name
+    , cl.client_name
+    , cl.client_name_en
     , t.redirect_uri
     , t.operator_id
+    , op.operator_name
+    , op.login as operator_login
     , t.code_challenge
     , t.access_token
     , t.access_token_date_ins
@@ -1933,6 +1936,8 @@ from
     v_oa_session t
     inner join oa_client cl
       on cl.client_id = t.client_id
+    left join op_operator op
+      on op.operator_id = t.operator_id
   where
     t.is_blocked = 0
     and (

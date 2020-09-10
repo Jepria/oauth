@@ -195,6 +195,7 @@ return integer;
   change_operator_id          - Id оператора, изменившего запись
   change_operator_name        - Имя оператора, изменившего запись
   change_operator_name_en     - Имя оператора, изменившего запись на англ.
+  client_operator_id          - ID оператора клиентского приложения
 
   (сортировка по date_ins в обратном порядке)
 
@@ -473,8 +474,12 @@ procedure blockSession(
   session_id                  - Идентификатор записи
   auth_code                   - Авторизационный код (One-Time-Password)
   client_short_name           - Краткое наименование приложения
+  client_name                 - Имя клиентского приложения
+  client_name_en              - Имя клиентского приложения на английском
   redirect_uri                - URI для перенаправления
   operator_id                 - Id пользователя, владельца сессии
+  operator_name               - Имя пользователя, владельца сессии
+  operator_login              - Логин пользователя, владельца сессии
   code_challenge              - Криптографически случайная строка,
                                 используется при авторизации по PKCE
   access_token                - Уникальный UUID токена доступа
@@ -519,6 +524,9 @@ return sys_refcursor;
   publicKey                   - Публичный ключ
   privateKey                  - Приватный ключ
   operatorId                  - Id оператора, выполняющего операцию
+
+  Возврат:
+  Id созданной записи
 
   ( <body::setKey>)
 */

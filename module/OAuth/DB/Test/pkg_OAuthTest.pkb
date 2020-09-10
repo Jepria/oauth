@@ -91,6 +91,7 @@ is
   testOperId integer := pkg_Operator.getCurrentUserId();
   testOperName op_operator.operator_name%type;
   testOperNameEn op_operator.operator_name_en%type;
+  testOperLogin op_operator.login%type;
 
   -- Тестовые клиенты
   webClientSName oa_client.client_short_name%type;
@@ -109,7 +110,8 @@ is
     select
       max( t.operator_name)
       , max( t.operator_name_en)
-    into testOperName, testOperNameEn
+      , max( t.login)
+    into testOperName, testOperNameEn, testOperLogin
     from
       op_operator t
     where
@@ -201,6 +203,7 @@ is
       begin
         return
           replace( replace( replace( replace( replace( replace( replace(
+              replace(
             srcCsv
             , '$(Test_Pr)', Test_Pr)
             , '$(testOperId)', to_char( testOperId))
@@ -213,6 +216,7 @@ is
               )
             , '$(dateIns)', to_char( chRec.date_ins))
             , '$(changeDate)', to_char( chRec.change_date))
+            , '$(lastRec.operator_id)', to_char( lastRec.operator_id))
         ;
       end replaceMacros;
 
@@ -561,9 +565,9 @@ $(Test_Pr)client1  ; refresh_token
       , maxRowCount           => 50
       , resultCsv             =>
 '
-CLIENT_SHORT_NAME  ; CLIENT_SECRET      ; CLIENT_NAME                  ; CLIENT_NAME_EN            ; APPLICATION_TYPE  ; DATE_INS    ; CREATE_OPERATOR_ID ; CREATE_OPERATOR_NAME  ; CREATE_OPERATOR_NAME_EN  ; CHANGE_DATE    ; CHANGE_OPERATOR_ID ; CHANGE_OPERATOR_NAME        ; CHANGE_OPERATOR_NAME_EN
------------------- ; ------------------ ; ---------------------------- ; ------------------------- ; ----------------- ; ----------- ; ------------------ ; --------------------- ; ------------------------ ; -------------- ; ------------------ ; --------------------------- ; ----------------------------
-$(Test_Pr)client1  ; $(clientSecretDec) ; $(Test_Pr)Тестовый клиент 1  ; $(Test_Pr)Test client 1   ; web               ; $(dateIns)  ;      $(testOperId) ; $(testOperName)       ; $(testOperNameEn)        ; $(changeDate)  ;      $(testOperId) ; $(testOperName)             ; $(testOperNameEn)
+CLIENT_SHORT_NAME  ; CLIENT_SECRET      ; CLIENT_NAME                  ; CLIENT_NAME_EN            ; APPLICATION_TYPE  ; DATE_INS    ; CREATE_OPERATOR_ID ; CREATE_OPERATOR_NAME  ; CREATE_OPERATOR_NAME_EN  ; CHANGE_DATE    ; CHANGE_OPERATOR_ID ; CHANGE_OPERATOR_NAME        ; CHANGE_OPERATOR_NAME_EN    ; CLIENT_OPERATOR_ID
+------------------ ; ------------------ ; ---------------------------- ; ------------------------- ; ----------------- ; ----------- ; ------------------ ; --------------------- ; ------------------------ ; -------------- ; ------------------ ; --------------------------- ; -------------------------- ; ----------------------
+$(Test_Pr)client1  ; $(clientSecretDec) ; $(Test_Pr)Тестовый клиент 1  ; $(Test_Pr)Test client 1   ; web               ; $(dateIns)  ;      $(testOperId) ; $(testOperName)       ; $(testOperNameEn)        ; $(changeDate)  ;      $(testOperId) ; $(testOperName)             ; $(testOperNameEn)          ; $(lastRec.operator_id)
 '
     );
     checkCase(
@@ -594,7 +598,7 @@ $(Test_Pr)client1  ; $(clientSecretDec) ; $(Test_Pr)Тестовый клиен�
       'verifyClientCredentials', 'web-client: no secret'
       , clientShortName       => 'client1'
       , clientSecret          => null
-      , execErrorCode         => -20003
+      , resultNumber          => lastRec.operator_id
     );
     checkCase(
       'verifyClientCredentials', 'web-client: bad secret'
@@ -1183,13 +1187,15 @@ $(clientUriId)  ; $(webClientSName)  ; Тестовый URI 1     ; $(dateIns)  
       is
       begin
         return
-          replace( replace( replace( replace( replace( replace( replace( replace(
-            replace( replace( replace( replace( replace( replace( replace( replace(
+          replace( replace( replace( replace( replace( replace( replace(
+              replace( replace( replace( replace( replace( replace( replace(
+              replace( replace( replace(
             srcCsv
             , '$(Test_Pr)', Test_Pr)
             , '$(testOperId)', to_char( testOperId))
             , '$(testOperName)', testOperName)
             , '$(testOperNameEn)', testOperNameEn)
+            , '$(testOperLogin)', testOperLogin)
             , '$(accessTokenDateIns)' , to_char( accessTokenDateIns))
             , '$(accessTokenDateFinish)' , to_char( accessTokenDateFinish))
             , '$(refreshTokenDateIns)' , to_char( refreshTokenDateIns))
@@ -1468,16 +1474,16 @@ $(clientUriId)  ; $(webClientSName)  ; Тестовый URI 1     ; $(dateIns)  
     fillTstRec();
     checkCase(
       'createSession', 'NULL-значения параметров'
-      , execErrorCode         => -20004
+      , execErrorCode         => -20003
       , execErrorMessageMask  =>
-          'ORA-20004: Указаны неверные данные клиентского приложения (clientShortName="").%'
+          'ORA-20003: Указаны неверные данные клиентского приложения (clientShortName="").%'
     );
     checkCase(
       'createSession', 'Некорректный clientShortName'
       , clientShortName       => Test_Pr || 'absent client'
-      , execErrorCode         => -20004
+      , execErrorCode         => -20003
       , execErrorMessageMask  =>
-          'ORA-20004: Указаны неверные данные клиентского приложения (clientShortName="%absent client").%'
+          'ORA-20003: Указаны неверные данные клиентского приложения (clientShortName="%absent client").%'
     );
     checkCase(
       'createSession', 'Некорректный URI'
@@ -1532,9 +1538,9 @@ $(Test_Pr)auth code     ; $(webClientId) ; web/client/uri  ; $(testOperId) ; cod
       ----
       , resultCsv             =>
 '
-SESSION_ID      ; AUTH_CODE               ; CLIENT_SHORT_NAME     ; REDIRECT_URI    ; OPERATOR_ID   ; CODE_CHALLENGE  ; ACCESS_TOKEN               ; ACCESS_TOKEN_DATE_INS            ; ACCESS_TOKEN_DATE_FINISH         ; REFRESH_TOKEN               ; REFRESH_TOKEN_DATE_INS           ; REFRESH_TOKEN_DATE_FINISH        ; SESSION_TOKEN               ; SESSION_TOKEN_DATE_INS           ; SESSION_TOKEN_DATE_FINISH        ; DATE_INS                         ; OPERATOR_ID_INS
---------------- ; ----------------------- ; --------------------- ; --------------- ; ------------- ; --------------- ; -------------------------- ; -------------------------------- ; -------------------------------- ; --------------------------- ; -------------------------------- ; -------------------------------- ; --------------------------- ; -------------------------------- ; -------------------------------- ; -------------------------------- ; ---------------
-$(sessionId)    ; $(Test_Pr)auth code     ; $(webClientSName)     ; $(webClientUri) ; $(testOperId) ; code challenge  ; $(Test_Pr)access token     ; $(accessTokenDateIns)            ; $(accessTokenDateFinish)         ; $(Test_Pr)refresh token     ; $(refreshTokenDateIns)           ; $(refreshTokenDateFinish)        ; $(Test_Pr)session token     ; $(sessionTokenDateIns)           ; $(sessionTokenDateFinish)        ; $(dateIns)                       ; $(testOperId)
+SESSION_ID      ; AUTH_CODE               ; CLIENT_SHORT_NAME     ; CLIENT_NAME                   ; CLIENT_NAME_EN            ; REDIRECT_URI    ; OPERATOR_ID   ; OPERATOR_NAME    ; OPERATOR_LOGIN    ; CODE_CHALLENGE  ; ACCESS_TOKEN               ; ACCESS_TOKEN_DATE_INS            ; ACCESS_TOKEN_DATE_FINISH         ; REFRESH_TOKEN               ; REFRESH_TOKEN_DATE_INS           ; REFRESH_TOKEN_DATE_FINISH        ; SESSION_TOKEN               ; SESSION_TOKEN_DATE_INS           ; SESSION_TOKEN_DATE_FINISH        ; DATE_INS                         ; OPERATOR_ID_INS
+--------------- ; ----------------------- ; --------------------- ; ----------------------------- ; ------------------------- ; --------------- ; ------------- ; ---------------- ; ------------------; --------------- ; -------------------------- ; -------------------------------- ; -------------------------------- ; --------------------------- ; -------------------------------- ; -------------------------------- ; --------------------------- ; -------------------------------- ; -------------------------------- ; -------------------------------- ; ---------------
+$(sessionId)    ; $(Test_Pr)auth code     ; $(webClientSName)     ; $(Test_Pr)Тестовый web-клиент ; $(Test_Pr)Test web-client ; $(webClientUri) ; $(testOperId) ; $(testOperName)  ; $(testOperLogin)  ; code challenge  ; $(Test_Pr)access token     ; $(accessTokenDateIns)            ; $(accessTokenDateFinish)         ; $(Test_Pr)refresh token     ; $(refreshTokenDateIns)           ; $(refreshTokenDateFinish)        ; $(Test_Pr)session token     ; $(sessionTokenDateIns)           ; $(sessionTokenDateFinish)        ; $(dateIns)                       ; $(testOperId)
 '
     );
     checkCase(
@@ -1563,9 +1569,9 @@ $(sessionId)    ; $(Test_Pr)auth code     ; $(webClientSName)     ; $(webClientU
       'updateSession', 'Некорректный clientShortName'
       , sessionId             => lastRec.session_id
       , clientShortName       => Test_Pr || 'absent client'
-      , execErrorCode         => -20004
+      , execErrorCode         => -20003
       , execErrorMessageMask  =>
-          'ORA-20004: Указаны неверные данные клиентского приложения (clientShortName="%absent client").%'
+          'ORA-20003: Указаны неверные данные клиентского приложения (clientShortName="%absent client").%'
     );
     checkCase(
       'updateSession', 'Некорректный URI'

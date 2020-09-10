@@ -1474,9 +1474,8 @@ $(clientUriId)  ; $(webClientSName)  ; Тестовый URI 1     ; $(dateIns)  
     fillTstRec();
     checkCase(
       'createSession', 'NULL-значения параметров'
-      , execErrorCode         => -20003
       , execErrorMessageMask  =>
-          'ORA-20003: Указаны неверные данные клиентского приложения (clientShortName="").%'
+          '%ORA-01400: cannot insert NULL into ("INFORMATION"."OA_SESSION"."AUTH_CODE")%'
     );
     checkCase(
       'createSession', 'Некорректный clientShortName'
@@ -1671,6 +1670,28 @@ $(sessionId)    ;                 1
       , execErrorMessageMask  =>
           'ORA-20006: Ошибка при обновлении пользовательской сессии %'
           || '%OA_SESSION_UK_REFRESH_TOKEN%'
+    );
+    checkCase(
+      'createSession', 'minimal args'
+      , authCode              => 'minimal args'
+      , nextCaseUsedCount     => 1
+      , sessionCsv =>
+'
+AUTH_CODE               ; CLIENT_ID      ; REDIRECT_URI    ; OPERATOR_ID   ; CODE_CHALLENGE  ; ACCESS_TOKEN               ; ACCESS_TOKEN_DATE_INS            ; ACCESS_TOKEN_DATE_FINISH         ; REFRESH_TOKEN               ; REFRESH_TOKEN_DATE_INS           ; REFRESH_TOKEN_DATE_FINISH        ; SESSION_TOKEN               ; SESSION_TOKEN_DATE_INS           ; SESSION_TOKEN_DATE_FINISH        ; IS_MANUAL_BLOCKED ; DATE_FINISH  ; DATE_INS                         ; OPERATOR_ID_INS
+----------------------- ; -------------- ; --------------- ; ------------- ; --------------- ; -------------------------- ; -------------------------------- ; -------------------------------- ; --------------------------- ; -------------------------------- ; -------------------------------- ; --------------------------- ; -------------------------------- ; -------------------------------- ; ----------------- ; ------------ ; -------------------------------- ; ---------------
+$(Test_Pr)minimal args  ;                ;                 ;               ;                 ;                            ;                                  ;                                  ;                             ;                                  ;                                  ;                             ;                                  ;                                  ;                   ;              ; $(dateIns)                       ; $(testOperId)
+'
+    );
+    checkCase(
+      'updateSession', 'minimal args'
+      , sessionId             => lastRec.session_id
+      , authCode              => 'minimal args2'
+      , sessionCsv            =>
+'
+SESSION_ID      ; AUTH_CODE
+--------------- ; -----------------------
+$(sessionId)    ; $(Test_Pr)minimal args2
+'
     );
   exception when others then
     raise_application_error(

@@ -1580,9 +1580,9 @@ begin
   );
   rec.session_id                  := oa_session_seq.nextval;
   rec.auth_code                   := authCode;
-  rec.client_id                   :=
-    getClientId( clientShortName => clientShortName)
-  ;
+  if clientShortName is not null then
+    rec.client_id := getClientId( clientShortName => clientShortName);
+  end if;
   rec.redirect_uri                := redirectUri;
   rec.operator_id                 := operatorId;
   rec.code_challenge              := codeChallenge;
@@ -1725,7 +1725,11 @@ begin
     , roleShortName => OAEditSession_RoleSName
   );
   lockSession( rec, sessionId);
-  rec.client_id := getClientId( clientShortName => clientShortName);
+  rec.client_id :=
+    case when clientShortName is not null then
+      getClientId( clientShortName => clientShortName)
+    end
+  ;
 
   update
     oa_session d

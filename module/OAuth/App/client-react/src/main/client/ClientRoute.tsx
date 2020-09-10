@@ -20,7 +20,8 @@ import { ToolBar } from '../../components/toolbar';
 import * as DefaultButtons from '../../components/toolbar/ToolBarButtons';
 import { setCurrentRecord, deleteClient, searchClients } from './state/redux/actions';
 import { HistoryState } from '../../components/HistoryState';
-import { Page, Header, Content } from 'jfront-components';
+import { Page, Header, Content } from '@jfront/ui-core';
+import { UserPanel } from '../../components/tabpanel/UserPanel';
 
 const ClientRoute: React.FC = () => {
 
@@ -29,7 +30,7 @@ const ClientRoute: React.FC = () => {
   const history = useHistory<HistoryState>();
   const dispatch = useDispatch();
   const { isLoading, message, error, current, searchId, searchRequest } = useSelector<AppState, ClientState>(state => state.client)
-  let formRef = useRef(null) as any;
+  let formRef = useRef<HTMLFormElement>(null);
   
   return (
     <Page>
@@ -38,6 +39,7 @@ const ClientRoute: React.FC = () => {
         <TabPanel>
           <SelectedTab>Клиент</SelectedTab>
           {current && <Tab onClick={() => history.push(`/ui/client/${current?.clientId}/client-uri/list`, {prevRoute: pathname})}>URL</Tab>}
+          <UserPanel/>
         </TabPanel>
         <ToolBar>
           <DefaultButtons.CreateButton onCreate={() => {
@@ -45,7 +47,7 @@ const ClientRoute: React.FC = () => {
               history.push('/ui/client/create')
             }));
           }} disabled={pathname.endsWith('/create')} />
-          <DefaultButtons.SaveButton onSave={() => { formRef.current?.handleSubmit() }} disabled={!pathname.endsWith('/create') && !pathname.endsWith('/edit')} />
+          <DefaultButtons.SaveButton onSave={() => { formRef.current?.dispatchEvent(new Event("submit")) }} disabled={!pathname.endsWith('/create') && !pathname.endsWith('/edit')} />
           <DefaultButtons.EditButton onEdit={() => history.push(`/ui/client/${current?.clientId}/edit`)} disabled={!current || pathname.endsWith('/edit')} />
           <DefaultButtons.ViewButton onView={() => { history.push(`/ui/client/${current?.clientId}/view`) }} disabled={!current || pathname.endsWith('view')} />
           <DefaultButtons.DeleteButton onDelete={() => {

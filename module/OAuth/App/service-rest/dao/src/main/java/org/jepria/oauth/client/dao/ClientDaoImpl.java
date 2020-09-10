@@ -8,6 +8,7 @@ import org.jepria.oauth.client.dto.ClientDto;
 import org.jepria.oauth.client.dto.ClientSearchDto;
 import org.jepria.oauth.client.dto.ClientUpdateDto;
 import org.jepria.oauth.sdk.ApplicationType;
+import org.jepria.server.data.OptionDto;
 import org.jepria.server.data.RuntimeSQLException;
 
 import javax.xml.bind.DatatypeConverter;
@@ -54,7 +55,7 @@ public class ClientDaoImpl implements ClientDao {
     "ct.client_secret," +
     "ct.client_name," +
     "ct.client_name_en," +
-    "ct.application_type_code " +
+    "ct.application_type_code as application_type " +
     "from OA_CLIENT ct " +
     "where ct.is_deleted = 0 " +
     "and (ct.short_name like shortName or shortName is null) " +
@@ -70,8 +71,8 @@ public class ClientDaoImpl implements ClientDao {
       dto.setClientSecret(rs.getString(CLIENT_SECRET));
       dto.setClientName(rs.getString(CLIENT_NAME));
       dto.setClientNameEn(rs.getString(CLIENT_NAME_EN));
-      dto.setApplicationType(rs.getString(APPLICATION_TYPE_CODE));
-      dto.setGrantTypes(getClientGrantTypes(dto.getClientId()));
+      dto.setApplicationType(rs.getString(APPLICATION_TYPE));
+      dto.setGrantTypes(getClientGrantTypes(dto.getClientId(), null));
     }
   };
 
@@ -323,9 +324,9 @@ public class ClientDaoImpl implements ClientDao {
 
 
   @Override
-  public List<String> getClientGrantTypes(String clientId) {
+  public List<String> getClientGrantTypes(String clientId, Integer operatorId) {
     //language=Oracle
-    String sqlString = "select cgt.grant_type_code " +
+    String sqlString = "select cgt.grant_type_code as grant_type " +
       "from OA_CLIENT_GRANT_TYPE cgt " +
       "inner join OA_CLIENT clt on clt.CLIENT_ID = cgt.CLIENT_ID " +
       "where clt.SHORT_NAME like ?";
@@ -337,7 +338,7 @@ public class ClientDaoImpl implements ClientDao {
       statement.executeQuery();
       ResultSet rs = statement.getResultSet();
       while (rs.next()) {
-        result.add(rs.getString(GRANT_TYPE_CODE));
+        result.add(rs.getString(GRANT_TYPE));
       }
     } catch (SQLException e) {
       e.printStackTrace();
@@ -349,5 +350,10 @@ public class ClientDaoImpl implements ClientDao {
       db.closeAll();
     }
     return result;
+  }
+
+  @Override
+  public List<OptionDto<String>> getRoles(String roleName, String roleNameEn, Integer maxRowCount, Integer operatorId) {
+    return null;
   }
 }

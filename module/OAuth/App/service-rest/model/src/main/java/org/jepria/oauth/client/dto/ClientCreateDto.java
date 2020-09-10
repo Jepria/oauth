@@ -21,6 +21,7 @@ public class ClientCreateDto {
   String applicationType;
   @GrantType
   List<String> grantTypes;
+  List<String> scope;
 
   public String getClientId() {
     return clientId;
@@ -60,5 +61,13 @@ public class ClientCreateDto {
 
   public void setGrantTypes(List<String> grantTypes) {
     this.grantTypes = grantTypes;
+  }
+
+  public List<String> getScope() {
+    return scope;
+  }
+
+  public void setScope(List<String> scope) {
+    this.scope = scope;
   }
 }

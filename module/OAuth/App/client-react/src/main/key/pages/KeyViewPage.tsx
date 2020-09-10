@@ -4,7 +4,7 @@ import { AppState } from '../../store';
 import { KeyState } from '../types';
 import { useSelector, useDispatch } from 'react-redux';
 import { getKey } from '../state/redux/actions';
-import { Page, Content, FormContainer, VerticalLayout } from 'jfront-components';
+import { Page, Content, FormContainer, VerticalLayout } from '@jfront/ui-core';
 
 const KeyViewPage: React.FC = () => {
 
@@ -23,7 +23,7 @@ const KeyViewPage: React.FC = () => {
         <FormContainer>
           <VerticalLayout>
             <FormField>
-              <Label width="150px">ID ключа:</Label>
+              <Label width="150px">ID:</Label>
               <Text>{current?.keyId}</Text>
             </FormField>
             <FormField>

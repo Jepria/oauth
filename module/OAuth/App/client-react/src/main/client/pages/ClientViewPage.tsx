@@ -1,12 +1,24 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import styled from 'styled-components';
 import { FormField, Label, Text } from '../../../components/form/Field';
 import { AppState } from '../../store';
 import { ClientState } from '../types';
 import { useSelector, useDispatch } from 'react-redux';
 import { getClientById } from '../state/redux/actions';
-import { GrantType, ApplicationType } from '../../../security/OAuth';
-import { Page, Content, FormContainer, VerticalLayout } from 'jfront-components';
+import { Page, Content, FormContainer, VerticalLayout } from '@jfront/ui-core';
+import { GrantType, ApplicationType } from '@jfront/oauth-core';
+
+const List = styled.ul`
+  display: inline;
+  padding: 2px;
+`;
+
+const ListOption = styled.li`
+  font-family: tahoma, arial, helvetica, sans-serif;
+  font-size: 12px;
+  word-wrap: break-word;
+`
 
 const ClientViewPage: React.FC = () => {
 
@@ -26,7 +38,7 @@ const ClientViewPage: React.FC = () => {
         <FormContainer>
           <VerticalLayout>
             <FormField>
-              <Label width={'250px'}>ID клиентского приложения:</Label>
+              <Label width={'250px'}>ID приложения:</Label>
               <Text>{current?.clientId}</Text>
             </FormField>
             <FormField>
@@ -34,11 +46,11 @@ const ClientViewPage: React.FC = () => {
               <Text>{current?.clientSecret}</Text>
             </FormField>
             <FormField>
-              <Label width={'250px'}>Имя клиентского приложения:</Label>
+              <Label width={'250px'}>Наименование приложения:</Label>
               <Text>{current?.clientName}</Text>
             </FormField>
             <FormField>
-              <Label width={'250px'}>Имя клиентского приложения(англ):</Label>
+              <Label width={'250px'}>Наименование приложения(англ):</Label>
               <Text>{current?.clientNameEn}</Text>
             </FormField>
             <FormField>
@@ -46,9 +58,17 @@ const ClientViewPage: React.FC = () => {
               <Text>{current ? ApplicationType[current.applicationType] : ''}</Text>
             </FormField>
             <FormField>
-              <Label width={'250px'}> Доступные гранты:</Label>
+              <Label width={'250px'}>Разрешения на авторизацию:</Label>
               <Text>{current?.grantTypes.map((grantType) => GrantType[grantType]).join(', ')}</Text>
             </FormField>
+            {current?.grantTypes?.includes("client_credentials") &&
+              <FormField>
+                <Label width={'250px'}>Права доступа:</Label>
+                <List>
+                  {current?.scopes?.map(scope => <ListOption>{scope.name}</ListOption>)}
+                </List>
+              </FormField>
+            }
           </VerticalLayout>
         </FormContainer>
       </Content>

@@ -92,8 +92,19 @@ public class AuthorizationCodeFlowIT extends JaxRsAdapterTestBase {
     byte[] buffer = new byte[16];
     sr.nextBytes(buffer);
     String codeVerifier = Base64.getUrlEncoder().withoutPadding().encodeToString(buffer);
-    MessageDigest md = MessageDigest.getInstance("SHA-256");
-    String codeChallenge = Base64.getUrlEncoder().withoutPadding().encodeToString(md.digest(codeVerifier.getBytes()));
+    
+    MessageDigest cryptoProvider = MessageDigest.getInstance("SHA-256");
+    byte[] hash = cryptoProvider.digest(codeVerifier.getBytes());
+  
+    StringBuffer hexString = new StringBuffer();
+  
+    for (int i = 0; i < hash.length; i++) {
+      String hex = Integer.toHexString(0xff & hash[i]);
+      if (hex.length() == 1) hexString.append('0');
+      hexString.append(hex);
+    }
+    String codeChallenge = hexString.toString();
+    
     Response authorizeResponse = RestAssured.given()
         .redirects()
         .follow(false)

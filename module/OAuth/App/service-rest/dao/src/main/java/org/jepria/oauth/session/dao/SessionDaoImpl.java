@@ -44,23 +44,21 @@ public class SessionDaoImpl implements SessionDao {
       "accessTokenId varchar2(64) := ?;" +
       "refreshTokenId varchar2(64) := ?;" +
       "sessionTokenId varchar2(64) := ?;" +
-      "isBlocked integer := ?;" +
-      "hasToken integer := ?;" +
     "begin " +
       "open rc for select " +
           "ss.SESSION_ID," +
-          "cl.SHORT_NAME as CLIENT_ID," +
+          "cl.SHORT_NAME as CLIENT_SHORT_NAME," +
           "cl.CLIENT_NAME," +
           "ss.REDIRECT_URI," +
-          "ss.AUTHORIZATION_CODE," +
+          "ss.AUTHORIZATION_CODE as auth_code," +
           "ss.DATE_INS," +
-          "ss.SESSION_TOKEN_ID," +
+          "ss.SESSION_TOKEN_ID as session_token," +
           "ss.SESSION_TOKEN_DATE_INS," +
           "ss.SESSION_TOKEN_DATE_FINISH," +
-          "ss.ACCESS_TOKEN_ID," +
+          "ss.ACCESS_TOKEN_ID as access_token," +
           "ss.ACCESS_TOKEN_DATE_FINISH," +
           "ss.ACCESS_TOKEN_DATE_INS," +
-          "ss.REFRESH_TOKEN_ID," +
+          "ss.REFRESH_TOKEN_ID as refresh_token," +
           "ss.REFRESH_TOKEN_DATE_INS," +
           "ss.REFRESH_TOKEN_DATE_FINISH," +
           "ss.OPERATOR_ID," +
@@ -79,12 +77,8 @@ public class SessionDaoImpl implements SessionDao {
           "and (ss.REDIRECT_URI like redirectUri or redirectUri is null) " +
           "and (ss.SESSION_TOKEN_ID like sessionTokenId or sessionTokenId is null) " +
           "and (ss.REFRESH_TOKEN_ID like refreshTokenId or refreshTokenId is null) " +
-          "and ((hasToken = 0 and ss.ACCESS_TOKEN_ID is null) " +
-            "or (hasToken = 1 " +
-                "and (accessTokenId is null and ss.ACCESS_TOKEN_ID is not null " +
-                  "or (accessTokenId is not null and ss.ACCESS_TOKEN_ID like accessTokenId)))" +
-            "or hasToken is null) " +
-          "and (ss.IS_BLOCKED = isBlocked or isBlocked is null); " +
+          "and (ss.ACCESS_TOKEN_ID like accessTokenId or accessTokenId is null) " +
+          "and (ss.IS_BLOCKED = 0); " +
       "? := rc; " +
     "end;";
 
@@ -102,13 +96,12 @@ public class SessionDaoImpl implements SessionDao {
       dto.setOperator(operator.getValue() != null ? operator : null);
       dto.setOperatorLogin(rs.getString(OPERATOR_LOGIN));
       OptionDto<String> client = new OptionDto<>();
-      client.setValue(rs.getString(CLIENT_ID));
+      client.setValue(rs.getString(CLIENT_SHORT_NAME));
       client.setName(rs.getString(CLIENT_NAME));
       dto.setClient(client);
       dto.setAccessTokenId(rs.getString(ACCESS_TOKEN_ID));
       dto.setAccessTokenDateIns(getTimestamp(rs, ACCESS_TOKEN_DATE_INS));
       dto.setAccessTokenDateFinish(getTimestamp(rs, ACCESS_TOKEN_DATE_FINiSH));
-      dto.setBlocked(getBoolean(rs, IS_BLOCKED));
       dto.setSessionTokenId(rs.getString(SESSION_TOKEN_ID));
       dto.setSessionTokenDateIns(getTimestamp(rs, SESSION_TOKEN_DATE_INS));
       dto.setSessionTokenDateFinish(getTimestamp(rs, SESSION_TOKEN_DATE_FINISH));
@@ -136,14 +129,10 @@ public class SessionDaoImpl implements SessionDao {
       statement.setString(6, dto.getAccessTokenId());
       statement.setString(7, dto.getRefreshTokenId());
       statement.setString(8, dto.getSessionTokenId());
-      if (dto.getBlocked() != null) statement.setInt(9, dto.getBlocked() ? 1 : 0);
-      else statement.setNull(9, OracleTypes.INTEGER);
-      if (dto.getHasToken() != null) statement.setInt(10, dto.getHasToken() ? 1 : 0);
-      else statement.setNull(10, OracleTypes.INTEGER);
-      statement.registerOutParameter(11, OracleTypes.CURSOR);
+      statement.registerOutParameter(9, OracleTypes.CURSOR);
       statement.executeQuery();
 
-      try (ResultSet rs = (ResultSet) statement.getObject(11)) {
+      try (ResultSet rs = (ResultSet) statement.getObject(9)) {
         while (rs.next()) {
           SessionDto resultDto = new SessionDto();
           mapper.map(rs, resultDto);
@@ -176,12 +165,10 @@ public class SessionDaoImpl implements SessionDao {
       statement.setNull(6, OracleTypes.VARCHAR);
       statement.setNull(7, OracleTypes.VARCHAR);
       statement.setNull(8, OracleTypes.VARCHAR);
-      statement.setNull(9, OracleTypes.INTEGER);
-      statement.setNull(10, OracleTypes.INTEGER);
-      statement.registerOutParameter(11, OracleTypes.CURSOR);
+      statement.registerOutParameter(9, OracleTypes.CURSOR);
       statement.executeQuery();
 
-      try (ResultSet rs = (ResultSet) statement.getObject(11)) {
+      try (ResultSet rs = (ResultSet) statement.getObject(9)) {
         while (rs.next()) {
           SessionDto resultDto = new SessionDto();
           mapper.map(rs, resultDto);
@@ -349,8 +336,7 @@ public class SessionDaoImpl implements SessionDao {
         "SESSION_TOKEN_DATE_FINISH = ?, " +
         "REFRESH_TOKEN_ID = ?, " +
         "REFRESH_TOKEN_DATE_INS = ?, " +
-        "REFRESH_TOKEN_DATE_FINISH = ?, " +
-        "IS_BLOCKED = ? " +
+        "REFRESH_TOKEN_DATE_FINISH = ? " +
       "WHERE t.SESSION_ID = ?";
     CallableStatement updateStatement = db.prepare(updateSqlQuery);
     try {
@@ -392,8 +378,7 @@ public class SessionDaoImpl implements SessionDao {
       } else {
         updateStatement.setNull(10, Types.DATE);
       }
-      updateStatement.setInt(11, dto.getBlocked() != null ? (dto.getBlocked() ? 1 : 0) : 0);
-      updateStatement.setInt(12, (Integer) primaryKey.get(SESSION_ID));
+      updateStatement.setInt(11, (Integer) primaryKey.get(SESSION_ID));
       int updatedRecordCount = updateStatement.executeUpdate();
       if (updatedRecordCount == 1) {
         db.commit();

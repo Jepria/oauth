@@ -12,6 +12,7 @@ public class SessionSearchDto {
   Boolean isBlocked;
   String redirectUri;
   Boolean hasToken;
+  Integer maxRowCount;
 
   public Integer getSessionId() {
     return sessionId;
@@ -69,14 +70,6 @@ public class SessionSearchDto {
     this.refreshTokenId = refreshTokenId;
   }
 
-  public Boolean getBlocked() {
-    return isBlocked;
-  }
-
-  public void setBlocked(Boolean blocked) {
-    isBlocked = blocked;
-  }
-
   public String getRedirectUri() {
     return redirectUri;
   }
@@ -85,11 +78,11 @@ public class SessionSearchDto {
     this.redirectUri = redirectUri;
   }
 
-  public Boolean getHasToken() {
-    return hasToken;
+  public Integer getMaxRowCount() {
+    return maxRowCount;
   }
 
-  public void setHasToken(Boolean hasToken) {
-    this.hasToken = hasToken;
+  public void setMaxRowCount(Integer maxRowCount) {
+    this.maxRowCount = maxRowCount;
   }
 }

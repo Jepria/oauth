@@ -15,7 +15,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <jersey.version>2.29</jersey.version>
         <antcontrib.version>1.0b3</antcontrib.version>
-        <jepria-rest.version>12.1.0-SNAPSHOT</jepria-rest.version>
+        <jepria-rest.version>12.2.0-SNAPSHOT</jepria-rest.version>
         <jepriatoolkit.version>7.16.0-SNAPSHOT</jepriatoolkit.version>
         <tomcat.version>7.0.68</tomcat.version>
         <log4j.version>1.2.17</log4j.version>
@@ -32,7 +32,6 @@
         <oracle.version>11.2.0.4</oracle.version>
         <oauth.version>1.0.0-SNAPSHOT</oauth.version>
         <oauth-sdk.version>1.0.0-SNAPSHOT</oauth-sdk.version>
-        <bin.home>${env.BIN_HOME}</bin.home>
     </properties>
 
     <parent>
@@ -41,25 +40,7 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <repositories>
-        <!--
-        Путь к бинарному репозиторию
-        https://github.com/Jepria/bin-repo
-        -->
-        <repository>
-            <id>binhome-local-deploy</id>
-            <name>binhome-local-deploy-repo</name>
-            <url>file:${bin.home}\deploy</url>
-        </repository>
-        <repository>
-            <id>binhome-local-build</id>
-            <name>binhome-local-build-repo</name>
-            <url>file:${bin.home}\build</url>
-        </repository>
-    </repositories>
-
     <dependencies>
-
         <dependency>
             <groupId>org.jepria.oauth</groupId>
             <artifactId>model</artifactId>

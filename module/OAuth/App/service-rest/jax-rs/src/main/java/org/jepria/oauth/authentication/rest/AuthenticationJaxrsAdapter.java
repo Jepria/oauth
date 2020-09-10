@@ -11,7 +11,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Date;
 
@@ -40,7 +43,14 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
     @QueryParam("state") String state,
     @FormParam("username") String username,
     @FormParam("password") String password) {
-    String redirectUri = new String(Base64.getUrlDecoder().decode(redirectUriEncoded));
+    String redirectUri = null;
+    
+    try {
+      redirectUri = URLDecoder.decode(redirectUriEncoded.replaceAll("%20", "\\+"), StandardCharsets.UTF_8.name());
+    } catch (UnsupportedEncodingException e) {
+      e.printStackTrace();
+    }
+    
     Response response;
     if (CODE.equalsIgnoreCase(responseType)) {
       String sessionToken = AuthenticationServerFactory.getInstance().getService()
@@ -99,7 +109,13 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
     @QueryParam("state") String state,
     @CookieParam(SESSION_ID) String sessionToken
   ) {
-    String redirectUri = new String(Base64.getUrlDecoder().decode(redirectUriEncoded));
+    String redirectUri = null;
+    try {
+      redirectUri = URLDecoder.decode(redirectUriEncoded.replaceAll("%20", "\\+"), StandardCharsets.UTF_8.name());
+    } catch (UnsupportedEncodingException e) {
+      e.printStackTrace();
+    }
+
     AuthenticationServerFactory
       .getInstance()
       .getService()

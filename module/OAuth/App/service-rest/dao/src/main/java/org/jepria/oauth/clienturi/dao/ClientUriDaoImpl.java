@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.jepria.oauth.clienturi.ClientUriFieldNames.*;
+import static org.jepria.oauth.session.SessionFieldNames.CLIENT_SHORT_NAME;
 
 
 public class ClientUriDaoImpl implements Dao {
@@ -38,7 +39,7 @@ public class ClientUriDaoImpl implements Dao {
     public void map(ResultSet rs, ClientUriDto dto) throws SQLException {
       dto.setClientUriId(getInteger(rs, CLIENT_URI_ID));
       dto.setClientUri(rs.getString(CLIENT_URI));
-      dto.setClientId(rs.getString(CLIENT_ID));
+      dto.setClientId(rs.getString(CLIENT_SHORT_NAME));
     }
   };
 
@@ -47,7 +48,7 @@ public class ClientUriDaoImpl implements Dao {
   public List<ClientUriDto> find(Object template, Integer operatorId) {
     //language=Oracle
     String findSqlQuery =
-      "select ct.SHORT_NAME as CLIENT_ID, cu.client_uri_id, cu.client_uri " +
+      "select ct.SHORT_NAME as CLIENT_SHORT_NAME, cu.client_uri_id, cu.client_uri " +
         "from OA_CLIENT_URI cu " +
           "inner join OA_CLIENT ct " +
             "on cu.client_id = ct.client_id " +
@@ -83,7 +84,7 @@ public class ClientUriDaoImpl implements Dao {
     Db db = getDb();
     //language=Oracle
     String findSqlQuery =
-      "select ct.SHORT_NAME as CLIENT_ID, cu.client_uri_id, cu.client_uri " +
+      "select ct.SHORT_NAME as CLIENT_SHORT_NAME, cu.client_uri_id, cu.client_uri " +
         "from OA_CLIENT_URI cu " +
         "inner join OA_CLIENT ct " +
         "      on cu.client_id = ct.client_id " +
@@ -91,7 +92,7 @@ public class ClientUriDaoImpl implements Dao {
     CallableStatement statement = db.prepare(findSqlQuery);
     List<ClientUriDto> result = null;
     try {
-      statement.setString(1, (String) primaryKeyMap.get(CLIENT_ID));
+      statement.setString(1, (String) primaryKeyMap.get(CLIENT_SHORT_NAME));
       statement.setInt(2, (Integer) primaryKeyMap.get(CLIENT_URI_ID));
       statement.executeQuery();
       ResultSet rs = statement.getResultSet();

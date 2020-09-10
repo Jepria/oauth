@@ -3,10 +3,10 @@ import { setCurrentRecord, searchClientUri } from '../state/redux/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, useParams, useLocation } from 'react-router-dom';
 import { AppState } from '../../../store';
-import { ClientUriState } from '../types';
+import { ClientUriState, ClientUri } from '../types';
 import { HistoryState } from '../../../../components/HistoryState';
 import { TextCell } from '../../../../components/cell/TextCell';
-import { JepGrid, JepGridTable, JepGridHeader, JepGridHeaderCell, JepGridBody, JepGridRow, JepGridRowCell, JepGridPagingBar, Page, Content } from 'jfront-components';
+import { Grid, Page, Content } from '@jfront/ui-core';
 
 export const ClientUriListPage: React.FC = () => {
 
@@ -25,40 +25,31 @@ export const ClientUriListPage: React.FC = () => {
   return (
     <Page>
       <Content>
-        <JepGrid>
-          <JepGridTable>
-            <JepGridHeader>
-              <JepGridHeaderCell>ID клиентского приложения</JepGridHeaderCell>
-              <JepGridHeaderCell>ID записи</JepGridHeaderCell>
-              <JepGridHeaderCell>URL для переадресации</JepGridHeaderCell>
-            </JepGridHeader>
-            <JepGridBody>
-              {records && records.map(record => {
-                return (
-                  <JepGridRow key={record.clientUriId}
-                    onClick={() => dispatch(setCurrentRecord(record))}
-                    onDoubleClick={() => current !== record ? dispatch(setCurrentRecord(record,
-                      () => history.push(`/ui/client/${clientId}/client-uri/${record.clientUriId}/view`, state))) : history.push(`/ui/client/${clientId}/client-uri/${record.clientUriId}/view`, state)}
-                    selected={record === current}>
-                    <JepGridRowCell label="ID записи">
-                      <TextCell>{record.clientUriId}</TextCell>
-                    </JepGridRowCell>
-                    <JepGridRowCell label="ID клиентского приложения">
-                      <TextCell>{clientId}</TextCell>
-                    </JepGridRowCell>
-                    <JepGridRowCell label="URL для переадресации">
-                      <TextCell>{record.clientUri}</TextCell>
-                    </JepGridRowCell>
-                  </JepGridRow>);
-              })}
-            </JepGridBody>
-          </JepGridTable>
-          <JepGridPagingBar rowCount={records?.length} totalRowCount={records?.length} onChange={() => {
-            if (clientId) {
-              dispatch(searchClientUri(clientId))
+        <Grid<ClientUri>
+          columns={[
+            {
+              Header: "ID",
+              accessor: "clientUriId",
+              Cell: (value: any) => <TextCell>{value}</TextCell>
+            },
+            {
+              Header: "URL для переадресации",
+              accessor: "clientUri",
+              Cell: (value: any) => <TextCell>{value}</TextCell>
+            },
+          ]}
+          data={records}
+          onSelection={(selected) => {
+            if (selected && selected.length === 1) {
+              dispatch(setCurrentRecord(selected[0]))
+            } else {
+              dispatch(setCurrentRecord(undefined))
             }
-          }} />
-        </JepGrid>
+          }}
+          onDoubleClick={(record) => current !== record ? dispatch(setCurrentRecord(record,
+            () => history.push(`/ui/client/${clientId}/client-uri/${record?.clientUriId}/view`, state)))
+            : history.push(`/ui/client/${clientId}/client-uri/${record?.clientUriId}/view`,
+              state)} />
       </Content>
     </Page>
   );

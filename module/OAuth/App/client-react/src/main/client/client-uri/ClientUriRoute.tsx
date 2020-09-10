@@ -19,7 +19,8 @@ import { ToolBar } from '../../../components/toolbar';
 import * as DefaultButtons from '../../../components/toolbar/ToolBarButtons';
 import { setCurrentRecord, deleteClientUri, searchClientUri } from './state/redux/actions';
 import { HistoryState } from '../../../components/HistoryState';
-import { Page, Header, Content } from 'jfront-components';
+import { Page, Header, Content } from '@jfront/ui-core';
+import { UserPanel } from '../../../components/tabpanel/UserPanel';
 
 const ClientUriRoute: React.FC = () => {
 
@@ -38,6 +39,7 @@ const ClientUriRoute: React.FC = () => {
         <TabPanel>
           {!pathname.endsWith('/view') && <Tab onClick={() => history.push(state?.prevRoute? state.prevRoute : `/ui/client/${clientId}/view`)}>Клиент</Tab>}
           <SelectedTab>URL</SelectedTab>
+          <UserPanel/>
         </TabPanel>
         <ToolBar>
           <DefaultButtons.CreateButton onCreate={() => {

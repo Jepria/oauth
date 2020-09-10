@@ -136,7 +136,6 @@ public class SessionDaoIT extends DaoTestBase {
     sessionSearchDto.setClientId(properties.getProperty("client.id"));
     sessionSearchDto.setOperatorId(7);
     sessionSearchDto.setRedirectUri(properties.getProperty("client.redirect_uri"));
-    sessionSearchDto.setBlocked(false);
     List<SessionDto> result = (List<SessionDto>) dao.find(sessionSearchDto, 1);
     assertFalse(result.isEmpty());
     assertTrue(result.size() == 1);
@@ -148,10 +147,10 @@ public class SessionDaoIT extends DaoTestBase {
     dao.delete(new HashMap<String, Integer>(){{
       put(SESSION_ID, sessionId);
     }}, 1);
-    SessionDto sessionDto = (SessionDto) dao.findByPrimaryKey(new HashMap<String, Integer>(){{
+    List<SessionDto> sessionDtoList = (List<SessionDto>) dao.findByPrimaryKey(new HashMap<String, Integer>(){{
       put(SESSION_ID, sessionId);
-    }}, 1).get(0);
-    assertTrue(sessionDto.getBlocked());
+    }}, 1);
+    assertTrue(sessionDtoList.isEmpty());
   }
   
 }

@@ -1,13 +1,9 @@
 package org.jepria.oauth.authorization;
 
-import org.jepria.oauth.exception.OAuthRuntimeException;
-import org.jepria.oauth.authorization.AuthorizationService;
 import org.jepria.oauth.client.ClientService;
+import org.jepria.oauth.exception.OAuthRuntimeException;
 import org.jepria.oauth.key.KeyService;
 import org.jepria.oauth.key.dto.KeyDto;
-import org.jepria.oauth.session.SessionService;
-import org.jepria.oauth.session.dto.SessionCreateDto;
-import org.jepria.oauth.session.dto.SessionDto;
 import org.jepria.oauth.sdk.ResponseType;
 import org.jepria.oauth.sdk.token.Decryptor;
 import org.jepria.oauth.sdk.token.Token;
@@ -15,14 +11,16 @@ import org.jepria.oauth.sdk.token.TokenImpl;
 import org.jepria.oauth.sdk.token.Verifier;
 import org.jepria.oauth.sdk.token.rsa.DecryptorRSA;
 import org.jepria.oauth.sdk.token.rsa.VerifierRSA;
+import org.jepria.oauth.session.SessionService;
+import org.jepria.oauth.session.dto.SessionCreateDto;
+import org.jepria.oauth.session.dto.SessionDto;
 import org.jepria.server.data.RuntimeSQLException;
 import org.jepria.server.service.security.Credential;
 
-import java.security.MessageDigest;
-import java.security.SecureRandom;
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 import static org.jepria.oauth.sdk.OAuthConstants.*;
 
@@ -75,7 +73,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     sessionDto.setRedirectUri(redirectUri);
     sessionDto.setCodeChallenge(codeChallenge);
     try {
-      return (SessionDto) sessionService.getRecordById(String.valueOf(sessionService.create(sessionDto, serverCredential)), serverCredential);
+      String sessionId = String.valueOf(sessionService.create(sessionDto, serverCredential));
+      return (SessionDto) sessionService.getRecordById(sessionId, serverCredential);
     } catch (RuntimeSQLException ex) {
       SQLException sqlException = ex.getSQLException();
       if (sqlException.getErrorCode() == 20001) {
@@ -143,13 +142,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
   
   private String generateCode() {
     try {
-      UUID randomUuid = UUID.randomUUID();
-      MessageDigest md = MessageDigest.getInstance("SHA-256");
-      SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
-      byte[] salt = new byte[16];
-      random.nextBytes(salt);
-      md.update(salt);
-      return Base64.getUrlEncoder().withoutPadding().encodeToString(md.digest(randomUuid.toString().getBytes()));
+      return UUID.randomUUID().toString().replaceAll("-", "");
     } catch (Throwable th) {
       throw new OAuthRuntimeException(SERVER_ERROR, th);
     }

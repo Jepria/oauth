@@ -18,7 +18,8 @@ import { ToolBar } from '../../components/toolbar';
 import * as DefaultButtons from '../../components/toolbar/ToolBarButtons';
 import { setCurrentRecord, deleteSession, searchSessions } from './state/redux/actions';
 import { HistoryState } from '../../components/HistoryState';
-import { Page, Header, Content } from 'jfront-components';
+import { Page, Header, Content } from '@jfront/ui-core';
+import { UserPanel } from '../../components/tabpanel/UserPanel';
 
 const SessionRoute: React.FC = () => {
 
@@ -35,6 +36,7 @@ const SessionRoute: React.FC = () => {
       <Header>
         <TabPanel>
           <SelectedTab>Сессия</SelectedTab>
+          <UserPanel/>
         </TabPanel>
         <ToolBar>
           <DefaultButtons.ViewButton onView={() => { history.push(`/ui/session/${current?.sessionId}/view`) }} disabled={!current || pathname.endsWith('view')} />

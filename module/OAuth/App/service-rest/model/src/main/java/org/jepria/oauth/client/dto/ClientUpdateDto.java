@@ -18,6 +18,7 @@ public class ClientUpdateDto {
   String applicationType;
   @GrantType
   List<String> grantTypes;
+  List<String> scope;
 
   public String getClientName() {
     return clientName;
@@ -50,4 +51,13 @@ public class ClientUpdateDto {
   public void setGrantTypes(List<String> grantTypes) {
     this.grantTypes = grantTypes;
   }
+
+  public List<String> getScope() {
+    return scope;
+  }
+
+  public void setScope(List<String> scope) {
+    this.scope = scope;
+  }
+
 }

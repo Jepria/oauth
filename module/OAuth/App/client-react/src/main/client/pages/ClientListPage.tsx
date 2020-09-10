@@ -3,10 +3,10 @@ import { setCurrentRecord, searchClients, postSearchClientRequest } from '../sta
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { AppState } from '../../store';
-import { ClientState } from '../types';
-import { GrantType, ApplicationType } from '../../../security/OAuth';
+import { ClientState, Client } from '../types';
+import { GrantType, ApplicationType } from '@jfront/oauth-core';
 import { TextCell } from '../../../components/cell/TextCell';
-import { JepGrid, JepGridTable, JepGridHeader, JepGridHeaderCell, JepGridBody, JepGridRow, JepGridRowCell, JepGridPagingBar, Page, Content } from 'jfront-components';
+import { Grid } from '@jfront/ui-core';
 
 export const ClientListPage: React.FC = () => {
 
@@ -20,60 +20,76 @@ export const ClientListPage: React.FC = () => {
     } else if (!searchId && searchRequest) {
       dispatch(postSearchClientRequest(searchRequest));
     } else {
-      dispatch(postSearchClientRequest({template: {}}));
+      dispatch(postSearchClientRequest({ template: { maxRowCount: 25 } }));
     }
   }, [searchId, searchRequest, dispatch]);
 
   return (
-    <Page>
-      <Content>
-        <JepGrid>
-          <JepGridTable>
-            <JepGridHeader>
-              <JepGridHeaderCell>ID клиентского приложения</JepGridHeaderCell>
-              <JepGridHeaderCell>Секретное слово</JepGridHeaderCell>
-              <JepGridHeaderCell>Наименование</JepGridHeaderCell>
-              <JepGridHeaderCell>Наименование (англ)</JepGridHeaderCell>
-              <JepGridHeaderCell>Тип приложения</JepGridHeaderCell>
-              <JepGridHeaderCell>Разрешенные типы авторизации</JepGridHeaderCell>
-            </JepGridHeader>
-            <JepGridBody>
-              {records ? records.map(record => {
-                return (
-                  <JepGridRow key={record.clientId}
-                    onClick={() => dispatch(setCurrentRecord(record))}
-                    onDoubleClick={() => current !== record ? dispatch(setCurrentRecord(record,
-                      () => history.push(`/ui/client/${record.clientId}/view`))) : history.push(`/ui/client/${record.clientId}/view`)}
-                    selected={record === current}>
-                    <JepGridRowCell label="ID клиентского приложения">
-                      <TextCell>{record.clientId}</TextCell>
-                    </JepGridRowCell>
-                    <JepGridRowCell label="Секретное слово">
-                      <TextCell>{record.clientSecret}</TextCell>
-                    </JepGridRowCell>
-                    <JepGridRowCell label="Наименование">
-                      <TextCell>{record.clientName}</TextCell>
-                    </JepGridRowCell>
-                    <JepGridRowCell label="Наименование (англ)">
-                      <TextCell>{record.clientNameEn}</TextCell>
-                    </JepGridRowCell>
-                    <JepGridRowCell label="Тип приложения">
-                      <TextCell>{ApplicationType[record.applicationType]}</TextCell>
-                    </JepGridRowCell>
-                    <JepGridRowCell label="Разрешенные типы авторизации">
-                      <TextCell wrapText>{record.grantTypes.map((grantType) => GrantType[grantType]).join(', ')}</TextCell>
-                    </JepGridRowCell>
-                  </JepGridRow>);
-              }) : null}
-            </JepGridBody>
-          </JepGridTable>
-          <JepGridPagingBar rowCount={records?.length} totalRowCount={resultSetSize} onRefresh={(page, pageSize) => {
-            if (searchId) {
-              dispatch(searchClients(searchId, pageSize, page))
-            }
-          }} />
-        </JepGrid>
-      </Content>
-    </Page>
+    <Grid<Client> columns={[
+      {
+        Header: "ID приложения",
+        accessor: "clientId",
+        Cell: ({ value }: any) => <TextCell>{value}</TextCell>
+      },
+      {
+        Header: "Секретное слово",
+        accessor: "clientSecret",
+        Cell: ({ value }: any) => <TextCell>{value}</TextCell>
+      },
+      {
+        Header: "Наименование",
+        accessor: "clientName",
+        Cell: ({ value }: any) => <TextCell>{value}</TextCell>
+      },
+      {
+        Header: "Наименование (англ)",
+        accessor: "clientNameEn",
+        Cell: ({ value }: any) => <TextCell>{value}</TextCell>
+      },
+      {
+        Header: "Тип приложения",
+        accessor: "applicationType",
+        Cell: ({ value }: any) => <TextCell>{ApplicationType[value]}</TextCell>
+      },
+      {
+        Header: "Разрешенные типы авторизации",
+        accessor: (row: Client) => row.grantTypes.map((grantType) => GrantType[grantType]).join(', '),
+        Cell: ({ value }: any) => <TextCell wrapText>{value}</TextCell>,
+        disableSortBy: true
+      }
+    ]}
+      data={records}
+      // onSelection={(selected) => {
+      //   if (selected && selected?.length > 0) {
+      //     if (selected.length === 1) {
+      //       dispatch(setCurrentRecord(selected[0]))
+      //     } else {
+      //       dispatch(setCurrentRecord(undefined))
+      //     }
+      //   } else if (current) {
+      //     dispatch(setCurrentRecord(undefined))
+      //   }
+      // }}
+      onPaging={(pageNumber, pageSize) => {
+        if (searchId) {
+          dispatch(searchClients(searchId, pageSize, pageNumber + 1))
+        }
+      }}
+      onSort={(sortConfig) => {
+        console.log("onSort")
+        if (searchRequest) {
+          const newSearchRequest = {
+            ...searchRequest,
+            listSortConfiguration: sortConfig
+          }
+          dispatch(postSearchClientRequest(newSearchRequest));
+        } else {
+          dispatch(postSearchClientRequest({ template: { maxRowCount: 25 }, listSortConfiguration: sortConfig }));
+        }
+      }}
+      totalRowCount={resultSetSize}
+      onDoubleClick={(record) => current !== record ? dispatch(setCurrentRecord(record,
+        () => history.push(`/ui/client/${record?.clientId}/view`))) : history.push(`/ui/client/${record?.clientId}/view`)}
+    />
   );
 }

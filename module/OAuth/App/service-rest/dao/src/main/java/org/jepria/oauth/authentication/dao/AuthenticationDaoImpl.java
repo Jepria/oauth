@@ -20,8 +20,6 @@ public class AuthenticationDaoImpl implements AuthenticationDao {
   public AuthenticationDaoImpl() {
   }
 
-  ;
-
   public AuthenticationDaoImpl(String jndName) {
     this.jndiName = jndName;
   }
@@ -85,15 +83,22 @@ public class AuthenticationDaoImpl implements AuthenticationDao {
       }
       if (result.size() == 1) {
         MessageDigest cryptoProvider = MessageDigest.getInstance("SHA-256");
+        byte[] hash = cryptoProvider.digest(codeVerifier.getBytes());
+
+        StringBuffer hexString = new StringBuffer();
+
+        for (int i = 0; i < hash.length; i++) {
+          String hex = Integer.toHexString(0xff & hash[i]);
+          if (hex.length() == 1) hexString.append('0');
+          hexString.append(hex);
+        }
+
         if (result.get(0)
-            .equals(Base64
-                .getUrlEncoder()
-                .withoutPadding()
-                .encodeToString(cryptoProvider.digest(codeVerifier.getBytes())))) {
+            .equals(hexString.toString())) {
           return Boolean.TRUE;
         }
       } else {
-        return null;
+        return Boolean.FALSE;
       }
     } catch (SQLException e) {
       throw new RuntimeSQLException(e);

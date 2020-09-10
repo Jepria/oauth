@@ -5,7 +5,7 @@ import { AppState } from '../../../store';
 import { ClientUriState } from '../types';
 import { useSelector, useDispatch } from 'react-redux';
 import { getClientUriById } from '../state/redux/actions';
-import { Page, Content, FormContainer, VerticalLayout } from 'jfront-components';
+import { Page, Content, FormContainer, VerticalLayout } from '@jfront/ui-core';
 
 export const ClientUriViewPage: React.FC = () => {
 

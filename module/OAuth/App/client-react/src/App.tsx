@@ -1,6 +1,8 @@
 import React from 'react';
-import { OAuthSecurityProvider } from './security/OAuthSecurityContext';
+import { OAuthWebContext } from '@jfront/oauth-ui';
 import AppRouter from './main/AppRouter';
+import { UserContextProvider } from './user/UserContextProvider';
+import axios from 'axios'
 
 function getOrigin() {
   if (!window.location.origin) {
@@ -15,12 +17,16 @@ function getOrigin() {
 
 function App() {
   return (
-    <OAuthSecurityProvider
+    <OAuthWebContext
         clientId={'OAuthRFI'}
-        redirectUri={`${getOrigin()}${process.env.NODE_ENV === 'development' ? '' : `${process.env.PUBLIC_URL}`}/oauth`}
-        oauthContextPath={`${process.env.NODE_ENV === 'development' ? 'http://localhost:8082/oauth/api' : `${getOrigin()}/oauth/api`}`}>
-      <AppRouter/>
-    </OAuthSecurityProvider>
+        redirectUri={`${process.env.NODE_ENV === 'development' ? "http://localhost:3000/oauth": `/oauth/oauth`}`}
+        oauthContextPath={`${process.env.NODE_ENV === 'development' ? 'http://localhost:8082/oauth/api' : `/oauth/api`}`}
+        axiosInstance={axios}
+        configureAxios>
+      <UserContextProvider baseUrl={`${process.env.NODE_ENV === 'development' ? 'http://localhost:8082/oauth/api' : `/oauth/api`}`}>
+        <AppRouter/>
+      </UserContextProvider>
+    </OAuthWebContext>
   );
 }
 

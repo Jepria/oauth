@@ -2,11 +2,10 @@ import React, { HTMLAttributes, useImperativeHandle } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { FormField, Label } from '../../../../components/form/Field';
 import { Formik, Form, Field, FieldProps } from 'formik';
-import { TextInput } from '../../../../components/form/input/TextInput';
 import { useDispatch } from 'react-redux';
 import { ClientUri } from '../types';
 import { createClientUri } from '../state/redux/actions';
-import { Page, Content, FormContainer } from 'jfront-components';
+import { Page, Content, FormContainer, TextInput } from '@jfront/ui-core';
 
 export const ClientUriCreatePage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();
@@ -52,7 +51,6 @@ export const ClientUriCreatePage = React.forwardRef<any, HTMLAttributes<HTMLForm
                       value={props.field.value}
                       onChange={props.field.onChange}
                       onBlur={props.field.onBlur}
-                      touched={props.meta.touched}
                       error={props.meta.error} />
                   )}
                 </Field>

@@ -1,33 +1,28 @@
 package org.jepria.oauth.authentication.dao;
 
+import org.jepria.compat.server.dao.ResultSetMapper;
 import org.jepria.compat.server.db.Db;
-import org.jepria.server.data.RuntimeSQLException;
+import org.jepria.oauth.session.dto.SessionDto;
+import org.jepria.server.data.DaoSupport;
 import org.jepria.server.service.security.pkg_Operator;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.CallableStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
+import static org.jepria.compat.server.JepRiaServerConstant.DEFAULT_DATA_SOURCE_JNDI_NAME;
+import static org.jepria.oauth.session.SessionFieldNames.CODE_CHALLENGE;
+import static org.jepria.oauth.session.SessionFieldNames.SESSION_ID;
+
 public class AuthenticationDaoImpl implements AuthenticationDao {
-
-  private String jndiName = "jdbc/RFInfoDS";
-
-  public AuthenticationDaoImpl() {
-  }
-
-  public AuthenticationDaoImpl(String jndName) {
-    this.jndiName = jndName;
-  }
-
+  
   protected Db getDb() {
-    return new Db(jndiName);
+    return new Db(DEFAULT_DATA_SOURCE_JNDI_NAME);
   }
-
+  
   @Override
   public Integer loginByPassword(String username, String password) {
     Integer operatorId = null;
@@ -41,74 +36,84 @@ public class AuthenticationDaoImpl implements AuthenticationDao {
     }
     return operatorId;
   }
-
+  
   @Override
   public Integer loginByClientSecret(String clientId, String clientSecret) {
-    //language=Oracle
-    String sqlQuery = "select cl.client_id from OA_CLIENT cl where cl.SHORT_NAME like ? and cl.CLIENT_SECRET like ?";
-    Db db = getDb();
-    CallableStatement callableStatement = db.prepare(sqlQuery);
-    try {
-      callableStatement.setString(1, clientId);
-      callableStatement.setString(2, clientSecret);
-      ResultSet rs = callableStatement.executeQuery();
-      List<Integer> result = new ArrayList<>();
-      while (rs.next()) {
-        result.add(rs.getInt("CLIENT_ID"));
-      }
-      if (result.size() == 1) {
-        return result.get(0);
-      } else {
-        return null;
-      }
-    } catch (SQLException e) {
-      throw new RuntimeSQLException(e);
-    } finally {
-      db.closeAll();
-    }
+    String sqlQuery =
+      "begin  "
+        + "? := pkg_OAuth.verifyClientCredentials("
+        + "clientShortName => ? "
+        + ", clientSecret => ? "
+        + ");"
+        + " end;";
+    return DaoSupport.getInstance().executeAndReturn(sqlQuery
+      , Integer.class
+      , clientId
+      , clientSecret);
   }
-
+  
   @Override
   public Boolean verifyPKCE(String authorizationCode, String codeVerifier) {
-    //language=Oracle
-    String sqlQuery = "select ss.CODE_CHALLENGE from OA_SESSION ss where ss.AUTHORIZATION_CODE like ?";
-    Db db = getDb();
-    CallableStatement callableStatement = db.prepare(sqlQuery);
-    try {
-      callableStatement.setString(1, authorizationCode);
-      ResultSet rs = callableStatement.executeQuery();
-      List<String> result = new ArrayList<>();
-      while (rs.next()) {
-        result.add(rs.getString("CODE_CHALLENGE"));
+    String sqlQuery =
+      "begin  "
+        + "? := pkg_OAuth.findSession("
+        + "sessionId => ? "
+        + ", authCode => ? "
+        + ", clientShortName => ? "
+        + ", redirectUri => ? "
+        + ", operatorId => ? "
+        + ", codeChallenge => '' "
+        + ", accessToken => ? "
+        + ", refreshToken => ? "
+        + ", sessionToken => ? "
+        + ", operatorIdIns => ? "
+        + ");"
+        + " end;";
+    List<SessionDto> records = null;
+    records = DaoSupport.getInstance().find(sqlQuery,
+      new ResultSetMapper<SessionDto>() {
+        @Override
+        public void map(ResultSet rs, SessionDto dto) throws SQLException {
+          dto.setSessionId(getInteger(rs, SESSION_ID));
+          dto.setCodeChallenge(rs.getString(CODE_CHALLENGE));
+        }
       }
-      if (result.size() == 1) {
+      , SessionDto.class
+      , null
+      , authorizationCode
+      , null
+      , null
+      , null
+      , null
+      , null
+      , null
+      , 1);
+    try {
+      if (records.size() == 1) {
         MessageDigest cryptoProvider = MessageDigest.getInstance("SHA-256");
         byte[] hash = cryptoProvider.digest(codeVerifier.getBytes());
-
+        
         StringBuffer hexString = new StringBuffer();
-
+  
         for (int i = 0; i < hash.length; i++) {
           String hex = Integer.toHexString(0xff & hash[i]);
           if (hex.length() == 1) hexString.append('0');
           hexString.append(hex);
         }
-
-        if (result.get(0)
-            .equals(hexString.toString())) {
+  
+        if (records.get(0)
+          .getCodeChallenge()
+          .equals(hexString.toString())) {
           return Boolean.TRUE;
         }
       } else {
         return Boolean.FALSE;
       }
-    } catch (SQLException e) {
-      throw new RuntimeSQLException(e);
     } catch (NoSuchAlgorithmException e) {
       e.printStackTrace();
       /**
        * Никогда не должно случится.
        */
-    } finally {
-      db.closeAll();
     }
     return Boolean.FALSE;
   }

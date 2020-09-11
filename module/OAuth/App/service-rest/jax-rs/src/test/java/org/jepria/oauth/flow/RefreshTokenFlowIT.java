@@ -29,6 +29,7 @@ public class RefreshTokenFlowIT extends JaxRsAdapterTestBase {
     Map<String, String> params = new HashMap<>();
     params.put("grant_type", GrantType.PASSWORD);
     params.put("client_id", properties.getProperty("client.id"));
+    params.put("client_secret", properties.getProperty("client.secret"));
     params.put("username", username);
     params.put("password", password);
     Response tokenResponse = RestAssured.given()
@@ -41,6 +42,8 @@ public class RefreshTokenFlowIT extends JaxRsAdapterTestBase {
     //обновим токен
     params = new HashMap<>();
     params.put("grant_type", GrantType.REFRESH_TOKEN);
+    params.put("client_id", properties.getProperty("client.id"));
+    params.put("client_secret", properties.getProperty("client.secret"));
     params.put("refresh_token", tokenDto.getRefreshToken());
     Response refreshResponse = RestAssured.given()
         .body(URIUtil.serializeParameters(params, "UTF-8"))
@@ -71,6 +74,8 @@ public class RefreshTokenFlowIT extends JaxRsAdapterTestBase {
   public void wrongCredentialsTest() throws UnsupportedEncodingException {
     Map<String, String> params = new HashMap<>();
     params.put("grant_type", GrantType.REFRESH_TOKEN);
+    params.put("client_id", properties.getProperty("client.id"));
+    params.put("client_secret", properties.getProperty("client.secret"));
     params.put("refresh_token", "wrongtoken");
     Response refreshResponse = RestAssured.given()
         .body(URIUtil.serializeParameters(params, "UTF-8"))

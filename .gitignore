@@ -8,6 +8,7 @@
 /module/OAuth/App/oauth-service/oauth-service.iml
 /module/OAuth/App/oauth-web/oauth-web.iml
 /module/OAuth/App/oauth-web/target
+/module/OAuth/App/OAuth.iml
 /module/OAuth/App/target
 /module/OAuth/App/main-web/main-web.iml
 /module/OAuth/App/main-web/target
@@ -29,4 +30,5 @@
 /module/OAuth/App/service-rest/jax-rs/target
 /module/OAuth/App/client-react/client-react.iml
 /module/OAuth/App/client-react/build
+/module/OAuth/App/client-react/yarn-error.log
 /module/OAuth/App/service-rest/jax-rs/jax-rs.iml

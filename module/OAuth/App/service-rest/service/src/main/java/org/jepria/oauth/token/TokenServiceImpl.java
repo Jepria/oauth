@@ -68,6 +68,7 @@ public class TokenServiceImpl implements TokenService {
                                 String redirectUri,
                                 String accessTokenId,
                                 String refreshTokenId,
+                                Boolean hasToken,
                                 Credential credential) {
     SessionSearchDto searchTemplate = new SessionSearchDto();
     searchTemplate.setAuthorizationCode(authCode);
@@ -75,6 +76,7 @@ public class TokenServiceImpl implements TokenService {
     searchTemplate.setRedirectUri(redirectUri);
     searchTemplate.setAccessTokenId(accessTokenId);
     searchTemplate.setRefreshTokenId(refreshTokenId);
+    searchTemplate.setHasToken(hasToken);
     List<SessionDto> result = sessionService.find(searchTemplate, credential);
     if (result.size() == 1) {
       return result.get(0);
@@ -126,6 +128,7 @@ public class TokenServiceImpl implements TokenService {
           redirectUri.toString(),
           null,
           null,
+          false,
           serverCredential);
       if (TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - session.getDateIns().getTime()) > 10) {
         throw new OAuthRuntimeException(INVALID_GRANT, "Authorization code active time has expired.");
@@ -169,6 +172,7 @@ public class TokenServiceImpl implements TokenService {
         redirectUri.toString(),
         null,
         null,
+        false,
         serverCredential);
     if (TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - session.getDateIns().getTime()) > 10) {
       throw new OAuthRuntimeException(INVALID_GRANT, "Authorization code active time has expired.");
@@ -220,6 +224,7 @@ public class TokenServiceImpl implements TokenService {
             null,
             null,
             refreshToken.getJti(),
+            true,
             serverCredential);
         String[] subject = refreshToken.getSubject().split(":");
         sessionService.deleteRecord(String.valueOf(sessionDto.getSessionId()), serverCredential);
@@ -234,14 +239,14 @@ public class TokenServiceImpl implements TokenService {
   
   @Override
   public TokenDto create(String clientId,
-                         Integer userId,
+                         Integer clientOperatorId,
                          String issuer) {
     List<String> clientGrantTypes = clientService.getClientGrantTypes(clientId);
-    if (userId == null || clientGrantTypes.size() == 0 || !clientGrantTypes.stream().anyMatch(clientGrantType -> clientGrantType.equals(GrantType.CLIENT_CREDENTIALS))) {
+    if (clientOperatorId == null || clientGrantTypes.size() == 0 || !clientGrantTypes.stream().anyMatch(clientGrantType -> clientGrantType.equals(GrantType.CLIENT_CREDENTIALS))) {
       throw new OAuthRuntimeException(UNAUTHORIZED_CLIENT, "Client doesn't have enough permissions to use responseType=" + GrantType.CLIENT_CREDENTIALS);
     }
     KeyDto keyDto = keyService.getKeys(null, serverCredential);
-    return createTokenPair(keyDto.getPrivateKey(), issuer, clientId, clientId, userId);
+    return createTokenPair(keyDto.getPrivateKey(), issuer, clientId, clientId, clientOperatorId);
   }
   
   private TokenDto createTokenPair(String privateKeyString,
@@ -283,6 +288,7 @@ public class TokenServiceImpl implements TokenService {
           null,
           token.getJti(),
           null,
+          true,
           serverCredential);
       if (sessionDto == null) {
         result.setActive(false);
@@ -316,6 +322,7 @@ public class TokenServiceImpl implements TokenService {
           null,
           token.getJti(),
           null,
+          true,
           serverCredential);
       sessionService.deleteRecord(String.valueOf(sessionDto.getSessionId()), serverCredential);
     } catch (ParseException e) {

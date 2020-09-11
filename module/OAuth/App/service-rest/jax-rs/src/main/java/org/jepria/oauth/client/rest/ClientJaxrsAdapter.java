@@ -11,7 +11,7 @@ import org.jepria.server.data.SearchRequestDto;
 import org.jepria.server.service.rest.ExtendedResponse;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
 import org.jepria.server.service.security.JepSecurityContext;
-import org.jepria.server.service.security.OAuth;
+import org.jepria.server.service.security.oauth.OAuth;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
@@ -66,7 +66,7 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
   }
 
   @GET
-//  @RolesAllowed({"OAViewClient", "OAViewSession"})
+  @RolesAllowed({"OAViewClient", "OAViewSession"})
   public Response getClients(@QueryParam("clientName") String clientName) {
     List<ClientDto> result = ClientServerFactory.getInstance().getService().getClient(clientName, securityContext.getCredential().getOperatorId());
     if (result.isEmpty()) {
@@ -80,21 +80,21 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
 
   @GET
   @Path("{recordId}")
-//  @RolesAllowed("OAViewClient")
+  @RolesAllowed("OAViewClient")
   public Response getRecordById(@PathParam("recordId") String recordId) {
     ClientDto result = (ClientDto) entityEndpointAdapter.getRecordById(recordId);
     return Response.ok(result).build();
   }
 
   @POST
-//  @RolesAllowed("OACreateClient")
+  @RolesAllowed("OACreateClient")
   public Response create(@Valid ClientCreateDto record) {
     return entityEndpointAdapter.create(record);
   }
 
   @DELETE
   @Path("{recordId}")
-//  @RolesAllowed("OADeleteClient")
+  @RolesAllowed("OADeleteClient")
   public Response deleteRecordById(@PathParam("recordId") String recordId) {
     entityEndpointAdapter.deleteRecordById(recordId);
     return Response.ok().build();
@@ -102,7 +102,7 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
 
   @PUT
   @Path("{recordId}")
-//  @RolesAllowed("OAEditClient")
+  @RolesAllowed("OAEditClient")
   public Response update(@Valid @PathParam("recordId") String recordId, @Valid ClientUpdateDto record) {
     entityEndpointAdapter.update(recordId, record);
     return Response.ok().build();
@@ -112,7 +112,7 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
 
   @POST
   @Path("search")
-//  @RolesAllowed("OAViewClient")
+  @RolesAllowed("OAViewClient")
   public Response postSearch(SearchRequestDto<ClientSearchDto> searchRequestDto,
                              @HeaderParam(ExtendedResponse.REQUEST_HEADER_NAME) String extendedResponse,
                              @HeaderParam("Cache-Control") String cacheControl) {
@@ -121,7 +121,7 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
 
   @GET
   @Path("search/{searchId}")
-//  @RolesAllowed("OAViewClient")
+  @RolesAllowed("OAViewClient")
   public Response getSearchRequest(
     @PathParam("searchId") String searchId) {
     SearchRequestDto<ClientSearchDto> result = (SearchRequestDto<ClientSearchDto>) searchEndpointAdapter.getSearchRequest(searchId);
@@ -130,7 +130,7 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
 
   @GET
   @Path("search/{searchId}/resultset-size")
-//  @RolesAllowed("OAViewClient")
+  @RolesAllowed("OAViewClient")
   public Response getSearchResultsetSize(@PathParam("searchId") String searchId,
                                          @HeaderParam("Cache-Control") String cacheControl) {
     int result = searchEndpointAdapter.getSearchResultsetSize(searchId, cacheControl);
@@ -139,7 +139,7 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
 
   @GET
   @Path("search/{searchId}/resultset")
-//  @RolesAllowed("OAViewClient")
+  @RolesAllowed("OAViewClient")
   public Response getResultset(
     @PathParam("searchId") String searchId,
     @QueryParam("pageSize") Integer pageSize,
@@ -151,7 +151,7 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
 
   @GET
   @Path("search/{searchId}/resultset/paged-by-{pageSize:\\d+}/{page}")
-//  @RolesAllowed("OAViewClient")
+  @RolesAllowed("OAViewClient")
   public Response getResultsetPaged(
     @PathParam("searchId") String searchId,
     @PathParam("pageSize") Integer pageSize,
@@ -163,7 +163,7 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
 
   @GET
   @Path("role")
-//  @RolesAllowed({"OACreateClient", "OAEditClient"})
+  @RolesAllowed({"OACreateClient", "OAEditClient"})
   public Response getRoles(
     @QueryParam("roleName") String roleName,
     @QueryParam("roleNameEn") String roleNameEn,

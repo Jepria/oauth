@@ -8,7 +8,7 @@ import org.jepria.server.data.SearchRequestDto;
 import org.jepria.server.service.rest.ExtendedResponse;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
 import org.jepria.server.service.security.JepSecurityContext;
-import org.jepria.server.service.security.OAuth;
+import org.jepria.server.service.security.oauth.OAuth;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.constraints.NotNull;
@@ -53,6 +53,7 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
   public Response postSearch(SearchRequestDto<SessionSearchDto> searchRequestDto,
                              @HeaderParam(ExtendedResponse.REQUEST_HEADER_NAME) String extendedResponse,
                              @HeaderParam("Cache-Control") String cacheControl) {
+    searchRequestDto.getTemplate().setHasToken(true);
     return searchEndpointAdapter.postSearch(searchRequestDto, extendedResponse, cacheControl);
   }
 
@@ -66,6 +67,7 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
     SessionSearchDto searchRequestDto = new SessionSearchDto();
     searchRequestDto.setSessionId(result.getTemplate().getSessionId());
     searchRequestDto.setOperatorId(result.getTemplate().getOperatorId());
+    searchRequestDto.setBlocked(result.getTemplate().getBlocked());
     searchRequestDto.setClientId(result.getTemplate().getClientId());
 
     SearchRequestDto<SessionSearchDto> searchTemplate = new SearchRequestDto<>();

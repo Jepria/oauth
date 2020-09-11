@@ -109,13 +109,7 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
     @QueryParam("state") String state,
     @CookieParam(SESSION_ID) String sessionToken
   ) {
-    String redirectUri = null;
-    try {
-      redirectUri = URLDecoder.decode(redirectUriEncoded.replaceAll("%20", "\\+"), StandardCharsets.UTF_8.name());
-    } catch (UnsupportedEncodingException e) {
-      e.printStackTrace();
-    }
-
+    String redirectUri = new String(Base64.getUrlDecoder().decode(redirectUriEncoded));
     AuthenticationServerFactory
       .getInstance()
       .getService()

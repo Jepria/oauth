@@ -1,5 +1,6 @@
 package org.jepria.oauth.client;
 
+import org.jepria.oauth.client.ClientService;
 import org.jepria.oauth.client.dao.ClientDao;
 import org.jepria.oauth.client.dto.ClientDto;
 import org.jepria.oauth.client.dto.ClientSearchDto;

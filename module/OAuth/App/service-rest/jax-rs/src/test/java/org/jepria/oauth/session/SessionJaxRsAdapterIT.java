@@ -47,6 +47,7 @@ public class SessionJaxRsAdapterIT extends JaxRsAdapterTestBase {
   public void searchTest() {
     SearchRequestDto<SessionSearchDto> searchRequestDto = new SearchRequestDto<>();
     SessionSearchDto sessionSearchDto = new SessionSearchDto();
+    sessionSearchDto.setBlocked(false);
     searchRequestDto.setTemplate(sessionSearchDto);
     Response postSearchRequestResponse = RestAssured.given()
       .auth()

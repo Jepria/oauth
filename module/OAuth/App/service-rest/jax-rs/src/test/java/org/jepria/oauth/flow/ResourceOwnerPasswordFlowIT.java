@@ -28,6 +28,7 @@ public class ResourceOwnerPasswordFlowIT extends JaxRsAdapterTestBase {
     Map<String, String> params = new HashMap<>();
     params.put("grant_type", GrantType.PASSWORD);
     params.put("client_id", properties.getProperty("client.id"));
+    params.put("client_secret", properties.getProperty("client.secret"));
     params.put("username", username);
     params.put("password", password);
     Response response = RestAssured.given()

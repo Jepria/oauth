@@ -80,7 +80,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
       if (sqlException.getErrorCode() == 20001) {
         throw new OAuthRuntimeException(UNAUTHORIZED_CLIENT, "Client ID not found");
       }
-      if (sqlException.getErrorCode() == 20002) {
+      if (sqlException.getErrorCode() == 20004) {
         throw new OAuthRuntimeException(INVALID_REQUEST, "redirect_uri mismatch");
       }
       throw new RuntimeSQLException(sqlException);
@@ -131,7 +131,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
       if (sqlException.getErrorCode() == 20001) {
         throw new OAuthRuntimeException(UNAUTHORIZED_CLIENT, "Client ID not found");
       }
-      if (sqlException.getErrorCode() == 20002) {
+      if (sqlException.getErrorCode() == 20004) {
         throw new OAuthRuntimeException(INVALID_REQUEST, "redirect_uri mismatch");
       }
       throw new RuntimeSQLException(sqlException);

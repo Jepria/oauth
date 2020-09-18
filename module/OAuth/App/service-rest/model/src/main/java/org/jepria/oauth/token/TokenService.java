@@ -68,7 +68,7 @@ public interface TokenService {
    * @return токен
    */
   TokenDto create(String clientId,
-                  Integer userId,
+                  Integer clientOperatorId,
                   String issuer);
   
   /**

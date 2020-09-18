@@ -15,12 +15,21 @@ import { LoadingPanel } from '../../components/mask';
 import { ClientState } from './types';
 import ClientSearchPage from './pages/ClientSearchPage';
 import { ClientListPage } from './pages/ClientListPage';
-import { TabPanel, SelectedTab, Tab } from '../../components/tabpanel/TabPanel';
-import { ToolBar } from '../../components/toolbar';
-import * as DefaultButtons from '../../components/toolbar/ToolBarButtons';
 import { setCurrentRecord, deleteClient, searchClients } from './state/redux/actions';
 import { HistoryState } from '../../components/HistoryState';
-import { Page, Header, Content } from 'jfront-components';
+import {
+  Panel,
+  TabPanel, Tab, Toolbar,
+  ToolbarButtonCreate,
+  ToolbarButtonEdit,
+  ToolbarButtonDelete,
+  ToolbarButtonFind,
+  ToolbarButtonSave,
+  ToolbarButtonView,
+  ToolbarSplitter,
+  ToolbarButtonBase
+} from '@jfront/ui-core';
+import { UserPanel } from '../../components/tabpanel/UserPanel';
 
 const ClientRoute: React.FC = () => {
 
@@ -29,26 +38,33 @@ const ClientRoute: React.FC = () => {
   const history = useHistory<HistoryState>();
   const dispatch = useDispatch();
   const { isLoading, message, error, current, searchId, searchRequest } = useSelector<AppState, ClientState>(state => state.client)
-  let formRef = useRef(null) as any;
-  
+  let formRef = useRef<HTMLFormElement>(null);
+
   return (
-    <Page>
+    <Panel>
       {isLoading && <LoadingPanel text={message} />}
-      <Header>
+      <Panel.Header>
         <TabPanel>
-          <SelectedTab>Клиент</SelectedTab>
-          {current && <Tab onClick={() => history.push(`/ui/client/${current?.clientId}/client-uri/list`, {prevRoute: pathname})}>URL</Tab>}
+          <Tab selected>Клиент</Tab>
+          {current && <Tab onClick={() => history.push(`/ui/client/${current?.clientId}/client-uri/list`, { prevRoute: pathname })}>URL</Tab>}
+          <UserPanel />
         </TabPanel>
-        <ToolBar>
-          <DefaultButtons.CreateButton onCreate={() => {
+        <Toolbar style={{ margin: 0 }}>
+          <ToolbarButtonCreate onClick={() => {
             dispatch(setCurrentRecord(undefined, () => {
               history.push('/ui/client/create')
             }));
           }} disabled={pathname.endsWith('/create')} />
-          <DefaultButtons.SaveButton onSave={() => { formRef.current?.handleSubmit() }} disabled={!pathname.endsWith('/create') && !pathname.endsWith('/edit')} />
-          <DefaultButtons.EditButton onEdit={() => history.push(`/ui/client/${current?.clientId}/edit`)} disabled={!current || pathname.endsWith('/edit')} />
-          <DefaultButtons.ViewButton onView={() => { history.push(`/ui/client/${current?.clientId}/view`) }} disabled={!current || pathname.endsWith('view')} />
-          <DefaultButtons.DeleteButton onDelete={() => {
+          <ToolbarButtonSave
+            onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }}
+            disabled={!pathname.endsWith('/create') && !pathname.endsWith('/edit')} />
+          <ToolbarButtonEdit
+            onClick={() => history.push(`/ui/client/${current?.clientId}/edit`)}
+            disabled={!current || pathname.endsWith('/edit') || pathname.endsWith('/edit/')} />
+          <ToolbarButtonView
+            onClick={() => { history.push(`/ui/client/${current?.clientId}/view`) }}
+            disabled={!current || pathname.endsWith('/view') || pathname.endsWith('/view/')} />
+          <ToolbarButtonDelete onClick={() => {
             if (current?.clientId) {
               if (window.confirm('Вы точно хотите удалить запись?')) {
                 dispatch(deleteClient(current.clientId, () => {
@@ -61,8 +77,8 @@ const ClientRoute: React.FC = () => {
               }
             }
           }} disabled={!current} />
-          <DefaultButtons.Splitter />
-          <DefaultButtons.ListButton onList={() => {
+          <ToolbarSplitter />
+          <ToolbarButtonBase onClick={() => {
             dispatch(setCurrentRecord(undefined, () => {
               if (searchRequest) {
                 history.push('/ui/client/list');
@@ -70,14 +86,14 @@ const ClientRoute: React.FC = () => {
                 history.push('/ui/client/search');
               }
             }))
-          }} disabled={pathname.endsWith('/search') || pathname.endsWith('/list')} />
-          <DefaultButtons.SearchButton onSearch={() => {
+          }} disabled={pathname.endsWith('/search') || pathname.endsWith('/list')}>Список</ToolbarButtonBase>
+          <ToolbarButtonFind onClick={() => {
             dispatch(setCurrentRecord(undefined, () => history.push('/ui/client/search')));
           }} />
-          <DefaultButtons.DoSearchButton onDoSearch={() => { formRef.current?.handleSubmit() }} disabled={!pathname.endsWith('/search')} />
-        </ToolBar>
-      </Header>
-      <Content>
+          <ToolbarButtonBase onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }} disabled={!pathname.endsWith('/search')}>Найти</ToolbarButtonBase>
+        </Toolbar>
+      </Panel.Header>
+      <Panel.Content>
         <Switch>
           <Route path={`${path}/create`}>
             <ClientCreatePage ref={formRef} />
@@ -95,8 +111,8 @@ const ClientRoute: React.FC = () => {
             <ClientListPage />
           </Route>
         </Switch>
-      </Content>
-    </Page>
+      </Panel.Content>
+    </Panel>
   );
 }
 

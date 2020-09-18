@@ -17,7 +17,10 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ExceptionMapper;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 import static org.jepria.oauth.sdk.OAuthConstants.*;
@@ -46,7 +49,12 @@ public class OAuthExceptionMapper implements ExceptionMapper<OAuthRuntimeExcepti
       String state = params.getFirst(STATE);
 
       if (encodedRedirectUri != null) {
-        String redirectUri = new String(Base64.getUrlDecoder().decode(encodedRedirectUri));
+        String redirectUri = null;
+        try {
+          redirectUri = URLDecoder.decode(encodedRedirectUri.replaceAll("%20", "\\+"), StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+          e.printStackTrace();
+        }
         String escapedRedirectUri = URIUtil.encodeURIComponent(URI.create(redirectUri + getSeparator(redirectUri)
           + error + "&"
           + STATE + "=" + state).toString());

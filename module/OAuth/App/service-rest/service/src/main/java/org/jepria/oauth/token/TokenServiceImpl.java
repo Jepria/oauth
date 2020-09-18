@@ -1,8 +1,10 @@
 package org.jepria.oauth.token;
 
+import org.jepria.oauth.client.ClientService;
 import org.jepria.oauth.exception.OAuthRuntimeException;
 import org.jepria.oauth.key.KeyService;
 import org.jepria.oauth.key.dto.KeyDto;
+import org.jepria.oauth.sdk.GrantType;
 import org.jepria.oauth.session.SessionService;
 import org.jepria.oauth.session.dto.SessionCreateDto;
 import org.jepria.oauth.session.dto.SessionDto;
@@ -31,11 +33,12 @@ import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 public class TokenServiceImpl implements TokenService {
 
-  private static final int ACCESS_TOKEN_LIFETIME = 3600; //1 hour
+  private static final int ACCESS_TOKEN_LIFETIME = 3600 * 8; //8 hours
   private static final int REFRESH_TOKEN_LIFETIME = 3600 * 24 * 7; //1 week
   private static final String TOKEN_TYPE = "Bearer";
   private final SessionService sessionService;
   private final KeyService keyService;
+  private final ClientService clientService;
 
   private Credential serverCredential = new Credential() {
     @Override
@@ -54,9 +57,10 @@ public class TokenServiceImpl implements TokenService {
     }
   };
 
-  public TokenServiceImpl(SessionService sessionService, KeyService keyService) {
+  public TokenServiceImpl(SessionService sessionService, KeyService keyService, ClientService clientService) {
     this.sessionService = sessionService;
     this.keyService = keyService;
+    this.clientService = clientService;
   }
 
   private SessionDto getSession(String authCode,
@@ -81,24 +85,24 @@ public class TokenServiceImpl implements TokenService {
     }
   }
 
-  private void updateSession(Integer sessionId,
-                             Integer userId,
+  private void updateSession(SessionDto session,
                              String accessTokenId,
                              Date accessTokenDateIns,
                              Date accessTokenDateFinish,
-                             String sessionTokenId,
-                             Date sessionTokenDateIns,
-                             Date sessionTokenDateFinish,
                              Credential credential) {
     SessionUpdateDto updateDto = new SessionUpdateDto();
-    updateDto.setSessionId(sessionId);
-    updateDto.setOperatorId(userId);
+    updateDto.setSessionId(session.getSessionId());
+    updateDto.setAuthorizationCode(session.getAuthorizationCode());
+    updateDto.setClientId(session.getClient().getValue());
+    updateDto.setRedirectUri(session.getRedirectUri());
+    updateDto.setCodeChallenge(session.getCodeChallenge());
+    updateDto.setOperatorId(session.getOperator().getValue());
     updateDto.setAccessTokenId(accessTokenId);
     updateDto.setAccessTokenDateIns(accessTokenDateIns);
     updateDto.setAccessTokenDateFinish(accessTokenDateFinish);
-    updateDto.setSessionTokenId(sessionTokenId);
-    updateDto.setSessionTokenDateIns(sessionTokenDateIns);
-    updateDto.setSessionTokenDateFinish(sessionTokenDateFinish);
+    updateDto.setSessionTokenId(session.getSessionTokenId());
+    updateDto.setSessionTokenDateIns(session.getSessionTokenDateIns());
+    updateDto.setSessionTokenDateFinish(session.getSessionTokenDateFinish());
     sessionService.update(String.valueOf(updateDto.getSessionId()), updateDto, credential);
   }
 
@@ -137,14 +141,10 @@ public class TokenServiceImpl implements TokenService {
       tokenDto.setAccessToken(accessToken.asString());
       tokenDto.setExpiresIn(ACCESS_TOKEN_LIFETIME);
       tokenDto.setTokenType(TOKEN_TYPE);
-      updateSession(session.getSessionId(),
-          session.getOperator().getValue(),
+      updateSession(session,
           accessToken.getJti(),
           accessToken.getIssueTime(),
           accessToken.getExpirationTime(),
-          session.getSessionTokenId(),
-          session.getSessionTokenDateIns(),
-          session.getSessionTokenDateFinish(),
           serverCredential);
       return tokenDto;
     } else {
@@ -185,15 +185,11 @@ public class TokenServiceImpl implements TokenService {
     tokenDto.setAccessToken(accessToken.asString());
     tokenDto.setExpiresIn(ACCESS_TOKEN_LIFETIME);
     tokenDto.setTokenType(TOKEN_TYPE);
-    updateSession(session.getSessionId(),
-        session.getOperator().getValue(),
-        accessToken.getJti(),
-        accessToken.getIssueTime(),
-        accessToken.getExpirationTime(),
-        session.getSessionTokenId(),
-        session.getSessionTokenDateIns(),
-        session.getSessionTokenDateFinish(),
-        serverCredential);
+    updateSession(session,
+      accessToken.getJti(),
+      accessToken.getIssueTime(),
+      accessToken.getExpirationTime(),
+      serverCredential);
     return tokenDto;
   }
   
@@ -202,6 +198,10 @@ public class TokenServiceImpl implements TokenService {
                          String username,
                          Integer userId,
                          String issuer) {
+    List<String> clientGrantTypes = clientService.getClientGrantTypes(clientId);
+    if (clientGrantTypes.size() == 0 || !clientGrantTypes.stream().anyMatch(clientGrantType -> clientGrantType.equals(GrantType.PASSWORD))) {
+      throw new OAuthRuntimeException(UNAUTHORIZED_CLIENT, "Client doesn't have enough permissions to use responseType=" + GrantType.PASSWORD);
+    }
     KeyDto keyDto = keyService.getKeys(null, serverCredential);
     return createTokenPair(keyDto.getPrivateKey(), issuer, clientId, username, userId);
   }
@@ -210,6 +210,10 @@ public class TokenServiceImpl implements TokenService {
   public TokenDto create(String clientId,
                          String refreshTokenString,
                          String issuer) {
+    List<String> clientGrantTypes = clientService.getClientGrantTypes(clientId);
+    if (clientGrantTypes.size() == 0 || !clientGrantTypes.stream().anyMatch(clientGrantType -> clientGrantType.equals(GrantType.REFRESH_TOKEN))) {
+      throw new OAuthRuntimeException(UNAUTHORIZED_CLIENT, "Client doesn't have enough permissions to use responseType=" + GrantType.REFRESH_TOKEN);
+    }
     KeyDto keyDto = keyService.getKeys(null, serverCredential);
     try {
       Token refreshToken = TokenImpl.parseFromString(refreshTokenString);
@@ -222,9 +226,6 @@ public class TokenServiceImpl implements TokenService {
             refreshToken.getJti(),
             true,
             serverCredential);
-        if (sessionDto.getBlocked()) {
-          throw new OAuthRuntimeException(INVALID_GRANT, "Token is blocked");
-        }
         String[] subject = refreshToken.getSubject().split(":");
         sessionService.deleteRecord(String.valueOf(sessionDto.getSessionId()), serverCredential);
         return createTokenPair(keyDto.getPrivateKey(), issuer, refreshToken.getAudience().isEmpty() ? null : refreshToken.getAudience().get(0), subject[0], Integer.valueOf(subject[1]));
@@ -238,10 +239,14 @@ public class TokenServiceImpl implements TokenService {
   
   @Override
   public TokenDto create(String clientId,
-                         Integer userId,
+                         Integer clientOperatorId,
                          String issuer) {
+    List<String> clientGrantTypes = clientService.getClientGrantTypes(clientId);
+    if (clientOperatorId == null || clientGrantTypes.size() == 0 || !clientGrantTypes.stream().anyMatch(clientGrantType -> clientGrantType.equals(GrantType.CLIENT_CREDENTIALS))) {
+      throw new OAuthRuntimeException(UNAUTHORIZED_CLIENT, "Client doesn't have enough permissions to use responseType=" + GrantType.CLIENT_CREDENTIALS);
+    }
     KeyDto keyDto = keyService.getKeys(null, serverCredential);
-    return createTokenPair(keyDto.getPrivateKey(), issuer, clientId, clientId, userId);
+    return createTokenPair(keyDto.getPrivateKey(), issuer, clientId, clientId, clientOperatorId);
   }
   
   private TokenDto createTokenPair(String privateKeyString,
@@ -285,7 +290,7 @@ public class TokenServiceImpl implements TokenService {
           null,
           true,
           serverCredential);
-      if (sessionDto.getBlocked()) {
+      if (sessionDto == null) {
         result.setActive(false);
         return result;
       }
@@ -335,10 +340,7 @@ public class TokenServiceImpl implements TokenService {
       /**
        * Generate uuid for token ID
        */
-      MessageDigest cryptoProvider = MessageDigest.getInstance("SHA-256");
-      UUID randomUuid = UUID.randomUUID();
-      cryptoProvider.update(randomUuid.toString().getBytes());
-      String tokenId = Base64.getUrlEncoder().encodeToString(cryptoProvider.digest());
+      String tokenId = UUID.randomUUID().toString().replaceAll("-", "");
       /**
        * Create token with JWT lib
        * TODO пересмотреть концепцию передачи данных пользователя
@@ -365,13 +367,7 @@ public class TokenServiceImpl implements TokenService {
   
   private String generateCode() {
     try {
-      UUID randomUuid = UUID.randomUUID();
-      MessageDigest md = MessageDigest.getInstance("SHA-256");
-      SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
-      byte[] salt = new byte[16];
-      random.nextBytes(salt);
-      md.update(salt);
-      return Base64.getUrlEncoder().withoutPadding().encodeToString(md.digest(randomUuid.toString().getBytes()));
+      return UUID.randomUUID().toString().replaceAll("-", "");
     } catch (Throwable th) {
       throw new OAuthRuntimeException(SERVER_ERROR, th);
     }

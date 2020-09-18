@@ -646,6 +646,12 @@
             "items": {
               "type": "string"
             }
+          },
+          "scope": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },
@@ -665,6 +671,12 @@
             "type": "string"
           },
           "grantTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "scope": {
             "type": "array",
             "items": {
               "type": "string"
@@ -698,6 +710,12 @@
             }
           },
           "responseTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "scope": {
             "type": "array",
             "items": {
               "type": "string"

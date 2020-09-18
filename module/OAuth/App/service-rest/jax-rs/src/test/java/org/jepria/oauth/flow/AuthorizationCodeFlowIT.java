@@ -14,6 +14,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -40,7 +42,7 @@ public class AuthorizationCodeFlowIT extends JaxRsAdapterTestBase {
         .follow(false)
         .param("response_type", ResponseType.CODE)
         .param("client_id", properties.getProperty("client.id"))
-        .param("redirect_uri", Base64.getUrlEncoder().withoutPadding().encodeToString(properties.getProperty("client.redirect_uri").getBytes()))
+        .param("redirect_uri", URLEncoder.encode(properties.getProperty("client.redirect_uri"), StandardCharsets.UTF_8.name()).replaceAll("\\+","%20"))
         .param("state", String.valueOf(new Date().getTime()))
         .get(baseUrl + authorizationEndpoint);
     authorizeResponse.then().assertThat().statusCode(302);
@@ -51,7 +53,7 @@ public class AuthorizationCodeFlowIT extends JaxRsAdapterTestBase {
         .contentType(ContentType.URLENC)
         .post(authenticateUrl);
     authenticationResponse.then().assertThat().statusCode(302);
-    assertTrue(authenticationResponse.getHeader("Location").startsWith(properties.getProperty("client.redirect_uri")));
+    assertTrue(authenticationResponse.getHeader("Location").startsWith(properties.getProperty("server.url") + properties.getProperty("client.redirect_uri")));
     location = URI.create(authenticationResponse.getHeader("Location"));
     String authCode = URIUtil.parseParameters(location.getQuery(), "UTF-8").get(OAuthConstants.CODE);
     assertNotNull(authCode);
@@ -60,7 +62,7 @@ public class AuthorizationCodeFlowIT extends JaxRsAdapterTestBase {
         .when()
         .contentType(ContentType.URLENC)
         .body("grant_type=" + GrantType.AUTHORIZATION_CODE +
-            "&redirect_uri=" + Base64.getUrlEncoder().withoutPadding().encodeToString(properties.getProperty("client.redirect_uri").getBytes()) +
+            "&redirect_uri=" + URLEncoder.encode(properties.getProperty("client.redirect_uri"), StandardCharsets.UTF_8.name()).replaceAll("\\+","%20")  +
             "&code=" + authCode)
         .post(baseUrl + tokenEndpoint);
     tokenResponse.then().assertThat().statusCode(200);
@@ -92,14 +94,25 @@ public class AuthorizationCodeFlowIT extends JaxRsAdapterTestBase {
     byte[] buffer = new byte[16];
     sr.nextBytes(buffer);
     String codeVerifier = Base64.getUrlEncoder().withoutPadding().encodeToString(buffer);
-    MessageDigest md = MessageDigest.getInstance("SHA-256");
-    String codeChallenge = Base64.getUrlEncoder().withoutPadding().encodeToString(md.digest(codeVerifier.getBytes()));
+    
+    MessageDigest cryptoProvider = MessageDigest.getInstance("SHA-256");
+    byte[] hash = cryptoProvider.digest(codeVerifier.getBytes());
+  
+    StringBuffer hexString = new StringBuffer();
+  
+    for (int i = 0; i < hash.length; i++) {
+      String hex = Integer.toHexString(0xff & hash[i]);
+      if (hex.length() == 1) hexString.append('0');
+      hexString.append(hex);
+    }
+    String codeChallenge = hexString.toString();
+    
     Response authorizeResponse = RestAssured.given()
         .redirects()
         .follow(false)
         .param("response_type", ResponseType.CODE)
         .param("client_id", properties.getProperty("client.id"))
-        .param("redirect_uri", Base64.getUrlEncoder().withoutPadding().encodeToString(properties.getProperty("client.redirect_uri").getBytes()))
+        .param("redirect_uri", URLEncoder.encode(properties.getProperty("client.redirect_uri"), StandardCharsets.UTF_8.name()).replaceAll("\\+","%20"))
         .param("code_challenge", codeChallenge)
         .param("state", String.valueOf(new Date().getTime()))
         .get(baseUrl + authorizationEndpoint);
@@ -111,7 +124,7 @@ public class AuthorizationCodeFlowIT extends JaxRsAdapterTestBase {
         .contentType(ContentType.URLENC)
         .post(authenticateUrl);
     authenticationResponse.then().assertThat().statusCode(302);
-    assertTrue(authenticationResponse.getHeader("Location").startsWith(properties.getProperty("client.redirect_uri")));
+    assertTrue(authenticationResponse.getHeader("Location").startsWith(properties.getProperty("server.url") + properties.getProperty("client.redirect_uri")));
     location = URI.create(authenticationResponse.getHeader("Location"));
     String authCode = URIUtil.parseParameters(location.getQuery(), "UTF-8").get(OAuthConstants.CODE);
     assertNotNull(authCode);
@@ -119,7 +132,7 @@ public class AuthorizationCodeFlowIT extends JaxRsAdapterTestBase {
         .when()
         .contentType(ContentType.URLENC)
         .body("grant_type=" + GrantType.AUTHORIZATION_CODE +
-            "&redirect_uri=" + Base64.getUrlEncoder().withoutPadding().encodeToString(properties.getProperty("client.redirect_uri").getBytes()) +
+            "&redirect_uri=" + URLEncoder.encode(properties.getProperty("client.redirect_uri"), StandardCharsets.UTF_8.name()).replaceAll("\\+","%20") +
             "&code=" + authCode +
             "&client_id=" + properties.getProperty("client.id") +
             "&code_verifier=" + codeVerifier)
@@ -167,7 +180,7 @@ public class AuthorizationCodeFlowIT extends JaxRsAdapterTestBase {
         .follow(false)
         .param("response_type", ResponseType.CODE)
         .param("client_id", properties.getProperty("client.id"))
-        .param("redirect_uri", Base64.getUrlEncoder().withoutPadding().encodeToString(properties.getProperty("client.redirect_uri").getBytes()))
+        .param("redirect_uri", URLEncoder.encode(properties.getProperty("client.redirect_uri"), StandardCharsets.UTF_8.name()).replaceAll("\\+","%20") )
         .param("state", String.valueOf(new Date().getTime()))
         .get(baseUrl + authorizationEndpoint);
     authorizeResponse.then().assertThat().statusCode(302);

@@ -1,26 +1,24 @@
 package org.jepria.oauth.authentication;
 
-import org.jepria.oauth.exception.OAuthRuntimeException;
-import org.jepria.oauth.authentication.AuthenticationService;
 import org.jepria.oauth.authentication.dao.AuthenticationDao;
 import org.jepria.oauth.clienturi.ClientUriService;
 import org.jepria.oauth.clienturi.dto.ClientUriDto;
 import org.jepria.oauth.clienturi.dto.ClientUriSearchDto;
+import org.jepria.oauth.exception.OAuthRuntimeException;
 import org.jepria.oauth.key.KeyService;
 import org.jepria.oauth.key.dto.KeyDto;
-import org.jepria.oauth.session.SessionService;
-import org.jepria.oauth.session.dto.SessionDto;
-import org.jepria.oauth.session.dto.SessionSearchDto;
-import org.jepria.oauth.session.dto.SessionUpdateDto;
 import org.jepria.oauth.sdk.token.*;
 import org.jepria.oauth.sdk.token.rsa.DecryptorRSA;
 import org.jepria.oauth.sdk.token.rsa.EncryptorRSA;
 import org.jepria.oauth.sdk.token.rsa.SignatureVerifierRSA;
 import org.jepria.oauth.sdk.token.rsa.SignerRSA;
+import org.jepria.oauth.session.SessionService;
+import org.jepria.oauth.session.dto.SessionDto;
+import org.jepria.oauth.session.dto.SessionSearchDto;
+import org.jepria.oauth.session.dto.SessionUpdateDto;
 import org.jepria.server.data.RuntimeSQLException;
 import org.jepria.server.service.security.Credential;
 
-import java.security.MessageDigest;
 import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -60,15 +58,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   };
 
   public Integer loginByPassword(String username, String password) {
+    Integer operatorId;
     try {
-      Integer operatorId = dao.loginByPassword(username, password);
-      if (operatorId == null) {
-        throw new OAuthRuntimeException(ACCESS_DENIED, "Wrong username/password.");
-      } else {
-        return operatorId;
-      }
+      operatorId = dao.loginByPassword(username, password);
     } catch (RuntimeSQLException th) {
       throw new OAuthRuntimeException(SERVER_ERROR, th);
+    }
+    if (operatorId == null) {
+      throw new OAuthRuntimeException(ACCESS_DENIED, "Wrong username/password.");
+    } else {
+      return operatorId;
     }
   }
 
@@ -107,12 +106,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   @Override
   public void loginByAuthorizationCode(String authorizationCode, String clientId, String codeVerifier) {
     loginByClientId(clientId);
+    boolean result = false;
     try {
-      if (!dao.verifyPKCE(authorizationCode, codeVerifier)) {
-        throw new OAuthRuntimeException(ACCESS_DENIED, "PKCE verification failed");
-      }
+      result = dao.verifyPKCE(authorizationCode, codeVerifier);
     } catch (Throwable th) {
       throw new OAuthRuntimeException(SERVER_ERROR, th);
+    }
+    if (!result) {
+      throw new OAuthRuntimeException(ACCESS_DENIED, "PKCE verification failed");
     }
   }
 
@@ -137,7 +138,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     Integer operatorId = loginByPassword(username, password);
     KeyDto keyDto = keyService.getKeys(null, serverCredential);
     Token sessionToken = generateSessionToken(username, operatorId, host, keyDto.getPrivateKey(), null);
-    updateSession(session.getSessionId(),
+    updateSession(session,
       operatorId,
       sessionToken.getJti(),
       sessionToken.getIssueTime(),
@@ -201,15 +202,25 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
   }
 
-  private void updateSession(Integer sessionId,
+  private void updateSession(SessionDto sessionDto,
                              Integer operatorId,
                              String sessionTokenId,
                              Date sessionDateIns,
                              Date sessionDateFinish,
                              Credential serverCredential) {
     SessionUpdateDto updateDto = new SessionUpdateDto();
-    updateDto.setSessionId(sessionId);
+    updateDto.setSessionId(sessionDto.getSessionId());
+    updateDto.setAuthorizationCode(sessionDto.getAuthorizationCode());
+    updateDto.setClientId(sessionDto.getClient().getValue());
+    updateDto.setRedirectUri(sessionDto.getRedirectUri());
+    updateDto.setCodeChallenge(sessionDto.getCodeChallenge());
     updateDto.setOperatorId(operatorId);
+    updateDto.setAccessTokenId(sessionDto.getAccessTokenId());
+    updateDto.setAccessTokenDateIns(sessionDto.getSessionTokenDateIns());
+    updateDto.setAccessTokenDateFinish(sessionDto.getAccessTokenDateFinish());
+    updateDto.setAccessTokenId(sessionDto.getRefreshTokenId());
+    updateDto.setAccessTokenDateIns(sessionDto.getRefreshTokenDateIns());
+    updateDto.setAccessTokenDateFinish(sessionDto.getRefreshTokenDateFinish());
     updateDto.setSessionTokenId(sessionTokenId);
     updateDto.setSessionTokenDateIns(sessionDateIns);
     updateDto.setSessionTokenDateFinish(sessionDateFinish);
@@ -221,10 +232,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       /**
        * Generate uuid for token ID
        */
-      MessageDigest cryptoProvider = MessageDigest.getInstance("SHA-256");
-      UUID randomUuid = UUID.randomUUID();
-      cryptoProvider.update(randomUuid.toString().getBytes());
-      String tokenId = Base64.getUrlEncoder().encodeToString(cryptoProvider.digest());
+      String tokenId = UUID.randomUUID().toString().replaceAll("-", "");
       /**
        * Create token with JWT lib
        */

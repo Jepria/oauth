@@ -14,23 +14,8 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
-        <jepria-rest.version>12.1.0-SNAPSHOT</jepria-rest.version>
-        <bin.home>${env.BIN_HOME}</bin.home>
+        <jepria-rest.version>12.2.0-SNAPSHOT</jepria-rest.version>
     </properties>
-
-    <repositories>
-        <!--
-        Путь к бинарному репозиторию
-        https://github.com/Jepria/bin-repo
-        -->
-        <repository>
-            <id>binhome-local-deploy</id>
-            <name>binhome-local-deploy-repo</name>
-            <url>file:${bin.home}\deploy</url>
-            <releases><enabled>true</enabled><updatePolicy>always</updatePolicy></releases>
-            <snapshots><enabled>true</enabled><updatePolicy>always</updatePolicy></snapshots>
-        </repository>
-    </repositories>
 
     <parent>
         <groupId>org.jepria.oauth</groupId>

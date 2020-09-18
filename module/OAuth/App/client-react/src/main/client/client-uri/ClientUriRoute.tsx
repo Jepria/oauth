@@ -14,40 +14,46 @@ import { useSelector, useDispatch } from 'react-redux';
 import { LoadingPanel } from '../../../components/mask';
 import { ClientUriState } from './types';
 import { ClientUriListPage } from './pages/ClientUriListPage';
-import { TabPanel, SelectedTab, Tab } from '../../../components/tabpanel/TabPanel';
-import { ToolBar } from '../../../components/toolbar';
-import * as DefaultButtons from '../../../components/toolbar/ToolBarButtons';
 import { setCurrentRecord, deleteClientUri, searchClientUri } from './state/redux/actions';
 import { HistoryState } from '../../../components/HistoryState';
-import { Page, Header, Content } from 'jfront-components';
+import { Panel, 
+  TabPanel, Tab, Toolbar,
+  ToolbarButtonCreate,
+  ToolbarButtonDelete,
+  ToolbarButtonSave, 
+  ToolbarButtonView, 
+  ToolbarSplitter, 
+  ToolbarButtonBase } from '@jfront/ui-core';
+import { UserPanel } from '../../../components/tabpanel/UserPanel';
 
 const ClientUriRoute: React.FC = () => {
 
   const { path } = useRouteMatch();
   const { pathname, state } = useLocation<HistoryState>();
-  const { clientId } = useParams();
+  const { clientId } = useParams<any>();
   const history = useHistory();
   const dispatch = useDispatch();
   const { isLoading, message, error, current } = useSelector<AppState, ClientUriState>(state => state.clientUri)
   let formRef = useRef(null) as any;
   
   return (
-    <Page>
+    <Panel>
       {isLoading && <LoadingPanel text={message} />}
-      <Header>
+      <Panel.Header>
         <TabPanel>
-          {!pathname.endsWith('/view') && <Tab onClick={() => history.push(state?.prevRoute? state.prevRoute : `/ui/client/${clientId}/view`)}>Клиент</Tab>}
-          <SelectedTab>URL</SelectedTab>
+          <Tab onClick={() => history.push(state?.prevRoute? state.prevRoute : `/ui/client/${clientId}/view`)}>Клиент</Tab>
+          <Tab selected>URL</Tab>
+          <UserPanel/>
         </TabPanel>
-        <ToolBar>
-          <DefaultButtons.CreateButton onCreate={() => {
+        <Toolbar style={{margin: 0}}>
+          <ToolbarButtonCreate onClick={() => {
             dispatch(setCurrentRecord(undefined, () => {
               history.push(`/ui/client/${clientId}/client-uri/create`, state)
             }));
           }} disabled={pathname.endsWith('/create')} />
-          <DefaultButtons.SaveButton onSave={() => { formRef.current?.handleSubmit() }} disabled={!pathname.endsWith('/create')} />
-          <DefaultButtons.ViewButton onView={() => { history.push(`/ui/client/${clientId}/client-uri/${current?.clientUriId}/view`, state) }} disabled={!current || pathname.endsWith('view')} />
-          <DefaultButtons.DeleteButton onDelete={() => {
+          <ToolbarButtonSave onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }} disabled={!pathname.endsWith('/create')} />
+          <ToolbarButtonView onClick={() => { history.push(`/ui/client/${clientId}/client-uri/${current?.clientUriId}/view`, state) }} disabled={!current || pathname.endsWith('view')} />
+          <ToolbarButtonDelete onClick={() => {
             if (clientId && current?.clientUriId) {
               if (window.confirm('Вы точно хотите удалить запись?')) {
                 dispatch(deleteClientUri(clientId, `${current.clientUriId}`, () => {
@@ -60,15 +66,15 @@ const ClientUriRoute: React.FC = () => {
               }
             }
           }} disabled={!current} />
-          <DefaultButtons.Splitter />
-          <DefaultButtons.ListButton onList={() => {
+          <ToolbarSplitter />
+          <ToolbarButtonBase onClick={() => {
             dispatch(setCurrentRecord(undefined, () => {
               history.push(`/ui/client/${clientId}/client-uri/list`, state);
             }))
-          }} disabled={pathname.endsWith('/list')} />
-        </ToolBar>
-      </Header>
-      <Content>
+          }} disabled={pathname.endsWith('/list')}>Список</ToolbarButtonBase>
+        </Toolbar>
+      </Panel.Header>
+      <Panel.Content>
         <Switch>
           <Route path={`${path}/create`}>
             <ClientUriCreatePage ref={formRef} />
@@ -80,8 +86,8 @@ const ClientUriRoute: React.FC = () => {
             <ClientUriListPage />
           </Route>
         </Switch>
-      </Content>
-    </Page>
+      </Panel.Content>
+    </Panel>
   );
 }
 

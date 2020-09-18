@@ -4,9 +4,12 @@ import org.jepria.oauth.key.KeyServerFactory;
 import org.jepria.oauth.key.KeyService;
 import org.jepria.oauth.key.dto.KeyDto;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
-import org.jepria.server.service.security.OAuth;
+import org.jepria.server.service.security.oauth.OAuth;
 
-import javax.ws.rs.*;
+import javax.annotation.security.RolesAllowed;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
 /**
@@ -17,18 +20,6 @@ import javax.ws.rs.core.Response;
 public class KeyJaxrsAdapter extends JaxrsAdapterBase {
   
   KeyService service = KeyServerFactory.getInstance().getService();
-  
-  @GET
-  @Path("{kid}")
-  public Response getKeyById(@PathParam("kid") String keyId) {
-    KeyDto keyDto = service.getKeys(keyId, securityContext.getCredential());
-    if (keyDto != null) {
-      keyDto.setPrivateKey("");
-      return Response.ok(keyDto).build();
-    } else {
-      return null;
-    }
-  }
   
   @GET
   public Response getKey() {
@@ -42,6 +33,7 @@ public class KeyJaxrsAdapter extends JaxrsAdapterBase {
   }
   
   @POST
+  @RolesAllowed("OAUpdateKey")
   public Response updateKeys() {
     service.setKeys(securityContext.getCredential());
     return Response.ok().build();

@@ -5,6 +5,7 @@ export interface Client {
   clientSecret?: string;
   applicationType: string;
   grantTypes: Array<string>;
+  scopes?: Array<Option>;
 }
 
 export interface ColumnSortConfiguration {
@@ -14,23 +15,29 @@ export interface ColumnSortConfiguration {
 
 export interface SearchRequest<Type> {
   template: Type;
-  listSortConfiguration?: ColumnSortConfiguration;
+  listSortConfiguration?: Array<ColumnSortConfiguration>;
 }
 
 export interface ClientSearchTemplate {
   clientId?: string;
   clientName?: string;
   clientNameEn?: string;
-  maxRowCount?: number;
+  maxRowCount: number;
 }
 
 export interface ClientState {
   isLoading: boolean;
   current?: Client;
-  records?: Array<Client>;
+  records: Array<Client>;
   searchId?: string;
   resultSetSize?: number;
   searchRequest?: SearchRequest<ClientSearchTemplate>;
   message?: string;
   error?: Error;
+  roles?: Array<Option>
+}
+
+export interface Option {
+  name: string;
+  value: string;
 }

@@ -7,9 +7,11 @@ import org.jepria.server.data.OptionDto;
 import org.jepria.server.data.SearchRequestDto;
 import org.jepria.server.service.rest.ExtendedResponse;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
+import org.jepria.server.service.rest.gson.JsonConfig;
 import org.jepria.server.service.security.JepSecurityContext;
-import org.jepria.server.service.security.OAuth;
+import org.jepria.server.service.security.oauth.OAuth;
 
+import javax.annotation.security.RolesAllowed;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -30,6 +32,7 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
 
   @DELETE
   @Path("/{sessionId}")
+  @RolesAllowed("OADeleteSession")
   public Response delete(@PathParam("sessionId") Integer sessionId) {
     entityEndpointAdapter.deleteRecordById(String.valueOf(sessionId));
     return Response.ok().build();
@@ -37,6 +40,8 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
 
   @GET
   @Path("/{sessionId}")
+  @RolesAllowed("OAViewSession")
+  @JsonConfig(dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
   public Response getRecordById(@PathParam("sessionId") Integer sessionId) {
     SessionDto result = (SessionDto) entityEndpointAdapter.getRecordById(String.valueOf(sessionId));
     return Response.ok(result).build();
@@ -46,6 +51,7 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
 
   @POST
   @Path("/search")
+  @RolesAllowed("OAViewSession")
   public Response postSearch(SearchRequestDto<SessionSearchDto> searchRequestDto,
                              @HeaderParam(ExtendedResponse.REQUEST_HEADER_NAME) String extendedResponse,
                              @HeaderParam("Cache-Control") String cacheControl) {
@@ -55,6 +61,7 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
 
   @GET
   @Path("/search/{searchId}")
+  @RolesAllowed("OAViewSession")
   public Response getSearchRequest(
     @PathParam("searchId") String searchId) {
     SearchRequestDto<SessionSearchDto> result = (SearchRequestDto<SessionSearchDto>) searchEndpointAdapter.getSearchRequest(searchId);
@@ -72,6 +79,7 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
 
   @GET
   @Path("/search/{searchId}/resultset-size")
+  @RolesAllowed("OAViewSession")
   public Response getSearchResultsetSize(@PathParam("searchId") String searchId,
                                          @HeaderParam("Cache-Control") String cacheControl) {
     int result = searchEndpointAdapter.getSearchResultsetSize(searchId, cacheControl);
@@ -80,28 +88,41 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
 
   @GET
   @Path("/search/{searchId}/resultset")
+  @RolesAllowed("OAViewSession")
+  @JsonConfig(dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
   public Response getResultset(
     @PathParam("searchId") String searchId,
     @QueryParam("pageSize") Integer pageSize,
     @QueryParam("page") Integer page,
     @HeaderParam("Cache-Control") String cacheControl) {
     List<SessionDto> result = (List<SessionDto>) searchEndpointAdapter.getResultset(searchId, pageSize, page, cacheControl);
-    return Response.ok(result).build();
+    if (result != null && result.size() > 0) {
+      return Response.ok(result).build();
+    } else {
+      return Response.status(Response.Status.NO_CONTENT).build();
+    }
   }
 
   @GET
   @Path("/search/{searchId}/resultset/paged-by-{pageSize:\\d+}/{page}")
+  @RolesAllowed("OAViewSession")
+  @JsonConfig(dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
   public Response getResultsetPaged(
     @PathParam("searchId") String searchId,
     @PathParam("pageSize") Integer pageSize,
     @PathParam("page") Integer page,
     @HeaderParam("Cache-Control") String cacheControl) {
     List<SessionDto> result = (List<SessionDto>) searchEndpointAdapter.getResultsetPaged(searchId, pageSize, page, cacheControl);
-    return Response.ok(result).build();
+    if (result != null && result.size() > 0) {
+      return Response.ok(result).build();
+    } else {
+      return Response.status(Response.Status.NO_CONTENT).build();
+    }
   }
 
   @GET
   @Path("/operators")
+  @RolesAllowed("OAViewSession")
   public Response getOperators(@QueryParam("operatorName") String operatorName, @NotNull @QueryParam("maxRowCount") Integer maxRowCount) {
     List<OptionDto<String>> result = SessionServerFactory.getInstance().getService().getOperators(operatorName, maxRowCount);
     if (!result.isEmpty()) {

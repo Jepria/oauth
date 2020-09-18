@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
-import { FormField, Label, Text } from '../../../components/form/Field';
+import { Text } from '../../../components/form/Field';
 import { AppState } from '../../store';
 import { KeyState } from '../types';
 import { useSelector, useDispatch } from 'react-redux';
 import { getKey } from '../state/redux/actions';
-import { Page, Content, FormContainer, VerticalLayout } from 'jfront-components';
+import { Panel, Form } from '@jfront/ui-core';
 
 const KeyViewPage: React.FC = () => {
 
@@ -18,26 +18,24 @@ const KeyViewPage: React.FC = () => {
   }, [current, dispatch]);
 
   return (
-    <Page>
-      <Content>
-        <FormContainer>
-          <VerticalLayout>
-            <FormField>
-              <Label width="150px">ID ключа:</Label>
-              <Text>{current?.keyId}</Text>
-            </FormField>
-            <FormField>
-              <Label width="150px">Публичный ключ:</Label>
-              <Text width="200px">{current?.publicKey}</Text>
-            </FormField>
-            <FormField>
-              <Label width="150px">Дата создания:</Label>
-              <Text>{current?.dateIns}</Text>
-            </FormField>
-          </VerticalLayout>
-        </FormContainer>
-      </Content>
-    </Page>
+    <Panel>
+      <Panel.Content>
+        <Form>
+          <Form.Field>
+            <Form.Label>ID:</Form.Label>
+            <Text>{current?.keyId}</Text>
+          </Form.Field>
+          <Form.Field>
+            <Form.Label>Публичный ключ:</Form.Label>
+            <Text width="200px">{current?.publicKey}</Text>
+          </Form.Field>
+          <Form.Field>
+            <Form.Label>Дата создания:</Form.Label>
+            <Text>{current?.dateIns}</Text>
+          </Form.Field>
+        </Form>
+      </Panel.Content>
+    </Panel>
   )
 
 }

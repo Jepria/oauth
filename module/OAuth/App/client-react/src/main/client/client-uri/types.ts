@@ -6,7 +6,7 @@ export interface ClientUri {
 export interface ClientUriState {
   isLoading: boolean;
   current?: ClientUri;
-  records?: Array<ClientUri>;
+  records: Array<ClientUri>;
   message?: string;
   error?: Error;
 }

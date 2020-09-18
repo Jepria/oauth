@@ -1,4 +1,4 @@
-import { Client, ClientSearchTemplate, SearchRequest } from "../../types";
+import { Client, ClientSearchTemplate, SearchRequest, Option } from "../../types";
 
 export const CREATE_CLIENT = 'CREATE_CLIENT';
 export const CREATE_CLIENT_SUCCESS = 'CREATE_CLIENT_SUCCESS';
@@ -16,6 +16,8 @@ export const SET_CURRENT_RECORD = 'SET_CURRENT_RECORD';
 export const SET_CURRENT_RECORD_SUCCESS = 'SET_CURRENT_RECORD_SUCCESS';
 export const CLIENT_LOADING = 'CLIENT_LOADING';
 export const CLIENT_FAILURE = 'CLIENT_FAILURE';
+export const GET_ROLES = "GET_ROLES";
+export const GET_ROLES_SUCCESS = "GET_ROLES_SUCCESS";
 
 export interface CreateClientAction {
   type: typeof CREATE_CLIENT;
@@ -54,6 +56,7 @@ export interface DeleteClientSuccessAction {
 export interface PostSearchClientRequestAction {
   type: typeof POST_CLIENT_SEARCH_REQUEST
   searchRequest: SearchRequest<ClientSearchTemplate>
+  callback?(): any;
 }
 
 export interface PostSearchClientRequestSuccessAction {
@@ -106,6 +109,16 @@ export interface SetCurrentRecordSuccessAction {
   payload?: Client
 }
 
+export interface GetRolesAction {
+  type: typeof GET_ROLES
+  roleName?: string
+}
+
+export interface GetRolesSuccessAction {
+  type: typeof GET_ROLES_SUCCESS
+  roles: Array<Option>
+}
+
 export type ClientActionTypes = 
 CreateClientAction | 
 CreateClientSuccessAction | 
@@ -122,7 +135,9 @@ GetClientByIdSuccessAction |
 LoadingAction |
 FailureAction |
 SetCurrentRecordAction |
-SetCurrentRecordSuccessAction;
+SetCurrentRecordSuccessAction |
+GetRolesAction |
+GetRolesSuccessAction;
 
 export function createClient(client: Client, callback?: (client: Client) => any): ClientActionTypes {
   return {
@@ -170,10 +185,11 @@ export function deleteClientSuccess(clientId: string): ClientActionTypes {
   }
 }
 
-export function postSearchClientRequest(searchRequest: SearchRequest<ClientSearchTemplate>): ClientActionTypes {
+export function postSearchClientRequest(searchRequest: SearchRequest<ClientSearchTemplate>, callback?: () => any): ClientActionTypes {
   return {
     type: POST_CLIENT_SEARCH_REQUEST,
-    searchRequest: searchRequest
+    searchRequest: searchRequest,
+    callback
   }
 }
 
@@ -242,5 +258,19 @@ export function setCurrentRecordSuccess(current?: Client): ClientActionTypes {
   return {
     type: SET_CURRENT_RECORD_SUCCESS,
     payload: current
+  }
+}
+
+export function getRoles(roleName?: string): ClientActionTypes {
+  return {
+    type: GET_ROLES,
+    roleName: roleName
+  }
+}
+
+export function getRolesSuccess(roles: Array<Option>): ClientActionTypes {
+  return {
+    type: GET_ROLES_SUCCESS,
+    roles: roles
   }
 }

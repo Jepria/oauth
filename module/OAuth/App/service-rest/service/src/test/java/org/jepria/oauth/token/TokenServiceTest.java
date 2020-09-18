@@ -1,7 +1,9 @@
 package org.jepria.oauth.token;
 
+import org.jepria.oauth.client.ClientService;
 import org.jepria.oauth.key.KeyService;
 import org.jepria.oauth.key.dto.KeyDto;
+import org.jepria.oauth.sdk.GrantType;
 import org.jepria.oauth.session.SessionService;
 import org.jepria.oauth.session.dto.SessionCreateDto;
 import org.jepria.oauth.session.dto.SessionDto;
@@ -38,13 +40,16 @@ public class TokenServiceTest {
   static TokenService tokenService;
   static SessionService sessionService;
   static KeyService keyService;
+  static ClientService clientService;
   
   @BeforeAll
   public static void init(@Mock SessionService sessionService,
-                          @Mock KeyService keyService) throws NoSuchAlgorithmException {
-    tokenService = new TokenServiceImpl(sessionService, keyService);
+                          @Mock KeyService keyService,
+                          @Mock ClientService clientService) throws NoSuchAlgorithmException {
+    tokenService = new TokenServiceImpl(sessionService, keyService, clientService);
     TokenServiceTest.sessionService = sessionService;
     TokenServiceTest.keyService = keyService;
+    TokenServiceTest.clientService = clientService;
     //sessionService mocks
     when(sessionService.create(isA(SessionCreateDto.class), any())).thenReturn("1");
     when(sessionService.find(any(SessionSearchDto.class), any())).thenAnswer((Answer<List<SessionDto>>) invocationOnMock -> {
@@ -62,7 +67,6 @@ public class TokenServiceTest {
       operator.setValue(1);
       operator.setName("testUser");
       sessionDto.setOperator(operator);
-      sessionDto.setBlocked(false);
       sessionDto.setSessionTokenId(template.getSessionTokenId());
       sessionDto.setSessionTokenDateIns(new Date(new Date().getTime() - 10000));
       sessionDto.setSessionTokenDateFinish(new Date(new Date().getTime() + 100000));
@@ -90,6 +94,7 @@ public class TokenServiceTest {
     keyDto.setPublicKey(encoder.encodeToString(pub.getEncoded()));
     keyDto.setPrivateKey(encoder.encodeToString(pvt.getEncoded()));
     when(keyService.getKeys(isNull(), any())).thenReturn(keyDto);
+    when(clientService.getClientGrantTypes(notNull())).thenReturn(GrantType.getGrantTypes());
   }
   
   @Test

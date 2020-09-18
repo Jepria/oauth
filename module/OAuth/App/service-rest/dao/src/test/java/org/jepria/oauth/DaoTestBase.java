@@ -15,24 +15,20 @@ import java.util.Properties;
 public abstract class DaoTestBase {
   protected static InitialContext ic;
   protected static Properties properties;
-  
+
   public static InitialContext prepareInitialContextForJdbc() throws NamingException {
     System.setProperty(Context.INITIAL_CONTEXT_FACTORY, "org.apache.naming.java.javaURLContextFactory");
     System.setProperty(Context.URL_PKG_PREFIXES, "org.apache.naming");
-    
+
     InitialContext ic = new InitialContext();
-    try {
-      ic.createSubcontext("java:");
-      ic.createSubcontext("java:/comp");
-      ic.createSubcontext("java:/comp/env");
-      ic.createSubcontext("java:/comp/env/jdbc");
-    } catch (NamingException ex) {
-    
-    }
-    
+    ic.createSubcontext("java:");
+    ic.createSubcontext("java:/comp");
+    ic.createSubcontext("java:/comp/env");
+    ic.createSubcontext("java:/comp/env/jdbc");
+
     return ic;
   }
-  
+
   @BeforeAll
   public static void initialize() throws IOException, SQLException, NamingException {
     ic = prepareInitialContextForJdbc();
@@ -42,10 +38,10 @@ public abstract class DaoTestBase {
     dsPool.setURL(properties.getProperty("datasource.url"));
     dsPool.setUser(properties.getProperty("datasource.username"));
     dsPool.setPassword(properties.getProperty("datasource.password"));
-    
+
     ic.rebind(properties.getProperty("datasource.jndiName"), dsPool);
   }
-  
+
   @AfterAll
   public static void destroy() throws NamingException {
     ic.close();

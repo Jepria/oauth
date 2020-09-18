@@ -7,7 +7,7 @@ import { onLoading, onFailure,
   GetClientByIdAction, getClientByIdSuccess, 
   PostSearchClientRequestAction, postSearchClientRequestSuccess, 
   SearchClientsAction, searchClientsSuccess, 
-  SetCurrentRecordAction, setCurrentRecordSuccess } from '../actions';
+  SetCurrentRecordAction, setCurrentRecordSuccess, GetRolesAction, getRolesSuccess } from '../actions';
 import { put, call } from 'redux-saga/effects';
 
 const api = new ClientApi(API_PATH);
@@ -66,6 +66,9 @@ export function* postSearchRequest(action: PostSearchClientRequestAction) {
     yield put(onLoading('Загрузка данных...'));
     const searchId = yield call(api.postSearchRequest, action.searchRequest);
     yield put(postSearchClientRequestSuccess(searchId, action.searchRequest));
+    if (action.callback) {
+      yield call(action.callback);
+    }
   } catch (error) {
     yield put(onFailure(error));
   }
@@ -87,4 +90,9 @@ export function* setCurrentClient(action: SetCurrentRecordAction) {
   if (action.callback) {
     yield call(action.callback);
   }
+}
+
+export function* getRoles(action: GetRolesAction) {
+  const roles = yield call(api.getRoles, action.roleName);
+  yield put(getRolesSuccess(roles));
 }

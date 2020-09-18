@@ -6,7 +6,6 @@ import org.jepria.oauth.session.dto.SessionDto;
 import org.jepria.oauth.token.dto.TokenDto;
 import org.jepria.oauth.sdk.ResponseType;
 import org.jepria.oauth.token.TokenServerFactory;
-import org.jepria.server.service.rest.ErrorDto;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
 
 import javax.servlet.http.HttpServletRequest;
@@ -18,6 +17,7 @@ import javax.ws.rs.core.Response;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -43,10 +43,17 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
                             @QueryParam("code_challenge") String codeChallenge,
                             @QueryParam("state") String state,
                             @CookieParam(SESSION_ID) String sessionToken) {
-    String redirectUri;
-    redirectUri = new String(Base64.getUrlDecoder().decode(redirectUriEncoded));
+    String redirectUri = null;
+    if (redirectUriEncoded == null) {
+      throw new OAuthRuntimeException(INVALID_REQUEST, "redirect_uri is null");
+    }
+    try {
+      redirectUri = URLDecoder.decode(redirectUriEncoded.replaceAll("%20", "\\+"), StandardCharsets.UTF_8.name());
+    } catch (UnsupportedEncodingException e) {
+      e.printStackTrace();
+    }
     if (!isValidUri(redirectUri)) {
-      throw new OAuthRuntimeException(INVALID_REQUEST, "redirect_uri is null or invalid");
+      throw new OAuthRuntimeException(INVALID_REQUEST, "redirect_uri is invalid");
     }
     Response response = null;
     SessionDto session;
@@ -61,11 +68,11 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
               codeChallenge,
               sessionToken,
               getHostContext());
-      if (!session.getBlocked() && session.getSessionTokenId() != null && new Date().before(session.getSessionTokenDateFinish()) && session.getOperator() != null) {
+      if (session.getSessionTokenId() != null && new Date().before(session.getSessionTokenDateFinish()) && session.getOperator() != null) {
         if (ResponseType.CODE.equals(responseType)) {
           response = Response
               .status(302)
-              .location(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + session.getAuthorizationCode() + "&" + (state != null ? STATE + "=" + state : "")))
+              .location(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + session.getAuthorizationCode() + (state != null ? "&" + STATE + "=" + state : "")))
               .build();
         } else {
           TokenDto tokenDto = TokenServerFactory.getInstance().getService().create(responseType, clientId, getHostContext(), session.getAuthorizationCode(), URI.create(redirectUri));
@@ -111,7 +118,7 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
             + "&" + CODE + "=" + session.getAuthorizationCode()
             + "&" + REDIRECT_URI + "=" + redirectUriEncoded
             + "&" + CLIENT_ID + "=" + session.getClient().getValue()
-            + "&" + CLIENT_NAME + "=" + URLEncoder.encode(session.getClient().getName(), StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20")
+            + "&" + CLIENT_NAME + "=" + URLEncoder.encode(session.getClient().getName(), StandardCharsets.UTF_8.name()).replaceAll("\\+","%20")
             + "&" + STATE + "=" + state)).build();
       } catch (UnsupportedEncodingException e) {
         e.printStackTrace();

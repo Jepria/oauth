@@ -1,5 +1,6 @@
 package org.jepria.oauth.token;
 
+import org.jepria.oauth.client.ClientServerFactory;
 import org.jepria.oauth.key.KeyServerFactory;
 import org.jepria.oauth.session.SessionServerFactory;
 import org.jepria.server.ServerFactory;
@@ -22,7 +23,7 @@ public class TokenServerFactory extends ServerFactory {
 
   public TokenService getService() {
     if (service == null) {
-      service = new TokenServiceImpl(SessionServerFactory.getInstance().getService(), KeyServerFactory.getInstance().getService());
+      service = new TokenServiceImpl(SessionServerFactory.getInstance().getService(), KeyServerFactory.getInstance().getService(), ClientServerFactory.getInstance().getService());
     }
     return service;
   }

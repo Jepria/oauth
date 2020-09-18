@@ -2,6 +2,7 @@ import { SessionActionTypes, SESSION_LOADING, SESSION_FAILURE, DELETE_SESSION_SU
 import { SessionState } from "../../types";
 
 export const initialState: SessionState = {
+  records: [],
   isLoading: false
 }
 

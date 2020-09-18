@@ -66,6 +66,9 @@ export function* postSearchRequest(action: PostSearchClientRequestAction) {
     yield put(onLoading('Загрузка данных...'));
     const searchId = yield call(api.postSearchRequest, action.searchRequest);
     yield put(postSearchClientRequestSuccess(searchId, action.searchRequest));
+    if (action.callback) {
+      yield call(action.callback);
+    }
   } catch (error) {
     yield put(onFailure(error));
   }

@@ -32,6 +32,7 @@ export interface DeleteSessionSuccessAction {
 export interface PostSearchSessionRequestAction {
   type: typeof POST_SESSION_SEARCH_REQUEST
   searchRequest: SearchRequest<SessionSearchTemplate>
+  callback?(): any;
 }
 
 export interface PostSearchSessionRequestSuccessAction {
@@ -136,10 +137,11 @@ export function deleteSessionSuccess(sessionId: string): SessionActionTypes {
   }
 }
 
-export function postSearchSessionRequest(searchRequest: SearchRequest<SessionSearchTemplate>): SessionActionTypes {
+export function postSearchSessionRequest(searchRequest: SearchRequest<SessionSearchTemplate>, callback?: () => any): SessionActionTypes {
   return {
     type: POST_SESSION_SEARCH_REQUEST,
-    searchRequest: searchRequest
+    searchRequest: searchRequest,
+    callback
   }
 }
 

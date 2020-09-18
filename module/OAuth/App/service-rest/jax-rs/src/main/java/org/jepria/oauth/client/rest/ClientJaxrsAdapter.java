@@ -146,7 +146,11 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
     @QueryParam("page") Integer page,
     @HeaderParam("Cache-Control") String cacheControl) {
     List<ClientDto> result = (List<ClientDto>) searchEndpointAdapter.getResultset(searchId, pageSize, page, cacheControl);
-    return Response.ok(result).build();
+    if (result != null && result.size() > 0) {
+      return Response.ok(result).build();
+    } else {
+      return Response.status(Response.Status.NO_CONTENT).build();
+    }
   }
 
   @GET
@@ -158,7 +162,11 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
     @PathParam("page") Integer page,
     @HeaderParam("Cache-Control") String cacheControl) {
     List<ClientDto> result = (List<ClientDto>) searchEndpointAdapter.getResultsetPaged(searchId, pageSize, page, cacheControl);
-    return Response.ok(result).build();
+    if (result != null && result.size() > 0) {
+      return Response.ok(result).build();
+    } else {
+      return Response.status(Response.Status.NO_CONTENT).build();
+    }
   }
 
   @GET

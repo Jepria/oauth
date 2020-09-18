@@ -58,25 +58,24 @@ export const ClientListPage: React.FC = () => {
         disableSortBy: true
       }
     ]}
-      data={records}
-      // onSelection={(selected) => {
-      //   if (selected && selected?.length > 0) {
-      //     if (selected.length === 1) {
-      //       dispatch(setCurrentRecord(selected[0]))
-      //     } else {
-      //       dispatch(setCurrentRecord(undefined))
-      //     }
-      //   } else if (current) {
-      //     dispatch(setCurrentRecord(undefined))
-      //   }
-      // }}
+      data={React.useMemo(() => records, [records])}
+      onSelection={(selected) => {
+        if (selected) {
+          if (selected.length === 1) {
+            if (selected[0] !== current) {
+              dispatch(setCurrentRecord(selected[0]))
+            }
+          } else if (current) {
+            dispatch(setCurrentRecord(undefined))
+          }
+        }
+      }}
       onPaging={(pageNumber, pageSize) => {
         if (searchId) {
           dispatch(searchClients(searchId, pageSize, pageNumber + 1))
         }
       }}
       onSort={(sortConfig) => {
-        console.log("onSort")
         if (searchRequest) {
           const newSearchRequest = {
             ...searchRequest,

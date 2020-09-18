@@ -4,16 +4,18 @@ import {
   Route,
   useRouteMatch
 } from "react-router-dom";
-import SessionViewPage from './pages/KeyViewPage';
+import KeyViewPage from './pages/KeyViewPage';
 import { AppState } from '../store';
 import { useSelector, useDispatch } from 'react-redux';
 import { LoadingPanel } from '../../components/mask';
 import { KeyState } from './types';
-import { TabPanel, SelectedTab } from '../../components/tabpanel/TabPanel';
-import { ToolBar, ToolBarButton } from '../../components/toolbar';
 import { updateKey, getKey } from './state/redux/actions';
 import change_password from './change_password.png';
-import { Page, Header, Content } from '@jfront/ui-core';
+import {
+  Panel,
+  TabPanel, Tab, Toolbar,
+  ToolbarButtonBase
+} from '@jfront/ui-core';
 import { UserPanel } from '../../components/tabpanel/UserPanel';
 
 const KeyRoute: React.FC = () => {
@@ -21,29 +23,29 @@ const KeyRoute: React.FC = () => {
   const { path } = useRouteMatch();
   const dispatch = useDispatch();
   const { isLoading, message, error } = useSelector<AppState, KeyState>(state => state.key);
-  
+
   return (
-    <Page>
+    <Panel>
       {isLoading && <LoadingPanel text={message} />}
-      <Header>
+      <Panel.Header>
         <TabPanel>
-          <SelectedTab>Ключ безопасности</SelectedTab>
-          <UserPanel/>
+          <Tab selected>Ключ безопасности</Tab>
+          <UserPanel />
         </TabPanel>
-        <ToolBar>
-          <ToolBarButton onClick={() => dispatch(updateKey(() => dispatch(getKey())))} tooltip='Обновить ключ безопасности'>
-            <img src={change_password} alt='Обновить ключ безопасности'/>
-          </ToolBarButton>
-        </ToolBar>
-      </Header>
-      <Content>
+        <Toolbar>
+          <ToolbarButtonBase onClick={() => dispatch(updateKey(() => dispatch(getKey())))} title='Обновить ключ безопасности'>
+            <img src={change_password} alt='Обновить ключ безопасности' />
+          </ToolbarButtonBase>
+        </Toolbar>
+      </Panel.Header>
+      <Panel.Content>
         <Switch>
           <Route path={`${path}/view`}>
-            <SessionViewPage />
+            <KeyViewPage />
           </Route>
         </Switch>
-      </Content>
-    </Page>
+      </Panel.Content>
+    </Panel>
   );
 }
 

@@ -80,6 +80,7 @@ public class ClientDaoImpl implements ClientDao {
           dto.setClientNameEn(rs.getString(CLIENT_NAME_EN));
           dto.setApplicationType(rs.getString(APPLICATION_TYPE));
           dto.setGrantTypes(getClientGrantTypes(dto.getClientId(), operatorId));
+          dto.setScopes(getClientRoles(getInteger(rs, OPERATOR_ID)));
         }
       }
       , ClientDto.class
@@ -187,7 +188,7 @@ public class ClientDaoImpl implements ClientDao {
     String sqlQuery =
       "begin  "
         + "? := pkg_OAuth.getRoles("
-        + ", roleName => ? "
+        + "roleName => ? "
         + ", roleNameEn => ? "
         + ", maxRowCount => ? "
         + ", operatorId => ? "

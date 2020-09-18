@@ -56,6 +56,7 @@ export interface DeleteClientSuccessAction {
 export interface PostSearchClientRequestAction {
   type: typeof POST_CLIENT_SEARCH_REQUEST
   searchRequest: SearchRequest<ClientSearchTemplate>
+  callback?(): any;
 }
 
 export interface PostSearchClientRequestSuccessAction {
@@ -184,10 +185,11 @@ export function deleteClientSuccess(clientId: string): ClientActionTypes {
   }
 }
 
-export function postSearchClientRequest(searchRequest: SearchRequest<ClientSearchTemplate>): ClientActionTypes {
+export function postSearchClientRequest(searchRequest: SearchRequest<ClientSearchTemplate>, callback?: () => any): ClientActionTypes {
   return {
     type: POST_CLIENT_SEARCH_REQUEST,
-    searchRequest: searchRequest
+    searchRequest: searchRequest,
+    callback
   }
 }
 

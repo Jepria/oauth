@@ -1,12 +1,11 @@
-import React, { HTMLAttributes, useImperativeHandle, useEffect } from 'react';
+import React, { HTMLAttributes, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
-import { FormField, Label } from '../../../components/form/Field';
 import { useFormik } from 'formik';
 import { useDispatch, useSelector } from 'react-redux';
 import { Client, ClientState } from '../types';
 import { createClient, getRoles } from '../state/redux/actions';
-import { GrantType, ApplicationType, ApplicationGrantType } from '@jfront/oauth-core';
-import { Page, Content, FormContainer, ComboBox, CheckBoxListInput, TextInput, CheckBoxGroup, CheckBox } from '@jfront/ui-core';
+import { GrantType, ApplicationGrantType } from '@jfront/oauth-core';
+import { SelectInput, TextInput, CheckBoxGroup, CheckBox, Form, Panel } from '@jfront/ui-core';
 import { DualListField } from '../../../components/form/input/DualListField';
 import { AppState } from '../../store';
 
@@ -16,7 +15,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
   const { roles } = useSelector<AppState, ClientState>(state => state.client);
 
   const formik = useFormik<Client>({
-    initialValues: { clientName: '', applicationType: '', grantTypes: [] },
+    initialValues: { clientName: '', applicationType: 'web', grantTypes: [] },
     onSubmit: (values: Client) => {
       dispatch(createClient(values, (client: Client) => {
         history.push(`/ui/client/${client.clientId}/view/`);
@@ -48,83 +47,96 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
   })
 
   const applicationTypeOptions = [
-    { name: "Native", value: "native" },
     { name: "WEB application", value: "web" },
     { name: "Browser (client-side) application", value: "browser" },
     { name: "Service", value: "service" },
+    { name: "Native", value: "native" },
   ]
 
 
   useEffect(() => {
     dispatch(getRoles(""));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <Page>
-      <Content>
-        <FormContainer>
-          <form onSubmit={formik.handleSubmit} ref={ref}>
-            <FormField>
-              <Label width={'250px'}>ID приложения:</Label>
+    <Panel>
+      <Panel.Content>
+        <Form onSubmit={formik.handleSubmit} ref={ref}>
+          <Form.Field>
+            <Form.Label required>ID приложения:</Form.Label>
+            <Form.Control
+              style={{ maxWidth: "200px" }}
+              error={formik.errors.clientId}>
               <TextInput
                 name="clientId"
                 value={formik.initialValues.clientId}
                 onChange={formik.handleChange}
                 error={formik.errors.clientId} />
-            </FormField>
-            <FormField>
-              <Label width={'250px'}>Наименование приложения:</Label>
+            </Form.Control>
+          </Form.Field>
+          <Form.Field>
+            <Form.Label required>Наименование приложения:</Form.Label>
+            <Form.Control
+              style={{ maxWidth: "200px" }}
+              error={formik.errors.clientName}>
               <TextInput
                 name="clientName"
                 value={formik.initialValues.clientName}
                 onChange={formik.handleChange}
                 error={formik.errors.clientName} />
-            </FormField>
-            <FormField>
-              <Label width={'250px'}>Наименование приложения(англ):</Label>
+            </Form.Control>
+          </Form.Field>
+          <Form.Field>
+            <Form.Label>Наименование приложения(англ):</Form.Label>
+            <Form.Control
+              style={{ maxWidth: "200px" }}
+              error={formik.errors.clientNameEn}>
               <TextInput
                 name="clientNameEn"
                 value={formik.initialValues.clientNameEn}
                 onChange={formik.handleChange}
                 error={formik.errors.clientNameEn} />
-            </FormField>
-            <FormField>
-              <Label width={'250px'}>Тип приложения:</Label>
-              <ComboBox
+            </Form.Control>
+          </Form.Field>
+          <Form.Field>
+            <Form.Label>Тип приложения:</Form.Label>
+            <Form.Control
+              style={{ maxWidth: "200px" }}
+              error={formik.errors.applicationType}>
+              <SelectInput
                 options={applicationTypeOptions}
                 name="applicationType"
-                // initialValue={formik.initialValues.applicationType}
+                value={formik.values.applicationType}
                 error={formik.errors.applicationType}
-                onChangeValue={formik.setFieldValue}
-                style={{ width: "250px" }} />
-            </FormField>
-            <FormField>
-              <Label width={'250px'}>Разрешения на авторизацию:</Label>
+                onChange={formik.handleChange} />
+            </Form.Control>
+          </Form.Field>
+          <Form.Field>
+            <Form.Label required>Разрешения на авторизацию:</Form.Label>
+            <Form.Control
+              style={{ maxWidth: "200px" }}
+              error={Array.isArray(formik.errors.grantTypes) ? formik.errors.grantTypes.join(", ") : formik.errors.grantTypes}>
               <CheckBoxGroup
                 name="grantTypes"
-                value={formik.initialValues.grantTypes}
+                values={formik.values.grantTypes}
                 style={{
                   minWidth: "200px",
-                  minHeight: "150px"
+                  minHeight: "50px"
                 }}
                 error={Array.isArray(formik.errors.grantTypes) ? formik.errors.grantTypes.join(", ") : formik.errors.grantTypes}
-                onChange={(name = "grantTypes", value) => formik.setFieldValue(name, value)}>
+                onChange={(name, value) => formik.setFieldValue("grantTypes", value)}>
                 {ApplicationGrantType[formik.values["applicationType"]]?.map(grantType => ({ name: GrantType[grantType], value: grantType }))
                   .map(option => <CheckBox key={String(option.value)} label={option.name} value={option.value} />)}
               </CheckBoxGroup>
-              {/* <CheckBoxListInput
-                options={formik.values["applicationType"] ? ApplicationGrantType[formik.values["applicationType"]]?.map(grantType => ({ name: GrantType[grantType], value: grantType })) : []}
-                name="grantTypes"
-                // initialValue={formik.values.grantTypes?.map((value: any) => ({ name: GrantType[value], value: value }))}
-                // initialValue={[]}
-                onChangeValue={formik.setFieldValue}
-                touched={formik.touched.grantTypes}
-                error={Array.isArray(formik.errors.grantTypes) ? formik.errors.grantTypes.join(", ") : formik.errors.grantTypes} /> */}
-            </FormField>
-            {formik.values["grantTypes"]?.includes('client_credentials') &&
-              <FormField>
-                <Label width={'250px'}>Права доступа:</Label>
+            </Form.Control>
+          </Form.Field>
+          {formik.values["grantTypes"]?.includes('client_credentials') &&
+            <Form.Field>
+              <Form.Label>Права доступа:</Form.Label>
+              <Form.Control
+                style={{ minWidth: "300px", maxWidth: "400px" }}
+                error={formik.errors.scopes}>
                 <DualListField
                   options={roles ? roles : []}
                   placeholder="Введите имя роли"
@@ -133,12 +145,12 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
                   onChangeValue={formik.setFieldValue}
                   touched={formik.touched.scopes}
                   error={formik.errors.scopes} />
-              </FormField>
-            }
-          </form>
-        </FormContainer>
-      </Content>
-    </Page >
+              </Form.Control>
+            </Form.Field>
+          }
+        </Form>
+      </Panel.Content>
+    </Panel>
   )
 });
 

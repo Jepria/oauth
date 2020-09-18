@@ -8,21 +8,21 @@ export interface Operator {
 export interface Session {
   sessionId?: number
   authorizationCode?: string
-  dateIns?: string
+  dateIns?: Date
   operator?: {
     name: string
     value: string
   }
   operatorLogin?: string
   accessTokenId?: string
-  accessTokenDateIns?: string
-  accessTokenDateFinish?: string
+  accessTokenDateIns?: Date
+  accessTokenDateFinish?: Date
   refreshTokenId?: string
-  refreshTokenDateIns?: string
-  refreshTokenDateFinish?: string
+  refreshTokenDateIns?: Date
+  refreshTokenDateFinish?: Date
   sessionTokenId?: string
-  sessionTokenDateIns?: string
-  sessionTokenDateFinish?: string
+  sessionTokenDateIns?: Date
+  sessionTokenDateFinish?: Date
   codeChallenge?: string
   redirectUri?: string
   client?: {
@@ -52,7 +52,7 @@ export interface SessionSearchTemplate {
 export interface SessionState {
   isLoading: boolean;
   current?: Session;
-  records?: Array<Session>;
+  records: Array<Session>;
   clients?: Array<Client>;
   operators?: Array<Operator>;
   searchId?: string;

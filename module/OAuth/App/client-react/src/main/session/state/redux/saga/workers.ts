@@ -6,7 +6,7 @@ import { onLoading, onFailure,
   PostSearchSessionRequestAction, postSearchSessionRequestSuccess, 
   SearchSessionsAction, searchSessionsSuccess, 
   SetCurrentRecordAction, setCurrentRecordSuccess, GetClientsAction, getClientsSuccess, GetOperatorsAction, getOperatorsSuccess } from '../actions';
-import { put, call } from 'redux-saga/effects';
+import { put, call, select } from 'redux-saga/effects';
 import ClientApi from '../../../../client/api/ClientApi';
 import OperatorApi from '../../../api/OperatorApi';
 
@@ -42,6 +42,9 @@ export function* postSearchRequest(action: PostSearchSessionRequestAction) {
     yield put(onLoading('Загрузка данных...'));
     const searchId = yield call(api.postSearchRequest, action.searchRequest);
     yield put(postSearchSessionRequestSuccess(searchId, action.searchRequest));
+    if (action.callback) {
+      yield call(action.callback);
+    }
   } catch (error) {
     yield put(onFailure(error));
   }

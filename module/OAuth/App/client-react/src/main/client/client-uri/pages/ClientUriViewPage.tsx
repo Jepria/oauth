@@ -1,16 +1,16 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { FormField, Label, Text } from '../../../../components/form/Field';
+import { Text } from '../../../../components/form/Field';
 import { AppState } from '../../../store';
 import { ClientUriState } from '../types';
 import { useSelector, useDispatch } from 'react-redux';
 import { getClientUriById } from '../state/redux/actions';
-import { Page, Content, FormContainer, VerticalLayout } from '@jfront/ui-core';
+import { Panel, Form } from '@jfront/ui-core';
 
 export const ClientUriViewPage: React.FC = () => {
 
   const dispatch = useDispatch();
-  const { clientId, clientUriId } = useParams();
+  const { clientId, clientUriId } = useParams<any>();
   const { current } = useSelector<AppState, ClientUriState>(state => state.clientUri);
 
   useEffect(() => {
@@ -20,21 +20,19 @@ export const ClientUriViewPage: React.FC = () => {
   }, [current, clientId, clientUriId, dispatch]);
 
   return (
-    <Page>
-      <Content>
-        <FormContainer>
-          <VerticalLayout>
-            <FormField>
-              <Label width={'200px'}>ID записи:</Label>
-              <Text>{current?.clientUriId}</Text>
-            </FormField>
-            <FormField>
-              <Label width={'200px'}>URL для переадресации:</Label>
-              <Text>{current?.clientUri}</Text>
-            </FormField>
-          </VerticalLayout>
-        </FormContainer>
-      </Content>
-    </Page>
+    <Panel>
+      <Panel.Content>
+        <Form>
+          <Form.Field>
+            <Form.Label >ID записи:</Form.Label>
+            <Text>{current?.clientUriId}</Text>
+          </Form.Field>
+          <Form.Field>
+            <Form.Label>URL для переадресации:</Form.Label>
+            <Text>{current?.clientUri}</Text>
+          </Form.Field>
+        </Form>
+      </Panel.Content>
+    </Panel>
   )
 }

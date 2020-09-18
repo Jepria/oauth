@@ -6,7 +6,8 @@ import { OAuthContext } from '@jfront/oauth-context';
 
 const Panel = styled.div`
   position: absolute;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   top: 0;
   right: 0;
   height: 22px;

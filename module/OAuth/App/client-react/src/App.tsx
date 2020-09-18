@@ -18,12 +18,12 @@ function getOrigin() {
 function App() {
   return (
     <OAuthWebContext
-        clientId={'OAuthRFI'}
+        clientId={'OAuthClient'}
         redirectUri={`${process.env.NODE_ENV === 'development' ? "http://localhost:3000/oauth": `/oauth/oauth`}`}
-        oauthContextPath={`${process.env.NODE_ENV === 'development' ? 'http://localhost:8082/oauth/api' : `/oauth/api`}`}
+        oauthContextPath={`${process.env.NODE_ENV === 'development' ? 'http://localhost:8080/oauth/api' : `/oauth/api`}`}
         axiosInstance={axios}
         configureAxios>
-      <UserContextProvider baseUrl={`${process.env.NODE_ENV === 'development' ? 'http://localhost:8082/oauth/api' : `/oauth/api`}`}>
+      <UserContextProvider baseUrl={`${process.env.NODE_ENV === 'development' ? 'http://localhost:8080/oauth/api' : `/oauth/api`}`}>
         <AppRouter/>
       </UserContextProvider>
     </OAuthWebContext>

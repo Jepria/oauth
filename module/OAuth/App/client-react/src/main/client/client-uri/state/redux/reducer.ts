@@ -2,6 +2,7 @@ import { ClientUriActionTypes, CLIENT_URI_LOADING, CLIENT_URI_FAILURE, SET_CURRE
 import { ClientUriState } from "../../types";
 
 export const initialState: ClientUriState = {
+  records: [],
   isLoading: false
 }
 

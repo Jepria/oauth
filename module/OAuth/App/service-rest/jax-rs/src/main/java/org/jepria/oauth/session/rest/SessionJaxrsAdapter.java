@@ -7,6 +7,7 @@ import org.jepria.server.data.OptionDto;
 import org.jepria.server.data.SearchRequestDto;
 import org.jepria.server.service.rest.ExtendedResponse;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
+import org.jepria.server.service.rest.gson.JsonConfig;
 import org.jepria.server.service.security.JepSecurityContext;
 import org.jepria.server.service.security.oauth.OAuth;
 
@@ -40,6 +41,7 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
   @GET
   @Path("/{sessionId}")
   @RolesAllowed("OAViewSession")
+  @JsonConfig(dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
   public Response getRecordById(@PathParam("sessionId") Integer sessionId) {
     SessionDto result = (SessionDto) entityEndpointAdapter.getRecordById(String.valueOf(sessionId));
     return Response.ok(result).build();
@@ -87,25 +89,35 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
   @GET
   @Path("/search/{searchId}/resultset")
   @RolesAllowed("OAViewSession")
+  @JsonConfig(dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
   public Response getResultset(
     @PathParam("searchId") String searchId,
     @QueryParam("pageSize") Integer pageSize,
     @QueryParam("page") Integer page,
     @HeaderParam("Cache-Control") String cacheControl) {
     List<SessionDto> result = (List<SessionDto>) searchEndpointAdapter.getResultset(searchId, pageSize, page, cacheControl);
-    return Response.ok(result).build();
+    if (result != null && result.size() > 0) {
+      return Response.ok(result).build();
+    } else {
+      return Response.status(Response.Status.NO_CONTENT).build();
+    }
   }
 
   @GET
   @Path("/search/{searchId}/resultset/paged-by-{pageSize:\\d+}/{page}")
   @RolesAllowed("OAViewSession")
+  @JsonConfig(dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
   public Response getResultsetPaged(
     @PathParam("searchId") String searchId,
     @PathParam("pageSize") Integer pageSize,
     @PathParam("page") Integer page,
     @HeaderParam("Cache-Control") String cacheControl) {
     List<SessionDto> result = (List<SessionDto>) searchEndpointAdapter.getResultsetPaged(searchId, pageSize, page, cacheControl);
-    return Response.ok(result).build();
+    if (result != null && result.size() > 0) {
+      return Response.ok(result).build();
+    } else {
+      return Response.status(Response.Status.NO_CONTENT).build();
+    }
   }
 
   @GET

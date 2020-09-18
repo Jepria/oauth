@@ -13,12 +13,17 @@ import { LoadingPanel } from '../../components/mask';
 import { SessionState } from './types';
 import SessionSearchPage from './pages/SessionSearchPage';
 import SessionListPage from './pages/SessionListPage';
-import { TabPanel, SelectedTab } from '../../components/tabpanel/TabPanel';
-import { ToolBar } from '../../components/toolbar';
-import * as DefaultButtons from '../../components/toolbar/ToolBarButtons';
 import { setCurrentRecord, deleteSession, searchSessions } from './state/redux/actions';
 import { HistoryState } from '../../components/HistoryState';
-import { Page, Header, Content } from '@jfront/ui-core';
+import {
+  Panel,
+  TabPanel, Tab, Toolbar,
+  ToolbarButtonDelete,
+  ToolbarButtonFind,
+  ToolbarButtonView,
+  ToolbarSplitter,
+  ToolbarButtonBase
+} from '@jfront/ui-core';
 import { UserPanel } from '../../components/tabpanel/UserPanel';
 
 const SessionRoute: React.FC = () => {
@@ -31,16 +36,16 @@ const SessionRoute: React.FC = () => {
   let formRef = useRef(null) as any;
   
   return (
-    <Page>
+    <Panel>
       {isLoading && <LoadingPanel text={message} />}
-      <Header>
+      <Panel.Header>
         <TabPanel>
-          <SelectedTab>Сессия</SelectedTab>
+          <Tab selected>Сессия</Tab>
           <UserPanel/>
         </TabPanel>
-        <ToolBar>
-          <DefaultButtons.ViewButton onView={() => { history.push(`/ui/session/${current?.sessionId}/view`) }} disabled={!current || pathname.endsWith('view')} />
-          <DefaultButtons.DeleteButton onDelete={() => {
+        <Toolbar style={{margin: 0}}>
+          <ToolbarButtonView onClick={() => { history.push(`/ui/session/${current?.sessionId}/view`) }} disabled={!current || pathname.endsWith('view')} />
+          <ToolbarButtonDelete onClick={() => {
             if (current?.sessionId) {
               if (window.confirm('Вы точно хотите удалить запись?')) {
                 dispatch(deleteSession(`${current.sessionId}`, () => {
@@ -53,8 +58,8 @@ const SessionRoute: React.FC = () => {
               }
             }
           }} disabled={!current} />
-          <DefaultButtons.Splitter />
-          <DefaultButtons.ListButton onList={() => {
+          <ToolbarSplitter/>
+          <ToolbarButtonBase onClick={() => {
             dispatch(setCurrentRecord(undefined, () => {
               if (searchRequest) {
                 history.push('/ui/session/list');
@@ -62,14 +67,14 @@ const SessionRoute: React.FC = () => {
                 history.push('/ui/session/search');
               }
             }))
-          }} disabled={pathname.endsWith('/search') || pathname.endsWith('/list')} />
-          <DefaultButtons.SearchButton onSearch={() => {
+          }} disabled={pathname.endsWith('/search') || pathname.endsWith('/list')}>Список</ToolbarButtonBase>
+          <ToolbarButtonFind onClick={() => {
             dispatch(setCurrentRecord(undefined, () => history.push('/ui/session/search')));
           }} />
-          <DefaultButtons.DoSearchButton onDoSearch={() => { formRef.current?.handleSubmit() }} disabled={!pathname.endsWith('/search')} />
-        </ToolBar>
-      </Header>
-      <Content>
+          <ToolbarButtonBase onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }} disabled={!pathname.endsWith('/search')}>Найти</ToolbarButtonBase>
+        </Toolbar>
+      </Panel.Header>
+      <Panel.Content>
         <Switch>
           <Route path={`${path}/:sessionId/view`}>
             <SessionViewPage />
@@ -81,8 +86,8 @@ const SessionRoute: React.FC = () => {
             <SessionListPage />
           </Route>
         </Switch>
-      </Content>
-    </Page>
+      </Panel.Content>
+    </Panel>
   );
 }
 

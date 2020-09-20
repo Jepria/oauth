@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>
+        Welcome
+    </title>
+    <link rel="stylesheet" href="login.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="login" content="login">
+    <script src="login.js"></script>
+    <script>
+        addOnloadHandler(isErrorResponse);
+        addOnloadHandler(createWelcomeMessage);
+        addOnloadHandler(refreshFormParameters);
+    </script>
+</head>
+<body>
+    <form id="login-form" action="../api/authenticate" method="POST" enctype="application/x-www-form-urlencoded">
+        <div id="form-container">
+            <div id="welcome-message"></div>
+            <div id="error-message-container" class="hidden">
+                <span id="error-message"></span>
+            </div>
+            <div id="input-container">
+                <div class="field">
+                    <label for="username">Имя пользователя:</label>
+                    <div class="input">
+                        <img src="user.png" width=16 class="icon"/>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="password">Пароль:</label>
+                    <div class="input">
+                        <img src="lock.png" width=16 class="icon"/>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="input">
+                        <input type="submit" value="Войти">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

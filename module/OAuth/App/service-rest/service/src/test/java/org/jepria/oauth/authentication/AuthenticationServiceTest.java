@@ -1,23 +1,22 @@
 package org.jepria.oauth.authentication;
 
+import org.jepria.oauth.exception.OAuthRuntimeException;
 import org.jepria.oauth.authentication.dao.AuthenticationDao;
-import org.jepria.oauth.authentication.dto.SessionTokenDto;
 import org.jepria.oauth.clienturi.ClientUriService;
 import org.jepria.oauth.clienturi.dto.ClientUriDto;
 import org.jepria.oauth.clienturi.dto.ClientUriSearchDto;
-import org.jepria.oauth.exception.OAuthRuntimeException;
 import org.jepria.oauth.key.KeyService;
 import org.jepria.oauth.key.dto.KeyDto;
+import org.jepria.oauth.session.SessionService;
+import org.jepria.oauth.session.dto.SessionDto;
+import org.jepria.oauth.session.dto.SessionSearchDto;
+import org.jepria.oauth.session.dto.SessionUpdateDto;
 import org.jepria.oauth.sdk.token.Encryptor;
 import org.jepria.oauth.sdk.token.Signer;
 import org.jepria.oauth.sdk.token.Token;
 import org.jepria.oauth.sdk.token.TokenImpl;
 import org.jepria.oauth.sdk.token.rsa.EncryptorRSA;
 import org.jepria.oauth.sdk.token.rsa.SignerRSA;
-import org.jepria.oauth.session.SessionService;
-import org.jepria.oauth.session.dto.SessionDto;
-import org.jepria.oauth.session.dto.SessionSearchDto;
-import org.jepria.oauth.session.dto.SessionUpdateDto;
 import org.jepria.server.data.OptionDto;
 import org.jepria.server.data.RuntimeSQLException;
 import org.jepria.server.service.security.Credential;
@@ -157,13 +156,13 @@ public class AuthenticationServiceTest {
   
   @Test
   public void authenticationTest() {
-    SessionTokenDto sessionTokenDto = authenticationService.authenticate("authCode",
+    String sessionToken = authenticationService.authenticate("authCode",
         "http://redirecturi",
         "testClient",
         "testUser",
         "testPassword",
         "issuer");
-    assertNotNull(sessionTokenDto);
+    assertNotNull(sessionToken);
     verify(sessionService, atLeast(1)).find(any(SessionSearchDto.class), any());
     verify(sessionService, times(1)).update(isA(String.class), any(SessionUpdateDto.class), any());
   }

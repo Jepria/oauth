@@ -4,6 +4,17 @@ import AppRouter from './main/AppRouter';
 import { UserContextProvider } from './user/UserContextProvider';
 import axios from 'axios'
 
+function getOrigin() {
+  if (!window.location.origin) {
+    /** IE 10 support **/
+    return window.location.protocol + "//" 
+      + window.location.hostname 
+      + (window.location.port ? ':' + window.location.port : '');
+  } else {
+    return window.location.origin;
+  }
+}
+
 function App() {
   return (
     <OAuthWebContext

@@ -1,8 +1,5 @@
 package org.jepria.oauth.authentication;
 
-import org.jepria.oauth.authentication.dto.SessionTokenDto;
-import org.jepria.oauth.sdk.token.Token;
-
 public interface AuthenticationService {
   
   /**
@@ -54,7 +51,7 @@ public interface AuthenticationService {
    * @param host имя сервера
    * @return Session Token
    */
-  SessionTokenDto authenticate(
+  String authenticate(
     String authCode,
     String redirectUri,
     String clientId,

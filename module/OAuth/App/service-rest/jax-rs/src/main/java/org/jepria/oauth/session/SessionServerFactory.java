@@ -7,15 +7,22 @@ import org.jepria.server.data.Dao;
 import org.jepria.server.service.rest.SearchService;
 import org.jepria.server.service.rest.SearchServiceImpl;
 
-import javax.inject.Inject;
 import javax.servlet.http.HttpSession;
 import java.util.function.Supplier;
 
 public class SessionServerFactory extends ServerFactory<SessionDao> {
 
-  @Inject
-  public SessionServerFactory(SessionDao dao) {
-    super(dao, "jdbc/RFInfoDS");
+  private static SessionServerFactory instance;
+
+  private SessionServerFactory() {
+    super(new SessionDaoImpl(), "jdbc/RFInfoDS");
+  }
+
+  public static SessionServerFactory getInstance() {
+    if (instance == null) {
+      instance = new SessionServerFactory();
+    }
+    return instance;
   }
 
   public SessionService getService() {

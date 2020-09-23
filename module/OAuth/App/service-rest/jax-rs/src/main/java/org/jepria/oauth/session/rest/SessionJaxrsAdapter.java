@@ -12,7 +12,6 @@ import org.jepria.server.service.security.JepSecurityContext;
 import org.jepria.server.service.security.oauth.OAuth;
 
 import javax.annotation.security.RolesAllowed;
-import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -22,15 +21,12 @@ import java.util.List;
 @Path("/session")
 @OAuth
 public class SessionJaxrsAdapter extends JaxrsAdapterBase {
-
-  @Inject
-  SessionServerFactory sessionServerFactory;
   @Context
   JepSecurityContext securityContext;
 
-  protected final EntityEndpointAdapter entityEndpointAdapter = new EntityEndpointAdapter(() -> sessionServerFactory.getEntityService());
+  protected final EntityEndpointAdapter entityEndpointAdapter = new EntityEndpointAdapter(() -> SessionServerFactory.getInstance().getEntityService());
 
-  protected final SearchEndpointAdapter searchEndpointAdapter = new SearchEndpointAdapter(() -> sessionServerFactory.getSearchService(() -> request.getSession()));
+  protected final SearchEndpointAdapter searchEndpointAdapter = new SearchEndpointAdapter(() -> SessionServerFactory.getInstance().getSearchService(() -> request.getSession()));
 
   //------------ entity methods ------------//
 
@@ -128,7 +124,7 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
   @Path("/operators")
   @RolesAllowed("OAViewSession")
   public Response getOperators(@QueryParam("operatorName") String operatorName, @NotNull @QueryParam("maxRowCount") Integer maxRowCount) {
-    List<OptionDto<String>> result = sessionServerFactory.getService().getOperators(operatorName, maxRowCount);
+    List<OptionDto<String>> result = SessionServerFactory.getInstance().getService().getOperators(operatorName, maxRowCount);
     if (!result.isEmpty()) {
       return Response.ok(result).build();
     } else {

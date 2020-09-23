@@ -1,7 +1,6 @@
 package org.jepria.oauth.authentication;
 
 import org.jepria.oauth.authentication.dao.AuthenticationDao;
-import org.jepria.oauth.authentication.dto.SessionTokenDto;
 import org.jepria.oauth.clienturi.ClientUriService;
 import org.jepria.oauth.clienturi.dto.ClientUriDto;
 import org.jepria.oauth.clienturi.dto.ClientUriSearchDto;
@@ -28,7 +27,7 @@ import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 public class AuthenticationServiceImpl implements AuthenticationService {
 
-  public static int DEFAULT_EXPIRE_TIME = 24 * 7;
+  public static int DEFAULT_EXPIRE_TIME = 8;
   private final AuthenticationDao dao;
   private final SessionService sessionService;
   private final ClientUriService clientUriService;
@@ -107,7 +106,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   @Override
   public void loginByAuthorizationCode(String authorizationCode, String clientId, String codeVerifier) {
     loginByClientId(clientId);
-    boolean result;
+    boolean result = false;
     try {
       result = dao.verifyPKCE(authorizationCode, codeVerifier);
     } catch (Throwable th) {
@@ -119,7 +118,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   }
 
   @Override
-  public SessionTokenDto authenticate(
+  public String authenticate(
     String authCode,
     String redirectUri,
     String clientId,
@@ -145,8 +144,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       sessionToken.getIssueTime(),
       sessionToken.getExpirationTime(),
       serverCredential);
-    SessionTokenDto sessionTokenDto = new SessionTokenDto();
-    sessionTokenDto.setExpirationDate(sessionToken.getExpirationTime());
+
     /**
      * Encrypt token with public key
      */
@@ -156,8 +154,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     } catch (ParseException e) {
       throw new OAuthRuntimeException(SERVER_ERROR, e);
     }
-    sessionTokenDto.setToken(sessionToken.asString());
-    return sessionTokenDto;
+    return sessionToken.asString();
   }
 
   @Override

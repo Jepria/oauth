@@ -7,7 +7,6 @@ import org.jepria.server.service.rest.JaxrsAdapterBase;
 import org.jepria.server.service.security.oauth.OAuth;
 
 import javax.annotation.security.RolesAllowed;
-import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -19,13 +18,12 @@ import javax.ws.rs.core.Response;
 @Path("/key")
 @OAuth
 public class KeyJaxrsAdapter extends JaxrsAdapterBase {
-
-  @Inject
-  KeyServerFactory keyServerFactory;
+  
+  KeyService service = KeyServerFactory.getInstance().getService();
   
   @GET
   public Response getKey() {
-    KeyDto keyDto = keyServerFactory.getService().getKeys(null, securityContext.getCredential());
+    KeyDto keyDto = service.getKeys(null, securityContext.getCredential());
     if (keyDto != null) {
       keyDto.setPrivateKey("");
       return Response.ok(keyDto).build();
@@ -37,7 +35,7 @@ public class KeyJaxrsAdapter extends JaxrsAdapterBase {
   @POST
   @RolesAllowed("OAUpdateKey")
   public Response updateKeys() {
-    keyServerFactory.getService().setKeys(securityContext.getCredential());
+    service.setKeys(securityContext.getCredential());
     return Response.ok().build();
   }
 

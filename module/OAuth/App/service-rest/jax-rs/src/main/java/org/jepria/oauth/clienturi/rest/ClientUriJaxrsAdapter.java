@@ -9,7 +9,6 @@ import org.jepria.server.service.rest.JaxrsAdapterBase;
 import org.jepria.server.service.security.oauth.OAuth;
 
 import javax.annotation.security.RolesAllowed;
-import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.ws.rs.*;
@@ -22,20 +21,17 @@ import java.util.List;
 @OAuth
 public class ClientUriJaxrsAdapter extends JaxrsAdapterBase {
 
-  @Inject
-  ClientUriServerFactory clientUriServerFactory;
-
   @Context
   protected HttpServletRequest request;
 
-  protected final EntityEndpointAdapter entityEndpointAdapter = new EntityEndpointAdapter(() -> clientUriServerFactory.getEntityService());
+  protected final EntityEndpointAdapter entityEndpointAdapter = new EntityEndpointAdapter(() -> ClientUriServerFactory.getInstance().getEntityService());
 
   @GET
   @RolesAllowed("OAViewClient")
   public Response getAllRecords(@PathParam("clientId") String clientId){
     ClientUriSearchDto dto = new ClientUriSearchDto();
     dto.setClientId(clientId);
-    List<ClientUriDto> result = clientUriServerFactory.getService().findClientUri(dto, securityContext.getCredential().getOperatorId());
+    List<ClientUriDto> result = ClientUriServerFactory.getInstance().getService().findClientUri(dto, securityContext.getCredential().getOperatorId());
     if (result.size() > 0) {
       return Response.ok().entity(result).build();
     } else {

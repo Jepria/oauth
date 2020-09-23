@@ -13,6 +13,8 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
+        <jepria-rest.version>12.2.0-SNAPSHOT</jepria-rest.version>
+        <oauth.version>1.0.0-SNAPSHOT</oauth.version>
     </properties>
 
     <parent>
@@ -26,19 +28,19 @@
         <dependency>
             <groupId>org.jepria</groupId>
             <artifactId>jepria-rest</artifactId>
-            <version>${jepria.version}</version>
+            <version>${jepria-rest.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.jepria.oauth</groupId>
             <artifactId>model</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${oauth.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.jepria</groupId>
             <artifactId>oauth-sdk</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${oauth.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

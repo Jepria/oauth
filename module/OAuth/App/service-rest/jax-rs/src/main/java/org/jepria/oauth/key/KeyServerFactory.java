@@ -1,18 +1,29 @@
 package org.jepria.oauth.key;
 
+import org.jepria.oauth.key.dao.KeyDaoImpl;
 import org.jepria.oauth.key.dao.KeyDao;
 import org.jepria.server.ServerFactory;
 
-import javax.inject.Inject;
-
 public class KeyServerFactory extends ServerFactory<KeyDao> {
 
-  @Inject
-  public KeyServerFactory(KeyDao dao) {
-    super(dao, "jdbc/RFInfoDS");
+  private static KeyServerFactory instance;
+  private KeyService service;
+
+  private KeyServerFactory() {
+    super(new KeyDaoImpl(), "jdbc/RFInfoDS");
+  }
+
+  public static KeyServerFactory getInstance() {
+    if (instance == null) {
+      instance = new KeyServerFactory();
+    }
+    return instance;
   }
 
   public KeyService getService() {
-    return new KeyServiceImpl(getDao());
+    if (service == null) {
+      service = new KeyServiceImpl(getDao());
+    }
+    return service;
   }
 }

@@ -14,6 +14,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
+        <jepria-rest.version>12.2.0-SNAPSHOT</jepria-rest.version>
     </properties>
 
     <parent>
@@ -27,7 +28,7 @@
         <dependency>
             <groupId>org.jepria</groupId>
             <artifactId>jepria-rest</artifactId>
-            <version>${jepria.version}</version>
+            <version>${jepria-rest.version}</version>
             <scope>compile</scope>
         </dependency>
         <!--Hibernate validator-->

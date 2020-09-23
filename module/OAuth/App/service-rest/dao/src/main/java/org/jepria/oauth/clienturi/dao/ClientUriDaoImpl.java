@@ -1,9 +1,11 @@
 package org.jepria.oauth.clienturi.dao;
 
 import org.jepria.compat.server.dao.ResultSetMapper;
+import org.jepria.compat.server.db.Db;
 import org.jepria.oauth.clienturi.dto.ClientUriCreateDto;
 import org.jepria.oauth.clienturi.dto.ClientUriDto;
 import org.jepria.oauth.clienturi.dto.ClientUriSearchDto;
+import org.jepria.server.data.Dao;
 import org.jepria.server.data.DaoSupport;
 
 import java.sql.ResultSet;
@@ -14,7 +16,7 @@ import java.util.Map;
 import static org.jepria.oauth.clienturi.ClientUriFieldNames.*;
 
 
-public class ClientUriDaoImpl implements ClientUriDao {
+public class ClientUriDaoImpl implements Dao {
 
   @Override
   public List<ClientUriDto> find(Object template, Integer operatorId) {

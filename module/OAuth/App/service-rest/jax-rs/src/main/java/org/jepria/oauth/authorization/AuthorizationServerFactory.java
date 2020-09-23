@@ -6,25 +6,29 @@ import org.jepria.oauth.session.SessionServerFactory;
 import org.jepria.server.ServerFactory;
 import org.jepria.server.data.Dao;
 
-import javax.inject.Inject;
-
 public class AuthorizationServerFactory extends ServerFactory<Dao> {
 
-  @Inject
-  SessionServerFactory sessionServerFactory;
-  @Inject
-  ClientServerFactory clientServerFactory;
-  @Inject
-  KeyServerFactory keyServerFactory;
+  private static AuthorizationServerFactory instance;
+  private AuthorizationService service;
 
-  public AuthorizationServerFactory() {
+  private AuthorizationServerFactory() {
     super(null, null);
   }
 
+  public static AuthorizationServerFactory getInstance() {
+    if (instance == null) {
+      instance = new AuthorizationServerFactory();
+    }
+    return instance;
+  }
+
   public AuthorizationService getService() {
-    return new AuthorizationServiceImpl(sessionServerFactory.getService(),
-        clientServerFactory.getService(),
-        keyServerFactory.getService());
+    if (service == null) {
+      service = new AuthorizationServiceImpl(SessionServerFactory.getInstance().getService(),
+          ClientServerFactory.getInstance().getService(),
+          KeyServerFactory.getInstance().getService());
+    }
+    return service;
   }
 
   @Override

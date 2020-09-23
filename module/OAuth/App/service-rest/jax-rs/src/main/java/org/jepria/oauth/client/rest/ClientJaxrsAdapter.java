@@ -14,7 +14,6 @@ import org.jepria.server.service.security.JepSecurityContext;
 import org.jepria.server.service.security.oauth.OAuth;
 
 import javax.annotation.security.RolesAllowed;
-import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -25,20 +24,18 @@ import java.util.List;
 @Path("/client")
 @OAuth
 public class ClientJaxrsAdapter extends JaxrsAdapterBase {
-  @Inject
-  ClientServerFactory clientServerFactory;
   @Context
   JepSecurityContext securityContext;
 
-  protected final EntityEndpointAdapter entityEndpointAdapter = new EntityEndpointAdapter(() -> clientServerFactory.getEntityService());
+  protected final EntityEndpointAdapter entityEndpointAdapter = new EntityEndpointAdapter(() -> ClientServerFactory.getInstance().getEntityService());
 
-  protected final SearchEndpointAdapter searchEndpointAdapter = new SearchEndpointAdapter(() -> clientServerFactory.getSearchService(() -> request.getSession()));
+  protected final SearchEndpointAdapter searchEndpointAdapter = new SearchEndpointAdapter(() -> ClientServerFactory.getInstance().getSearchService(() -> request.getSession()));
 
   //------------ application-specific methods ------------//
   @GET
   @Path("/grant-types")
   public Response getGrantType() {
-    List<String> result = clientServerFactory.getService().getGrantType();
+    List<String> result = ClientServerFactory.getInstance().getService().getGrantType();
     return Response.ok(result).build();
   }
 
@@ -50,28 +47,28 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
     } else if (grantTypeCodes.size() == 1 && grantTypeCodes.get(0).contains(";")) {
       grantTypeCodes = Arrays.asList(grantTypeCodes.get(0).split(";"));
     }
-    List<String> result = clientServerFactory.getService().getGrantResponseType(grantTypeCodes);
+    List<String> result = ClientServerFactory.getInstance().getService().getGrantResponseType(grantTypeCodes);
     return Response.ok(result).build();
   }
 
   @GET
   @Path("/application-types")
   public Response getApplicationType() {
-    List<String> result = clientServerFactory.getService().getApplicationTypes();
+    List<String> result = ClientServerFactory.getInstance().getService().getApplicationTypes();
     return Response.ok(result).build();
   }
 
   @GET
   @Path("/application-grant-types")
   public Response getApplicationGrantType(@NotEmpty @QueryParam("applicationType") String applicationTypeCode) {
-    List<String> result = clientServerFactory.getService().getApplicationGrantTypes(applicationTypeCode);
+    List<String> result = ClientServerFactory.getInstance().getService().getApplicationGrantTypes(applicationTypeCode);
     return Response.ok(result).build();
   }
 
   @GET
   @RolesAllowed({"OAViewClient", "OAViewSession"})
   public Response getClients(@QueryParam("clientName") String clientName) {
-    List<ClientDto> result = clientServerFactory.getService().getClient(clientName, securityContext.getCredential().getOperatorId());
+    List<ClientDto> result = ClientServerFactory.getInstance().getService().getClient(clientName, securityContext.getCredential().getOperatorId());
     if (result.isEmpty()) {
       return Response.noContent().build();
     } else {
@@ -180,7 +177,7 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
     @QueryParam("roleNameEn") String roleNameEn,
     @QueryParam("maxRowCount") Integer maxRowCount
   ) {
-    List<OptionDto<String>> result = clientServerFactory.getService().getRoles(roleName, roleNameEn, maxRowCount, securityContext.getCredential().getOperatorId());
+    List<OptionDto<String>> result = ClientServerFactory.getInstance().getService().getRoles(roleName, roleNameEn, maxRowCount, securityContext.getCredential().getOperatorId());
     return Response.ok(result).build();
   }
 }

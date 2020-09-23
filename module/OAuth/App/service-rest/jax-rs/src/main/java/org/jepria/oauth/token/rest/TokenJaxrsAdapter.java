@@ -2,14 +2,15 @@ package org.jepria.oauth.token.rest;
 
 import org.jepria.oauth.authentication.AuthenticationServerFactory;
 import org.jepria.oauth.exception.OAuthRuntimeException;
-import org.jepria.oauth.sdk.GrantType;
-import org.jepria.oauth.token.TokenServerFactory;
+import org.jepria.oauth.authentication.AuthenticationService;
+import org.jepria.oauth.token.TokenService;
 import org.jepria.oauth.token.dto.TokenDto;
 import org.jepria.oauth.token.dto.TokenInfoDto;
+import org.jepria.oauth.sdk.GrantType;
+import org.jepria.oauth.token.TokenServerFactory;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
 import org.jepria.server.service.security.JepSecurityContext;
 
-import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -31,15 +32,12 @@ import static org.jepria.oauth.sdk.OAuthConstants.*;
  */
 @Path("/token")
 public class TokenJaxrsAdapter extends JaxrsAdapterBase {
-
   @Context
   HttpServletRequest request;
   @Context
   JepSecurityContext securityContext;
-  @Inject
-  AuthenticationServerFactory authenticationServerFactory;
-  @Inject
-  TokenServerFactory tokenServerFactory;
+  AuthenticationService authenticationService = AuthenticationServerFactory.getInstance().getService();
+  TokenService tokenService = TokenServerFactory.getInstance().getService();
 
   private String getHostContext() {
     return URI.create(request.getRequestURL().toString()).resolve(request.getContextPath()).toString();
@@ -71,9 +69,9 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
     switch (grantType) {
       case GrantType.AUTHORIZATION_CODE: {
         if (clientId != null && clientSecret != null) {
-          authenticationServerFactory.getService().loginByClientSecret(clientId, clientSecret);
+          authenticationService.loginByClientSecret(clientId, clientSecret);
         } else if (clientId != null && clientSecret == null && codeVerifier != null) {
-          authenticationServerFactory.getService().loginByAuthorizationCode(authCode, clientId, codeVerifier);
+          authenticationService.loginByAuthorizationCode(authCode, clientId, codeVerifier);
         } else {
           throw new OAuthRuntimeException(ACCESS_DENIED, "Client authorization failed");
         }
@@ -86,36 +84,36 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
         }
 
         URI redirectUri = URI.create(redirectUriDecoded);
-        result = tokenServerFactory.getService().create(clientId, authCode, getHostContext(), redirectUri);
+        result = tokenService.create(clientId, authCode, getHostContext(), redirectUri);
         break;
       }
       case GrantType.CLIENT_CREDENTIALS: {
         Integer userId;
         if (clientId != null && clientSecret != null) {
-          userId = authenticationServerFactory.getService().loginByClientSecret(clientId, clientSecret);
+          userId = authenticationService.loginByClientSecret(clientId, clientSecret);
         } else {
           throw new OAuthRuntimeException(ACCESS_DENIED, "Client authorization failed");
         }
-        result = tokenServerFactory.getService().create(clientId, userId, getHostContext());
+        result = tokenService.create(clientId, userId, getHostContext());
         break;
       }
       case GrantType.PASSWORD: {
         if (clientId != null && clientSecret != null) {
-          authenticationServerFactory.getService().loginByClientSecret(clientId, clientSecret);
+          authenticationService.loginByClientSecret(clientId, clientSecret);
         } else {
           throw new OAuthRuntimeException(ACCESS_DENIED, "Client authorization failed");
         }
-        Integer userId = authenticationServerFactory.getService().loginByPassword(username, password);
-        result = tokenServerFactory.getService().create(clientId, username, userId, getHostContext());
+        Integer userId = authenticationService.loginByPassword(username, password);
+        result = tokenService.create(clientId, username, userId, getHostContext());
         break;
       }
       case GrantType.REFRESH_TOKEN: {
         if (clientId != null && clientSecret != null) {
-          authenticationServerFactory.getService().loginByClientSecret(clientId, clientSecret);
+          authenticationService.loginByClientSecret(clientId, clientSecret);
         } else {
-          authenticationServerFactory.getService().loginByClientId(clientId);
+          authenticationService.loginByClientId(clientId);
         }
-        result = tokenServerFactory.getService().create(clientId, refreshToken, getHostContext());
+        result = tokenService.create(clientId, refreshToken, getHostContext());
         break;
       }
       default: {
@@ -139,8 +137,8 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
       clientId = clientCredentials[0];
       clientSecret = clientCredentials[1];
     }
-    authenticationServerFactory.getService().loginByClientSecret(clientId, clientSecret);
-    TokenInfoDto result = tokenServerFactory.getService().getTokenInfo(getHostContext(), token);
+    authenticationService.loginByClientSecret(clientId, clientSecret);
+    TokenInfoDto result = TokenServerFactory.getInstance().getService().getTokenInfo(getHostContext(), token);
     return Response.ok(result).build();
   }
 
@@ -158,8 +156,8 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
       clientId = clientCredentials[0];
       clientSecret = clientCredentials[1];
     }
-    authenticationServerFactory.getService().loginByClientSecret(clientId, clientSecret);
-    tokenServerFactory.getService().delete(
+    authenticationService.loginByClientSecret(clientId, clientSecret);
+    TokenServerFactory.getInstance().getService().delete(
         clientId,
         token);
     return Response.ok().build();

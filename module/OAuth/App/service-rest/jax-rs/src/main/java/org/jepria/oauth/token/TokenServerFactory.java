@@ -5,22 +5,26 @@ import org.jepria.oauth.key.KeyServerFactory;
 import org.jepria.oauth.session.SessionServerFactory;
 import org.jepria.server.ServerFactory;
 
-import javax.inject.Inject;
-
 public class TokenServerFactory extends ServerFactory {
 
-  @Inject
-  SessionServerFactory sessionServerFactory;
-  @Inject
-  KeyServerFactory keyServerFactory;
-  @Inject
-  ClientServerFactory clientServerFactory;
+  private static TokenServerFactory instance;
+  private TokenService service;
 
-  public TokenServerFactory() {
+  private TokenServerFactory() {
     super(null, "jdbc/RFInfoDS");
   }
 
+  public static TokenServerFactory getInstance() {
+    if (instance == null) {
+      instance = new TokenServerFactory();
+    }
+    return instance;
+  }
+
   public TokenService getService() {
-    return new TokenServiceImpl(sessionServerFactory.getService(), keyServerFactory.getService(), clientServerFactory.getService());
+    if (service == null) {
+      service = new TokenServiceImpl(SessionServerFactory.getInstance().getService(), KeyServerFactory.getInstance().getService(), ClientServerFactory.getInstance().getService());
+    }
+    return service;
   }
 }

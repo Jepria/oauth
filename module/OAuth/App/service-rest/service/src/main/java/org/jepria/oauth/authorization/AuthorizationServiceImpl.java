@@ -83,7 +83,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
       if (sqlException.getErrorCode() == 20004) {
         throw new OAuthRuntimeException(INVALID_REQUEST, "redirect_uri mismatch");
       }
-      throw new RuntimeSQLException(sqlException);
+      throw new OAuthRuntimeException(SERVER_ERROR, sqlException.getMessage());
     }
   }
 

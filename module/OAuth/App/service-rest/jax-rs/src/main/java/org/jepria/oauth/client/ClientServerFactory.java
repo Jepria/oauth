@@ -1,6 +1,5 @@
 package org.jepria.oauth.client;
 
-import org.jepria.oauth.client.dao.ClientDaoImpl;
 import org.jepria.oauth.client.dao.ClientDao;
 import org.jepria.server.ServerFactory;
 import org.jepria.server.service.rest.EntityService;
@@ -8,30 +7,19 @@ import org.jepria.server.service.rest.EntityServiceImpl;
 import org.jepria.server.service.rest.SearchService;
 import org.jepria.server.service.rest.SearchServiceImpl;
 
+import javax.inject.Inject;
 import javax.servlet.http.HttpSession;
 import java.util.function.Supplier;
 
 public class ClientServerFactory extends ServerFactory<ClientDao> {
 
-  private static ClientServerFactory instance;
-  private ClientService service;
-
-  private ClientServerFactory() {
-    super(new ClientDaoImpl(), "jdbc/RFInfoDS");
-  }
-
-  public static ClientServerFactory getInstance() {
-    if (instance == null) {
-      instance = new ClientServerFactory();
-    }
-    return instance;
+  @Inject
+  public ClientServerFactory(ClientDao dao) {
+    super(dao, "jdbc/RFInfoDS");
   }
 
   public ClientService getService() {
-    if (service == null) {
-      service = new ClientServiceImpl(getDao());
-    }
-    return service;
+    return new ClientServiceImpl(getDao());
   }
 
   /**

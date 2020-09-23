@@ -1,35 +1,31 @@
 package org.jepria.oauth.authentication;
 
-import org.jepria.oauth.authentication.dao.AuthenticationDaoImpl;
+import org.jepria.oauth.authentication.dao.AuthenticationDao;
 import org.jepria.oauth.clienturi.ClientUriServerFactory;
 import org.jepria.oauth.key.KeyServerFactory;
-import org.jepria.oauth.authentication.dao.AuthenticationDao;
 import org.jepria.oauth.session.SessionServerFactory;
 import org.jepria.server.ServerFactory;
 
+import javax.inject.Inject;
+
 public class AuthenticationServerFactory extends ServerFactory<AuthenticationDao> {
 
-  private static AuthenticationServerFactory instance;
-  private AuthenticationService service;
+  @Inject
+  SessionServerFactory sessionServerFactory;
+  @Inject
+  ClientUriServerFactory clientUriServerFactory;
+  @Inject
+  KeyServerFactory keyServerFactory;
 
-  private AuthenticationServerFactory() {
-    super(new AuthenticationDaoImpl(), "jdbc/RFInfoDS");
-  }
-
-  public static AuthenticationServerFactory getInstance() {
-    if (instance == null) {
-      instance = new AuthenticationServerFactory();
-    }
-    return instance;
+  @Inject
+  public AuthenticationServerFactory(AuthenticationDao dao) {
+    super(dao, "jdbc/RFInfoDS");
   }
 
   public AuthenticationService getService() {
-    if (service == null) {
-      service = new AuthenticationServiceImpl(getDao(),
-          SessionServerFactory.getInstance().getService(),
-          ClientUriServerFactory.getInstance().getService(),
-          KeyServerFactory.getInstance().getService());
-    }
-    return service;
+    return new AuthenticationServiceImpl(getDao(),
+        sessionServerFactory.getService(),
+        clientUriServerFactory.getService(),
+        keyServerFactory.getService());
   }
 }

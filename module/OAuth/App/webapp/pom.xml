@@ -292,8 +292,7 @@
             </goals>
             <configuration>
               <overWrite>true</overWrite>
-              <sourceFile>${project.build.directory}/${project.artifactId}-${project.version}.war
-              </sourceFile>
+              <sourceFile>${project.build.directory}/${build.finalName}.war</sourceFile>
               <destinationFile>
                 ../dist/oauth.war
               </destinationFile>

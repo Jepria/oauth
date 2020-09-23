@@ -76,6 +76,7 @@
           <password>admin0</password>
           <path>/oauth</path>
           <warFile>${project.basedir}/dist/oauth.war</warFile>
+          <update>true</update>
         </configuration>
       </plugin>
       <plugin>

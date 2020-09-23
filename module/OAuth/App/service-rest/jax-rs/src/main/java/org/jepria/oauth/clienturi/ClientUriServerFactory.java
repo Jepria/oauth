@@ -1,32 +1,22 @@
 package org.jepria.oauth.clienturi;
 
-import org.jepria.oauth.clienturi.dao.ClientUriDaoImpl;
+import org.jepria.oauth.clienturi.dao.ClientUriDao;
 import org.jepria.server.ServerFactory;
 import org.jepria.server.data.Dao;
 import org.jepria.server.service.rest.EntityService;
 import org.jepria.server.service.rest.EntityServiceImpl;
 
+import javax.inject.Inject;
+
 public class ClientUriServerFactory extends ServerFactory<Dao> {
 
-  private static ClientUriServerFactory instance;
-  private ClientUriService service;
-
-  private ClientUriServerFactory() {
-    super(new ClientUriDaoImpl(), "jdbc/RFInfoDS");
-  }
-
-  public static ClientUriServerFactory getInstance() {
-    if (instance == null) {
-      instance = new ClientUriServerFactory();
-    }
-    return instance;
+  @Inject
+  public ClientUriServerFactory(ClientUriDao dao) {
+    super(dao, "jdbc/RFInfoDS");
   }
 
   public ClientUriService getService() {
-    if (service == null) {
-      service = new ClientUriServiceImpl(getDao());
-    }
-    return service;
+    return new ClientUriServiceImpl(getDao());
   }
 
   /**

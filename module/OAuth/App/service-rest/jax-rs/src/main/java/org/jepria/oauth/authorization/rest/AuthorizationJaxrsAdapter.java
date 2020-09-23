@@ -2,12 +2,13 @@ package org.jepria.oauth.authorization.rest;
 
 import org.jepria.oauth.authorization.AuthorizationServerFactory;
 import org.jepria.oauth.exception.OAuthRuntimeException;
-import org.jepria.oauth.session.dto.SessionDto;
-import org.jepria.oauth.token.dto.TokenDto;
 import org.jepria.oauth.sdk.ResponseType;
+import org.jepria.oauth.session.dto.SessionDto;
 import org.jepria.oauth.token.TokenServerFactory;
+import org.jepria.oauth.token.dto.TokenDto;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
 
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -20,12 +21,15 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.Date;
 
 import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
+  @Inject
+  AuthorizationServerFactory authorizationServerFactory;
+  @Inject
+  TokenServerFactory tokenServerFactory;
   @Context
   HttpServletRequest request;
 
@@ -59,8 +63,7 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
     SessionDto session;
 
     if (sessionToken != null) {
-      session = AuthorizationServerFactory
-          .getInstance()
+      session = authorizationServerFactory
           .getService()
           .authorize(responseType,
               clientId,
@@ -75,7 +78,7 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
               .location(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + session.getAuthorizationCode() + (state != null ? "&" + STATE + "=" + state : "")))
               .build();
         } else {
-          TokenDto tokenDto = TokenServerFactory.getInstance().getService().create(responseType, clientId, getHostContext(), session.getAuthorizationCode(), URI.create(redirectUri));
+          TokenDto tokenDto = tokenServerFactory.getService().create(responseType, clientId, getHostContext(), session.getAuthorizationCode(), URI.create(redirectUri));
           response = Response.status(302).location(URI.create(redirectUri
               + "#" + ACCESS_TOKEN_QUERY_PARAM + tokenDto.getAccessToken()
               + "&" + TOKEN_TYPE_QUERY_PARAM + tokenDto.getTokenType()
@@ -105,8 +108,7 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
         }
       }
     } else {
-      session = AuthorizationServerFactory
-          .getInstance()
+      session = authorizationServerFactory
           .getService()
           .authorize(responseType,
               clientId,

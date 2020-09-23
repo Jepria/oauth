@@ -30,19 +30,18 @@
         <dependency>
             <groupId>org.jepria</groupId>
             <artifactId>jepria-rest</artifactId>
-            <version>${jepria-rest.version}</version>
-            <scope>compile</scope>
+            <version>${jepria.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jepria.oauth</groupId>
             <artifactId>model</artifactId>
-            <version>${oauth.version}</version>
-            <scope>compile</scope>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.oracle</groupId>
             <artifactId>ojdbc6</artifactId>
             <version>${oracle.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

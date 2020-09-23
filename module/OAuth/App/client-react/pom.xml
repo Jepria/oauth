@@ -9,10 +9,6 @@
   <version>1.0.0-SNAPSHOT</version>
   <packaging>${packaging}</packaging>
 
-  <properties>
-    <bin.home>${env.BIN_HOME}</bin.home>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>javax.servlet</groupId>
@@ -45,6 +41,7 @@
     </repository>
   </repositories>
   <build>
+    <finalName>oauth-react</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-clean-plugin</artifactId>
@@ -72,20 +69,16 @@
         <artifactId>exec-maven-plugin</artifactId>
         <version>1.6.0</version>
         <executions>
-<!--          <execution>-->
-<!--            <id>install</id>-->
-<!--            <goals>-->
-<!--              <goal>exec</goal>-->
-<!--            </goals>-->
-<!--            <phase>process-resources</phase>-->
-<!--            <configuration>-->
-<!--              <executable>yarn</executable>-->
-<!--              <arguments>-->
-<!--                <argument>network-timeout</argument>-->
-<!--                <argument>1000000</argument>-->
-<!--              </arguments>-->
-<!--            </configuration>-->
-<!--          </execution>-->
+          <execution>
+            <id>install</id>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <phase>process-resources</phase>
+            <configuration>
+              <executable>yarn</executable>
+            </configuration>
+          </execution>
           <execution>
             <id>build</id>
             <goals>
@@ -101,6 +94,19 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>3.2.2</version>
+        <configuration>
+          <webResources>
+            <resource>
+              <directory>build</directory>
+            </resource>
+          </webResources>
+          <webXml>webapp/WEB-INF/web.xml</webXml>
+        </configuration>
       </plugin>
     </plugins>
   </build>
@@ -155,27 +161,22 @@
       <build>
         <plugins>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-war-plugin</artifactId>
-            <version>3.2.2</version>
-            <configuration>
-              <webResources>
-                <resource>
-                  <directory>build</directory>
-                </resource>
-              </webResources>
-              <webXml>webapp/WEB-INF/web.xml</webXml>
-            </configuration>
-          </plugin>
-          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>exec-maven-plugin</artifactId>
             <version>1.6.0</version>
             <configuration>
               <environmentVariables>
                 <PUBLIC_URL>/oauth-react</PUBLIC_URL>
-                <API_PATH>/oauth</API_PATH>
+                <API_PATH>/oauth-rest</API_PATH>
               </environmentVariables>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.tomcat.maven</groupId>
+            <artifactId>tomcat7-maven-plugin</artifactId>
+            <version>2.2</version>
+            <configuration>
+              <path>/oauth-react</path>
             </configuration>
           </plugin>
         </plugins>

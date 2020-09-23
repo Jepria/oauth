@@ -1,6 +1,7 @@
 org.jepria
 org.jepria.oauth.authentication
 org.jepria.oauth.authentication.dao
+org.jepria.oauth.authentication.dto
 org.jepria.oauth.authentication.rest
 org.jepria.oauth.authorization
 org.jepria.oauth.authorization.rest

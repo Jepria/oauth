@@ -10,8 +10,8 @@
 /module/OAuth/App/oauth-web/target
 /module/OAuth/App/OAuth.iml
 /module/OAuth/App/target
-/module/OAuth/App/main-web/main-web.iml
-/module/OAuth/App/main-web/target
+/module/OAuth/App/webapp/webapp.iml
+/module/OAuth/App/webapp/target
 /module/OAuth/App/service-rest/target
 /module/OAuth/App/service-rest/service-rest.iml
 /module/OAuth/App/service-rest/dao/target

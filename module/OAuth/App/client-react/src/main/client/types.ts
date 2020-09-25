@@ -1,10 +1,10 @@
 export interface Client {
   clientId?: string;
-  clientName: string;
+  clientName?: string;
   clientNameEn?: string;
   clientSecret?: string;
-  applicationType: string;
-  grantTypes: Array<string>;
+  applicationType?: string;
+  grantTypes?: Array<string>;
   scopes?: Array<Option>;
 }
 

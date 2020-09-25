@@ -51,7 +51,7 @@ export const ClientListPage: React.FC = () => {
       },
       {
         Header: "Разрешенные типы авторизации",
-        accessor: (row: Client) => row.grantTypes.map((grantType) => GrantType[grantType]).join(', '),
+        accessor: (row: Client) => row.grantTypes?.map((grantType) => GrantType[grantType]).join(', '),
         Cell: ({ value }: any) => <TextCell wrapText>{value}</TextCell>,
         disableSortBy: true
       }

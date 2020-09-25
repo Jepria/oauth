@@ -15,7 +15,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
   const { roles } = useSelector<AppState, ClientState>(state => state.client);
 
   const formik = useFormik<Client>({
-    initialValues: { clientName: '', applicationType: 'web', grantTypes: [] },
+    initialValues: { clientId: '', clientName: '', clientNameEn: '', applicationType: 'web', grantTypes: [] },
     onSubmit: (values: Client) => {
       dispatch(createClient(values, (client: Client) => {
         history.push(`/ui/client/${client.clientId}/view/`);
@@ -59,6 +59,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  
   return (
     <Panel>
       <Panel.Content>
@@ -70,7 +71,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
               error={formik.errors.clientId}>
               <TextInput
                 name="clientId"
-                value={formik.initialValues.clientId}
+                value={formik.values.clientId}
                 onChange={formik.handleChange}
                 error={formik.errors.clientId} />
             </Form.Control>
@@ -82,7 +83,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
               error={formik.errors.clientName}>
               <TextInput
                 name="clientName"
-                value={formik.initialValues.clientName}
+                value={formik.values.clientName}
                 onChange={formik.handleChange}
                 error={formik.errors.clientName} />
             </Form.Control>
@@ -94,7 +95,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
               error={formik.errors.clientNameEn}>
               <TextInput
                 name="clientNameEn"
-                value={formik.initialValues.clientNameEn}
+                value={formik.values.clientNameEn}
                 onChange={formik.handleChange}
                 error={formik.errors.clientNameEn} />
             </Form.Control>
@@ -112,7 +113,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
                 onChange={formik.handleChange} />
             </Form.Control>
           </Form.Field>
-          <Form.Field>
+          {formik.values["applicationType"] && <Form.Field>
             <Form.Label required>Разрешения на авторизацию:</Form.Label>
             <Form.Control
               style={{ maxWidth: "200px" }}
@@ -130,21 +131,22 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
                   .map(option => <CheckBox key={String(option.value)} label={option.name} value={option.value} />)}
               </CheckBoxGroup>
             </Form.Control>
-          </Form.Field>
+          </Form.Field>}
           {formik.values["grantTypes"]?.includes('client_credentials') &&
             <Form.Field>
               <Form.Label>Права доступа:</Form.Label>
               <Form.Control
-                style={{ minWidth: "300px", maxWidth: "400px" }}
+                style={{ minWidth: "300px", maxWidth: "500px" }}
                 error={formik.errors.scopes}>
                 <DualListField
                   options={roles ? roles : []}
                   placeholder="Введите имя роли"
                   name="scopes"
-                  onChange={e => dispatch(getRoles(e.target.value))}
-                  onChangeValue={formik.setFieldValue}
+                  onInputChange={e => dispatch(getRoles(e.target.value))}
+                  onSelectionChange={formik.setFieldValue}
                   touched={formik.touched.scopes}
-                  error={formik.errors.scopes} />
+                  error={formik.errors.scopes}
+                  style={{height: "200px"}} />
               </Form.Control>
             </Form.Field>
           }

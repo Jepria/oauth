@@ -1,38 +1,24 @@
 import React, { useRef, useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { useSelect, useMultiple, useFilter, useDual, UseDropdownInstance, UseFilterInstance, UseDualInstance, OptionInstance } from '@jfront/ui-core';
+import { TextInput } from '@jfront/ui-core';
 
-export interface TagPickerProps {
-  width?: string;
-  height?: string;
-}
-
-const DualList = styled.div<TagPickerProps>`
+const DualList = styled.div`
   padding: 5px;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
+  display: inline-flex;
+  flex-grow: 1;
   flex-direction: column;
-  min-width: ${props => props.width ? `calc(${props.width} / 2)` : '200px'};
-  max-width: ${props => props.width ? props.width : '400px'};
-  height: ${props => props.height ? props.height : '200px'};
   width: 100%;
 `;
 
 const Container = styled.div`
   width: 100%;
-  height: calc(100% - 30px);
-  display: -webkit-box;
-  display: -ms-flexbox;
+  flex-grow: 1;
   display: flex;
 `;
 
 const ButtonBar = styled.div`
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
   align-items: center;
   width: 10%;
   min-width: 32px;
@@ -60,7 +46,7 @@ const List = styled.select.attrs({ multiple: true }) <ListProps>`
   ${(props: ListProps) => props.error ? 'border: 1px solid red' : 'border: 1px solid #ccc; border-top: 1px solid #999;'}
 `;
 
-const Button = styled.button`
+const Button = styled.button.attrs({ type: "button" })`
   margin: 0;
   padding: 0;
   text-decoration: none;
@@ -72,18 +58,21 @@ const Button = styled.button`
   width: 32px;
 `;
 
-const Option = styled.option``;
+const Option = styled.option`
+  padding-left: 3px;
+`;
 
 
 export interface DualListFieldProps {
   id?: string;
   name?: string;
-  initialValue?: Array<any>;
+  style?: React.CSSProperties;
+  className?: string;
+  initialValues?: Array<any>;
   touched?: boolean;
   error?: string;
-  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  onChangeValue?: (field: string, value: any) => void;
-  width?: string;
+  onInputChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onSelectionChange?: (field: string, values: Array<any>) => void;
   options: Array<any>;
   isLoading?: boolean;
   getOptionName?: (option: any) => string;
@@ -94,149 +83,151 @@ export interface DualListFieldProps {
 
 export const DualListField: React.FC<DualListFieldProps> = ({
   id,
-  width,
   name = '',
-  initialValue,
-  touched,
+  initialValues,
   error,
   placeholder,
   disabled,
-  onChange,
-  onChangeValue,
   isLoading,
   options,
+  style,
+  className,
+  onInputChange,
+  onSelectionChange,
   getOptionName,
   getOptionValue }) => {
 
   const unselectedListRef = useRef<HTMLSelectElement>(null);
   const selectedListRef = useRef<HTMLSelectElement>(null)
   const [filter, setFilter] = useState("");
-  const [_isLoading, setIsLoading] = useState(isLoading);
+  const [values, setValues] = useState<Array<any>>(initialValues ? [...initialValues] : []);
 
-  useEffect(
-    () => {
-      setIsLoading(isLoading);
-    }, [isLoading]
-  );
+  useEffect(() => {
+    if (initialValues) {
+      setValues(initialValues)
+    }
+  }, [initialValues])
 
-  const {
-    getOptions,
-    getSelectedOptions,
-    getSelectedValue,
-    getInputProps,
-    getRootProps,
-    selectOption,
-    getListProps
-  } = useSelect({
-    initialValue,
-    options: options,
-    onChange: (value) => {
-      if (onChangeValue) {
-        onChangeValue(name, value);
-      }
-    },
-    getOptionName,
-    getOptionValue
-  }, useMultiple, useDual, useFilter
-  ) as UseDropdownInstance & UseFilterInstance & UseDualInstance;
-
-  const mapOptions = (values: Array<string>) => {
-    const result: any[] = [];
-    if (values.length === 0) return result;
-    const options = getOptions().map(optionInstance => optionInstance.option);
-    return values.map(value => {
-      const target = options.find(option => option.value === value);
-      if (target) {
-        options.splice(options.indexOf(target), 1);
-        return target;
-      }
-    })
-  }
-
-  const mapSelectedOptions = (values: Array<string>) => {
-    // if (values.length === 0) return getSelectedOption();
-    // return getSelectedOption().filter((option: any) => !values.find(value => option?.value === value));
-  }
-
-  const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (onChange) {
-      selectOption([]);
-      setFilter(e.target.value);
-      onChange(e);
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (onInputChange) {
+      onInputChange(e);
     } else {
-      getInputProps().onChange(e)
+      setFilter(e.target.value);
     }
   }
 
-  const onOptionClick = (event: React.MouseEvent, optionInstance: OptionInstance) => {
-    if (disabled) return;
-    event.stopPropagation();
-    // In that case, event.ctrlKey does the trick.
-    if (!event.ctrlKey && !event.shiftKey) {
-      optionInstance.getOptionProps().onClick();
+  const select = (newValues?: Array<any>) => {
+    if (newValues && newValues.length > 0) {
+      if (onSelectionChange) {
+        onSelectionChange(name,
+          [...values.map(option => getOptionValue ? getOptionValue(option) : option.value),
+          ...newValues]);
+      }
+      setValues([...values, ...options.filter(option => newValues.includes(String(getOptionValue ? getOptionValue(option) : option.value)))]);
     }
   }
 
-  const select = () => {
-    if (unselectedListRef.current?.selectedOptions) {
-      selectOption([...mapOptions(Array.from(unselectedListRef.current?.selectedOptions).map((selectedOption: any) => selectedOption.value)),
-      ...getSelectedOptions().map(optionInstance => optionInstance.option)])
-    }
-  }
-
-  const deselect = () => {
-    if (selectedListRef.current?.selectedOptions) {
-      selectOption(mapSelectedOptions(Array.from(selectedListRef.current?.selectedOptions).map((selectedOption: any) => selectedOption.value)))
+  const deselect = (newValues?: Array<any>) => {
+    console.log(newValues)
+    if (newValues && newValues.length > 0 && values.length > 0) {
+      const nextValues = values.filter(valueOption => !newValues.find(newValue => (getOptionValue ?
+        getOptionValue(valueOption) : valueOption.value) === newValue ));
+      if (onSelectionChange) {
+        onSelectionChange(name, nextValues);
+      }
+      setValues(nextValues);
     }
   }
 
   const selectAll = () => {
-    selectOption([...getSelectedOptions().map(optionInstance => optionInstance.option),
-    ...getOptions().map(optionInstance => optionInstance.option)]);
+    if (onSelectionChange) {
+      onSelectionChange(name, options.map(option => getOptionValue ? getOptionValue(option) : option.value));
+    }
+    setValues(options);
   }
 
   const deselectAll = () => {
-    selectOption([])
+    if (onSelectionChange) {
+      onSelectionChange(name, []);
+    }
+    setValues([]);
+  }
+
+  const renderOptions = () => {
+    const notSelectedOptions = options.filter(option => !values.find(valueOption => getOptionValue ?
+      getOptionValue(option) === getOptionValue(valueOption) : option.value === valueOption.value))
+    if (onInputChange) {
+      return notSelectedOptions.map(option => <Option
+        onClick={(e) => {
+          if (!e.ctrlKey && !e.shiftKey) {
+            select([getOptionValue ? getOptionValue(option) : option.value])
+          }
+        }}
+        key={getOptionValue ? getOptionValue(option) : option.value}
+        value={getOptionValue ? getOptionValue(option) : option.value}
+        title={getOptionName ? getOptionName(option) : option.name}>
+        {getOptionName ? getOptionName(option) : option.name}
+      </Option>)
+    } else {
+      return notSelectedOptions.filter(option => getOptionName ? getOptionName(option).startsWith(filter) : option.name.startsWith(filter))
+        .map(option => <Option
+          onClick={(e) => {
+            if (!e.ctrlKey && !e.shiftKey) {
+              select([getOptionValue ? getOptionValue(option) : option.value])
+            }
+          }}
+          key={getOptionValue ? getOptionValue(option) : option.value}
+          value={getOptionValue ? getOptionValue(option) : option.value}
+          title={getOptionName ? getOptionName(option) : option.name}>
+          {getOptionName ? getOptionName(option) : option.name}
+        </Option>);
+    }
   }
 
   return (
-    <DualList id={id} {...getRootProps()} width={width}>
-      <Input
-        {...getInputProps()}
-        onChange={onInputChange}
+    <DualList id={id} style={style} className={className}>
+      <TextInput
+        onChange={onChange}
+        value={onInputChange ? undefined : filter}
         placeholder={placeholder}
-        disabled={disabled}
-        value={onChange ? filter : getInputProps().value} />
+        style={{maxWidth: "45%", paddingBottom: "5px"}}
+        error={error}
+        isLoading={isLoading}
+        disabled={disabled} />
       <Container>
         <List
-          {...getListProps()}
           ref={unselectedListRef}
           disabled={disabled}
-          error={touched && error ? true : false}>
-          {getOptions().map(optionInstance => (
-            <Option value={optionInstance.option.value} {...optionInstance.getOptionProps()}
-              onClick={e => onOptionClick(e, optionInstance)}>
-              {optionInstance.option.name}
-            </Option>)
-          )}
+          error={error ? true : false}>
+          {renderOptions()}
         </List>
         <ButtonBar>
           <Button onClick={selectAll} disabled={disabled}>↠</Button>
-          <Button onClick={select} disabled={disabled}>→</Button>
-          <Button onClick={deselect} disabled={disabled}>←</Button>
+          <Button onClick={() =>
+            select(unselectedListRef.current?.selectedOptions ?
+              Array.from(unselectedListRef.current?.selectedOptions).map((selectedOption: any) => selectedOption.value) : [])}
+            disabled={disabled}>→</Button>
+          <Button onClick={() =>
+            deselect(selectedListRef.current?.selectedOptions ?
+              Array.from(selectedListRef.current?.selectedOptions).map((selectedOption: any) => selectedOption.value) : [])}
+            disabled={disabled}>←</Button>
           <Button onClick={deselectAll} disabled={disabled}>↞</Button>
         </ButtonBar>
         <List
-          {...getListProps()}
           ref={selectedListRef}
           disabled={disabled}
-          error={touched && error ? true : false}>
-          {getSelectedOptions().map(optionInstance => (
-            <Option value={optionInstance.option.value} {...optionInstance.getOptionProps()}
-              onClick={e => onOptionClick(e, optionInstance)}>
-              {optionInstance.option.name}
-            </Option>)
-          )}
+          error={error ? true : false}>
+          {values.map(option => <Option
+            onClick={(e) => {
+              if (!e.ctrlKey && !e.shiftKey) {
+                deselect([getOptionValue ? getOptionValue(option) : option.value])
+              }
+            }}
+            key={getOptionValue ? getOptionValue(option) : option.value}
+            value={getOptionValue ? getOptionValue(option) : option.value}
+            title={getOptionName ? getOptionName(option) : option.name}>
+            {getOptionName ? getOptionName(option) : option.name}
+          </Option>)}
         </List>
       </Container>
     </DualList>

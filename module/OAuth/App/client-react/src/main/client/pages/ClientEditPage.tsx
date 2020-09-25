@@ -34,7 +34,7 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
   }, [current, clientId, dispatch]);
 
   const formik = useFormik<Client>({
-    initialValues: { clientName: '', applicationType: '', grantTypes: [], ...current },
+    initialValues: {clientName: '', clientNameEn: '', ...current },
     enableReinitialize: true,
     onSubmit: (values: Client) => {
       if (clientId) {
@@ -97,7 +97,7 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
                 onChange={formik.handleChange} />
             </Form.Control>
           </Form.Field>
-          <Form.Field>
+          {formik.values["applicationType"] && <Form.Field>
             <Form.Label required>Разрешения на авторизацию:</Form.Label>
             <Form.Control style={{ maxWidth: "200px" }}>
               <CheckBoxGroup
@@ -113,17 +113,18 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
                   .map(option => <CheckBox key={String(option.value)} label={option.name} value={option.value} />)}
               </CheckBoxGroup>
             </Form.Control>
-          </Form.Field>
+          </Form.Field>}
           {formik.values["grantTypes"]?.includes('client_credentials') &&
             <Form.Field>
               <Form.Label>Права доступа:</Form.Label>
-              <Form.Control style={{ maxWidth: "200px" }}>
+              <Form.Control style={{ minWidth: "300px", maxWidth: "500px" }}>
                 <DualListField
                   options={roles ? roles : []}
+                  initialValues={formik.initialValues.scopes}
                   placeholder="Введите имя роли"
                   name="scopes"
-                  onChange={e => dispatch(getRoles(e.target.value))}
-                  onChangeValue={formik.setFieldValue}
+                  onInputChange={e => dispatch(getRoles(e.target.value))}
+                  onSelectionChange={formik.setFieldValue}
                   touched={formik.touched.scopes}
                   error={formik.errors.scopes} />
               </Form.Control>

@@ -55,11 +55,11 @@ const ClientViewPage: React.FC = () => {
           </FormField>
           <FormField>
             <Label width={'250px'}>Тип приложения:</Label>
-            <Text>{current ? ApplicationType[current.applicationType] : ''}</Text>
+            <Text>{current && current.applicationType ? ApplicationType[current.applicationType] : ''}</Text>
           </FormField>
           <FormField>
             <Label width={'250px'}>Разрешения на авторизацию:</Label>
-            <Text>{current?.grantTypes.map((grantType) => GrantType[grantType]).join(', ')}</Text>
+            <Text>{current?.grantTypes?.map((grantType) => GrantType[grantType]).join(', ')}</Text>
           </FormField>
           {current?.grantTypes?.includes("client_credentials") &&
             <FormField>

@@ -9,8 +9,8 @@ export const SEARCH_SESSIONS = 'SEARCH_SESSIONS';
 export const SEARCH_SESSIONS_SUCCESS = 'SEARCH_SESSIONS_SUCCESS';
 export const GET_SESSION_BY_ID = 'GET_SESSION_BY_ID';
 export const GET_SESSION_BY_ID_SUCCESS = 'GET_SESSION_BY_ID_SUCCESS';
-export const SET_CURRENT_RECORD = 'SET_CURRENT_RECORD';
-export const SET_CURRENT_RECORD_SUCCESS = 'SET_CURRENT_RECORD_SUCCESS';
+export const SET_SESSION_CURRENT_RECORD = 'SET_SESSION_CURRENT_RECORD';
+export const SET_SESSION_CURRENT_RECORD_SUCCESS = 'SET_SESSION_CURRENT_RECORD_SUCCESS';
 export const GET_CLIENTS = 'GET_CLIENTS';
 export const GET_CLIENTS_SUCCESS = 'GET_CLIENTS_SUCCESS';
 export const GET_OPERATORS = 'GET_OPERATORS';
@@ -75,13 +75,13 @@ export interface FailureAction {
 }
 
 export interface SetCurrentRecordAction {
-  type: typeof SET_CURRENT_RECORD
+  type: typeof SET_SESSION_CURRENT_RECORD
   payload?: Session
   callback?(): any;
 }
 
 export interface SetCurrentRecordSuccessAction {
-  type: typeof SET_CURRENT_RECORD_SUCCESS
+  type: typeof SET_SESSION_CURRENT_RECORD_SUCCESS
   payload?: Session
 }
 
@@ -200,7 +200,7 @@ export function onFailure(error: Error): SessionActionTypes {
 
 export function setCurrentRecord(current?: Session, callback?: () => any): SessionActionTypes {
   return {
-    type: SET_CURRENT_RECORD,
+    type: SET_SESSION_CURRENT_RECORD,
     payload: current,
     callback: callback
   }
@@ -208,7 +208,7 @@ export function setCurrentRecord(current?: Session, callback?: () => any): Sessi
 
 export function setCurrentRecordSuccess(current?: Session): SessionActionTypes {
   return {
-    type: SET_CURRENT_RECORD_SUCCESS,
+    type: SET_SESSION_CURRENT_RECORD_SUCCESS,
     payload: current
   }
 }

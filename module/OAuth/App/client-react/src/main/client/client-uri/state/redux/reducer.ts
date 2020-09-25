@@ -1,4 +1,4 @@
-import { ClientUriActionTypes, CLIENT_URI_LOADING, CLIENT_URI_FAILURE, SET_CURRENT_RECORD, CREATE_CLIENT_URI_SUCCESS, DELETE_CLIENT_URI_SUCCESS, GET_CLIENT_URI_BY_ID_SUCCESS, SEARCH_CLIENT_URI_SUCCESS } from './actions'
+import { ClientUriActionTypes, CLIENT_URI_LOADING, CLIENT_URI_FAILURE, SET_CLIENT_URI_CURRENT_RECORD, CREATE_CLIENT_URI_SUCCESS, DELETE_CLIENT_URI_SUCCESS, GET_CLIENT_URI_BY_ID_SUCCESS, SEARCH_CLIENT_URI_SUCCESS } from './actions'
 import { ClientUriState } from "../../types";
 
 export const initialState: ClientUriState = {
@@ -43,7 +43,7 @@ export function clientUriReducer(state: ClientUriState = initialState, action: C
         current: action.clientUri,
         isLoading: false
       }
-    case SET_CURRENT_RECORD:
+    case SET_CLIENT_URI_CURRENT_RECORD:
       return {
         ...state,
         current: action.payload

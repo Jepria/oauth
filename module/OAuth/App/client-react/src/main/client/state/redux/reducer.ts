@@ -1,4 +1,4 @@
-import { ClientActionTypes, CLIENT_LOADING, CLIENT_FAILURE, CREATE_CLIENT_SUCCESS, UPDATE_CLIENT_SUCCESS, DELETE_CLIENT_SUCCESS, POST_CLIENT_SEARCH_REQUEST_SUCCESS, SEARCH_CLIENTS_SUCCESS, GET_CLIENT_BY_ID_SUCCESS, SET_CURRENT_RECORD, GET_ROLES_SUCCESS } from "./actions";
+import { ClientActionTypes, CLIENT_LOADING, CLIENT_FAILURE, CREATE_CLIENT_SUCCESS, UPDATE_CLIENT_SUCCESS, DELETE_CLIENT_SUCCESS, POST_CLIENT_SEARCH_REQUEST_SUCCESS, SEARCH_CLIENTS_SUCCESS, GET_CLIENT_BY_ID_SUCCESS, SET_CLIENT_CURRENT_RECORD, GET_ROLES_SUCCESS } from "./actions";
 import { ClientState } from "../../types";
 
 export const initialState: ClientState = {
@@ -57,7 +57,7 @@ export function clientReducer(state: ClientState = initialState, action: ClientA
         current: action.client,
         isLoading: false
       }
-    case SET_CURRENT_RECORD:
+    case SET_CLIENT_CURRENT_RECORD:
       return {
         ...state,
         current: action.payload

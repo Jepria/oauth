@@ -8,8 +8,8 @@ export const SEARCH_CLIENT_URI = 'SEARCH_CLIENT_URI';
 export const SEARCH_CLIENT_URI_SUCCESS = 'SEARCH_CLIENT_URI_SUCCESS';
 export const GET_CLIENT_URI_BY_ID = 'GET_CLIENT_URI_BY_ID';
 export const GET_CLIENT_URI_BY_ID_SUCCESS = 'GET_CLIENT_URI_BY_ID_SUCCESS';
-export const SET_CURRENT_RECORD = 'SET_CURRENT_RECORD';
-export const SET_CURRENT_RECORD_SUCCESS = 'SET_CURRENT_RECORD_SUCCESS';
+export const SET_CLIENT_URI_CURRENT_RECORD = 'SET_CLIENT_URI_CURRENT_RECORD';
+export const SET_CLIENT_URI_CURRENT_RECORD_SUCCESS = 'SET_CLIENT_URI_CURRENT_RECORD_SUCCESS';
 export const CLIENT_URI_LOADING = 'CLIENT_URI_LOADING';
 export const CLIENT_URI_FAILURE = 'CLIENT_URI_FAILURE';
 
@@ -70,13 +70,13 @@ export interface FailureAction {
 }
 
 export interface SetCurrentRecordAction {
-  type: typeof SET_CURRENT_RECORD
+  type: typeof SET_CLIENT_URI_CURRENT_RECORD
   payload?: ClientUri
   callback?(): any;
 }
 
 export interface SetCurrentRecordSuccessAction {
-  type: typeof SET_CURRENT_RECORD_SUCCESS
+  type: typeof SET_CLIENT_URI_CURRENT_RECORD_SUCCESS
   payload?: ClientUri
 }
 
@@ -172,7 +172,7 @@ export function onFailure(error: Error): ClientUriActionTypes {
 
 export function setCurrentRecord(current?: ClientUri, callback?: () => any): ClientUriActionTypes {
   return {
-    type: SET_CURRENT_RECORD,
+    type: SET_CLIENT_URI_CURRENT_RECORD,
     payload: current,
     callback: callback
   }
@@ -180,7 +180,7 @@ export function setCurrentRecord(current?: ClientUri, callback?: () => any): Cli
 
 export function setCurrentRecordSuccess(current?: ClientUri): ClientUriActionTypes {
   return {
-    type: SET_CURRENT_RECORD_SUCCESS,
+    type: SET_CLIENT_URI_CURRENT_RECORD_SUCCESS,
     payload: current
   }
 }

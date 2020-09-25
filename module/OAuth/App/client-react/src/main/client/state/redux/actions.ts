@@ -12,8 +12,8 @@ export const SEARCH_CLIENTS = 'SEARCH_CLIENTS';
 export const SEARCH_CLIENTS_SUCCESS = 'SEARCH_CLIENTS_SUCCESS';
 export const GET_CLIENT_BY_ID = 'GET_CLIENT_BY_ID';
 export const GET_CLIENT_BY_ID_SUCCESS = 'GET_CLIENT_BY_ID_SUCCESS';
-export const SET_CURRENT_RECORD = 'SET_CURRENT_RECORD';
-export const SET_CURRENT_RECORD_SUCCESS = 'SET_CURRENT_RECORD_SUCCESS';
+export const SET_CLIENT_CURRENT_RECORD = 'SET_CLIENT_CURRENT_RECORD';
+export const SET_CLIENT_CURRENT_RECORD_SUCCESS = 'SET_CLIENT_CURRENT_RECORD_SUCCESS';
 export const CLIENT_LOADING = 'CLIENT_LOADING';
 export const CLIENT_FAILURE = 'CLIENT_FAILURE';
 export const GET_ROLES = "GET_ROLES";
@@ -99,13 +99,13 @@ export interface FailureAction {
 }
 
 export interface SetCurrentRecordAction {
-  type: typeof SET_CURRENT_RECORD
+  type: typeof SET_CLIENT_CURRENT_RECORD
   payload?: Client
   callback?(): any;
 }
 
 export interface SetCurrentRecordSuccessAction {
-  type: typeof SET_CURRENT_RECORD_SUCCESS
+  type: typeof SET_CLIENT_CURRENT_RECORD_SUCCESS
   payload?: Client
 }
 
@@ -248,7 +248,7 @@ export function onFailure(error: Error): ClientActionTypes {
 
 export function setCurrentRecord(current?: Client, callback?: () => any): ClientActionTypes {
   return {
-    type: SET_CURRENT_RECORD,
+    type: SET_CLIENT_CURRENT_RECORD,
     payload: current,
     callback: callback
   }
@@ -256,7 +256,7 @@ export function setCurrentRecord(current?: Client, callback?: () => any): Client
 
 export function setCurrentRecordSuccess(current?: Client): ClientActionTypes {
   return {
-    type: SET_CURRENT_RECORD_SUCCESS,
+    type: SET_CLIENT_CURRENT_RECORD_SUCCESS,
     payload: current
   }
 }

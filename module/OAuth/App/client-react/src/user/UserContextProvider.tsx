@@ -17,13 +17,15 @@ export const UserContextProvider: React.FC<UserContextProps> = ({ baseUrl, axios
   const [{
     currentUser,
     roles,
-    isLoading
+    isUserLoading,
+    isRoleLoading
   }, dispatch] = useReducer(reducer, {
     currentUser: {
       username: "Guest"
     },
     roles: {},
-    isLoading: false
+    isUserLoading: false,
+    isRoleLoading: false
   });
 
   useEffect(() => {
@@ -103,7 +105,8 @@ export const UserContextProvider: React.FC<UserContextProps> = ({ baseUrl, axios
       currentUser,
       isUserInRole: hasRole,
       isUserInRoles: hasRoles,
-      isLoading
+      isRoleLoading,
+      isUserLoading
     }}>
       {children}
     </UserContext.Provider>

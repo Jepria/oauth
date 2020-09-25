@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Text } from '../../../components/form/Field';
-import { AppState } from '../../store';
+import { AppState } from '../../../redux/store';
 import { KeyState } from '../types';
 import { useSelector, useDispatch } from 'react-redux';
 import { getKey } from '../state/redux/actions';

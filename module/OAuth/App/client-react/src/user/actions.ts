@@ -74,6 +74,6 @@ export function isUserInRolesSuccess(result: Roles): UserActionTypes {
 
 export function isUserInRolesFailure(): UserActionTypes {
   return {
-    type: IS_USER_IN_ROLES
+    type: IS_USER_IN_ROLES_FAILURE
   }
 }

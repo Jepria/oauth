@@ -4,7 +4,7 @@ import { useFormik } from 'formik';
 import { useSelector, useDispatch } from 'react-redux';
 import { ClientSearchTemplate } from '../types';
 import { postSearchClientRequest } from '../state/redux/actions';
-import { AppState } from '../../store';
+import { AppState } from '../../../redux/store';
 import { Panel, Form, TextInput, NumberInput } from '@jfront/ui-core';
 
 const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {

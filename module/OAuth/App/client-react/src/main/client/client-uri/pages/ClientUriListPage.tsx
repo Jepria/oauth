@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { setCurrentRecord, searchClientUri } from '../state/redux/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, useParams, useLocation } from 'react-router-dom';
-import { AppState } from '../../../store';
+import { AppState } from '../../../../redux/store';
 import { ClientUriState, ClientUri } from '../types';
 import { HistoryState } from '../../../../components/HistoryState';
 import { TextCell } from '../../../../components/cell/TextCell';

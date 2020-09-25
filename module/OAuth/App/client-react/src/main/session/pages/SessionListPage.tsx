@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { setCurrentRecord, searchSessions, postSearchSessionRequest } from '../state/redux/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { AppState } from '../../store';
+import { AppState } from '../../../redux/store';
 import { SessionState, Session } from '../types';
 import { TextCell } from '../../../components/cell/TextCell';
 import { DateCell } from '../../../components/cell/DateCell';
@@ -19,8 +19,6 @@ const SessionListPage: React.FC = () => {
       dispatch(searchSessions(searchId, 25, 1));
     } else if (!searchId && searchRequest) {
       dispatch(postSearchSessionRequest(searchRequest));
-    } else {
-      dispatch(postSearchSessionRequest({ template: { maxRowCount: 25 } }));
     }
   }, [searchId, searchRequest, dispatch]);
 

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Text } from '../../../components/form/Field';
-import { AppState } from '../../store';
+import { AppState } from '../../../redux/store';
 import { SessionState } from '../types';
 import { useSelector, useDispatch } from 'react-redux';
 import { getSessionById } from '../state/redux/actions';

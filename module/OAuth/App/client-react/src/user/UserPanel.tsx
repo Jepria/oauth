@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import styled from 'styled-components';
 import exit from './images/exit.png';
-import { useUser } from '../../user/UserContext';
+import { useUser } from './UserContext';
 import { OAuthContext } from '@jfront/oauth-context';
 
 const Panel = styled.div`

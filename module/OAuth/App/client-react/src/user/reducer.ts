@@ -6,26 +6,27 @@ export function reducer(state: UserState, action: UserActionTypes): UserState {
     case GET_CURRENT_USER: {
       return {
         ...state,
-        isLoading: true
+        isUserLoading: true
       }
     }
     case GET_CURRENT_USER_SUCCESS:{
       return {
+        ...state,
         currentUser: action.user,
         roles: {},
-        isLoading: true
+        isUserLoading: false
       }
     }
     case GET_CURRENT_USER_FAILURE:{
       return {
         ...state,
-        isLoading: false
+        isUserLoading: false
       }
     }
     case IS_USER_IN_ROLES:{
       return {
         ...state,
-        isLoading: true
+        isRoleLoading: true
       }
     }
     case IS_USER_IN_ROLES_SUCCESS:{
@@ -35,13 +36,13 @@ export function reducer(state: UserState, action: UserActionTypes): UserState {
           ...state.roles,
           ...action.result
         },
-        isLoading: false
+        isRoleLoading: false
       }
     }
     case IS_USER_IN_ROLES_FAILURE:{
       return {
         ...state,
-        isLoading: false
+        isRoleLoading: false
       }
     }
   }

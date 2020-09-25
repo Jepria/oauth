@@ -10,5 +10,6 @@ export type Roles = {
 export interface UserState {
   currentUser: User;
   roles: Roles;
-  isLoading: boolean;
+  isUserLoading: boolean;
+  isRoleLoading: boolean;
 }

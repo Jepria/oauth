@@ -9,7 +9,7 @@ import {
 } from "react-router-dom";
 import { ClientUriCreatePage} from './pages/ClientUriCreatePage';
 import { ClientUriViewPage } from './pages/ClientUriViewPage';
-import { AppState } from '../../store';
+import { AppState } from '../../../redux/store';
 import { useSelector, useDispatch } from 'react-redux';
 import { LoadingPanel } from '../../../components/mask';
 import { ClientUriState } from './types';
@@ -24,7 +24,7 @@ import { Panel,
   ToolbarButtonView, 
   ToolbarSplitter, 
   ToolbarButtonBase } from '@jfront/ui-core';
-import { UserPanel } from '../../../components/tabpanel/UserPanel';
+import { UserPanel } from '../../../user/UserPanel';
 
 const ClientUriRoute: React.FC = () => {
 

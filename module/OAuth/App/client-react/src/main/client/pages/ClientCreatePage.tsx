@@ -7,7 +7,7 @@ import { createClient, getRoles } from '../state/redux/actions';
 import { GrantType, ApplicationGrantType } from '@jfront/oauth-core';
 import { SelectInput, TextInput, CheckBoxGroup, CheckBox, Form, Panel } from '@jfront/ui-core';
 import { DualListField } from '../../../components/form/input/DualListField';
-import { AppState } from '../../store';
+import { AppState } from '../../../redux/store';
 
 const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();

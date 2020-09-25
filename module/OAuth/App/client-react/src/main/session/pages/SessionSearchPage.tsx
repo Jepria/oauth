@@ -4,7 +4,7 @@ import { useFormik } from 'formik';
 import { useSelector, useDispatch } from 'react-redux';
 import { SessionSearchTemplate, SessionState } from '../types';
 import { postSearchSessionRequest, getClients, getOperators } from '../state/redux/actions';
-import { AppState } from '../../store';
+import { AppState } from '../../../redux/store';
 import { Panel, Form, ComboBox, TextInput, NumberInput, ComboBoxItem } from '@jfront/ui-core';
 
 const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {

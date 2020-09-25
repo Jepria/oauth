@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   Switch,
   Route,
@@ -9,7 +9,7 @@ import {
 import ClientCreatePage from './pages/ClientCreatePage';
 import ClientEditPage from './pages/ClientEditPage';
 import ClientViewPage from './pages/ClientViewPage';
-import { AppState } from '../store';
+import { AppState } from '../../redux/store';
 import { useSelector, useDispatch } from 'react-redux';
 import { LoadingPanel } from '../../components/mask';
 import { ClientState } from './types';
@@ -29,7 +29,8 @@ import {
   ToolbarSplitter,
   ToolbarButtonBase
 } from '@jfront/ui-core';
-import { UserPanel } from '../../components/tabpanel/UserPanel';
+import { UserPanel } from '../../user/UserPanel';
+import { UserContext } from '../../user/UserContext';
 
 const ClientRoute: React.FC = () => {
 
@@ -37,12 +38,25 @@ const ClientRoute: React.FC = () => {
   const { pathname } = useLocation();
   const history = useHistory<HistoryState>();
   const dispatch = useDispatch();
+  const { isRoleLoading, isUserInRole } = useContext(UserContext);
+  const [hasCreateRole, setHasCreateRole] = useState(false);
+  const [hasEditRole, setHasEditRole] = useState(false);
+  const [hasDeleteRole, setHasDeleteRole] = useState(false);
   const { isLoading, message, error, current, searchId, searchRequest } = useSelector<AppState, ClientState>(state => state.client)
   let formRef = useRef<HTMLFormElement>(null);
 
+  useEffect(() => {
+    isUserInRole("OACreateClient")
+      .then(setHasCreateRole);
+    isUserInRole("OAEditClient")
+      .then(setHasEditRole);
+    isUserInRole("OADeleteClient")
+      .then(setHasDeleteRole);
+  }, [])
+
   return (
     <Panel>
-      {isLoading && <LoadingPanel text={message} />}
+      {(isLoading || isRoleLoading) && <LoadingPanel text={message || "Загрузка данных"} />}
       <Panel.Header>
         <TabPanel>
           <Tab selected>Клиент</Tab>
@@ -54,13 +68,13 @@ const ClientRoute: React.FC = () => {
             dispatch(setCurrentRecord(undefined, () => {
               history.push('/ui/client/create')
             }));
-          }} disabled={pathname.endsWith('/create')} />
+          }} disabled={pathname.endsWith('/create') || !hasCreateRole} />
           <ToolbarButtonSave
             onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }}
-            disabled={!pathname.endsWith('/create') && !pathname.endsWith('/edit')} />
+            disabled={(!pathname.endsWith('/create') && !pathname.endsWith('/edit')) || (!hasCreateRole && !hasEditRole)} />
           <ToolbarButtonEdit
             onClick={() => history.push(`/ui/client/${current?.clientId}/edit`)}
-            disabled={!current || pathname.endsWith('/edit') || pathname.endsWith('/edit/')} />
+            disabled={!current || pathname.endsWith('/edit') || pathname.endsWith('/edit/') || !hasEditRole} />
           <ToolbarButtonView
             onClick={() => { history.push(`/ui/client/${current?.clientId}/view`) }}
             disabled={!current || pathname.endsWith('/view') || pathname.endsWith('/view/')} />
@@ -76,7 +90,7 @@ const ClientRoute: React.FC = () => {
                 }));
               }
             }
-          }} disabled={!current} />
+          }} disabled={!current || !hasDeleteRole} />
           <ToolbarSplitter />
           <ToolbarButtonBase onClick={() => {
             dispatch(setCurrentRecord(undefined, () => {

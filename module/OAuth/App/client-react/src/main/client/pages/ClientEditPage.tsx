@@ -2,7 +2,7 @@ import React, { useEffect, HTMLAttributes } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Client, ClientState } from '../types';
-import { AppState } from '../../store';
+import { AppState } from '../../../redux/store';
 import { getClientById, updateClient, getRoles } from '../state/redux/actions';
 import { useFormik } from 'formik';
 import { GrantType, ApplicationGrantType } from '@jfront/oauth-core';

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { setCurrentRecord, searchClients, postSearchClientRequest } from '../state/redux/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { AppState } from '../../store';
+import { AppState } from '../../../redux/store';
 import { ClientState, Client } from '../types';
 import { GrantType, ApplicationType } from '@jfront/oauth-core';
 import { TextCell } from '../../../components/cell/TextCell';
@@ -19,8 +19,6 @@ export const ClientListPage: React.FC = () => {
       dispatch(searchClients(searchId, 25, 1));
     } else if (!searchId && searchRequest) {
       dispatch(postSearchClientRequest(searchRequest));
-    } else {
-      dispatch(postSearchClientRequest({ template: { maxRowCount: 25 } }));
     }
   }, [searchId, searchRequest, dispatch]);
 

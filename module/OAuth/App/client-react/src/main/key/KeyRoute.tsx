@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   Switch,
   Route,
@@ -18,11 +18,13 @@ import {
 } from '@jfront/ui-core';
 import { UserPanel } from '../../user/UserPanel';
 import { UserContext } from '../../user/UserContext';
+import { useTranslation } from 'react-i18next';
 
 const KeyRoute: React.FC = () => {
 
   const { path } = useRouteMatch();
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const { isRoleLoading, isUserInRole } = useContext(UserContext);
   const [hasUpdateRole, setHasUpdateRole] = useState(false);
   const { isLoading, message, error } = useSelector<AppState, KeyState>(state => state.key);
@@ -30,6 +32,7 @@ const KeyRoute: React.FC = () => {
   useEffect(() => {
     isUserInRole("OAUpdateKey")
       .then(setHasUpdateRole);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
@@ -37,12 +40,15 @@ const KeyRoute: React.FC = () => {
     {(isLoading || isRoleLoading) && <LoadingPanel text={message || "Загрузка данных"} />}
       <Panel.Header>
         <TabPanel>
-          <Tab selected>Ключ безопасности</Tab>
+          <Tab selected>{t('key.moduleName')}</Tab>
           <UserPanel />
         </TabPanel>
         <Toolbar>
-          <ToolbarButtonBase onClick={() => dispatch(updateKey(() => dispatch(getKey())))} title='Обновить ключ безопасности' disabled={!hasUpdateRole}>
-            <img src={change_password} alt='Обновить ключ безопасности' />
+          <ToolbarButtonBase onClick={() => {
+            if (window.confirm(t('key.updateMessage'))) {
+              dispatch(updateKey(() => dispatch(getKey())))
+            }}} title={t('key.toolbar.update')} disabled={!hasUpdateRole}>
+            <img src={change_password} alt={t('key.toolbar.update')} title={t('key.toolbar.update')}  />
           </ToolbarButtonBase>
         </Toolbar>
       </Panel.Header>

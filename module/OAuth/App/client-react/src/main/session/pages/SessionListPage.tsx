@@ -7,11 +7,13 @@ import { SessionState, Session } from '../types';
 import { TextCell } from '../../../components/cell/TextCell';
 import { DateCell } from '../../../components/cell/DateCell';
 import { Grid } from '@jfront/ui-core';
+import { useTranslation } from 'react-i18next';
 
 const SessionListPage: React.FC = () => {
 
   const dispatch = useDispatch();
   const history = useHistory();
+  const { t } = useTranslation();
   const { records, current, searchId, searchRequest, resultSetSize } = useSelector<AppState, SessionState>(state => state.session);
 
   useEffect(() => {
@@ -26,47 +28,47 @@ const SessionListPage: React.FC = () => {
     <Grid<Session>
       columns={[
         {
-          Header: "ID сессии",
+          Header: t('session.sessionId'),
           accessor: "sessionId",
           Cell: ({ value }: any) => <TextCell>{value}</TextCell>
         },
         {
-          Header: "Дата создания",
+          Header: t('session.dateIns'),
           accessor: "dateIns",
           Cell: ({ value }: any) => {
             return <DateCell>{new Date(value).toLocaleString()}</DateCell>
           }
         },
         {
-          Header: "Логин оператора",
+          Header: t('session.operatorLogin'),
           accessor: "operatorLogin",
           Cell: ({ value }: any) => <TextCell>{value}</TextCell>
         },
         {
-          Header: "Имя оператора",
+          Header: t('session.operatorName'),
           id: "operatorName",
           accessor: (row: Session) => row.operator?.name,
           Cell: ({ value }: any) => <TextCell>{value}</TextCell>
         },
         {
-          Header: "ID оператора",
+          Header: t('session.operatorId'),
           id: "operatorId",
           accessor: (row: Session) => row.operator?.value,
           Cell: ({ value }: any) => <TextCell>{value}</TextCell>
         },
         {
-          Header: "URL переадресации",
+          Header: t('session.redirectUri'),
           accessor: "redirectUri",
           Cell: ({ value }: any) => <TextCell>{value}</TextCell>
         },
         {
-          Header: "Наименование приложения",
+          Header: t('sessionId.clientName'),
           id: "clientName",
           accessor: (row: Session) => row.client?.name,
           Cell: ({ value }: any) => <TextCell>{value}</TextCell>
         },
         {
-          Header: "ID приложения",
+          Header: t('sessionId.clientId'),
           id: "clientId",
           accessor: (row: Session) => row.client?.value,
           Cell: ({ value }: any) => <TextCell>{value}</TextCell>

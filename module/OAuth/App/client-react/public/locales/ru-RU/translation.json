@@ -1,0 +1,58 @@
+{
+  "toolbar": {
+    "find": "Найти",
+    "list": "Список"
+  },
+  "maxRowCount": "Количество записей",
+  "delete": "Вы уверены, что хотите удалить запись?",
+  "client": {
+    "moduleName": "Приложение",
+    "clientId": "ID приложения",
+    "clientSecret": "Секретное слово",
+    "clientName": "Наименование приложения",
+    "clientNameEn": "Наименование приложения англ.",
+    "applicationType": "Тип приложения",
+    "grantTypes": "Типы авторизации",
+    "scopes": "Права доступа"
+  },
+  "clientUri": {
+    "moduleName": "URL",
+    "clientUriId": "ID",
+    "clientUri": "URL для переадресации"
+  },
+  "session": {
+    "moduleName": "Сессия",
+    "sessionId": "ID",
+    "dateIns": "Дата создания",
+    "client": "Приложение",
+    "clientId": "ID",
+    "clientName": "Наименование",
+    "redirectUri": "URL переадресации",
+    "operator": "Пользователь",
+    "operatorId": "ID",
+    "operatorLogin": "Логин",
+    "operatorName": "Имя",
+    "accessToken": "Токен доступа",
+    "accessTokenId": "ID",
+    "accessTokenDateIns": "Дата создания",
+    "accessTokenDateFinish": "Дата окончания действия",
+    "refreshToken": "Токен обновления",
+    "refreshTokenId": "ID",
+    "refreshTokenDateIns": "Дата создания",
+    "refreshTokenDateFinish": "Дата окончания действия",
+    "sessionToken": "Токен сессии",
+    "sessionTokenId": "ID",
+    "sessionTokenDateIns": "Дата создания",
+    "sessionTokenDateFinish": "Дата окончания действия"
+  },
+  "key": {
+    "toolbar": {
+      "update": "Обновить ключи",
+      "updateMessage": "Вы уверены, что хотите обновить ключи? \nЭто действие безвозвратно, и завершит текущие сессии всех пользователей."
+    },
+    "moduleName": "Ключ безопасности",
+    "keyId": "ID",
+    "publicKey": "Публичный ключ",
+    "dateIns": "Дата создания"
+  }
+}

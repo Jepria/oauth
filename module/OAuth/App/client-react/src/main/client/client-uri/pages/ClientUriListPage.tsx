@@ -7,12 +7,14 @@ import { ClientUriState, ClientUri } from '../types';
 import { HistoryState } from '../../../../components/HistoryState';
 import { TextCell } from '../../../../components/cell/TextCell';
 import { Grid } from '@jfront/ui-core';
+import { useTranslation } from 'react-i18next';
 
 export const ClientUriListPage: React.FC = () => {
 
   const dispatch = useDispatch();
   const history = useHistory();
   const { clientId } = useParams<any>();
+  const { t } = useTranslation();
   const { records, current } = useSelector<AppState, ClientUriState>(state => state.clientUri);
   const { state } = useLocation<HistoryState>();
 
@@ -26,12 +28,12 @@ export const ClientUriListPage: React.FC = () => {
     <Grid<ClientUri>
       columns={[
         {
-          Header: "ID",
+          Header: t('clientUri.clientUriId'),
           accessor: "clientUriId",
           Cell: ({ value }: any) => <TextCell>{value}</TextCell>
         },
         {
-          Header: "URL для переадресации",
+          Header: t('clientUri.clientUri'),
           accessor: "clientUri",
           Cell: ({ value }: any) => <TextCell>{value}</TextCell>
         },

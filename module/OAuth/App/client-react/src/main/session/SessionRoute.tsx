@@ -28,6 +28,7 @@ import { UserPanel } from '../../user/UserPanel';
 import { UserContext } from '../../user/UserContext';
 import { Loader } from '@jfront/oauth-ui';
 import { Forbidden } from '../../user/Forbidden';
+import { useTranslation } from 'react-i18next';
 
 const SessionRoute: React.FC = () => {
 
@@ -38,6 +39,7 @@ const SessionRoute: React.FC = () => {
   const { pathname } = useLocation();
   const history = useHistory<HistoryState>();
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const { isLoading, message, error, current, searchId, searchRequest } = useSelector<AppState, SessionState>(state => state.session)
   let formRef = useRef(null) as any;
 
@@ -59,14 +61,14 @@ const SessionRoute: React.FC = () => {
         {isLoading && <LoadingPanel text={message} />}
         <Panel.Header>
           <TabPanel>
-            <Tab selected>Сессия</Tab>
+            <Tab selected>{t('session.moduleName')}</Tab>
             <UserPanel />
           </TabPanel>
           <Toolbar style={{ margin: 0 }}>
             <ToolbarButtonView onClick={() => { history.push(`/ui/session/${current?.sessionId}/view`) }} disabled={!current || pathname.endsWith('view')} />
             <ToolbarButtonDelete onClick={() => {
               if (current?.sessionId) {
-                if (window.confirm('Вы точно хотите удалить запись?')) {
+                if (window.confirm(t('delete'))) {
                   dispatch(deleteSession(`${current.sessionId}`, () => {
                     if (pathname.endsWith('/list') && searchId) {
                       dispatch(searchSessions(searchId, 25, 1));
@@ -86,11 +88,11 @@ const SessionRoute: React.FC = () => {
                   history.push('/ui/session/search');
                 }
               }))
-            }} disabled={pathname.endsWith('/search') || pathname.endsWith('/list')}>Список</ToolbarButtonBase>
+            }} disabled={pathname.endsWith('/search') || pathname.endsWith('/list')}>{'toolbar.list'}</ToolbarButtonBase>
             <ToolbarButtonFind onClick={() => {
               dispatch(setCurrentRecord(undefined, () => history.push('/ui/session/search')));
             }} />
-            <ToolbarButtonBase onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }} disabled={!pathname.endsWith('/search')}>Найти</ToolbarButtonBase>
+            <ToolbarButtonBase onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }} disabled={!pathname.endsWith('/search')}>{t('toolbar.find')}</ToolbarButtonBase>
           </Toolbar>
         </Panel.Header>
         <Panel.Content>

@@ -8,6 +8,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { getClientById } from '../state/redux/actions';
 import { Panel, Column } from '@jfront/ui-core';
 import { GrantType, ApplicationType } from '@jfront/oauth-core';
+import { useTranslation } from 'react-i18next';
 
 const List = styled.ul`
   display: inline;
@@ -25,6 +26,7 @@ const ClientViewPage: React.FC = () => {
 
   const dispatch = useDispatch();
   const { clientId } = useParams<any>();
+  const { t } = useTranslation();
   const { current } = useSelector<AppState, ClientState>(state => state.client);
 
   useEffect(() => {
@@ -38,32 +40,32 @@ const ClientViewPage: React.FC = () => {
       <Panel.Content>
         <Column>
           <FormField>
-            <Label width={'250px'}>ID приложения:</Label>
+            <Label width={'250px'}>{t('client.clientId')}:</Label>
             <Text>{current?.clientId}</Text>
           </FormField>
           <FormField>
-            <Label width={'250px'}>Секретное слово:</Label>
+            <Label width={'250px'}>{t('client.clientSecret')}:</Label>
             <Text>{current?.clientSecret}</Text>
           </FormField>
           <FormField>
-            <Label width={'250px'}>Наименование приложения:</Label>
+            <Label width={'250px'}>{t('client.clientName')}:</Label>
             <Text>{current?.clientName}</Text>
           </FormField>
           <FormField>
-            <Label width={'250px'}>Наименование приложения(англ):</Label>
+            <Label width={'250px'}>{t('client.clientNameEn')}:</Label>
             <Text>{current?.clientNameEn}</Text>
           </FormField>
           <FormField>
-            <Label width={'250px'}>Тип приложения:</Label>
+            <Label width={'250px'}>{t('client.applicationType')}:</Label>
             <Text>{current && current.applicationType ? ApplicationType[current.applicationType] : ''}</Text>
           </FormField>
           <FormField>
-            <Label width={'250px'}>Разрешения на авторизацию:</Label>
+            <Label width={'250px'}>{t('client.grantTypes')}:</Label>
             <Text>{current?.grantTypes?.map((grantType) => GrantType[grantType]).join(', ')}</Text>
           </FormField>
           {current?.grantTypes?.includes("client_credentials") &&
             <FormField>
-              <Label width={'250px'}>Права доступа:</Label>
+              <Label width={'250px'}>{t('client.scopes')}:</Label>
               <List>
                 {current?.scopes?.map(scope => <ListOption key={scope.value}>{scope.name}</ListOption>)}
               </List>

@@ -8,10 +8,12 @@ import { GrantType, ApplicationGrantType } from '@jfront/oauth-core';
 import { SelectInput, TextInput, CheckBoxGroup, CheckBox, Form, Panel } from '@jfront/ui-core';
 import { DualListField } from '../../../components/form/input/DualListField';
 import { AppState } from '../../../redux/store';
+import { useTranslation } from 'react-i18next';
 
 const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();
   const history = useHistory();
+  const { t } = useTranslation();
   const { roles } = useSelector<AppState, ClientState>(state => state.client);
 
   const formik = useFormik<Client>({
@@ -65,7 +67,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
       <Panel.Content>
         <Form onSubmit={formik.handleSubmit} ref={ref}>
           <Form.Field>
-            <Form.Label required>ID приложения:</Form.Label>
+            <Form.Label required>{t('client.clientId')}:</Form.Label>
             <Form.Control
               style={{ maxWidth: "200px" }}
               error={formik.errors.clientId}>
@@ -77,7 +79,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
             </Form.Control>
           </Form.Field>
           <Form.Field>
-            <Form.Label required>Наименование приложения:</Form.Label>
+            <Form.Label required>{t('client.clientName')}:</Form.Label>
             <Form.Control
               style={{ maxWidth: "200px" }}
               error={formik.errors.clientName}>
@@ -89,7 +91,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
             </Form.Control>
           </Form.Field>
           <Form.Field>
-            <Form.Label>Наименование приложения(англ):</Form.Label>
+            <Form.Label>{t('client.clientNameEn')}:</Form.Label>
             <Form.Control
               style={{ maxWidth: "200px" }}
               error={formik.errors.clientNameEn}>
@@ -101,7 +103,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
             </Form.Control>
           </Form.Field>
           <Form.Field>
-            <Form.Label>Тип приложения:</Form.Label>
+            <Form.Label>{t('client.applicationType')}:</Form.Label>
             <Form.Control
               style={{ maxWidth: "200px" }}
               error={formik.errors.applicationType}>
@@ -114,7 +116,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
             </Form.Control>
           </Form.Field>
           {formik.values["applicationType"] && <Form.Field>
-            <Form.Label required>Разрешения на авторизацию:</Form.Label>
+            <Form.Label required>{t('client.grantTypes')}:</Form.Label>
             <Form.Control
               style={{ maxWidth: "200px" }}
               error={Array.isArray(formik.errors.grantTypes) ? formik.errors.grantTypes.join(", ") : formik.errors.grantTypes}>
@@ -134,7 +136,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
           </Form.Field>}
           {formik.values["grantTypes"]?.includes('client_credentials') &&
             <Form.Field>
-              <Form.Label>Права доступа:</Form.Label>
+              <Form.Label>{t('client.scopes')}:</Form.Label>
               <Form.Control
                 style={{ minWidth: "300px", maxWidth: "500px" }}
                 error={formik.errors.scopes}>

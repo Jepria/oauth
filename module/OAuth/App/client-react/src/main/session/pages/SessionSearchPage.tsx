@@ -5,11 +5,13 @@ import { useSelector, useDispatch } from 'react-redux';
 import { SessionSearchTemplate, SessionState } from '../types';
 import { postSearchSessionRequest, getClients, getOperators } from '../state/redux/actions';
 import { AppState } from '../../../redux/store';
-import { Panel, Form, ComboBox, TextInput, NumberInput, ComboBoxItem } from '@jfront/ui-core';
+import { Panel, Form, ComboBox, NumberInput, ComboBoxItem } from '@jfront/ui-core';
+import { useTranslation } from 'react-i18next';
 
 const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();
   const history = useHistory();
+  const { t } = useTranslation();
   const { clients, operators, searchRequest } = useSelector<AppState, SessionState>(state => state.session);
 
   useEffect(() => {
@@ -44,7 +46,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
       <Panel.Content>
         <Form onSubmit={formik.handleSubmit} ref={ref}>
           <Form.Field>
-            <Form.Label required>Пользователь:</Form.Label>
+            <Form.Label required>{t('session.operator')}:</Form.Label>
             <Form.Control>
               <ComboBox
                 name="operatorId"
@@ -57,7 +59,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
             </Form.Control>
           </Form.Field>
           <Form.Field>
-            <Form.Label>Приложение:</Form.Label>
+            <Form.Label>{t('session.client')}:</Form.Label>
             <Form.Control>
               <ComboBox
                 options={clients ? clients : []}
@@ -73,7 +75,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
             </Form.Control>
           </Form.Field>
           <Form.Field>
-            <Form.Label required>Количество записей:</Form.Label>
+            <Form.Label required>{t('maxRowCount')}:</Form.Label>
             <Form.Control style={{ maxWidth: "60px" }}>
               <NumberInput
                 style={{ minWidth: "55px" }}

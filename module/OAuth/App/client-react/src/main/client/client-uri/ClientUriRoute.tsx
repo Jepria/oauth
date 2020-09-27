@@ -25,6 +25,7 @@ import { Panel,
   ToolbarSplitter, 
   ToolbarButtonBase } from '@jfront/ui-core';
 import { UserPanel } from '../../../user/UserPanel';
+import { useTranslation } from 'react-i18next';
 
 const ClientUriRoute: React.FC = () => {
 
@@ -33,6 +34,7 @@ const ClientUriRoute: React.FC = () => {
   const { clientId } = useParams<any>();
   const history = useHistory();
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const { isLoading, message, error, current } = useSelector<AppState, ClientUriState>(state => state.clientUri)
   let formRef = useRef(null) as any;
   
@@ -41,8 +43,8 @@ const ClientUriRoute: React.FC = () => {
       {isLoading && <LoadingPanel text={message} />}
       <Panel.Header>
         <TabPanel>
-          <Tab onClick={() => history.push(state?.prevRoute? state.prevRoute : `/ui/client/${clientId}/view`)}>Клиент</Tab>
-          <Tab selected>URL</Tab>
+          <Tab onClick={() => history.push(state?.prevRoute? state.prevRoute : `/ui/client/${clientId}/view`)}>{t('client.moduleName')}</Tab>
+          <Tab selected>{t('clientUri.moduleName')}</Tab>
           <UserPanel/>
         </TabPanel>
         <Toolbar style={{margin: 0}}>
@@ -55,7 +57,7 @@ const ClientUriRoute: React.FC = () => {
           <ToolbarButtonView onClick={() => { history.push(`/ui/client/${clientId}/client-uri/${current?.clientUriId}/view`, state) }} disabled={!current || pathname.endsWith('view')} />
           <ToolbarButtonDelete onClick={() => {
             if (clientId && current?.clientUriId) {
-              if (window.confirm('Вы точно хотите удалить запись?')) {
+              if (window.confirm(t('delete'))) {
                 dispatch(deleteClientUri(clientId, `${current.clientUriId}`, () => {
                   if (pathname.endsWith('/list')) {
                     dispatch(searchClientUri(clientId));
@@ -71,7 +73,7 @@ const ClientUriRoute: React.FC = () => {
             dispatch(setCurrentRecord(undefined, () => {
               history.push(`/ui/client/${clientId}/client-uri/list`, state);
             }))
-          }} disabled={pathname.endsWith('/list')}>Список</ToolbarButtonBase>
+          }} disabled={pathname.endsWith('/list')}>{t('toolbar.list')}</ToolbarButtonBase>
         </Toolbar>
       </Panel.Header>
       <Panel.Content>

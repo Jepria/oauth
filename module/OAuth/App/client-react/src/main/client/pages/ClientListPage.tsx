@@ -7,11 +7,13 @@ import { ClientState, Client } from '../types';
 import { GrantType, ApplicationType } from '@jfront/oauth-core';
 import { TextCell } from '../../../components/cell/TextCell';
 import { Grid } from '@jfront/ui-core';
+import { useTranslation } from 'react-i18next';
 
 export const ClientListPage: React.FC = () => {
 
   const dispatch = useDispatch();
   const history = useHistory();
+  const { t } = useTranslation();
   const { records, current, searchId, searchRequest, resultSetSize } = useSelector<AppState, ClientState>(state => state.client);
 
   useEffect(() => {
@@ -25,32 +27,32 @@ export const ClientListPage: React.FC = () => {
   return (
     <Grid<Client> columns={[
       {
-        Header: "ID приложения",
+        Header: t('client.clientId'),
         accessor: "clientId",
         Cell: ({ value }: any) => <TextCell>{value}</TextCell>
       },
       {
-        Header: "Секретное слово",
+        Header: t('client.clientSecret'),
         accessor: "clientSecret",
         Cell: ({ value }: any) => <TextCell>{value}</TextCell>
       },
       {
-        Header: "Наименование",
+        Header: t('client.clientName'),
         accessor: "clientName",
         Cell: ({ value }: any) => <TextCell>{value}</TextCell>
       },
       {
-        Header: "Наименование (англ)",
+        Header: t('client.clientNameEn'),
         accessor: "clientNameEn",
         Cell: ({ value }: any) => <TextCell>{value}</TextCell>
       },
       {
-        Header: "Тип приложения",
+        Header: t('client.applicationType'),
         accessor: "applicationType",
         Cell: ({ value }: any) => <TextCell>{ApplicationType[value]}</TextCell>
       },
       {
-        Header: "Разрешенные типы авторизации",
+        Header: t('client.grantTypes'),
         accessor: (row: Client) => row.grantTypes?.map((grantType) => GrantType[grantType]).join(', '),
         Cell: ({ value }: any) => <TextCell wrapText>{value}</TextCell>,
         disableSortBy: true

@@ -31,6 +31,7 @@ import {
 } from '@jfront/ui-core';
 import { UserPanel } from '../../user/UserPanel';
 import { UserContext } from '../../user/UserContext';
+import { useTranslation } from 'react-i18next';
 
 const ClientRoute: React.FC = () => {
 
@@ -42,6 +43,7 @@ const ClientRoute: React.FC = () => {
   const [hasCreateRole, setHasCreateRole] = useState(false);
   const [hasEditRole, setHasEditRole] = useState(false);
   const [hasDeleteRole, setHasDeleteRole] = useState(false);
+  const { t } = useTranslation();
   const { isLoading, message, error, current, searchId, searchRequest } = useSelector<AppState, ClientState>(state => state.client)
   let formRef = useRef<HTMLFormElement>(null);
 
@@ -52,6 +54,7 @@ const ClientRoute: React.FC = () => {
       .then(setHasEditRole);
     isUserInRole("OADeleteClient")
       .then(setHasDeleteRole);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
@@ -59,7 +62,7 @@ const ClientRoute: React.FC = () => {
       {(isLoading || isRoleLoading) && <LoadingPanel text={message || "Загрузка данных"} />}
       <Panel.Header>
         <TabPanel>
-          <Tab selected>Клиент</Tab>
+          <Tab selected>{t('client.moduleName')}</Tab>
           {current && <Tab onClick={() => history.push(`/ui/client/${current?.clientId}/client-uri/list`, { prevRoute: pathname })}>URL</Tab>}
           <UserPanel />
         </TabPanel>
@@ -80,7 +83,7 @@ const ClientRoute: React.FC = () => {
             disabled={!current || pathname.endsWith('/view') || pathname.endsWith('/view/')} />
           <ToolbarButtonDelete onClick={() => {
             if (current?.clientId) {
-              if (window.confirm('Вы точно хотите удалить запись?')) {
+              if (window.confirm(t('delete'))) {
                 dispatch(deleteClient(current.clientId, () => {
                   if (pathname.endsWith('/list') && searchId) {
                     dispatch(searchClients(searchId, 25, 1));
@@ -100,11 +103,11 @@ const ClientRoute: React.FC = () => {
                 history.push('/ui/client/search');
               }
             }))
-          }} disabled={pathname.endsWith('/search') || pathname.endsWith('/list')}>Список</ToolbarButtonBase>
+          }} disabled={pathname.endsWith('/search') || pathname.endsWith('/list')}>{t('toolbar.list')}</ToolbarButtonBase>
           <ToolbarButtonFind onClick={() => {
             dispatch(setCurrentRecord(undefined, () => history.push('/ui/client/search')));
           }} />
-          <ToolbarButtonBase onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }} disabled={!pathname.endsWith('/search')}>Найти</ToolbarButtonBase>
+          <ToolbarButtonBase onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }} disabled={!pathname.endsWith('/search')}>{t('toolbar.find')}</ToolbarButtonBase>
         </Toolbar>
       </Panel.Header>
       <Panel.Content>

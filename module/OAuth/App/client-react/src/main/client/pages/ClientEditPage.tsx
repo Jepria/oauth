@@ -9,11 +9,13 @@ import { GrantType, ApplicationGrantType } from '@jfront/oauth-core';
 import { Panel, Form, TextInput, CheckBoxGroup, CheckBox, SelectInput } from '@jfront/ui-core';
 import { DualListField } from '../../../components/form/input/DualListField';
 import { Text } from '../../../components/form/Field';
+import { useTranslation } from 'react-i18next';
 
 const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const { clientId } = useParams<any>();
+  const { t } = useTranslation();
   const { current, roles } = useSelector<AppState, ClientState>(state => state.client);
 
   const applicationTypeOptions = [
@@ -63,11 +65,11 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
       <Panel.Content>
         <Form onSubmit={formik.handleSubmit} ref={ref}>
           <Form.Field>
-            <Form.Label>ID приложения:</Form.Label>
+            <Form.Label>{t('client.clientId')}:</Form.Label>
             <Text>{current?.clientId}</Text>
           </Form.Field>
           <Form.Field>
-            <Form.Label required>Наименование приложения:</Form.Label>
+            <Form.Label required>{t('client.clientName')}:</Form.Label>
             <Form.Control style={{ maxWidth: "200px" }}>
               <TextInput
                 name="clientName"
@@ -77,7 +79,7 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
             </Form.Control>
           </Form.Field>
           <Form.Field>
-            <Form.Label>Наименование приложения(англ):</Form.Label>
+            <Form.Label>{t('client.clientNameEn')}:</Form.Label>
             <Form.Control style={{ maxWidth: "200px" }}>
               <TextInput
                 name="clientNameEn"
@@ -87,7 +89,7 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
             </Form.Control>
           </Form.Field>
           <Form.Field>
-            <Form.Label>Тип приложения:</Form.Label>
+            <Form.Label>{t('client.applicationType')}:</Form.Label>
             <Form.Control style={{ maxWidth: "200px" }}>
               <SelectInput
                 options={applicationTypeOptions}
@@ -98,7 +100,7 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
             </Form.Control>
           </Form.Field>
           {formik.values["applicationType"] && <Form.Field>
-            <Form.Label required>Разрешения на авторизацию:</Form.Label>
+            <Form.Label required>{t('client.grantTypes')}:</Form.Label>
             <Form.Control style={{ maxWidth: "200px" }}>
               <CheckBoxGroup
                 name="grantTypes"
@@ -116,7 +118,7 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
           </Form.Field>}
           {formik.values["grantTypes"]?.includes('client_credentials') &&
             <Form.Field>
-              <Form.Label>Права доступа:</Form.Label>
+              <Form.Label>{t('client.scopes')}:</Form.Label>
               <Form.Control style={{ minWidth: "300px", maxWidth: "500px" }}>
                 <DualListField
                   options={roles ? roles : []}

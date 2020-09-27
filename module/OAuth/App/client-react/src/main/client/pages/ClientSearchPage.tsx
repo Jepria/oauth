@@ -6,10 +6,12 @@ import { ClientSearchTemplate } from '../types';
 import { postSearchClientRequest } from '../state/redux/actions';
 import { AppState } from '../../../redux/store';
 import { Panel, Form, TextInput, NumberInput } from '@jfront/ui-core';
+import { useTranslation } from 'react-i18next';
 
 const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();
   const history = useHistory();
+  const { t } = useTranslation();
   const searchTemplate = useSelector<AppState, ClientSearchTemplate | undefined>(state => state.client.searchRequest?.template);
 
   const formik = useFormik<ClientSearchTemplate>({
@@ -35,7 +37,7 @@ const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
       <Panel.Content>
         <Form onSubmit={formik.handleSubmit} ref={ref}>
           <Form.Field>
-            <Form.Label>ID приложения:</Form.Label>
+            <Form.Label>{t('client.clientId')}:</Form.Label>
             <Form.Control style={{ maxWidth: "200px" }}>
               <TextInput
                 name="clientId"
@@ -45,7 +47,7 @@ const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
             </Form.Control>
           </Form.Field>
           <Form.Field>
-            <Form.Label>Наименование приложения:</Form.Label>
+            <Form.Label>{t('client.clientName')}:</Form.Label>
             <Form.Control style={{ maxWidth: "200px" }}>
               <TextInput
                 name="clientName"
@@ -55,7 +57,7 @@ const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
             </Form.Control>
           </Form.Field>
           <Form.Field>
-            <Form.Label>Наименование приложения (англ.):</Form.Label>
+            <Form.Label>{t('client.clientNameEn')}:</Form.Label>
             <Form.Control style={{ maxWidth: "200px" }}>
               <TextInput
                 name="clientNameEn"
@@ -65,7 +67,7 @@ const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
             </Form.Control>
           </Form.Field>
           <Form.Field>
-            <Form.Label required>Количество записей:</Form.Label>
+            <Form.Label required>{t('client.maxRowCount')}:</Form.Label>
             <Form.Control style={{ maxWidth: "60px" }}>
               <NumberInput
                 style={{ minWidth: "55px" }}

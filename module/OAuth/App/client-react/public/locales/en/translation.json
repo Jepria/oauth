@@ -1,0 +1,58 @@
+{
+  "toolbar": {
+    "find": "Find",
+    "list": "List"
+  },
+  "maxRowCount": "Maximum record count",
+  "delete": "Do you really want to delete record?",
+  "client": {
+    "moduleName": "Client",
+    "clientId": "Client ID",
+    "clientSecret": "Client secret",
+    "clientName": "Client name",
+    "clientNameEn": "CLient name en.",
+    "applicationType": "Application type",
+    "grantTypes": "Grant type",
+    "scopes": "Scopes"
+  },
+  "clientUri": {
+    "moduleName": "URL",
+    "clientUriId": "ID",
+    "clientUri": "Redirection URL"
+  },
+  "session": {
+    "moduleName": "Session",
+    "sessionId": "ID",
+    "dateIns": "Date of creation",
+    "client": "Client application",
+    "clientId": "ID",
+    "clientName": "Name",
+    "redirectUri": "Redirect URL",
+    "operator": "Operator",
+    "operatorId": "ID",
+    "operatorLogin": "Login",
+    "operatorName": "Name",
+    "accessToken": "Access token",
+    "accessTokenId": "ID",
+    "accessTokenDateIns": "Date of creation",
+    "accessTokenDateFinish": "Expiration date",
+    "refreshToken": "Refresh token",
+    "refreshTokenId": "ID",
+    "refreshTokenDateIns": "Date of creation",
+    "refreshTokenDateFinish": "Expiration date",
+    "sessionToken": "Session token",
+    "sessionTokenId": "ID",
+    "sessionTokenDateIns": "Date of creation",
+    "sessionTokenDateFinish": "Expiration date"
+  },
+  "key": {
+    "toolbar": {
+      "update": "Update keys",
+      "updateMessage": "Do you really want to update keys? \nThis action is final and can't be reverted. All user sessions will be canceled."
+    },
+    "moduleName": "Protection key",
+    "keyId": "ID",
+    "publicKey": "Public key",
+    "dateIns": "Date of creation"
+  }
+}

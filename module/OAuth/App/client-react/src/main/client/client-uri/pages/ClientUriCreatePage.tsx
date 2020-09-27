@@ -5,10 +5,12 @@ import { useDispatch } from 'react-redux';
 import { ClientUri } from '../types';
 import { createClientUri } from '../state/redux/actions';
 import { Panel, Form, TextInput } from '@jfront/ui-core';
+import { useTranslation } from 'react-i18next';
 
 export const ClientUriCreatePage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();
   const { clientId } = useParams<any>();
+  const { t } = useTranslation();
   const history = useHistory();
 
   const formik = useFormik<ClientUri>({
@@ -35,7 +37,7 @@ export const ClientUriCreatePage = React.forwardRef<any, HTMLAttributes<HTMLForm
       <Panel.Content>
         <Form onSubmit={formik.handleSubmit} ref={ref}>
           <Form.Field>
-            <Form.Label required>URL для переадресации:</Form.Label>
+            <Form.Label required>{t('clientUri.clientUri')}:</Form.Label>
             <Form.Control
               style={{ maxWidth: "200px" }}
               error={formik.errors.clientUri}>

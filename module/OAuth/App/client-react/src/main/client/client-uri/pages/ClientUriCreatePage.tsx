@@ -4,7 +4,7 @@ import { useFormik } from 'formik';
 import { useDispatch } from 'react-redux';
 import { ClientUri } from '../types';
 import { createClientUri } from '../state/redux/actions';
-import { Panel, Form, TextInput } from '@jfront/ui-core';
+import { Form, TextInput } from '@jfront/ui-core';
 import { useTranslation } from 'react-i18next';
 
 export const ClientUriCreatePage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {
@@ -33,23 +33,19 @@ export const ClientUriCreatePage = React.forwardRef<any, HTMLAttributes<HTMLForm
   });
 
   return (
-    <Panel>
-      <Panel.Content>
-        <Form onSubmit={formik.handleSubmit} ref={ref}>
-          <Form.Field>
-            <Form.Label required>{t('clientUri.clientUri')}:</Form.Label>
-            <Form.Control
-              style={{ maxWidth: "200px" }}
-              error={formik.errors.clientUri}>
-              <TextInput
-                name="clientUri"
-                value={formik.values.clientUri}
-                onChange={formik.handleChange}
-                error={formik.errors.clientUri} />
-            </Form.Control>
-          </Form.Field>
-        </Form>
-      </Panel.Content>
-    </Panel >
+    <Form onSubmit={formik.handleSubmit} ref={ref}>
+      <Form.Field>
+        <Form.Label required>{t('clientUri.clientUri')}:</Form.Label>
+        <Form.Control
+          style={{ maxWidth: "200px" }}
+          error={formik.errors.clientUri}>
+          <TextInput
+            name="clientUri"
+            value={formik.values.clientUri}
+            onChange={formik.handleChange}
+            error={formik.errors.clientUri} />
+        </Form.Control>
+      </Form.Field>
+    </Form>
   )
 });

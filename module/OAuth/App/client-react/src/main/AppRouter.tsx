@@ -16,21 +16,21 @@ const AppRouter: React.FC = () => {
 
   return (
     <OAuthSecuredFragment>
-        {currentUser.username !== "Guest" && !isUserLoading &&
-          <Router basename={`${process.env.NODE_ENV === 'development' ? '' : process.env.PUBLIC_URL}`}>
-            <Switch>
-              <Route path="/ui/client">
-                <ClientRoute />
-              </Route>
-              <Route path="/ui/key">
-                <KeyRoute />
-              </Route>
-              <Route path="/ui/session">
-                <SessionRoute />
-              </Route>
-            </Switch>
-          </Router>}
-        {isUserLoading && <Loader title="OAuth" text="Загрузка данных о пользователе" />}
+      {currentUser.username !== "Guest" && !isUserLoading &&
+        <Router basename={`${process.env.NODE_ENV === 'development' ? '' : process.env.PUBLIC_URL}`}>
+          <Switch>
+            <Route path="/ui/client">
+              <ClientRoute />
+            </Route>
+            <Route path="/ui/key">
+              <KeyRoute />
+            </Route>
+            <Route path="/ui/session">
+              <SessionRoute />
+            </Route>
+          </Switch>
+        </Router>}
+      {isUserLoading && <Loader title="OAuth" text="Загрузка данных о пользователе" />}
     </OAuthSecuredFragment>
   );
 }

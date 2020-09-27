@@ -20,24 +20,20 @@ const KeyViewPage: React.FC = () => {
   }, [current, dispatch]);
 
   return (
-    <Panel>
-      <Panel.Content>
-        <Form>
-          <Form.Field>
-            <Form.Label>{t('key.keyId')}:</Form.Label>
-            <Text>{current?.keyId}</Text>
-          </Form.Field>
-          <Form.Field>
-            <Form.Label>{t('key.publicKey')}:</Form.Label>
-            <Text width="200px">{current?.publicKey}</Text>
-          </Form.Field>
-          <Form.Field>
-            <Form.Label>{t('key.dateIns')}:</Form.Label>
-            <Text>{current?.dateIns ? new Date(current?.dateIns).toLocaleString() : ''}</Text>
-          </Form.Field>
-        </Form>
-      </Panel.Content>
-    </Panel>
+    <Form>
+      <Form.Field>
+        <Form.Label>{t('key.keyId')}:</Form.Label>
+        <Text>{current?.keyId}</Text>
+      </Form.Field>
+      <Form.Field>
+        <Form.Label>{t('key.publicKey')}:</Form.Label>
+        <Text width="200px">{current?.publicKey}</Text>
+      </Form.Field>
+      <Form.Field>
+        <Form.Label>{t('key.dateIns')}:</Form.Label>
+        <Text>{current?.dateIns ? new Date(current?.dateIns).toLocaleString() : ''}</Text>
+      </Form.Field>
+    </Form>
   )
 
 }

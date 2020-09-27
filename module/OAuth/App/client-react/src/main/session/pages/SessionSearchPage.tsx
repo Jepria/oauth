@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { SessionSearchTemplate, SessionState } from '../types';
 import { postSearchSessionRequest, getClients, getOperators } from '../state/redux/actions';
 import { AppState } from '../../../redux/store';
-import { Panel, Form, ComboBox, NumberInput, ComboBoxItem } from '@jfront/ui-core';
+import { Form, ComboBox, NumberInput, ComboBoxItem } from '@jfront/ui-core';
 import { useTranslation } from 'react-i18next';
 
 const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {
@@ -42,52 +42,48 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
   })
 
   return (
-    <Panel>
-      <Panel.Content>
-        <Form onSubmit={formik.handleSubmit} ref={ref}>
-          <Form.Field>
-            <Form.Label required>{t('session.operator')}:</Form.Label>
-            <Form.Control>
-              <ComboBox
-                name="operatorId"
-                value={formik.values.operatorId}
-                error={formik.errors.operatorId}
-                onInputChange={(e: { target: { value: string | undefined; }; }) => dispatch(getOperators(e.target.value))}
-                onSelectionChange={formik.setFieldValue} style={{ maxWidth: '250px' }}>
-                  {operators?.map(operator => <ComboBoxItem key={operator.value} label={operator.name} value={operator.value}/>)}
-              </ComboBox>
-            </Form.Control>
-          </Form.Field>
-          <Form.Field>
-            <Form.Label>{t('session.client')}:</Form.Label>
-            <Form.Control>
-              <ComboBox
-                options={clients ? clients : []}
-                name="clientId"
-                value={formik.values.clientId}
-                error={formik.errors.clientId}
-                onInputChange={(e: { target: { value: string | undefined; }; }) => dispatch(getClients(e.target.value))}
-                getOptionName={(option: { clientName: any; }) => {
-                  return option.clientName;
-                }}
-                getOptionValue={(option: { clientId: any; }) => option.clientId}
-                onSelectionChange={formik.setFieldValue} style={{ maxWidth: '250px' }} />
-            </Form.Control>
-          </Form.Field>
-          <Form.Field>
-            <Form.Label required>{t('maxRowCount')}:</Form.Label>
-            <Form.Control style={{ maxWidth: "60px" }}>
-              <NumberInput
-                style={{ minWidth: "55px" }}
-                name="maxRowCount"
-                value={formik.values.maxRowCount}
-                onChange={formik.handleChange}
-                error={formik.errors.maxRowCount} />
-            </Form.Control>
-          </Form.Field>
-        </Form>
-      </Panel.Content>
-    </Panel>
+    <Form onSubmit={formik.handleSubmit} ref={ref}>
+      <Form.Field>
+        <Form.Label required>{t('session.operator')}:</Form.Label>
+        <Form.Control>
+          <ComboBox
+            name="operatorId"
+            value={formik.values.operatorId}
+            error={formik.errors.operatorId}
+            onInputChange={(e: { target: { value: string | undefined; }; }) => dispatch(getOperators(e.target.value))}
+            onSelectionChange={formik.setFieldValue} style={{ maxWidth: '250px' }}>
+            {operators?.map(operator => <ComboBoxItem key={operator.value} label={operator.name} value={operator.value} />)}
+          </ComboBox>
+        </Form.Control>
+      </Form.Field>
+      <Form.Field>
+        <Form.Label>{t('session.client')}:</Form.Label>
+        <Form.Control>
+          <ComboBox
+            options={clients ? clients : []}
+            name="clientId"
+            value={formik.values.clientId}
+            error={formik.errors.clientId}
+            onInputChange={(e: { target: { value: string | undefined; }; }) => dispatch(getClients(e.target.value))}
+            getOptionName={(option: { clientName: any; }) => {
+              return option.clientName;
+            }}
+            getOptionValue={(option: { clientId: any; }) => option.clientId}
+            onSelectionChange={formik.setFieldValue} style={{ maxWidth: '250px' }} />
+        </Form.Control>
+      </Form.Field>
+      <Form.Field>
+        <Form.Label required>{t('maxRowCount')}:</Form.Label>
+        <Form.Control style={{ maxWidth: "60px" }}>
+          <NumberInput
+            style={{ minWidth: "55px" }}
+            name="maxRowCount"
+            value={formik.values.maxRowCount}
+            onChange={formik.handleChange}
+            error={formik.errors.maxRowCount} />
+        </Form.Control>
+      </Form.Field>
+    </Form>
   )
 })
 

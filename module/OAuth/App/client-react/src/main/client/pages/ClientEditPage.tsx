@@ -6,7 +6,7 @@ import { AppState } from '../../../redux/store';
 import { getClientById, updateClient, getRoles } from '../state/redux/actions';
 import { useFormik } from 'formik';
 import { GrantType, ApplicationGrantType } from '@jfront/oauth-core';
-import { Panel, Form, TextInput, CheckBoxGroup, CheckBox, SelectInput } from '@jfront/ui-core';
+import { Form, TextInput, CheckBoxGroup, CheckBox, SelectInput } from '@jfront/ui-core';
 import { DualListField } from '../../../components/form/input/DualListField';
 import { Text } from '../../../components/form/Field';
 import { useTranslation } from 'react-i18next';
@@ -36,7 +36,7 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
   }, [current, clientId, dispatch]);
 
   const formik = useFormik<Client>({
-    initialValues: {clientName: '', clientNameEn: '', ...current },
+    initialValues: { clientName: '', clientNameEn: '', ...current },
     enableReinitialize: true,
     onSubmit: (values: Client) => {
       if (clientId) {
@@ -61,80 +61,76 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
   })
 
   return (
-    <Panel>
-      <Panel.Content>
-        <Form onSubmit={formik.handleSubmit} ref={ref}>
-          <Form.Field>
-            <Form.Label>{t('client.clientId')}:</Form.Label>
-            <Text>{current?.clientId}</Text>
-          </Form.Field>
-          <Form.Field>
-            <Form.Label required>{t('client.clientName')}:</Form.Label>
-            <Form.Control style={{ maxWidth: "200px" }}>
-              <TextInput
-                name="clientName"
-                value={formik.values.clientName}
-                onChange={formik.handleChange}
-                error={formik.errors.clientName} />
-            </Form.Control>
-          </Form.Field>
-          <Form.Field>
-            <Form.Label>{t('client.clientNameEn')}:</Form.Label>
-            <Form.Control style={{ maxWidth: "200px" }}>
-              <TextInput
-                name="clientNameEn"
-                value={formik.values.clientNameEn}
-                onChange={formik.handleChange}
-                error={formik.errors.clientNameEn} />
-            </Form.Control>
-          </Form.Field>
-          <Form.Field>
-            <Form.Label>{t('client.applicationType')}:</Form.Label>
-            <Form.Control style={{ maxWidth: "200px" }}>
-              <SelectInput
-                options={applicationTypeOptions}
-                name="applicationType"
-                value={formik.values.applicationType}
-                error={formik.errors.applicationType}
-                onChange={formik.handleChange} />
-            </Form.Control>
-          </Form.Field>
-          {formik.values["applicationType"] && <Form.Field>
-            <Form.Label required>{t('client.grantTypes')}:</Form.Label>
-            <Form.Control style={{ maxWidth: "200px" }}>
-              <CheckBoxGroup
-                name="grantTypes"
-                values={formik.values.grantTypes}
-                style={{
-                  minWidth: "200px",
-                  minHeight: "50px"
-                }}
-                error={Array.isArray(formik.errors.grantTypes) ? formik.errors.grantTypes.join(", ") : formik.errors.grantTypes}
-                onChange={(name, value) => formik.setFieldValue("grantTypes", value)}>
-                {ApplicationGrantType[formik.values["applicationType"]]?.map(grantType => ({ name: GrantType[grantType], value: grantType }))
-                  .map(option => <CheckBox key={String(option.value)} label={option.name} value={option.value} />)}
-              </CheckBoxGroup>
-            </Form.Control>
-          </Form.Field>}
-          {formik.values["grantTypes"]?.includes('client_credentials') &&
-            <Form.Field>
-              <Form.Label>{t('client.scopes')}:</Form.Label>
-              <Form.Control style={{ minWidth: "300px", maxWidth: "500px" }}>
-                <DualListField
-                  options={roles ? roles : []}
-                  initialValues={formik.initialValues.scopes}
-                  placeholder="Введите имя роли"
-                  name="scopes"
-                  onInputChange={e => dispatch(getRoles(e.target.value))}
-                  onSelectionChange={formik.setFieldValue}
-                  touched={formik.touched.scopes}
-                  error={formik.errors.scopes} />
-              </Form.Control>
-            </Form.Field>
-          }
-        </Form>
-      </Panel.Content>
-    </Panel>
+    <Form onSubmit={formik.handleSubmit} ref={ref}>
+      <Form.Field>
+        <Form.Label>{t('client.clientId')}:</Form.Label>
+        <Text>{current?.clientId}</Text>
+      </Form.Field>
+      <Form.Field>
+        <Form.Label required>{t('client.clientName')}:</Form.Label>
+        <Form.Control style={{ maxWidth: "200px" }}>
+          <TextInput
+            name="clientName"
+            value={formik.values.clientName}
+            onChange={formik.handleChange}
+            error={formik.errors.clientName} />
+        </Form.Control>
+      </Form.Field>
+      <Form.Field>
+        <Form.Label>{t('client.clientNameEn')}:</Form.Label>
+        <Form.Control style={{ maxWidth: "200px" }}>
+          <TextInput
+            name="clientNameEn"
+            value={formik.values.clientNameEn}
+            onChange={formik.handleChange}
+            error={formik.errors.clientNameEn} />
+        </Form.Control>
+      </Form.Field>
+      <Form.Field>
+        <Form.Label>{t('client.applicationType')}:</Form.Label>
+        <Form.Control style={{ maxWidth: "200px" }}>
+          <SelectInput
+            options={applicationTypeOptions}
+            name="applicationType"
+            value={formik.values.applicationType}
+            error={formik.errors.applicationType}
+            onChange={formik.handleChange} />
+        </Form.Control>
+      </Form.Field>
+      {formik.values["applicationType"] && <Form.Field>
+        <Form.Label required>{t('client.grantTypes')}:</Form.Label>
+        <Form.Control style={{ maxWidth: "200px" }}>
+          <CheckBoxGroup
+            name="grantTypes"
+            values={formik.values.grantTypes}
+            style={{
+              minWidth: "200px",
+              minHeight: "50px"
+            }}
+            error={Array.isArray(formik.errors.grantTypes) ? formik.errors.grantTypes.join(", ") : formik.errors.grantTypes}
+            onChange={(name, value) => formik.setFieldValue("grantTypes", value)}>
+            {ApplicationGrantType[formik.values["applicationType"]]?.map(grantType => ({ name: GrantType[grantType], value: grantType }))
+              .map(option => <CheckBox key={String(option.value)} label={option.name} value={option.value} />)}
+          </CheckBoxGroup>
+        </Form.Control>
+      </Form.Field>}
+      {formik.values["grantTypes"]?.includes('client_credentials') &&
+        <Form.Field>
+          <Form.Label>{t('client.scopes')}:</Form.Label>
+          <Form.Control style={{ minWidth: "300px", maxWidth: "500px" }}>
+            <DualListField
+              options={roles ? roles : []}
+              initialValues={formik.initialValues.scopes}
+              placeholder="Введите имя роли"
+              name="scopes"
+              onInputChange={e => dispatch(getRoles(e.target.value))}
+              onSelectionChange={formik.setFieldValue}
+              touched={formik.touched.scopes}
+              error={formik.errors.scopes} />
+          </Form.Control>
+        </Form.Field>
+      }
+    </Form>
   )
 })
 

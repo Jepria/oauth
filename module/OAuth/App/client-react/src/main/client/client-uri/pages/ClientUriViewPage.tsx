@@ -5,7 +5,7 @@ import { AppState } from '../../../../redux/store';
 import { ClientUriState } from '../types';
 import { useSelector, useDispatch } from 'react-redux';
 import { getClientUriById } from '../state/redux/actions';
-import { Panel, Form } from '@jfront/ui-core';
+import { Form } from '@jfront/ui-core';
 
 export const ClientUriViewPage: React.FC = () => {
 
@@ -20,19 +20,15 @@ export const ClientUriViewPage: React.FC = () => {
   }, [current, clientId, clientUriId, dispatch]);
 
   return (
-    <Panel>
-      <Panel.Content>
-        <Form>
-          <Form.Field>
-            <Form.Label >ID записи:</Form.Label>
-            <Text>{current?.clientUriId}</Text>
-          </Form.Field>
-          <Form.Field>
-            <Form.Label>URL для переадресации:</Form.Label>
-            <Text>{current?.clientUri}</Text>
-          </Form.Field>
-        </Form>
-      </Panel.Content>
-    </Panel>
+    <Form>
+      <Form.Field>
+        <Form.Label >ID записи:</Form.Label>
+        <Text>{current?.clientUriId}</Text>
+      </Form.Field>
+      <Form.Field>
+        <Form.Label>URL для переадресации:</Form.Label>
+        <Text>{current?.clientUri}</Text>
+      </Form.Field>
+    </Form>
   )
 }

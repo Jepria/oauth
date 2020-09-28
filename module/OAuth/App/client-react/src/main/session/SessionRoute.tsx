@@ -88,7 +88,7 @@ const SessionRoute: React.FC = () => {
                   history.push('/ui/session/search');
                 }
               }))
-            }} disabled={pathname.endsWith('/search') || pathname.endsWith('/list')}>{'toolbar.list'}</ToolbarButtonBase>
+            }} disabled={pathname.endsWith('/search') || pathname.endsWith('/list')}>{t('toolbar.list')}</ToolbarButtonBase>
             <ToolbarButtonFind onClick={() => {
               dispatch(setCurrentRecord(undefined, () => history.push('/ui/session/search')));
             }} />

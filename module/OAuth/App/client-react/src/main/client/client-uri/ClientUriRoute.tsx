@@ -89,13 +89,13 @@ const ClientUriRoute: React.FC = () => {
       </Panel.Header>
       <Panel.Content>
         <Panel>
-          <Panel.Header
-            style={{background: "linear-gradient(rgb(255, 255, 255), rgb(208, 222, 240));"}}>
-            <span
+          {client.current && <Panel.Header
+            style={{backgroundImage: "linear-gradient(rgb(255, 255, 255), rgb(208, 222, 240))"}}>
+            <div
               style={{ margin: "5px", fontSize: "11px", fontWeight: "bold", color: "rgb(21, 66, 139)" }}>
               {client.current?.clientName}
-            </span>
-          </Panel.Header>
+            </div>
+          </Panel.Header>}
           <Panel.Content>
             <Switch>
               <Route path={`${path}/create`}>

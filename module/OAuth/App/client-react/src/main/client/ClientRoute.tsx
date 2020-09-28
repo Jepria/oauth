@@ -54,82 +54,84 @@ const ClientRoute: React.FC = () => {
       .then(setHasEditRole);
     isUserInRole("OADeleteClient")
       .then(setHasDeleteRole);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
-    <Panel>
-      {(isLoading || isRoleLoading) && <LoadingPanel text={message || "Загрузка данных"} />}
-      <Panel.Header>
-        <TabPanel>
-          <Tab selected>{t('client.moduleName')}</Tab>
-          {current && <Tab onClick={() => history.push(`/ui/client/${current?.clientId}/client-uri/list`, { prevRoute: pathname })}>URL</Tab>}
-          <UserPanel />
-        </TabPanel>
-        <Toolbar style={{ margin: 0 }}>
-          <ToolbarButtonCreate onClick={() => {
-            dispatch(setCurrentRecord(undefined, () => {
-              history.push('/ui/client/create')
-            }));
-          }} disabled={pathname.endsWith('/create') || !hasCreateRole} />
-          <ToolbarButtonSave
-            onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }}
-            disabled={(!pathname.endsWith('/create') && !pathname.endsWith('/edit')) || (!hasCreateRole && !hasEditRole)} />
-          <ToolbarButtonEdit
-            onClick={() => history.push(`/ui/client/${current?.clientId}/edit`)}
-            disabled={!current || pathname.endsWith('/edit') || pathname.endsWith('/edit/') || !hasEditRole} />
-          <ToolbarButtonView
-            onClick={() => { history.push(`/ui/client/${current?.clientId}/view`) }}
-            disabled={!current || pathname.endsWith('/view') || pathname.endsWith('/view/')} />
-          <ToolbarButtonDelete onClick={() => {
-            if (current?.clientId) {
-              if (window.confirm(t('delete'))) {
-                dispatch(deleteClient(current.clientId, () => {
-                  if (pathname.endsWith('/list') && searchId) {
-                    dispatch(searchClients(searchId, 25, 1));
-                  } else {
-                    history.push('/ui/client/list');
-                  }
-                }));
+    <>
+      <Panel>
+        {(isLoading || isRoleLoading) && <LoadingPanel text={message || "Загрузка данных"} />}
+        <Panel.Header>
+          <TabPanel>
+            <Tab selected>{t('client.moduleName')}</Tab>
+            {current && <Tab onClick={() => history.push(`/ui/client/${current?.clientId}/client-uri/list`, { prevRoute: pathname })}>URL</Tab>}
+            <UserPanel />
+          </TabPanel>
+          <Toolbar style={{ margin: 0 }}>
+            <ToolbarButtonCreate onClick={() => {
+              dispatch(setCurrentRecord(undefined, () => {
+                history.push('/ui/client/create')
+              }));
+            }} disabled={pathname.endsWith('/create') || !hasCreateRole} />
+            <ToolbarButtonSave
+              onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }}
+              disabled={(!pathname.endsWith('/create') && !pathname.endsWith('/edit')) || (!hasCreateRole && !hasEditRole)} />
+            <ToolbarButtonEdit
+              onClick={() => history.push(`/ui/client/${current?.clientId}/edit`)}
+              disabled={!current || pathname.endsWith('/edit') || pathname.endsWith('/edit/') || !hasEditRole} />
+            <ToolbarButtonView
+              onClick={() => { history.push(`/ui/client/${current?.clientId}/view`) }}
+              disabled={!current || pathname.endsWith('/view') || pathname.endsWith('/view/')} />
+            <ToolbarButtonDelete onClick={() => {
+              if (current?.clientId) {
+                if (window.confirm(t('delete'))) {
+                  dispatch(deleteClient(current.clientId, () => {
+                    if (pathname.endsWith('/list') && searchId) {
+                      dispatch(searchClients(searchId, 25, 1));
+                    } else {
+                      history.push('/ui/client/list');
+                    }
+                  }));
+                }
               }
-            }
-          }} disabled={!current || !hasDeleteRole} />
-          <ToolbarSplitter />
-          <ToolbarButtonBase onClick={() => {
-            dispatch(setCurrentRecord(undefined, () => {
-              if (searchRequest) {
-                history.push('/ui/client/list');
-              } else {
-                history.push('/ui/client/search');
-              }
-            }))
-          }} disabled={pathname.endsWith('/search') || pathname.endsWith('/list')}>{t('toolbar.list')}</ToolbarButtonBase>
-          <ToolbarButtonFind onClick={() => {
-            dispatch(setCurrentRecord(undefined, () => history.push('/ui/client/search')));
-          }} />
-          <ToolbarButtonBase onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }} disabled={!pathname.endsWith('/search')}>{t('toolbar.find')}</ToolbarButtonBase>
-        </Toolbar>
-      </Panel.Header>
-      <Panel.Content>
-        <Switch>
-          <Route path={`${path}/create`}>
-            <ClientCreatePage ref={formRef} />
-          </Route>
-          <Route path={`${path}/:clientId/edit`}>
-            <ClientEditPage ref={formRef} />
-          </Route>
-          <Route path={`${path}/:clientId/view`}>
-            <ClientViewPage />
-          </Route>
-          <Route path={`${path}/search`}>
-            <ClientSearchPage ref={formRef} />
-          </Route>
-          <Route path={`${path}/list`}>
-            <ClientListPage />
-          </Route>
-        </Switch>
-      </Panel.Content>
-    </Panel>
+            }} disabled={!current || !hasDeleteRole} />
+            <ToolbarSplitter />
+            <ToolbarButtonBase onClick={() => {
+              dispatch(setCurrentRecord(undefined, () => {
+                if (searchRequest) {
+                  history.push('/ui/client/list');
+                } else {
+                  history.push('/ui/client/search');
+                }
+              }))
+            }} disabled={pathname.endsWith('/search') || pathname.endsWith('/list')}>{t('toolbar.list')}</ToolbarButtonBase>
+            <ToolbarButtonFind onClick={() => {
+              dispatch(setCurrentRecord(undefined, () => history.push('/ui/client/search')));
+            }} />
+            <ToolbarButtonBase onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }} disabled={!pathname.endsWith('/search')}>{t('toolbar.find')}</ToolbarButtonBase>
+          </Toolbar>
+        </Panel.Header>
+        <Panel.Content>
+          <Switch>
+            <Route path={`${path}/create`}>
+              <ClientCreatePage ref={formRef} />
+            </Route>
+            <Route path={`${path}/:clientId/edit`}>
+              <ClientEditPage ref={formRef} />
+            </Route>
+            <Route path={`${path}/:clientId/view`}>
+              <ClientViewPage />
+            </Route>
+            <Route path={`${path}/search`}>
+              <ClientSearchPage ref={formRef} />
+            </Route>
+            <Route path={`${path}/list`}>
+              <ClientListPage />
+            </Route>
+          </Switch>
+        </Panel.Content>
+      </Panel>
+    </>
   );
 }
 

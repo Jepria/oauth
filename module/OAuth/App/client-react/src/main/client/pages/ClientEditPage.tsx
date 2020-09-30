@@ -16,7 +16,7 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
   const history = useHistory();
   const { clientId } = useParams<any>();
   const { t } = useTranslation();
-  const { current, roles } = useSelector<AppState, ClientState>(state => state.client);
+  const { current, roles, rolesLoading } = useSelector<AppState, ClientState>(state => state.client);
 
   const applicationTypeOptions = [
     { name: "Native", value: "native" },
@@ -123,6 +123,7 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
               initialValues={formik.initialValues.scopes}
               placeholder="Введите имя роли"
               name="scopes"
+              isLoading={rolesLoading}
               onInputChange={e => dispatch(getRoles(e.target.value))}
               onSelectionChange={formik.setFieldValue}
               touched={formik.touched.scopes}

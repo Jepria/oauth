@@ -2,16 +2,19 @@ import { ClientUri } from "../../types";
 
 export const CREATE_CLIENT_URI = 'CREATE_CLIENT_URI';
 export const CREATE_CLIENT_URI_SUCCESS = 'CREATE_CLIENT_URI_SUCCESS';
+export const CREATE_CLIENT_URI_FAILURE = 'CREATE_CLIENT_URI_FAILURE';
 export const DELETE_CLIENT_URI = 'DELETE_CLIENT_URI';
 export const DELETE_CLIENT_URI_SUCCESS = 'DELETE_CLIENT_URI_SUCCESS';
+export const DELETE_CLIENT_URI_FAILURE = 'DELETE_CLIENT_URI_FAILURE';
 export const SEARCH_CLIENT_URI = 'SEARCH_CLIENT_URI';
 export const SEARCH_CLIENT_URI_SUCCESS = 'SEARCH_CLIENT_URI_SUCCESS';
+export const SEARCH_CLIENT_URI_FAILURE = 'SEARCH_CLIENT_URI_FAILURE';
 export const GET_CLIENT_URI_BY_ID = 'GET_CLIENT_URI_BY_ID';
 export const GET_CLIENT_URI_BY_ID_SUCCESS = 'GET_CLIENT_URI_BY_ID_SUCCESS';
+export const GET_CLIENT_URI_BY_ID_FAILURE = 'GET_CLIENT_URI_BY_ID_FAILURE';
 export const SET_CLIENT_URI_CURRENT_RECORD = 'SET_CLIENT_URI_CURRENT_RECORD';
 export const SET_CLIENT_URI_CURRENT_RECORD_SUCCESS = 'SET_CLIENT_URI_CURRENT_RECORD_SUCCESS';
-export const CLIENT_URI_LOADING = 'CLIENT_URI_LOADING';
-export const CLIENT_URI_FAILURE = 'CLIENT_URI_FAILURE';
+export const SET_CLIENT_URI_CURRENT_RECORD_FAILURE = 'SET_CLIENT_URI_CURRENT_RECORD_FAILURE';
 
 export interface CreateClientUriAction {
   type: typeof CREATE_CLIENT_URI;
@@ -23,6 +26,11 @@ export interface CreateClientUriAction {
 export interface CreateClientUriSuccessAction {
   type: typeof CREATE_CLIENT_URI_SUCCESS
   payload: ClientUri
+}
+
+export interface CreateClientUriFailureAction {
+  type: typeof CREATE_CLIENT_URI_FAILURE
+  error: any
 }
 
 export interface DeleteClientUriAction {
@@ -38,6 +46,11 @@ export interface DeleteClientUriSuccessAction {
   clientUriId: string;
 }
 
+export interface DeleteClientUriFailureAction {
+  type: typeof DELETE_CLIENT_URI_FAILURE
+  error: any
+}
+
 export interface SearchClientUriAction {
   type: typeof SEARCH_CLIENT_URI;
   clientId: string;
@@ -46,6 +59,11 @@ export interface SearchClientUriAction {
 export interface SearchClientUriSuccessAction {
   type: typeof SEARCH_CLIENT_URI_SUCCESS
   clientUris: Array<ClientUri>;
+}
+
+export interface SearchClientUriFailureAction {
+  type: typeof SEARCH_CLIENT_URI_FAILURE
+  error: any
 }
 
 export interface GetClientUriByIdAction {
@@ -59,14 +77,9 @@ export interface GetClientUriByIdSuccessAction {
   clientUri: ClientUri
 }
 
-export interface LoadingAction {
-  type: typeof CLIENT_URI_LOADING
-  message: string
-}
-
-export interface FailureAction {
-  type: typeof CLIENT_URI_FAILURE
-  error: Error
+export interface GetClientUriByIdFailureAction {
+  type: typeof GET_CLIENT_URI_BY_ID_FAILURE
+  error: any
 }
 
 export interface SetCurrentRecordAction {
@@ -83,14 +96,16 @@ export interface SetCurrentRecordSuccessAction {
 export type ClientUriActionTypes = 
 CreateClientUriAction | 
 CreateClientUriSuccessAction | 
+CreateClientUriFailureAction | 
 DeleteClientUriAction | 
 DeleteClientUriSuccessAction | 
+DeleteClientUriFailureAction | 
 SearchClientUriAction | 
 SearchClientUriSuccessAction | 
+SearchClientUriFailureAction | 
 GetClientUriByIdAction |
 GetClientUriByIdSuccessAction |
-LoadingAction |
-FailureAction |
+GetClientUriByIdFailureAction |
 SetCurrentRecordAction |
 SetCurrentRecordSuccessAction;
 
@@ -107,6 +122,13 @@ export function createClientUriSuccess(ClientUri: ClientUri): ClientUriActionTyp
   return {
     type: CREATE_CLIENT_URI_SUCCESS,
     payload: ClientUri
+  }
+}
+
+export function createClientUriFailure(error: any): ClientUriActionTypes {
+  return {
+    type: CREATE_CLIENT_URI_FAILURE,
+    error: error
   }
 }
 
@@ -127,6 +149,13 @@ export function deleteClientUriSuccess(clientId: string, clientUriId: string): C
   }
 }
 
+export function deleteClientUriFailure(error: any): ClientUriActionTypes {
+  return {
+    type: DELETE_CLIENT_URI_FAILURE,
+    error: error
+  }
+}
+
 export function searchClientUri(clientId: string): ClientUriActionTypes {
   return {  
     type: SEARCH_CLIENT_URI,
@@ -138,6 +167,13 @@ export function searchClientUriSuccess(clientUris: Array<ClientUri>): ClientUriA
   return {  
     type: SEARCH_CLIENT_URI_SUCCESS,
     clientUris: clientUris
+  }
+}
+
+export function searchClientUriFailure(error: any): ClientUriActionTypes {
+  return {
+    type: SEARCH_CLIENT_URI_FAILURE,
+    error: error
   }
 }
 
@@ -156,16 +192,9 @@ export function getClientUriByIdSuccess(ClientUri: ClientUri): ClientUriActionTy
   }
 }
 
-export function onLoading(message: string): ClientUriActionTypes {
+export function getClientUriByIdFailure(error: any): ClientUriActionTypes {
   return {
-    type: CLIENT_URI_LOADING,
-    message: message
-  }
-}
-
-export function onFailure(error: Error): ClientUriActionTypes {
-  return {
-    type: CLIENT_URI_FAILURE,
+    type: GET_CLIENT_URI_BY_ID_FAILURE,
     error: error
   }
 }

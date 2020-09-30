@@ -14,7 +14,7 @@ const SessionListPage: React.FC = () => {
   const dispatch = useDispatch();
   const history = useHistory();
   const { t } = useTranslation();
-  const { records, current, searchId, searchRequest, resultSetSize } = useSelector<AppState, SessionState>(state => state.session);
+  const { records, current, searchId, searchRequest, resultSetSize, recordsLoading } = useSelector<AppState, SessionState>(state => state.session);
 
   useEffect(() => {
     if (searchId && searchRequest) {
@@ -74,6 +74,7 @@ const SessionListPage: React.FC = () => {
           Cell: ({ value }: any) => <TextCell>{value}</TextCell>
         },
       ]}
+      isLoading={recordsLoading}
       data={React.useMemo(() => records, [records])}
       onSelection={(selected) => {
         if (selected) {

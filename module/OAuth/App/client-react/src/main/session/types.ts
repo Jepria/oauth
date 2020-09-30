@@ -51,6 +51,9 @@ export interface SessionSearchTemplate {
 
 export interface SessionState {
   isLoading: boolean;
+  recordsLoading: boolean;
+  clientsLoading: boolean;
+  operatorsLoading: boolean;
   current?: Session;
   records: Array<Session>;
   clients?: Array<Client>;

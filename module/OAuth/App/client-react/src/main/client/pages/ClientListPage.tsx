@@ -14,7 +14,7 @@ export const ClientListPage: React.FC = () => {
   const dispatch = useDispatch();
   const history = useHistory();
   const { t } = useTranslation();
-  const { records, current, searchId, searchRequest, resultSetSize } = useSelector<AppState, ClientState>(state => state.client);
+  const { records, current, searchId, searchRequest, resultSetSize, recordsLoading } = useSelector<AppState, ClientState>(state => state.client);
 
   useEffect(() => {
     if (searchId && searchRequest) {
@@ -24,40 +24,44 @@ export const ClientListPage: React.FC = () => {
     }
   }, [searchId, searchRequest, dispatch]);
 
+  console.log(recordsLoading)
+
   return (
-    <Grid<Client> columns={[
-      {
-        Header: t('client.clientId'),
-        accessor: "clientId",
-        Cell: ({ value }: any) => <TextCell>{value}</TextCell>
-      },
-      {
-        Header: t('client.clientSecret'),
-        accessor: "clientSecret",
-        Cell: ({ value }: any) => <TextCell>{value}</TextCell>
-      },
-      {
-        Header: t('client.clientName'),
-        accessor: "clientName",
-        Cell: ({ value }: any) => <TextCell>{value}</TextCell>
-      },
-      {
-        Header: t('client.clientNameEn'),
-        accessor: "clientNameEn",
-        Cell: ({ value }: any) => <TextCell>{value}</TextCell>
-      },
-      {
-        Header: t('client.applicationType'),
-        accessor: "applicationType",
-        Cell: ({ value }: any) => <TextCell>{ApplicationType[value]}</TextCell>
-      },
-      {
-        Header: t('client.grantTypes'),
-        accessor: (row: Client) => row.grantTypes?.map((grantType) => GrantType[grantType]).join(', '),
-        Cell: ({ value }: any) => <TextCell wrapText>{value}</TextCell>,
-        disableSortBy: true
-      }
-    ]}
+    <Grid<Client>
+      columns={[
+        {
+          Header: t('client.clientId'),
+          accessor: "clientId",
+          Cell: ({ value }: any) => <TextCell>{value}</TextCell>
+        },
+        {
+          Header: t('client.clientSecret'),
+          accessor: "clientSecret",
+          Cell: ({ value }: any) => <TextCell>{value}</TextCell>
+        },
+        {
+          Header: t('client.clientName'),
+          accessor: "clientName",
+          Cell: ({ value }: any) => <TextCell>{value}</TextCell>
+        },
+        {
+          Header: t('client.clientNameEn'),
+          accessor: "clientNameEn",
+          Cell: ({ value }: any) => <TextCell>{value}</TextCell>
+        },
+        {
+          Header: t('client.applicationType'),
+          accessor: "applicationType",
+          Cell: ({ value }: any) => <TextCell>{ApplicationType[value]}</TextCell>
+        },
+        {
+          Header: t('client.grantTypes'),
+          accessor: (row: Client) => row.grantTypes?.map((grantType) => GrantType[grantType]).join(', '),
+          Cell: ({ value }: any) => <TextCell wrapText>{value}</TextCell>,
+          disableSortBy: true
+        }
+      ]}
+      isLoading={recordsLoading}
       data={React.useMemo(() => records, [records])}
       onSelection={(selected) => {
         if (selected) {

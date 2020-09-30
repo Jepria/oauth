@@ -14,7 +14,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
   const dispatch = useDispatch();
   const history = useHistory();
   const { t } = useTranslation();
-  const { roles } = useSelector<AppState, ClientState>(state => state.client);
+  const { roles, rolesLoading } = useSelector<AppState, ClientState>(state => state.client);
 
   const formik = useFormik<Client>({
     initialValues: { clientId: '', clientName: '', clientNameEn: '', applicationType: 'web', grantTypes: [] },
@@ -142,6 +142,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
               options={roles ? roles : []}
               placeholder="Введите имя роли"
               name="scopes"
+              isLoading={rolesLoading}
               onInputChange={e => dispatch(getRoles(e.target.value))}
               onSelectionChange={formik.setFieldValue}
               touched={formik.touched.scopes}

@@ -3,20 +3,24 @@ import { Client } from "../../../client/types";
 
 export const DELETE_SESSION = 'DELETE_SESSION';
 export const DELETE_SESSION_SUCCESS = 'DELETE_SESSION_SUCCESS';
+export const DELETE_SESSION_FAILURE = 'DELETE_SESSION_FAILURE';
 export const POST_SESSION_SEARCH_REQUEST = 'POST_SESSION_SEARCH_REQUEST';
 export const POST_SESSION_SEARCH_REQUEST_SUCCESS = 'POST_SESSION_SEARCH_REQUEST_SUCCESS';
+export const POST_SESSION_SEARCH_REQUEST_FAILURE = 'POST_SESSION_SEARCH_REQUEST_FAILURE';
 export const SEARCH_SESSIONS = 'SEARCH_SESSIONS';
 export const SEARCH_SESSIONS_SUCCESS = 'SEARCH_SESSIONS_SUCCESS';
+export const SEARCH_SESSIONS_FAILURE = 'SEARCH_SESSIONS_FAILURE';
 export const GET_SESSION_BY_ID = 'GET_SESSION_BY_ID';
 export const GET_SESSION_BY_ID_SUCCESS = 'GET_SESSION_BY_ID_SUCCESS';
+export const GET_SESSION_BY_ID_FAILURE = 'GET_SESSION_BY_ID_FAILURE';
 export const SET_SESSION_CURRENT_RECORD = 'SET_SESSION_CURRENT_RECORD';
 export const SET_SESSION_CURRENT_RECORD_SUCCESS = 'SET_SESSION_CURRENT_RECORD_SUCCESS';
 export const GET_CLIENTS = 'GET_CLIENTS';
 export const GET_CLIENTS_SUCCESS = 'GET_CLIENTS_SUCCESS';
+export const GET_CLIENTS_FAILURE = 'GET_CLIENTS_FAILURE';
 export const GET_OPERATORS = 'GET_OPERATORS';
 export const GET_OPERATORS_SUCCESS = 'GET_OPERATORS_SUCCESS';
-export const SESSION_LOADING = 'SESSION_LOADING';
-export const SESSION_FAILURE = 'SESSION_FAILURE';
+export const GET_OPERATORS_FAILURE = 'GET_OPERATORS_FAILURE';
 
 export interface DeleteSessionAction {
   type: typeof DELETE_SESSION;
@@ -29,6 +33,11 @@ export interface DeleteSessionSuccessAction {
   sessionId: string
 }
 
+export interface DeleteSessionFailureAction {
+  type: typeof DELETE_SESSION_FAILURE
+  error: any
+}
+
 export interface PostSearchSessionRequestAction {
   type: typeof POST_SESSION_SEARCH_REQUEST
   searchRequest: SearchRequest<SessionSearchTemplate>
@@ -39,6 +48,11 @@ export interface PostSearchSessionRequestSuccessAction {
   type: typeof POST_SESSION_SEARCH_REQUEST_SUCCESS
   searchRequest: SearchRequest<SessionSearchTemplate>
   searchId: string;
+}
+
+export interface PostSearchSessionRequestFailureAction {
+  type: typeof POST_SESSION_SEARCH_REQUEST_FAILURE
+  error: any
 }
 
 export interface SearchSessionsAction {
@@ -54,6 +68,11 @@ export interface SearchSessionsSuccessAction {
   resultSetSize: number;
 }
 
+export interface SearchSessionsFailureAction {
+  type: typeof SEARCH_SESSIONS_FAILURE
+  error: any
+}
+
 export interface GetSessionByIdAction {
   type: typeof GET_SESSION_BY_ID
   sessionId: string
@@ -64,14 +83,9 @@ export interface GetSessionByIdSuccessAction {
   session: Session
 }
 
-export interface LoadingAction {
-  type: typeof SESSION_LOADING
-  message: string
-}
-
-export interface FailureAction {
-  type: typeof SESSION_FAILURE
-  error: Error
+export interface GetSessionByIdFailureAction {
+  type: typeof GET_SESSION_BY_ID_FAILURE
+  error: any
 }
 
 export interface SetCurrentRecordAction {
@@ -95,6 +109,11 @@ export interface GetClientsSuccessAction {
   clients: Array<Client>
 }
 
+export interface GetClientsFailureAction {
+  type: typeof GET_CLIENTS_FAILURE
+  error: any
+}
+
 export interface GetOperatorsAction {
   type: typeof GET_OPERATORS
   operatorName?: string
@@ -104,23 +123,33 @@ export interface GetOperatorsSuccessAction {
   type: typeof GET_OPERATORS_SUCCESS
   operators: Array<Operator>
 }
+
+export interface GetOperatorsFailureAction {
+  type: typeof GET_OPERATORS_FAILURE
+  error: any
+}
+
 export type SessionActionTypes = 
 DeleteSessionAction | 
 DeleteSessionSuccessAction | 
+DeleteSessionFailureAction | 
 PostSearchSessionRequestAction | 
 PostSearchSessionRequestSuccessAction | 
+PostSearchSessionRequestFailureAction | 
 SearchSessionsAction | 
 SearchSessionsSuccessAction | 
+SearchSessionsFailureAction | 
 GetSessionByIdAction |
 GetSessionByIdSuccessAction |
-LoadingAction |
-FailureAction |
+GetSessionByIdFailureAction |
 SetCurrentRecordAction |
 SetCurrentRecordSuccessAction |
 GetClientsAction |
 GetClientsSuccessAction |
+GetClientsFailureAction |
 GetOperatorsAction |
-GetOperatorsSuccessAction;
+GetOperatorsSuccessAction |
+GetOperatorsFailureAction;
 
 export function deleteSession(sessionId: string, callback?: () => any): SessionActionTypes {
   return {
@@ -137,6 +166,13 @@ export function deleteSessionSuccess(sessionId: string): SessionActionTypes {
   }
 }
 
+export function deleteSessionFailure(error: any): SessionActionTypes {
+  return {
+    type: DELETE_SESSION_FAILURE,
+    error: error
+  }
+}
+
 export function postSearchSessionRequest(searchRequest: SearchRequest<SessionSearchTemplate>, callback?: () => any): SessionActionTypes {
   return {
     type: POST_SESSION_SEARCH_REQUEST,
@@ -150,6 +186,13 @@ export function postSearchSessionRequestSuccess(searchId: string, searchRequest:
     type: POST_SESSION_SEARCH_REQUEST_SUCCESS,
     searchRequest: searchRequest,
     searchId: searchId
+  }
+}
+
+export function postSearchSessionRequestFailure(error: any): SessionActionTypes {
+  return {
+    type: POST_SESSION_SEARCH_REQUEST_FAILURE,
+    error: error
   }
 }
 
@@ -170,6 +213,13 @@ export function searchSessionsSuccess(sessions: Array<Session>, resultSetSize: n
   }
 }
 
+export function searchSessionsFailure(error: any): SessionActionTypes {
+  return {
+    type: SEARCH_SESSIONS_FAILURE,
+    error: error
+  }
+}
+
 export function getSessionById(sessionId: string): SessionActionTypes {
   return {
     type: GET_SESSION_BY_ID,
@@ -184,16 +234,9 @@ export function getSessionByIdSuccess(session: Session): SessionActionTypes {
   }
 }
 
-export function onLoading(message: string): SessionActionTypes {
+export function getSessionByIdFailure(error: any): SessionActionTypes {
   return {
-    type: SESSION_LOADING,
-    message: message
-  }
-}
-
-export function onFailure(error: Error): SessionActionTypes {
-  return {
-    type: SESSION_FAILURE,
+    type: GET_SESSION_BY_ID_FAILURE,
     error: error
   }
 }
@@ -227,6 +270,13 @@ export function getClientsSuccess(clients: Array<Client>): SessionActionTypes {
   }
 }
 
+export function getClientsFailure(error: any): SessionActionTypes {
+  return {
+    type: GET_CLIENTS_FAILURE,
+    error: error
+  }
+}
+
 export function getOperators(operatorName?: string): SessionActionTypes {
   return {
     type: GET_OPERATORS,
@@ -238,5 +288,12 @@ export function getOperatorsSuccess(operators: Array<Operator>): SessionActionTy
   return {
     type: GET_OPERATORS_SUCCESS,
     operators: operators
+  }
+}
+
+export function getOperatorsFailure(error: any): SessionActionTypes {
+  return {
+    type: GET_OPERATORS_FAILURE,
+    error: error
   }
 }

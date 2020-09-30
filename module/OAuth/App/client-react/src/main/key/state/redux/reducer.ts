@@ -1,4 +1,4 @@
-import { KEY_LOADING, KEY_FAILURE, KeyActionTypes, GET_KEY_SUCCESS, UPDATE_KEY_SUCCESS } from "./actions";
+import { KeyActionTypes, GET_KEY_SUCCESS, UPDATE_KEY_SUCCESS, GET_KEY, GET_KEY_FAILURE, UPDATE_KEY, UPDATE_KEY_FAILURE } from "./actions";
 import { KeyState } from "../../types";
 
 export const initialState: KeyState = {
@@ -7,28 +7,39 @@ export const initialState: KeyState = {
 
 export function keyReducer(state: KeyState = initialState, action: KeyActionTypes): KeyState {
   switch (action.type) {
+    case GET_KEY:
+      return {
+        ...state,
+        isLoading: true
+      }
     case GET_KEY_SUCCESS:
       return {
         ...state,
         isLoading: false,
         current: action.key
       }
-      case UPDATE_KEY_SUCCESS:
-        return {
-          ...state,
-          isLoading: false,
-          current: undefined
-        }
-    case KEY_LOADING:
+    case GET_KEY_FAILURE:
+      return {
+        ...state,
+        isLoading: false,
+        error: action.error
+      }
+    case UPDATE_KEY:
       return {
         ...state,
         isLoading: true,
-        message: action.message
       }
-    case KEY_FAILURE:
+    case UPDATE_KEY_SUCCESS:
       return {
         ...state,
-        isLoading: false
+        isLoading: false,
+        current: undefined
+      }
+    case UPDATE_KEY_FAILURE:
+      return {
+        ...state,
+        isLoading: false,
+        error: action.error
       }
     default: {
       return state;

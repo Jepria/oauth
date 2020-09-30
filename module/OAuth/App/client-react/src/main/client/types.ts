@@ -27,6 +27,8 @@ export interface ClientSearchTemplate {
 
 export interface ClientState {
   isLoading: boolean;
+  recordsLoading: boolean;
+  rolesLoading: boolean;
   current?: Client;
   records: Array<Client>;
   searchId?: string;

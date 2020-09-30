@@ -4,7 +4,7 @@ import { AppState } from '../../../redux/store';
 import { KeyState } from '../types';
 import { useSelector, useDispatch } from 'react-redux';
 import { getKey } from '../state/redux/actions';
-import { Panel, Form } from '@jfront/ui-core';
+import { Form } from '@jfront/ui-core';
 import { useTranslation } from 'react-i18next';
 
 const KeyViewPage: React.FC = () => {

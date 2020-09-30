@@ -12,7 +12,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
   const dispatch = useDispatch();
   const history = useHistory();
   const { t } = useTranslation();
-  const { clients, operators, searchRequest } = useSelector<AppState, SessionState>(state => state.session);
+  const { clients, operators, searchRequest, clientsLoading, operatorsLoading } = useSelector<AppState, SessionState>(state => state.session);
 
   useEffect(() => {
     dispatch(getOperators(""));
@@ -48,6 +48,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
         <Form.Control>
           <ComboBox
             name="operatorId"
+            isLoading={operatorsLoading}
             value={formik.values.operatorId}
             error={formik.errors.operatorId}
             onInputChange={(e: { target: { value: string | undefined; }; }) => dispatch(getOperators(e.target.value))}
@@ -62,6 +63,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
           <ComboBox
             options={clients ? clients : []}
             name="clientId"
+            isLoading={clientsLoading}
             value={formik.values.clientId}
             error={formik.errors.clientId}
             onInputChange={(e: { target: { value: string | undefined; }; }) => dispatch(getClients(e.target.value))}

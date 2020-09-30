@@ -62,13 +62,13 @@ const SessionListPage: React.FC = () => {
           Cell: ({ value }: any) => <TextCell>{value}</TextCell>
         },
         {
-          Header: t('sessionId.clientName'),
+          Header: t('session.clientName'),
           id: "clientName",
           accessor: (row: Session) => row.client?.name,
           Cell: ({ value }: any) => <TextCell>{value}</TextCell>
         },
         {
-          Header: t('sessionId.clientId'),
+          Header: t('session.clientId'),
           id: "clientId",
           accessor: (row: Session) => row.client?.value,
           Cell: ({ value }: any) => <TextCell>{value}</TextCell>

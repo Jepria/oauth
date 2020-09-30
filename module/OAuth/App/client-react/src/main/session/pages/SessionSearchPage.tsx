@@ -44,7 +44,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
   return (
     <Form onSubmit={formik.handleSubmit} ref={ref}>
       <Form.Field>
-        <Form.Label required>{t('session.operator')}:</Form.Label>
+        <Form.Label required>{t('session.operator.legend')}:</Form.Label>
         <Form.Control>
           <ComboBox
             name="operatorId"
@@ -57,7 +57,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
         </Form.Control>
       </Form.Field>
       <Form.Field>
-        <Form.Label>{t('session.client')}:</Form.Label>
+        <Form.Label>{t('session.client.legend')}:</Form.Label>
         <Form.Control>
           <ComboBox
             options={clients ? clients : []}

@@ -28,37 +28,37 @@ const SessionViewPage: React.FC = () => {
           <Form.Label>{t('session.sessionId')}:</Form.Label>
           <Text>{current?.sessionId}</Text>
         </Form.Field>
-        <Form.Field>
+        {current?.dateIns && <Form.Field>
           <Form.Label>{t('session.dateIns')}:</Form.Label>
-          <Text>{current?.dateIns}</Text>
-        </Form.Field>
+          <Text>{new Date(current.dateIns).toLocaleString()}</Text>
+        </Form.Field>}
       </Row>
       <Row>
-        <Form.FieldSet legend={t('session.client')} style={{ flexGrow: 1, margin: "0 5px", flexBasis: "50%" }}>
+        <Form.FieldSet legend={t('session.client.legend')} style={{ flexGrow: 1, margin: "0 5px", flexBasis: "50%" }}>
           <Form.Field>
-            <Form.Label>{t('session.clientId')}:</Form.Label>
+            <Form.Label>{t('session.client.id')}:</Form.Label>
             <Text>{current?.client?.value}</Text>
           </Form.Field>
           <Form.Field>
-            <Form.Label>{t('session.clientName')}:</Form.Label>
+            <Form.Label>{t('session.client.name')}:</Form.Label>
             <Text>{current?.client?.name}</Text>
           </Form.Field>
           <Form.Field>
-            <Form.Label>{t('session.redirectUri')}:</Form.Label>
+            <Form.Label>{t('session.client.redirectUri')}:</Form.Label>
             <Text>{current?.redirectUri}</Text>
           </Form.Field>
         </Form.FieldSet>
-        <Form.FieldSet legend={t('session.operator')} style={{ flexGrow: 1, margin: "0 5px", flexBasis: "50%" }}>
+        <Form.FieldSet legend={t('session.operator.legend')} style={{ flexGrow: 1, margin: "0 5px", flexBasis: "50%" }}>
           <Form.Field>
-            <Form.Label>{t('session.operatorId')}:</Form.Label>
+            <Form.Label>{t('session.operator.id')}:</Form.Label>
             <Text>{current?.operator?.value}</Text>
           </Form.Field>
           <Form.Field>
-            <Form.Label>{t('session.operatorLogin')}:</Form.Label>
+            <Form.Label>{t('session.operator.login')}:</Form.Label>
             <Text>{current?.operatorLogin}</Text>
           </Form.Field>
           <Form.Field>
-            <Form.Label>{t('session.operatorName')}:</Form.Label>
+            <Form.Label>{t('session.operator.name')}:</Form.Label>
             <Text>{current?.operator?.name}</Text>
           </Form.Field>
         </Form.FieldSet>
@@ -67,49 +67,49 @@ const SessionViewPage: React.FC = () => {
         {current?.accessTokenId &&
           <Form.FieldSet legend={t('session.accessToken')} style={{ flexGrow: 1, margin: "0 5px", flexBasis: "30%" }}>
             <Form.Field>
-              <Form.Label>{t('session.accessTokenId')}:</Form.Label>
+              <Form.Label>{t('session.token.id')}:</Form.Label>
               <Text>{current?.accessTokenId}</Text>
             </Form.Field>
-            <Form.Field>
-              <Form.Label>{t('session.accessTokenDateIns')}:</Form.Label>
-              <Text>{current?.accessTokenDateIns}</Text>
-            </Form.Field>
-            <Form.Field>
-              <Form.Label>{t('session.accessTokenDateFinish')}:</Form.Label>
-              <Text>{current?.accessTokenDateFinish}</Text>
-            </Form.Field>
+            {current.accessTokenDateIns && <Form.Field>
+              <Form.Label>{t('session.token.dateIns')}:</Form.Label>
+              <Text>{new Date(current.accessTokenDateIns).toLocaleString()}</Text>
+            </Form.Field>}
+            {current.accessTokenDateFinish && <Form.Field>
+              <Form.Label>{t('session.token.dateFinish')}:</Form.Label>
+              <Text>{new Date(current.accessTokenDateFinish).toLocaleString()}</Text>
+            </Form.Field>}
           </Form.FieldSet>
         }
         {current?.refreshTokenId &&
           <Form.FieldSet legend={t('session.refreshToken')} style={{ flexGrow: 1, margin: "0 5px", flexBasis: "30%" }}>
             <Form.Field>
-              <Form.Label>{t('session.refreshTokenId')}:</Form.Label>
+              <Form.Label>{t('session.token.id')}:</Form.Label>
               <Text>{current?.refreshTokenId}</Text>
             </Form.Field>
-            <Form.Field>
-              <Form.Label>{t('session.refreshTokenDateIns')}:</Form.Label>
-              <Text>{current?.refreshTokenDateIns}</Text>
-            </Form.Field>
-            <Form.Field>
-              <Form.Label>{t('session.refreshTokenDateFinish')}:</Form.Label>
-              <Text>{current?.refreshTokenDateFinish}</Text>
-            </Form.Field>
+           {current.refreshTokenDateIns && <Form.Field>
+              <Form.Label>{t('session.token.dateIns')}:</Form.Label>
+              <Text>{new Date(current.refreshTokenDateIns).toLocaleString()}</Text>
+            </Form.Field>}
+            {current.refreshTokenDateFinish && <Form.Field>
+              <Form.Label>{t('session.token.dateFinish')}:</Form.Label>
+              <Text>{new Date(current.refreshTokenDateFinish).toLocaleString()}</Text>
+            </Form.Field>}
           </Form.FieldSet>
         }
         {current?.sessionTokenId &&
           <Form.FieldSet legend={t('session.sessionToken')} style={{ flexGrow: 1, margin: "0 5px", flexBasis: "30%" }}>
             <Form.Field>
-              <Form.Label>{t('session.sessionTokenId')}:</Form.Label>
+              <Form.Label>{t('session.token.id')}:</Form.Label>
               <Text>{current?.sessionTokenId}</Text>
             </Form.Field>
-            <Form.Field>
-              <Form.Label>{t('session.sessionTokenDateIns')}:</Form.Label>
-              <Text>{current?.sessionTokenDateIns}</Text>
-            </Form.Field>
-            <Form.Field>
-              <Form.Label>{t('session.sessionTokenDateFinish')}:</Form.Label>
-              <Text>{current?.sessionTokenDateFinish}</Text>
-            </Form.Field>
+            {current.sessionTokenDateIns && <Form.Field>
+              <Form.Label>{t('session.token.dateIns')}:</Form.Label>
+              <Text>{new Date(current.sessionTokenDateIns).toLocaleString()}</Text>
+            </Form.Field>}
+            {current.sessionTokenDateFinish && <Form.Field>
+              <Form.Label>{t('session.token.dateFinish')}:</Form.Label>
+              <Text>{new Date(current.sessionTokenDateFinish).toLocaleString()}</Text>
+            </Form.Field>}
           </Form.FieldSet>
         }
       </Row>

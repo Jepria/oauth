@@ -6,6 +6,7 @@ import axios from 'axios'
 import { Provider } from 'react-redux';
 import { configureStore } from './redux/configureStore';
 import { sagas, reducers } from './redux/store';
+import { ErrorNotification } from './main/ErrorNotification';
 
 function App() {
 
@@ -20,7 +21,9 @@ function App() {
       configureAxios>
       <Provider store={store}>
         <UserContextProvider baseUrl={`${process.env.NODE_ENV === 'development' ? 'http://localhost:8080/oauth/api' : `/oauth/api`}`}>
-          <AppRouter />
+          <ErrorNotification>
+            <AppRouter />
+          </ErrorNotification>
         </UserContextProvider>
       </Provider>
     </OAuthWebContext>

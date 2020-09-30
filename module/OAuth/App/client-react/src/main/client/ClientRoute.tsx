@@ -44,7 +44,7 @@ const ClientRoute: React.FC = () => {
   const [hasEditRole, setHasEditRole] = useState(false);
   const [hasDeleteRole, setHasDeleteRole] = useState(false);
   const { t } = useTranslation();
-  const { isLoading, message, error, current, searchId, searchRequest } = useSelector<AppState, ClientState>(state => state.client)
+  const { isLoading, message, current, searchId, searchRequest } = useSelector<AppState, ClientState>(state => state.client)
   let formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {

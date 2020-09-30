@@ -65,7 +65,7 @@ const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
         </Form.Control>
       </Form.Field>
       <Form.Field>
-        <Form.Label required>{t('client.maxRowCount')}:</Form.Label>
+        <Form.Label required>{t('maxRowCount')}:</Form.Label>
         <Form.Control style={{ maxWidth: "60px" }}>
           <NumberInput
             style={{ minWidth: "55px" }}

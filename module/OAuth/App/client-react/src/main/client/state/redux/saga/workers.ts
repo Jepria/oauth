@@ -10,7 +10,7 @@ import { onLoading, onFailure,
   SetCurrentRecordAction, setCurrentRecordSuccess, GetRolesAction, getRolesSuccess } from '../actions';
 import { put, call } from 'redux-saga/effects';
 
-const api = new ClientApi(API_PATH);
+const api = new ClientApi(API_PATH + '/client');
 
 export function* create(action: CreateClientAction) {
   try {

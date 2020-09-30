@@ -6,12 +6,13 @@ import { onLoading, onFailure,
   PostSearchSessionRequestAction, postSearchSessionRequestSuccess, 
   SearchSessionsAction, searchSessionsSuccess, 
   SetCurrentRecordAction, setCurrentRecordSuccess, GetClientsAction, getClientsSuccess, GetOperatorsAction, getOperatorsSuccess } from '../actions';
-import { put, call, select } from 'redux-saga/effects';
+import { put, call } from 'redux-saga/effects';
 import ClientApi from '../../../../client/api/ClientApi';
 import OperatorApi from '../../../api/OperatorApi';
+import { ConnectorCrud } from '../../../../../rest/connector/ConnectorCrud';
 
-const api = new SessionApi(API_PATH);
-const clientApi = new ClientApi(API_PATH);
+const api = new ConnectorCrud(API_PATH + '/session');
+const clientApi = new ClientApi(API_PATH + "/client");
 const operatorApi = new OperatorApi(API_PATH);
 
 export function* remove(action: DeleteSessionAction) {

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { SessionSearchTemplate, SearchRequest, Session } from '../types';
 
-export default class ClientApi {
+export default class SessionApi {
 
   private url: string;
 

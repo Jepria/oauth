@@ -24,26 +24,32 @@
     "moduleName": "Session",
     "sessionId": "ID",
     "dateIns": "Date of creation",
-    "client": "Client application",
-    "clientId": "ID",
-    "clientName": "Name",
+    "clientId": "Application ID",
+    "clientName": "Application Name",
     "redirectUri": "Redirect URL",
-    "operator": "Operator",
     "operatorId": "ID",
     "operatorLogin": "Login",
     "operatorName": "Name",
     "accessToken": "Access token",
-    "accessTokenId": "ID",
-    "accessTokenDateIns": "Date of creation",
-    "accessTokenDateFinish": "Expiration date",
     "refreshToken": "Refresh token",
-    "refreshTokenId": "ID",
-    "refreshTokenDateIns": "Date of creation",
-    "refreshTokenDateFinish": "Expiration date",
     "sessionToken": "Session token",
-    "sessionTokenId": "ID",
-    "sessionTokenDateIns": "Date of creation",
-    "sessionTokenDateFinish": "Expiration date"
+    "client": {
+      "legend": "Приложение",
+      "id": "ID",
+      "name": "Наименование",
+      "redirectUri": "URL переадресации"
+    },
+    "operator": {
+      "legend": "Пользователь",
+      "id": "ID",
+      "login": "Логин",
+      "name": "Имя"
+    },
+    "token": {
+      "id": "ID",
+      "dateIns": "Date of creation",
+      "dateFinish": "Expiration date"
+    }
   },
   "key": {
     "toolbar": {

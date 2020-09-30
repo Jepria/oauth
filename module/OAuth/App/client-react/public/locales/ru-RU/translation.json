@@ -24,26 +24,32 @@
     "moduleName": "Сессия",
     "sessionId": "ID",
     "dateIns": "Дата создания",
-    "client": "Приложение",
-    "clientId": "ID",
-    "clientName": "Наименование",
+    "clientId": "ID приложения",
+    "clientName": "Наименование приложения",
     "redirectUri": "URL переадресации",
-    "operator": "Пользователь",
-    "operatorId": "ID",
-    "operatorLogin": "Логин",
-    "operatorName": "Имя",
+    "client": {
+      "legend": "Приложение",
+      "id": "ID",
+      "name": "Наименование",
+      "redirectUri": "URL переадресации"
+    },
+    "operatorId": "ID пользователя",
+    "operatorLogin": "Логин пользователя",
+    "operatorName": "Имя пользователя",
+    "operator": {
+      "legend": "Пользователь",
+      "id": "ID",
+      "login": "Логин",
+      "name": "Имя"
+    },
+    "token": {
+      "id": "ID",
+      "dateIns": "Дата создания",
+      "dateFinish": "Дата окончания действия"
+    },
     "accessToken": "Токен доступа",
-    "accessTokenId": "ID",
-    "accessTokenDateIns": "Дата создания",
-    "accessTokenDateFinish": "Дата окончания действия",
     "refreshToken": "Токен обновления",
-    "refreshTokenId": "ID",
-    "refreshTokenDateIns": "Дата создания",
-    "refreshTokenDateFinish": "Дата окончания действия",
-    "sessionToken": "Токен сессии",
-    "sessionTokenId": "ID",
-    "sessionTokenDateIns": "Дата создания",
-    "sessionTokenDateFinish": "Дата окончания действия"
+    "sessionToken": "Токен сессии"
   },
   "key": {
     "toolbar": {

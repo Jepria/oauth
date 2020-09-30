@@ -118,12 +118,14 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();
     }
-    authenticationServerFactory
-        .getService()
-        .logout(clientId,
-            redirectUri,
-            sessionToken,
-            getHostContext());
+    if (sessionToken != null) {
+      authenticationServerFactory
+          .getService()
+          .logout(clientId,
+              redirectUri,
+              sessionToken,
+              getHostContext());
+    }
     return Response.status(302)
         .location(URI.create(redirectUri + getSeparator(redirectUri) + STATE + "=" + state))
         .cookie(new NewCookie(SESSION_ID, "", null, null, NewCookie.DEFAULT_VERSION, null, 0, new Date(), false, true))

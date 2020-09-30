@@ -45,7 +45,7 @@ const KeyRoute: React.FC = () => {
         </TabPanel>
         <Toolbar>
           <ToolbarButtonBase onClick={() => {
-            if (window.confirm(t('key.updateMessage'))) {
+            if (window.confirm(t('key.toolbar.updateMessage'))) {
               dispatch(updateKey(() => dispatch(getKey())))
             }}} title={t('key.toolbar.update')} disabled={!hasUpdateRole}>
             <img src={change_password} alt={t('key.toolbar.update')} title={t('key.toolbar.update')}  />

@@ -20,8 +20,9 @@ export const ClientUriListPage: React.FC = () => {
 
   useEffect(() => {
     if (clientId) {
-      dispatch(searchClientUri(clientId));
+      dispatch(searchClientUri(clientId, t('dataLoadingMessage')));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientId, dispatch]);
 
   return (

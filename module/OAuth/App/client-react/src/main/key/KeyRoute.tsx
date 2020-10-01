@@ -27,7 +27,7 @@ const KeyRoute: React.FC = () => {
   const { t } = useTranslation();
   const { isRoleLoading, isUserInRole } = useContext(UserContext);
   const [hasUpdateRole, setHasUpdateRole] = useState(false);
-  const { isLoading, message, error } = useSelector<AppState, KeyState>(state => state.key);
+  const { isLoading, message } = useSelector<AppState, KeyState>(state => state.key);
 
   useEffect(() => {
     isUserInRole("OAUpdateKey")
@@ -46,7 +46,7 @@ const KeyRoute: React.FC = () => {
         <Toolbar>
           <ToolbarButtonBase onClick={() => {
             if (window.confirm(t('key.toolbar.updateMessage'))) {
-              dispatch(updateKey(() => dispatch(getKey())))
+              dispatch(updateKey(t('dataLoading'), () => dispatch(getKey(t('dataLoading')))))
             }}} title={t('key.toolbar.update')} disabled={!hasUpdateRole}>
             <img src={change_password} alt={t('key.toolbar.update')} title={t('key.toolbar.update')}  />
           </ToolbarButtonBase>

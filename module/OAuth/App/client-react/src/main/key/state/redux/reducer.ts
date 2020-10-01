@@ -10,6 +10,7 @@ export function keyReducer(state: KeyState = initialState, action: KeyActionType
     case GET_KEY:
       return {
         ...state,
+        message: action.loadingMessage,
         isLoading: true
       }
     case GET_KEY_SUCCESS:
@@ -27,6 +28,7 @@ export function keyReducer(state: KeyState = initialState, action: KeyActionType
     case UPDATE_KEY:
       return {
         ...state,
+        message: action.loadingMessage,
         isLoading: true,
       }
     case UPDATE_KEY_SUCCESS:

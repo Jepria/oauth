@@ -9,7 +9,8 @@ export const UPDATE_KEY_FAILURE = 'UPDATE_KEY_FAILURE';
 
 export interface GetKeyAction {
   type: typeof GET_KEY
-  callback?(): any;
+  loadingMessage: string
+  callback?(): any
 }
 
 export interface GetKeySuccessAction {
@@ -24,7 +25,8 @@ export interface GetKeyFailureAction {
 
 export interface UpdateKeyAction {
   type: typeof UPDATE_KEY
-  callback?(): any;
+  loadingMessage: string
+  callback?(): any
 }
 
 export interface UpdateKeySuccessAction {
@@ -45,9 +47,10 @@ UpdateKeySuccessAction |
 UpdateKeyFailureAction;
 
 
-export function getKey(callback?: () => any): KeyActionTypes {
+export function getKey(loadingMessage: string, callback?: () => any): KeyActionTypes {
   return {
     type: GET_KEY,
+    loadingMessage,
     callback: callback
   }
 }
@@ -66,9 +69,10 @@ export function getKeyFailure(error: any): KeyActionTypes {
     error: error
   }
 }
-export function updateKey(callback?: () => any): KeyActionTypes {
+export function updateKey(loadingMessage: string, callback?: () => any): KeyActionTypes {
   return {
     type: UPDATE_KEY,
+    loadingMessage,
     callback: callback
   }
 }

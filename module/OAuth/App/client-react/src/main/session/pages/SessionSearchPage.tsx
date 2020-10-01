@@ -37,7 +37,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
     onSubmit: (values: SessionSearchTemplate) => {
       dispatch(postSearchSessionRequest({
         template: values
-      }, () => history.push('/ui/session/list')));
+      }, t('dataLoadingMessage'), () => history.push('/ui/session/list')));
     }
   })
 

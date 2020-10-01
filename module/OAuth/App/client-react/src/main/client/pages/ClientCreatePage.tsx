@@ -19,7 +19,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
   const formik = useFormik<Client>({
     initialValues: { clientId: '', clientName: '', clientNameEn: '', applicationType: 'web', grantTypes: [] },
     onSubmit: (values: Client) => {
-      dispatch(createClient(values, (client: Client) => {
+      dispatch(createClient(values, t("saveMessage"), (client: Client) => {
         history.push(`/ui/client/${client.clientId}/view/`);
       }));
     },

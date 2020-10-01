@@ -85,9 +85,9 @@ const ClientRoute: React.FC = () => {
             <ToolbarButtonDelete onClick={() => {
               if (current?.clientId) {
                 if (window.confirm(t('delete'))) {
-                  dispatch(deleteClient(current.clientId, () => {
+                  dispatch(deleteClient(current.clientId, t('deleteMessage'), () => {
                     if (pathname.endsWith('/list') && searchId) {
-                      dispatch(searchClients(searchId, 25, 1));
+                      dispatch(searchClients(searchId, 25, 1, t('dataLoadingMessage')));
                     } else {
                       history.push('/ui/client/list');
                     }

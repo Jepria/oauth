@@ -11,6 +11,7 @@ export function clientUriReducer(state: ClientUriState = initialState, action: C
     case CREATE_CLIENT_URI:
       return {
         ...state,
+        message: action.loadingMessage,
         isLoading: true
       }
     case CREATE_CLIENT_URI_SUCCESS:
@@ -28,6 +29,7 @@ export function clientUriReducer(state: ClientUriState = initialState, action: C
     case DELETE_CLIENT_URI:
       return {
         ...state,
+        message: action.loadingMessage,
         isLoading: true
       }
     case DELETE_CLIENT_URI_SUCCESS:
@@ -45,6 +47,7 @@ export function clientUriReducer(state: ClientUriState = initialState, action: C
     case SEARCH_CLIENT_URI:
       return {
         ...state,
+        message: action.loadingMessage,
         isLoading: true
       }
     case SEARCH_CLIENT_URI_SUCCESS:
@@ -62,6 +65,7 @@ export function clientUriReducer(state: ClientUriState = initialState, action: C
     case GET_CLIENT_URI_BY_ID:
       return {
         ...state,
+        message: action.loadingMessage,
         isLoading: true
       }
     case GET_CLIENT_URI_BY_ID_SUCCESS:

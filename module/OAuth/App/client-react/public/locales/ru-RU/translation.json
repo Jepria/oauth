@@ -5,6 +5,9 @@
   },
   "maxRowCount": "Количество записей",
   "delete": "Вы уверены, что хотите удалить запись?",
+  "saveMessage": "Сохранение изменений",
+  "deleteMessage": "Удаление записи",
+  "dataLoadingMessage": "Загрузка данных",
   "client": {
     "moduleName": "Приложение",
     "clientId": "ID приложения",

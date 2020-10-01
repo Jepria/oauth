@@ -5,6 +5,9 @@
   },
   "maxRowCount": "Maximum record count",
   "delete": "Do you really want to delete record?",
+  "saveMessage": "Saving changes in progress",
+  "deleteMessage": "Deleting record in progress",
+  "dataLoadingMessage": "Loading data",
   "client": {
     "moduleName": "Client",
     "clientId": "Client ID",
@@ -34,16 +37,16 @@
     "refreshToken": "Refresh token",
     "sessionToken": "Session token",
     "client": {
-      "legend": "Приложение",
+      "legend": "Application",
       "id": "ID",
-      "name": "Наименование",
-      "redirectUri": "URL переадресации"
+      "name": "Name",
+      "redirectUri": "Redirect URL"
     },
     "operator": {
-      "legend": "Пользователь",
+      "legend": "Operator",
       "id": "ID",
-      "login": "Логин",
-      "name": "Имя"
+      "login": "Login",
+      "name": "Name"
     },
     "token": {
       "id": "ID",

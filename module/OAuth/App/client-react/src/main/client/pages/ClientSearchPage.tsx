@@ -28,7 +28,7 @@ const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
     onSubmit: (values: ClientSearchTemplate) => {
       dispatch(postSearchClientRequest({
         template: values
-      }, () => history.push('/ui/client/list')));
+      }, t("dataLoadingMessage"), () => history.push('/ui/client/list')));
     }
   })
 

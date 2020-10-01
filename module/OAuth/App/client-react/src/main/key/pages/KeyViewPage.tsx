@@ -15,8 +15,9 @@ const KeyViewPage: React.FC = () => {
 
   useEffect(() => {
     if (!current) {
-      dispatch(getKey());
+      dispatch(getKey(t('dataLoading')));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current, dispatch]);
 
   return (

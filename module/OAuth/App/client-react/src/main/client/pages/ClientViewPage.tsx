@@ -31,8 +31,9 @@ const ClientViewPage: React.FC = () => {
 
   useEffect(() => {
     if (!current && clientId) {
-      dispatch(getClientById(clientId));
+      dispatch(getClientById(clientId, t("dataLoadingMessage")));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current, clientId, dispatch]);
 
   return (

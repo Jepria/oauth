@@ -31,8 +31,9 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
 
   useEffect(() => {
     if (!current && clientId) {
-      dispatch(getClientById(clientId));
+      dispatch(getClientById(clientId, t("dataLoadingMessage")));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current, clientId, dispatch]);
 
   const formik = useFormik<Client>({
@@ -40,7 +41,7 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
     enableReinitialize: true,
     onSubmit: (values: Client) => {
       if (clientId) {
-        dispatch(updateClient(clientId, values, (client: Client) => {
+        dispatch(updateClient(clientId, values, t("saveMessage"), (client: Client) => {
           history.push(`/ui/client/${client.clientId}/view/`);
         }));
       }

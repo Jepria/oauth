@@ -18,9 +18,9 @@ const SessionListPage: React.FC = () => {
 
   useEffect(() => {
     if (searchId && searchRequest) {
-      dispatch(searchSessions(searchId, 25, 1));
+      dispatch(searchSessions(searchId, 25, 1, t('dataLoadingMessage')));
     } else if (!searchId && searchRequest) {
-      dispatch(postSearchSessionRequest(searchRequest));
+      dispatch(postSearchSessionRequest(searchRequest, t('dataLoadingMessage')));
     }
   }, [searchId, searchRequest, dispatch]);
 
@@ -89,7 +89,7 @@ const SessionListPage: React.FC = () => {
       }}
       onPaging={(pageNumber, pageSize) => {
         if (searchId) {
-          dispatch(searchSessions(searchId, pageSize, pageNumber + 1))
+          dispatch(searchSessions(searchId, pageSize, pageNumber + 1, t('dataLoadingMessage')))
         }
       }}
       onSort={(sortConfig) => {
@@ -98,9 +98,9 @@ const SessionListPage: React.FC = () => {
             ...searchRequest,
             listSortConfiguration: sortConfig
           }
-          dispatch(postSearchSessionRequest(newSearchRequest));
+          dispatch(postSearchSessionRequest(newSearchRequest, t('dataLoadingMessage')));
         } else {
-          dispatch(postSearchSessionRequest({ template: { maxRowCount: 25 }, listSortConfiguration: sortConfig }));
+          dispatch(postSearchSessionRequest({ template: { maxRowCount: 25 }, listSortConfiguration: sortConfig }, t('dataLoadingMessage')));
         }
       }}
       totalRowCount={resultSetSize}

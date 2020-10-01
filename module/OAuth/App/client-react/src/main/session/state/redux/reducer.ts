@@ -14,6 +14,7 @@ export function sessionReducer(state: SessionState = initialState, action: Sessi
     case DELETE_SESSION:
       return {
         ...state,
+        message: action.loadingMessage,
         isLoading: true
       }
     case DELETE_SESSION_SUCCESS:
@@ -31,6 +32,7 @@ export function sessionReducer(state: SessionState = initialState, action: Sessi
     case POST_SESSION_SEARCH_REQUEST:
       return {
         ...state,
+        message: action.loadingMessage,
         isLoading: true
       }
     case POST_SESSION_SEARCH_REQUEST_SUCCESS:
@@ -49,6 +51,7 @@ export function sessionReducer(state: SessionState = initialState, action: Sessi
     case SEARCH_SESSIONS:
       return {
         ...state,
+        message: action.loadingMessage,
         recordsLoading: true
       }
     case SEARCH_SESSIONS_SUCCESS:
@@ -67,6 +70,7 @@ export function sessionReducer(state: SessionState = initialState, action: Sessi
     case GET_SESSION_BY_ID:
       return {
         ...state,
+        message: action.loadingMessage,
         isLoading: true
       }
     case GET_SESSION_BY_ID_SUCCESS:

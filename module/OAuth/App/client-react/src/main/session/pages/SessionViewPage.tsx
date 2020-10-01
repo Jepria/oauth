@@ -17,8 +17,9 @@ const SessionViewPage: React.FC = () => {
 
   useEffect(() => {
     if (!current && sessionId) {
-      dispatch(getSessionById(sessionId));
+      dispatch(getSessionById(sessionId, t('dataLoadingMessage')));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current, sessionId, dispatch]);
 
   return (

@@ -18,13 +18,12 @@ export const ClientListPage: React.FC = () => {
 
   useEffect(() => {
     if (searchId && searchRequest) {
-      dispatch(searchClients(searchId, 25, 1));
+      dispatch(searchClients(searchId, 25, 1, t("dataLoadingMessage")));
     } else if (!searchId && searchRequest) {
-      dispatch(postSearchClientRequest(searchRequest));
+      dispatch(postSearchClientRequest(searchRequest, t("dataLoadingMessage")));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchId, searchRequest, dispatch]);
-
-  console.log(recordsLoading)
 
   return (
     <Grid<Client>
@@ -76,7 +75,7 @@ export const ClientListPage: React.FC = () => {
       }}
       onPaging={(pageNumber, pageSize) => {
         if (searchId) {
-          dispatch(searchClients(searchId, pageSize, pageNumber + 1))
+          dispatch(searchClients(searchId, pageSize, pageNumber + 1, t("dataLoadingMessage")))
         }
       }}
       onSort={(sortConfig) => {
@@ -85,9 +84,9 @@ export const ClientListPage: React.FC = () => {
             ...searchRequest,
             listSortConfiguration: sortConfig
           }
-          dispatch(postSearchClientRequest(newSearchRequest));
+          dispatch(postSearchClientRequest(newSearchRequest, t("dataLoadingMessage")));
         } else {
-          dispatch(postSearchClientRequest({ template: { maxRowCount: 25 }, listSortConfiguration: sortConfig }));
+          dispatch(postSearchClientRequest({ template: { maxRowCount: 25 }, listSortConfiguration: sortConfig }, t("dataLoadingMessage")));
         }
       }}
       totalRowCount={resultSetSize}

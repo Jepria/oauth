@@ -40,7 +40,7 @@ const SessionRoute: React.FC = () => {
   const history = useHistory<HistoryState>();
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const { isLoading, message, error, current, searchId, searchRequest } = useSelector<AppState, SessionState>(state => state.session)
+  const { isLoading, message, current, searchId, searchRequest } = useSelector<AppState, SessionState>(state => state.session)
   let formRef = useRef(null) as any;
 
   useEffect(() => {
@@ -69,9 +69,9 @@ const SessionRoute: React.FC = () => {
             <ToolbarButtonDelete onClick={() => {
               if (current?.sessionId) {
                 if (window.confirm(t('delete'))) {
-                  dispatch(deleteSession(`${current.sessionId}`, () => {
+                  dispatch(deleteSession(`${current.sessionId}`, t('deleteMessage'), () => {
                     if (pathname.endsWith('/list') && searchId) {
-                      dispatch(searchSessions(searchId, 25, 1));
+                      dispatch(searchSessions(searchId, 25, 1, t('dataLoadingMessage')));
                     } else {
                       history.push('/ui/session/list');
                     }

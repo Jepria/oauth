@@ -1,31 +1,32 @@
-import { Session, SessionSearchTemplate, SearchRequest, Operator } from "../../types";
-import { Client } from "../../../client/types";
+import { Session, SessionSearchTemplate, SearchRequest, Operator } from "../../types"
+import { Client } from "../../../client/types"
 
-export const DELETE_SESSION = 'DELETE_SESSION';
-export const DELETE_SESSION_SUCCESS = 'DELETE_SESSION_SUCCESS';
-export const DELETE_SESSION_FAILURE = 'DELETE_SESSION_FAILURE';
-export const POST_SESSION_SEARCH_REQUEST = 'POST_SESSION_SEARCH_REQUEST';
-export const POST_SESSION_SEARCH_REQUEST_SUCCESS = 'POST_SESSION_SEARCH_REQUEST_SUCCESS';
-export const POST_SESSION_SEARCH_REQUEST_FAILURE = 'POST_SESSION_SEARCH_REQUEST_FAILURE';
-export const SEARCH_SESSIONS = 'SEARCH_SESSIONS';
-export const SEARCH_SESSIONS_SUCCESS = 'SEARCH_SESSIONS_SUCCESS';
-export const SEARCH_SESSIONS_FAILURE = 'SEARCH_SESSIONS_FAILURE';
-export const GET_SESSION_BY_ID = 'GET_SESSION_BY_ID';
-export const GET_SESSION_BY_ID_SUCCESS = 'GET_SESSION_BY_ID_SUCCESS';
-export const GET_SESSION_BY_ID_FAILURE = 'GET_SESSION_BY_ID_FAILURE';
-export const SET_SESSION_CURRENT_RECORD = 'SET_SESSION_CURRENT_RECORD';
-export const SET_SESSION_CURRENT_RECORD_SUCCESS = 'SET_SESSION_CURRENT_RECORD_SUCCESS';
-export const GET_CLIENTS = 'GET_CLIENTS';
-export const GET_CLIENTS_SUCCESS = 'GET_CLIENTS_SUCCESS';
-export const GET_CLIENTS_FAILURE = 'GET_CLIENTS_FAILURE';
-export const GET_OPERATORS = 'GET_OPERATORS';
-export const GET_OPERATORS_SUCCESS = 'GET_OPERATORS_SUCCESS';
-export const GET_OPERATORS_FAILURE = 'GET_OPERATORS_FAILURE';
+export const DELETE_SESSION = 'DELETE_SESSION'
+export const DELETE_SESSION_SUCCESS = 'DELETE_SESSION_SUCCESS'
+export const DELETE_SESSION_FAILURE = 'DELETE_SESSION_FAILURE'
+export const POST_SESSION_SEARCH_REQUEST = 'POST_SESSION_SEARCH_REQUEST'
+export const POST_SESSION_SEARCH_REQUEST_SUCCESS = 'POST_SESSION_SEARCH_REQUEST_SUCCESS'
+export const POST_SESSION_SEARCH_REQUEST_FAILURE = 'POST_SESSION_SEARCH_REQUEST_FAILURE'
+export const SEARCH_SESSIONS = 'SEARCH_SESSIONS'
+export const SEARCH_SESSIONS_SUCCESS = 'SEARCH_SESSIONS_SUCCESS'
+export const SEARCH_SESSIONS_FAILURE = 'SEARCH_SESSIONS_FAILURE'
+export const GET_SESSION_BY_ID = 'GET_SESSION_BY_ID'
+export const GET_SESSION_BY_ID_SUCCESS = 'GET_SESSION_BY_ID_SUCCESS'
+export const GET_SESSION_BY_ID_FAILURE = 'GET_SESSION_BY_ID_FAILURE'
+export const SET_SESSION_CURRENT_RECORD = 'SET_SESSION_CURRENT_RECORD'
+export const SET_SESSION_CURRENT_RECORD_SUCCESS = 'SET_SESSION_CURRENT_RECORD_SUCCESS'
+export const GET_CLIENTS = 'GET_CLIENTS'
+export const GET_CLIENTS_SUCCESS = 'GET_CLIENTS_SUCCESS'
+export const GET_CLIENTS_FAILURE = 'GET_CLIENTS_FAILURE'
+export const GET_OPERATORS = 'GET_OPERATORS'
+export const GET_OPERATORS_SUCCESS = 'GET_OPERATORS_SUCCESS'
+export const GET_OPERATORS_FAILURE = 'GET_OPERATORS_FAILURE'
 
 export interface DeleteSessionAction {
-  type: typeof DELETE_SESSION;
-  sessionId: string;
-  callback?(): any;
+  type: typeof DELETE_SESSION
+  sessionId: string
+  loadingMessage: string
+  callback?(): any
 }
 
 export interface DeleteSessionSuccessAction {
@@ -41,13 +42,14 @@ export interface DeleteSessionFailureAction {
 export interface PostSearchSessionRequestAction {
   type: typeof POST_SESSION_SEARCH_REQUEST
   searchRequest: SearchRequest<SessionSearchTemplate>
-  callback?(): any;
+  loadingMessage: string
+  callback?(): any
 }
 
 export interface PostSearchSessionRequestSuccessAction {
   type: typeof POST_SESSION_SEARCH_REQUEST_SUCCESS
   searchRequest: SearchRequest<SessionSearchTemplate>
-  searchId: string;
+  searchId: string
 }
 
 export interface PostSearchSessionRequestFailureAction {
@@ -57,15 +59,16 @@ export interface PostSearchSessionRequestFailureAction {
 
 export interface SearchSessionsAction {
   type: typeof SEARCH_SESSIONS
-  searchId: string;
-  pageSize: number;
-  page: number;
+  searchId: string
+  pageSize: number
+  page: number
+  loadingMessage: string
 }
 
 export interface SearchSessionsSuccessAction {
   type: typeof SEARCH_SESSIONS_SUCCESS
-  sessions: Array<Session>;
-  resultSetSize: number;
+  sessions: Array<Session>
+  resultSetSize: number
 }
 
 export interface SearchSessionsFailureAction {
@@ -76,6 +79,7 @@ export interface SearchSessionsFailureAction {
 export interface GetSessionByIdAction {
   type: typeof GET_SESSION_BY_ID
   sessionId: string
+  loadingMessage: string
 }
 
 export interface GetSessionByIdSuccessAction {
@@ -91,7 +95,7 @@ export interface GetSessionByIdFailureAction {
 export interface SetCurrentRecordAction {
   type: typeof SET_SESSION_CURRENT_RECORD
   payload?: Session
-  callback?(): any;
+  callback?(): any
 }
 
 export interface SetCurrentRecordSuccessAction {
@@ -149,12 +153,13 @@ GetClientsSuccessAction |
 GetClientsFailureAction |
 GetOperatorsAction |
 GetOperatorsSuccessAction |
-GetOperatorsFailureAction;
+GetOperatorsFailureAction
 
-export function deleteSession(sessionId: string, callback?: () => any): SessionActionTypes {
+export function deleteSession(sessionId: string, loadingMessage: string, callback?: () => any): SessionActionTypes {
   return {
     type: DELETE_SESSION,
     sessionId: sessionId,
+    loadingMessage,
     callback: callback
   }
 }
@@ -173,10 +178,11 @@ export function deleteSessionFailure(error: any): SessionActionTypes {
   }
 }
 
-export function postSearchSessionRequest(searchRequest: SearchRequest<SessionSearchTemplate>, callback?: () => any): SessionActionTypes {
+export function postSearchSessionRequest(searchRequest: SearchRequest<SessionSearchTemplate>, loadingMessage: string, callback?: () => any): SessionActionTypes {
   return {
     type: POST_SESSION_SEARCH_REQUEST,
     searchRequest: searchRequest,
+    loadingMessage,
     callback
   }
 }
@@ -196,12 +202,13 @@ export function postSearchSessionRequestFailure(error: any): SessionActionTypes 
   }
 }
 
-export function searchSessions(searchId: string, pageSize: number, pageNumber: number): SessionActionTypes {
+export function searchSessions(searchId: string, pageSize: number, pageNumber: number, loadingMessage: string): SessionActionTypes {
   return {  
     type: SEARCH_SESSIONS,
     searchId: searchId,
     pageSize: pageSize,
-    page: pageNumber
+    page: pageNumber,
+    loadingMessage
   }
 }
 
@@ -220,10 +227,11 @@ export function searchSessionsFailure(error: any): SessionActionTypes {
   }
 }
 
-export function getSessionById(sessionId: string): SessionActionTypes {
+export function getSessionById(sessionId: string, loadingMessage: string): SessionActionTypes {
   return {
     type: GET_SESSION_BY_ID,
-    sessionId: sessionId
+    sessionId: sessionId,
+    loadingMessage
   }
 }
 

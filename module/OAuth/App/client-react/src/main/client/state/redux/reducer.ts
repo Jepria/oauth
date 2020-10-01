@@ -13,6 +13,7 @@ export function clientReducer(state: ClientState = initialState, action: ClientA
     case CREATE_CLIENT:
       return {
         ...state,
+        message: action.loadingMessage,
         isLoading: true
       }
     case CREATE_CLIENT_SUCCESS:
@@ -30,6 +31,7 @@ export function clientReducer(state: ClientState = initialState, action: ClientA
     case UPDATE_CLIENT:
       return {
         ...state,
+        message: action.loadingMessage,
         isLoading: true
       }
     case UPDATE_CLIENT_SUCCESS:
@@ -47,6 +49,7 @@ export function clientReducer(state: ClientState = initialState, action: ClientA
     case DELETE_CLIENT:
       return {
         ...state,
+        message: action.loadingMessage,
         isLoading: true
       }
     case DELETE_CLIENT_SUCCESS:
@@ -64,6 +67,7 @@ export function clientReducer(state: ClientState = initialState, action: ClientA
     case POST_CLIENT_SEARCH_REQUEST:
       return {
         ...state,
+        message: action.loadingMessage,
         isLoading: true
       }
     case POST_CLIENT_SEARCH_REQUEST_SUCCESS:
@@ -82,6 +86,7 @@ export function clientReducer(state: ClientState = initialState, action: ClientA
     case SEARCH_CLIENTS:
       return {
         ...state,
+        message: action.loadingMessage,
         recordsLoading: true
       }
     case SEARCH_CLIENTS_SUCCESS:
@@ -100,6 +105,7 @@ export function clientReducer(state: ClientState = initialState, action: ClientA
     case GET_CLIENT_BY_ID:
       return {
         ...state,
+        message: action.loadingMessage,
         isLoading: true
       }
     case GET_CLIENT_BY_ID_SUCCESS:

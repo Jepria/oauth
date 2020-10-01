@@ -39,14 +39,15 @@ const ClientUriRoute: React.FC = () => {
   const history = useHistory();
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const { isLoading, message, error, current } = useSelector<AppState, ClientUriState>(state => state.clientUri)
+  const { isLoading, message, current } = useSelector<AppState, ClientUriState>(state => state.clientUri)
   const client = useSelector<AppState, ClientState>(state => state.client)
   let formRef = useRef(null) as any;
 
   useEffect(() => {
     if (!client.current) {
-      dispatch(getClientById(clientId))
+      dispatch(getClientById(clientId, t('dataLoadingMessage')))
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [client, clientId, dispatch])
 
   return (
@@ -69,9 +70,9 @@ const ClientUriRoute: React.FC = () => {
           <ToolbarButtonDelete onClick={() => {
             if (clientId && current?.clientUriId) {
               if (window.confirm(t('delete'))) {
-                dispatch(deleteClientUri(clientId, `${current.clientUriId}`, () => {
+                dispatch(deleteClientUri(clientId, `${current.clientUriId}`, t('deleteMessage'), () => {
                   if (pathname.endsWith('/list')) {
-                    dispatch(searchClientUri(clientId));
+                    dispatch(searchClientUri(clientId, t('dataLoadingMessage')));
                   } else {
                     history.push(`/ui/client/${clientId}/client-uri/list`, state);
                   }

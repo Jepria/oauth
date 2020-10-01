@@ -39,7 +39,7 @@ const ClientUriRoute: React.FC = () => {
   const history = useHistory();
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const { isLoading, message, current } = useSelector<AppState, ClientUriState>(state => state.clientUri)
+  const { isLoading, message, current, selectedRecords } = useSelector<AppState, ClientUriState>(state => state.clientUri)
   const client = useSelector<AppState, ClientState>(state => state.client)
   let formRef = useRef(null) as any;
 
@@ -47,7 +47,7 @@ const ClientUriRoute: React.FC = () => {
     if (!client.current) {
       dispatch(getClientById(clientId, t('dataLoadingMessage')))
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [client, clientId, dispatch])
 
   return (
@@ -68,18 +68,16 @@ const ClientUriRoute: React.FC = () => {
           <ToolbarButtonSave onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }} disabled={!pathname.endsWith('/create')} />
           <ToolbarButtonView onClick={() => { history.push(`/ui/client/${clientId}/client-uri/${current?.clientUriId}/view`, state) }} disabled={!current || pathname.endsWith('view')} />
           <ToolbarButtonDelete onClick={() => {
-            if (clientId && current?.clientUriId) {
-              if (window.confirm(t('delete'))) {
-                dispatch(deleteClientUri(clientId, `${current.clientUriId}`, t('deleteMessage'), () => {
-                  if (pathname.endsWith('/list')) {
-                    dispatch(searchClientUri(clientId, t('dataLoadingMessage')));
-                  } else {
-                    history.push(`/ui/client/${clientId}/client-uri/list`, state);
-                  }
-                }));
-              }
+            if (window.confirm(t('delete'))) {
+              dispatch(deleteClientUri(clientId, selectedRecords.map(selectedRecord => String(selectedRecord.clientUriId)), t('deleteMessage'), () => {
+                if (pathname.endsWith('/list')) {
+                  dispatch(searchClientUri(clientId, t('dataLoadingMessage')));
+                } else {
+                  history.push(`/ui/client/${clientId}/client-uri/list`, state);
+                }
+              }));
             }
-          }} disabled={!current} />
+          }} disabled={selectedRecords.length === 0} />
           <ToolbarSplitter />
           <ToolbarButtonBase onClick={() => {
             dispatch(setCurrentRecord(undefined, () => {
@@ -91,7 +89,7 @@ const ClientUriRoute: React.FC = () => {
       <Panel.Content>
         <Panel>
           {client.current && <Panel.Header
-            style={{backgroundImage: "linear-gradient(rgb(255, 255, 255), rgb(208, 222, 240))"}}>
+            style={{ backgroundImage: "linear-gradient(rgb(255, 255, 255), rgb(208, 222, 240))" }}>
             <div
               style={{ margin: "5px", fontSize: "11px", fontWeight: "bold", color: "rgb(21, 66, 139)" }}>
               {client.current?.clientName}

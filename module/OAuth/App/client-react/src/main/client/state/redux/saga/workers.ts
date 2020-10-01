@@ -9,8 +9,8 @@ import {
   SearchClientsAction, searchClientsSuccess, 
   SetCurrentRecordAction, setCurrentRecordSuccess, GetRolesAction, 
   getRolesSuccess, updateClientFailure, createClientFailure, deleteClientFailure, 
-  getClientByIdFailure, postSearchClientRequestFailure, searchClientsFailure, getRolesFailure} from '../actions';
-import { put, call } from 'redux-saga/effects';
+  getClientByIdFailure, postSearchClientRequestFailure, searchClientsFailure, getRolesFailure, selectRecords, SelectRecordsAction} from '../actions';
+import { put, call, all } from 'redux-saga/effects';
 
 const api = new ClientApi(API_PATH + '/client');
 
@@ -40,8 +40,8 @@ export function* update(action: UpdateClientAction) {
 
 export function* remove(action: DeleteClientAction) {
   try {
-    yield call(api.delete, action.clientId);
-    yield put(deleteClientSuccess(action.clientId));
+    yield all(action.clientIds.map(clientId => call(api.delete, clientId)));
+    yield put(deleteClientSuccess());
     if (action.callback) {
       yield call(action.callback);
     }

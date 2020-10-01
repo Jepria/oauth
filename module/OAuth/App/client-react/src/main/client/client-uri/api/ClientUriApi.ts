@@ -1,11 +1,11 @@
 import axios from 'axios';
 import { ConnectorBase } from '../../../../rest/connector/ConnectorBase';
 import { buildError, handleAxiosError } from '../../../../rest/connector/ConnectorCrud';
-import { ClientUri } from '../types';
+import { ClientUri, ClientUriCreateDto } from '../types';
 
 export default class ClientUriApi extends ConnectorBase {
 
-  create = (clientId: string, clientUri: ClientUri): Promise<ClientUri> => {
+  create = (clientId: string, clientUri: ClientUriCreateDto): Promise<ClientUri> => {
     return new Promise<ClientUri>((resolve, reject) => {
       axios.post(
         `${this.baseUrl}/${clientId}/client-uri`,

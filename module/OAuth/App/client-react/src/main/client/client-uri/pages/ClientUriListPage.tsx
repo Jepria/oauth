@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { setCurrentRecord, searchClientUri } from '../state/redux/actions';
+import { setCurrentRecord, searchClientUri, selectRecords } from '../state/redux/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, useParams, useLocation } from 'react-router-dom';
 import { AppState } from '../../../../redux/store';
@@ -45,9 +45,11 @@ export const ClientUriListPage: React.FC = () => {
           if (selected.length === 1) {
             if (selected[0] !== current) {
               dispatch(setCurrentRecord(selected[0]))
+              dispatch(selectRecords(selected))
             }
           } else if (current) {
             dispatch(setCurrentRecord(undefined))
+            dispatch(selectRecords(selected))
           }
         }
       }}

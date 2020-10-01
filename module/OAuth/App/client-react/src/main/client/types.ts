@@ -1,5 +1,5 @@
 export interface Client {
-  clientId?: string;
+  clientId: string;
   clientName?: string;
   clientNameEn?: string;
   clientSecret?: string;
@@ -30,6 +30,7 @@ export interface ClientState {
   recordsLoading: boolean;
   rolesLoading: boolean;
   current?: Client;
+  selectedRecords: Array<Client>
   records: Array<Client>;
   searchId?: string;
   resultSetSize?: number;

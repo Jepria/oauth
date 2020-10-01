@@ -37,7 +37,7 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
   }, [current, clientId, dispatch]);
 
   const formik = useFormik<Client>({
-    initialValues: { clientName: '', clientNameEn: '', ...current },
+    initialValues: { clientId: '', clientName: '', clientNameEn: '', ...current },
     enableReinitialize: true,
     onSubmit: (values: Client) => {
       if (clientId) {

@@ -59,7 +59,6 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
   public Response postSearch(SearchRequestDto<SessionSearchDto> searchRequestDto,
                              @HeaderParam(ExtendedResponse.REQUEST_HEADER_NAME) String extendedResponse,
                              @HeaderParam("Cache-Control") String cacheControl) {
-    searchRequestDto.getTemplate().setHasToken(true);
     return searchEndpointAdapter.postSearch(searchRequestDto, extendedResponse, cacheControl);
   }
 
@@ -73,7 +72,6 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
     SessionSearchDto searchRequestDto = new SessionSearchDto();
     searchRequestDto.setSessionId(result.getTemplate().getSessionId());
     searchRequestDto.setOperatorId(result.getTemplate().getOperatorId());
-    searchRequestDto.setBlocked(result.getTemplate().getBlocked());
     searchRequestDto.setClientId(result.getTemplate().getClientId());
 
     SearchRequestDto<SessionSearchDto> searchTemplate = new SearchRequestDto<>();

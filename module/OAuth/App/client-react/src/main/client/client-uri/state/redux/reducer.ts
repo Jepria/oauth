@@ -1,8 +1,9 @@
-import { ClientUriActionTypes, SET_CLIENT_URI_CURRENT_RECORD, CREATE_CLIENT_URI_SUCCESS, DELETE_CLIENT_URI_SUCCESS, GET_CLIENT_URI_BY_ID_SUCCESS, SEARCH_CLIENT_URI_SUCCESS, CREATE_CLIENT_URI_FAILURE, DELETE_CLIENT_URI_FAILURE, GET_CLIENT_URI_BY_ID_FAILURE, SEARCH_CLIENT_URI_FAILURE, CREATE_CLIENT_URI, DELETE_CLIENT_URI, GET_CLIENT_URI_BY_ID, SEARCH_CLIENT_URI } from './actions'
+import { ClientUriActionTypes, SET_CLIENT_URI_CURRENT_RECORD, CREATE_CLIENT_URI_SUCCESS, DELETE_CLIENT_URI_SUCCESS, GET_CLIENT_URI_BY_ID_SUCCESS, SEARCH_CLIENT_URI_SUCCESS, CREATE_CLIENT_URI_FAILURE, DELETE_CLIENT_URI_FAILURE, GET_CLIENT_URI_BY_ID_FAILURE, SEARCH_CLIENT_URI_FAILURE, CREATE_CLIENT_URI, DELETE_CLIENT_URI, GET_CLIENT_URI_BY_ID, SEARCH_CLIENT_URI, SELECT_CLIENT_URI_RECORDS } from './actions'
 import { ClientUriState } from "../../types";
 
 export const initialState: ClientUriState = {
   records: [],
+  selectedRecords: [],
   isLoading: false
 }
 
@@ -36,6 +37,7 @@ export function clientUriReducer(state: ClientUriState = initialState, action: C
       return {
         ...state,
         current: undefined,
+        selectedRecords: [],
         isLoading: false
       }
     case DELETE_CLIENT_URI_FAILURE:
@@ -72,6 +74,7 @@ export function clientUriReducer(state: ClientUriState = initialState, action: C
       return {
         ...state,
         current: action.clientUri,
+        selectedRecords: [action.clientUri],
         isLoading: false
       }
     case GET_CLIENT_URI_BY_ID_FAILURE:
@@ -84,6 +87,11 @@ export function clientUriReducer(state: ClientUriState = initialState, action: C
       return {
         ...state,
         current: action.payload
+      }
+    case SELECT_CLIENT_URI_RECORDS:
+      return {
+        ...state,
+        selectedRecords: action.records
       }
     default: {
       return state;

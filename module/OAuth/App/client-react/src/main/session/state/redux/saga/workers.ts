@@ -5,7 +5,7 @@ import {
   PostSearchSessionRequestAction, postSearchSessionRequestSuccess, 
   SearchSessionsAction, searchSessionsSuccess, 
   SetCurrentRecordAction, setCurrentRecordSuccess, GetClientsAction, getClientsSuccess, GetOperatorsAction, getOperatorsSuccess, deleteSessionFailure, getSessionByIdFailure, postSearchSessionRequestFailure, searchSessionsFailure, getClientsFailure, getOperatorsFailure } from '../actions';
-import { put, call } from 'redux-saga/effects';
+import { put, call, all } from 'redux-saga/effects';
 import ClientApi from '../../../../client/api/ClientApi';
 import OperatorApi from '../../../api/OperatorApi';
 import { ConnectorCrud } from '../../../../../rest/connector/ConnectorCrud';
@@ -16,8 +16,8 @@ const operatorApi = new OperatorApi(API_PATH);
 
 export function* remove(action: DeleteSessionAction) {
   try {
-    yield call(api.delete, action.sessionId);
-    yield put(deleteSessionSuccess(action.sessionId));
+    yield all(action.sessionIds.map(sessionId => call(api.delete, sessionId)));
+    yield put(deleteSessionSuccess());
     if (action.callback) {
       yield call(action.callback);
     }

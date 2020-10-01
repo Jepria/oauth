@@ -20,7 +20,7 @@ export const ClientUriViewPage: React.FC = () => {
       dispatch(getClientUriById(clientId, clientUriId, t('dataLoadingMessage')));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current, clientId, clientUriId, dispatch]);
+  }, []);
 
   return (
     <Form>

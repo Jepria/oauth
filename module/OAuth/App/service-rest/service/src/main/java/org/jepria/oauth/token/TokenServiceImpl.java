@@ -76,7 +76,6 @@ public class TokenServiceImpl implements TokenService {
     searchTemplate.setRedirectUri(redirectUri);
     searchTemplate.setAccessTokenId(accessTokenId);
     searchTemplate.setRefreshTokenId(refreshTokenId);
-    searchTemplate.setHasToken(hasToken);
     List<SessionDto> result = sessionService.find(searchTemplate, credential);
     if (result.size() == 1) {
       return result.get(0);

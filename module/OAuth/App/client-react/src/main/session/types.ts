@@ -56,6 +56,7 @@ export interface SessionState {
   operatorsLoading: boolean;
   current?: Session;
   records: Array<Session>;
+  selectedRecords: Array<Session>;
   clients?: Array<Client>;
   operators?: Array<Operator>;
   searchId?: string;

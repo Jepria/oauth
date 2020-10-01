@@ -24,6 +24,7 @@ export const SET_CLIENT_CURRENT_RECORD_FAILURE = 'SET_CLIENT_CURRENT_RECORD_FAIL
 export const GET_ROLES = "GET_ROLES"
 export const GET_ROLES_SUCCESS = "GET_ROLES_SUCCESS"
 export const GET_ROLES_FAILURE = "GET_ROLES_FAILURE"
+export const SELECT_CLIENT_RECORDS = "SELECT_CLIENT_RECORDS"
 
 export interface CreateClientAction {
   type: typeof CREATE_CLIENT
@@ -62,14 +63,13 @@ export interface UpdateClientFailureAction {
 
 export interface DeleteClientAction {
   type: typeof DELETE_CLIENT
-  clientId: string
+  clientIds: string[]
   loadingMessage: string
   callback?(): any
 }
 
 export interface DeleteClientSuccessAction {
   type: typeof DELETE_CLIENT_SUCCESS
-  clientId: string
 }
 
 export interface DeleteClientFailureAction {
@@ -156,6 +156,11 @@ export interface GetRolesFailureAction {
   error: any
 }
 
+export interface SelectRecordsAction {
+  type: typeof SELECT_CLIENT_RECORDS
+  records: Array<Client>
+}
+
 export type ClientActionTypes = 
 CreateClientAction | 
 CreateClientSuccessAction | 
@@ -179,7 +184,8 @@ SetCurrentRecordAction |
 SetCurrentRecordSuccessAction |
 GetRolesAction |
 GetRolesSuccessAction |
-GetRolesFailureAction
+GetRolesFailureAction |
+SelectRecordsAction;
 
 export function createClient(client: Client, loadingMessage: string, callback?: (client: Client) => any): ClientActionTypes {
   return {
@@ -228,19 +234,18 @@ export function updateClientFailure(error: any): ClientActionTypes {
   }
 }
 
-export function deleteClient(clientId: string, loadingMessage: string, callback?: () => any): ClientActionTypes {
+export function deleteClient(clientIds: string[], loadingMessage: string, callback?: () => any): ClientActionTypes {
   return {
     type: DELETE_CLIENT,
-    clientId: clientId,
+    clientIds,
     loadingMessage,
     callback: callback
   }
 }
 
-export function deleteClientSuccess(clientId: string): ClientActionTypes {
+export function deleteClientSuccess(): ClientActionTypes {
   return {
     type: DELETE_CLIENT_SUCCESS,
-    clientId: clientId
   }
 }
 
@@ -355,5 +360,12 @@ export function getRolesFailure(error: any): ClientActionTypes {
   return {
     type: GET_ROLES_FAILURE,
     error: error
+  }
+}
+
+export function selectRecords(records: Array<Client>): ClientActionTypes {
+  return {
+    type: SELECT_CLIENT_RECORDS,
+    records: records
   }
 }

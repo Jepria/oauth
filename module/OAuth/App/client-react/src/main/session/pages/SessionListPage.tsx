@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { setCurrentRecord, searchSessions, postSearchSessionRequest } from '../state/redux/actions';
+import { setCurrentRecord, searchSessions, postSearchSessionRequest, selectRecords } from '../state/redux/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { AppState } from '../../../redux/store';
@@ -81,9 +81,11 @@ const SessionListPage: React.FC = () => {
           if (selected.length === 1) {
             if (selected[0] !== current) {
               dispatch(setCurrentRecord(selected[0]))
+              dispatch(selectRecords(selected))
             }
           } else if (current) {
             dispatch(setCurrentRecord(undefined))
+            dispatch(selectRecords(selected))
           }
         }
       }}

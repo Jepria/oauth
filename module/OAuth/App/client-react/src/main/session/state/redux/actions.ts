@@ -21,17 +21,17 @@ export const GET_CLIENTS_FAILURE = 'GET_CLIENTS_FAILURE'
 export const GET_OPERATORS = 'GET_OPERATORS'
 export const GET_OPERATORS_SUCCESS = 'GET_OPERATORS_SUCCESS'
 export const GET_OPERATORS_FAILURE = 'GET_OPERATORS_FAILURE'
+export const SELECT_SESSION_RECORDS = "SELECT_SESSION_RECORDS"
 
 export interface DeleteSessionAction {
   type: typeof DELETE_SESSION
-  sessionId: string
+  sessionIds: string[]
   loadingMessage: string
   callback?(): any
 }
 
 export interface DeleteSessionSuccessAction {
   type: typeof DELETE_SESSION_SUCCESS
-  sessionId: string
 }
 
 export interface DeleteSessionFailureAction {
@@ -133,6 +133,11 @@ export interface GetOperatorsFailureAction {
   error: any
 }
 
+export interface SelectRecordsAction {
+  type: typeof SELECT_SESSION_RECORDS
+  records: Array<Session>
+}
+
 export type SessionActionTypes = 
 DeleteSessionAction | 
 DeleteSessionSuccessAction | 
@@ -153,21 +158,21 @@ GetClientsSuccessAction |
 GetClientsFailureAction |
 GetOperatorsAction |
 GetOperatorsSuccessAction |
-GetOperatorsFailureAction
+GetOperatorsFailureAction |
+SelectRecordsAction;
 
-export function deleteSession(sessionId: string, loadingMessage: string, callback?: () => any): SessionActionTypes {
+export function deleteSession(sessionIds: string[], loadingMessage: string, callback?: () => any): SessionActionTypes {
   return {
     type: DELETE_SESSION,
-    sessionId: sessionId,
+    sessionIds,
     loadingMessage,
     callback: callback
   }
 }
 
-export function deleteSessionSuccess(sessionId: string): SessionActionTypes {
+export function deleteSessionSuccess(): SessionActionTypes {
   return {
-    type: DELETE_SESSION_SUCCESS,
-    sessionId: sessionId
+    type: DELETE_SESSION_SUCCESS
   }
 }
 
@@ -303,5 +308,12 @@ export function getOperatorsFailure(error: any): SessionActionTypes {
   return {
     type: GET_OPERATORS_FAILURE,
     error: error
+  }
+}
+
+export function selectRecords(records: Array<Session>): SessionActionTypes {
+  return {
+    type: SELECT_SESSION_RECORDS,
+    records: records
   }
 }

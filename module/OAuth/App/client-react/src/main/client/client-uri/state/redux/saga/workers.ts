@@ -5,7 +5,7 @@ import {
   GetClientUriByIdAction, getClientUriByIdFailure, getClientUriByIdSuccess, 
   SearchClientUriAction, searchClientUriFailure, searchClientUriSuccess, 
   SetCurrentRecordAction, setCurrentRecordSuccess } from '../actions';
-import { put, call } from 'redux-saga/effects';
+import { put, call, all } from 'redux-saga/effects';
 import ClientUriApi from '../../../api/ClientUriApi';
 
 const api = new ClientUriApi(`${API_PATH}/client`);
@@ -25,8 +25,8 @@ export function* create(action: CreateClientUriAction) {
 
 export function* remove(action: DeleteClientUriAction) {
   try {
-    yield call(api.delete, action.clientId, action.clientUriId);
-    yield put(deleteClientUriSuccess(action.clientId, action.clientUriId));
+    yield all(action.clientUriIds.map(clientUriId => call(api.delete, action.clientId, clientUriId)));
+    yield put(deleteClientUriSuccess());
     if (action.callback) {
       yield call(action.callback);
     }

@@ -15,7 +15,7 @@ import { LoadingPanel } from '../../components/mask';
 import { ClientState } from './types';
 import ClientSearchPage from './pages/ClientSearchPage';
 import { ClientListPage } from './pages/ClientListPage';
-import { setCurrentRecord, deleteClient, searchClients } from './state/redux/actions';
+import { setCurrentRecord, deleteClient, searchClients, selectRecords } from './state/redux/actions';
 import { HistoryState } from '../../components/HistoryState';
 import {
   Panel,
@@ -44,7 +44,7 @@ const ClientRoute: React.FC = () => {
   const [hasEditRole, setHasEditRole] = useState(false);
   const [hasDeleteRole, setHasDeleteRole] = useState(false);
   const { t } = useTranslation();
-  const { isLoading, message, current, searchId, searchRequest } = useSelector<AppState, ClientState>(state => state.client)
+  const { isLoading, message, current, selectedRecords, searchId, searchRequest } = useSelector<AppState, ClientState>(state => state.client)
   let formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -83,18 +83,16 @@ const ClientRoute: React.FC = () => {
               onClick={() => { history.push(`/ui/client/${current?.clientId}/view`) }}
               disabled={!current || pathname.endsWith('/view') || pathname.endsWith('/view/')} />
             <ToolbarButtonDelete onClick={() => {
-              if (current?.clientId) {
-                if (window.confirm(t('delete'))) {
-                  dispatch(deleteClient(current.clientId, t('deleteMessage'), () => {
-                    if (pathname.endsWith('/list') && searchId) {
-                      dispatch(searchClients(searchId, 25, 1, t('dataLoadingMessage')));
-                    } else {
-                      history.push('/ui/client/list');
-                    }
-                  }));
-                }
+              if (window.confirm(t('delete'))) {
+                dispatch(deleteClient(selectedRecords.map(selectRecord => selectRecord.clientId), t('deleteMessage'), () => {
+                  if (pathname.endsWith('/list') && searchId) {
+                    dispatch(searchClients(searchId, 25, 1, t('dataLoadingMessage')));
+                  } else {
+                    history.push('/ui/client/list');
+                  }
+                }));
               }
-            }} disabled={!current || !hasDeleteRole} />
+            }} disabled={selectedRecords.length === 0 || !hasDeleteRole} />
             <ToolbarSplitter />
             <ToolbarButtonBase onClick={() => {
               dispatch(setCurrentRecord(undefined, () => {

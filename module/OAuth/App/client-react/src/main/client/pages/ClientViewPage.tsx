@@ -34,7 +34,7 @@ const ClientViewPage: React.FC = () => {
       dispatch(getClientById(clientId, t("dataLoadingMessage")));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current, clientId, dispatch]);
+  }, []);
 
   return (
     <Form>

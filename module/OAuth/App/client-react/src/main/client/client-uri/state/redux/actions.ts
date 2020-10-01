@@ -1,4 +1,4 @@
-import { ClientUri } from "../../types"
+import { ClientUri, ClientUriCreateDto } from "../../types"
 
 export const CREATE_CLIENT_URI = 'CREATE_CLIENT_URI'
 export const CREATE_CLIENT_URI_SUCCESS = 'CREATE_CLIENT_URI_SUCCESS'
@@ -15,11 +15,12 @@ export const GET_CLIENT_URI_BY_ID_FAILURE = 'GET_CLIENT_URI_BY_ID_FAILURE'
 export const SET_CLIENT_URI_CURRENT_RECORD = 'SET_CLIENT_URI_CURRENT_RECORD'
 export const SET_CLIENT_URI_CURRENT_RECORD_SUCCESS = 'SET_CLIENT_URI_CURRENT_RECORD_SUCCESS'
 export const SET_CLIENT_URI_CURRENT_RECORD_FAILURE = 'SET_CLIENT_URI_CURRENT_RECORD_FAILURE'
+export const SELECT_CLIENT_URI_RECORDS = 'SELECT_CLIENT_URI_RECORDS'
 
 export interface CreateClientUriAction {
   type: typeof CREATE_CLIENT_URI
   clientId: string
-  payload: ClientUri
+  payload: ClientUriCreateDto
   loadingMessage: string
   callback?(ClientUri: ClientUri): any
 }
@@ -37,15 +38,13 @@ export interface CreateClientUriFailureAction {
 export interface DeleteClientUriAction {
   type: typeof DELETE_CLIENT_URI
   clientId: string
-  clientUriId: string
+  clientUriIds: string[]
   loadingMessage: string
   callback?(): any
 }
 
 export interface DeleteClientUriSuccessAction {
   type: typeof DELETE_CLIENT_URI_SUCCESS
-  clientId: string
-  clientUriId: string
 }
 
 export interface DeleteClientUriFailureAction {
@@ -97,6 +96,11 @@ export interface SetCurrentRecordSuccessAction {
   payload?: ClientUri
 }
 
+export interface SelectRecordsAction {
+  type: typeof SELECT_CLIENT_URI_RECORDS
+  records: Array<ClientUri>
+}
+
 export type ClientUriActionTypes = 
 CreateClientUriAction | 
 CreateClientUriSuccessAction | 
@@ -111,9 +115,10 @@ GetClientUriByIdAction |
 GetClientUriByIdSuccessAction |
 GetClientUriByIdFailureAction |
 SetCurrentRecordAction |
-SetCurrentRecordSuccessAction
+SetCurrentRecordSuccessAction |
+SelectRecordsAction
 
-export function createClientUri(clientId: string, ClientUri: ClientUri, loadingMessage: string, callback?: (ClientUri: ClientUri) => any): ClientUriActionTypes {
+export function createClientUri(clientId: string, ClientUri: ClientUriCreateDto, loadingMessage: string, callback?: (ClientUri: ClientUri) => any): ClientUriActionTypes {
   return {
     type: CREATE_CLIENT_URI,
     clientId: clientId,
@@ -137,21 +142,19 @@ export function createClientUriFailure(error: any): ClientUriActionTypes {
   }
 }
 
-export function deleteClientUri(clientId: string, clientUriId: string, loadingMessage: string, callback?: () => any): ClientUriActionTypes {
+export function deleteClientUri(clientId: string, clientUriIds: string[], loadingMessage: string, callback?: () => any): ClientUriActionTypes {
   return {
     type: DELETE_CLIENT_URI,
     clientId: clientId,
-    clientUriId: clientUriId,
+    clientUriIds,
     loadingMessage,
     callback: callback
   }
 }
 
-export function deleteClientUriSuccess(clientId: string, clientUriId: string): ClientUriActionTypes {
+export function deleteClientUriSuccess(): ClientUriActionTypes {
   return {
-    type: DELETE_CLIENT_URI_SUCCESS,
-    clientId: clientId,
-    clientUriId: clientUriId
+    type: DELETE_CLIENT_URI_SUCCESS
   }
 }
 
@@ -219,5 +222,12 @@ export function setCurrentRecordSuccess(current?: ClientUri): ClientUriActionTyp
   return {
     type: SET_CLIENT_URI_CURRENT_RECORD_SUCCESS,
     payload: current
+  }
+}
+
+export function selectRecords(records: Array<ClientUri>): ClientUriActionTypes {
+  return {
+    type: SELECT_CLIENT_URI_RECORDS,
+    records: records
   }
 }

@@ -118,7 +118,6 @@ public class SessionDaoIT extends DaoTestBase {
       sessionSearchDto.setClientId(properties.getProperty("client.id"));
       sessionSearchDto.setOperatorId(7);
       sessionSearchDto.setRedirectUri(properties.getProperty("client.redirect_uri"));
-      sessionSearchDto.setBlocked(false);
       List<SessionDto> result = (List<SessionDto>) dao.find(sessionSearchDto, 1);
       assertFalse(result.isEmpty());
       assertTrue(result.size() == 1);

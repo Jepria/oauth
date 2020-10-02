@@ -73,6 +73,7 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
     searchRequestDto.setSessionId(result.getTemplate().getSessionId());
     searchRequestDto.setOperatorId(result.getTemplate().getOperatorId());
     searchRequestDto.setClientId(result.getTemplate().getClientId());
+    searchRequestDto.setMaxRowCount(result.getTemplate().getMaxRowCount());
 
     SearchRequestDto<SessionSearchDto> searchTemplate = new SearchRequestDto<>();
     searchTemplate.setTemplate(searchRequestDto);

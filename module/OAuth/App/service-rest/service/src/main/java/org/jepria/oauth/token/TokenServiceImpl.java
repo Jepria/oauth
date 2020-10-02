@@ -326,6 +326,9 @@ public class TokenServiceImpl implements TokenService {
       sessionService.deleteRecord(String.valueOf(sessionDto.getSessionId()), serverCredential);
     } catch (ParseException e) {
       throw new OAuthRuntimeException(SERVER_ERROR, e);
+    } catch (IllegalArgumentException ex) {
+      System.out.println("Failed token value: " + tokenString);
+      throw new OAuthRuntimeException(SERVER_ERROR, ex);
     }
   }
 

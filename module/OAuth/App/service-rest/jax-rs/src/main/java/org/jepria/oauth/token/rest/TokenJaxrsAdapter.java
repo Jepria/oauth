@@ -159,6 +159,7 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
       clientSecret = clientCredentials[1];
     }
     authenticationServerFactory.getService().loginByClientSecret(clientId, clientSecret);
+
     tokenServerFactory.getService().delete(
         clientId,
         token);

@@ -181,7 +181,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       if (verifier.verify(token) && issuer.equals(token.getIssuer())) {
         SessionSearchDto searchTemplate = new SessionSearchDto();
         searchTemplate.setSessionTokenId(token.getJti());
-        searchTemplate.setBlocked(false);
         sessionService
           .find(searchTemplate, serverCredential)
           .stream()

@@ -1,6 +1,8 @@
 package org.jepria.oauth.session.dto;
 
-public class SessionSearchDto {
+import java.io.Serializable;
+
+public class SessionSearchDto implements Serializable {
 
   Integer sessionId;
   String authorizationCode;

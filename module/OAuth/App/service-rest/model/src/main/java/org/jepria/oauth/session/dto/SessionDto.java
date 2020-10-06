@@ -3,9 +3,10 @@ package org.jepria.oauth.session.dto;
 import org.jepria.server.data.OptionDto;
 import org.jepria.server.data.PrimaryKey;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class SessionDto {
+public class SessionDto implements Serializable {
 
   @PrimaryKey
   Integer sessionId;

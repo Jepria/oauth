@@ -3,9 +3,10 @@ package org.jepria.oauth.client.dto;
 import org.jepria.server.data.OptionDto;
 import org.jepria.server.data.PrimaryKey;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class ClientDto {
+public class ClientDto implements Serializable {
 
   @PrimaryKey
   String clientId;

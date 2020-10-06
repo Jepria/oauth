@@ -1,6 +1,8 @@
 package org.jepria.oauth.client.dto;
 
-public class ClientSearchDto {
+import java.io.Serializable;
+
+public class ClientSearchDto implements Serializable {
 
   String clientId;
   String clientName;

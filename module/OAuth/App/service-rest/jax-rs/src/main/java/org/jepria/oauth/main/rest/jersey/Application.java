@@ -37,18 +37,18 @@ public class Application extends ApplicationConfigBase {
 
   public Application() {
     super();
-    register(RequestLogFilter.class);
-    register(ClientLocaleFeature.class);
-    register(new AbstractBinder() {
-      @Override
-      protected void configure() {
-        bindFactory(ClientLocaleSupplier.class)
-            .to(Locale.class)
-            .proxy(true)
-            .proxyForSameScope(false)
-            .in(RequestScoped.class);
-      }
-    });
+//    register(RequestLogFilter.class);
+//    register(ClientLocaleFeature.class);
+//    register(new AbstractBinder() {
+//      @Override
+//      protected void configure() {
+//        bindFactory(ClientLocaleSupplier.class)
+//            .to(Locale.class)
+//            .proxy(true)
+//            .proxyForSameScope(false)
+//            .in(RequestScoped.class);
+//      }
+//    });
     register(ClientDaoImpl.class);
     register(new AbstractBinder() {
       @Override

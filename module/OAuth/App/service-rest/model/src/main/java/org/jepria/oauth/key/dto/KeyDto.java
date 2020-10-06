@@ -2,9 +2,10 @@ package org.jepria.oauth.key.dto;
 
 import org.jepria.server.data.PrimaryKey;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class KeyDto {
+public class KeyDto implements Serializable {
   @PrimaryKey
   private String keyId;
   private String publicKey;

@@ -301,5 +301,12 @@
         </executions>
       </plugin>
     </plugins>
+<!--    <resources>-->
+<!--      <resource>-->
+<!--        <directory>src/main/java</directory>-->
+<!--        <targetPath>${project.build.outputDirectory}</targetPath>-->
+<!--        <includes><include>log4j.properties</include></includes>-->
+<!--      </resource>-->
+<!--    </resources>-->
   </build>
 </project>

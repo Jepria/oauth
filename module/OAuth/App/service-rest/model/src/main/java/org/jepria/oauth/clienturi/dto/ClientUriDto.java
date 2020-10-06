@@ -2,7 +2,9 @@ package org.jepria.oauth.clienturi.dto;
 
 import org.jepria.server.data.PrimaryKey;
 
-public class ClientUriDto {
+import java.io.Serializable;
+
+public class ClientUriDto implements Serializable {
 
   @PrimaryKey
   String clientId;

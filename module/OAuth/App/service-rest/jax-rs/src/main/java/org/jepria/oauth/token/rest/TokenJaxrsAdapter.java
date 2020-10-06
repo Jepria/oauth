@@ -11,6 +11,7 @@ import org.jepria.server.service.security.JepSecurityContext;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -163,6 +164,10 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
     tokenServerFactory.getService().delete(
         clientId,
         token);
+    HttpSession session = request.getSession(false);
+    if (session != null) {
+      session.invalidate();
+    }
     return Response.ok().build();
   }
 

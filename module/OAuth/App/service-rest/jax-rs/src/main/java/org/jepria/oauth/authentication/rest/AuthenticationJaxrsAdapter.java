@@ -8,6 +8,7 @@ import org.jepria.server.service.rest.JaxrsAdapterBase;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -125,6 +126,10 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
               redirectUri,
               sessionToken,
               getHostContext());
+    }
+    HttpSession session = request.getSession(false);
+    if (session != null) {
+      session.invalidate();
     }
     return Response.status(302)
         .location(URI.create(redirectUri + getSeparator(redirectUri) + STATE + "=" + state))

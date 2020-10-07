@@ -19,9 +19,9 @@ const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
     validate: (values) => {
       const errors: { maxRowCount?: string } = {};
       if (!values['maxRowCount']) {
-        errors.maxRowCount = 'Поле должно быть заполнено'
+        errors.maxRowCount = t('validation.notEmpty')
       } else if (!/[0-9]/.test(`${values['maxRowCount']}`)) {
-        errors.maxRowCount = 'Значение должно состоять из цифр'
+        errors.maxRowCount = t('validation.onlyDigits')
       }
       return errors;
     },
@@ -66,7 +66,9 @@ const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
       </Form.Field>
       <Form.Field>
         <Form.Label required>{t('maxRowCount')}:</Form.Label>
-        <Form.Control style={{ maxWidth: "60px" }}>
+        <Form.Control
+          style={{ maxWidth: "60px" }}
+          error={formik.errors.maxRowCount}>
           <NumberInput
             style={{ minWidth: "55px" }}
             name="maxRowCount"

@@ -73,8 +73,8 @@ export function* postSearchRequest(action: PostSearchClientRequestAction) {
 
 export function* search(action: SearchClientsAction) {
   try {
-    const resultSetSize = yield call(api.getResultSetSize, action.searchId);
     const records = yield call(api.search, action.searchId, action.pageSize, action.page);
+    const resultSetSize = yield call(api.getResultSetSize, action.searchId, '');
     yield put(searchClientsSuccess(records, resultSetSize));
   } catch (error) {
     yield put(searchClientsFailure(error));

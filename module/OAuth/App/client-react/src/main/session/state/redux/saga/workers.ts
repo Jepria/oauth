@@ -4,13 +4,13 @@ import {
   GetSessionByIdAction, getSessionByIdSuccess, 
   PostSearchSessionRequestAction, postSearchSessionRequestSuccess, 
   SearchSessionsAction, searchSessionsSuccess, 
-  SetCurrentRecordAction, setCurrentRecordSuccess, GetClientsAction, getClientsSuccess, GetOperatorsAction, getOperatorsSuccess, deleteSessionFailure, getSessionByIdFailure, postSearchSessionRequestFailure, searchSessionsFailure, getClientsFailure, getOperatorsFailure } from '../actions';
+  SetCurrentRecordAction, setCurrentRecordSuccess, GetClientsAction, getClientsSuccess, GetOperatorsAction, getOperatorsSuccess, deleteSessionFailure, getSessionByIdFailure, postSearchSessionRequestFailure, searchSessionsFailure, getClientsFailure, getOperatorsFailure, DeleteAllAction, deleteAllSuccess, deleteAllFailure } from '../actions';
 import { put, call, all } from 'redux-saga/effects';
 import ClientApi from '../../../../client/api/ClientApi';
 import OperatorApi from '../../../api/OperatorApi';
-import { ConnectorCrud } from '../../../../../rest/connector/ConnectorCrud';
+import SessionApi from '../../../api/SessionApi';
 
-const api = new ConnectorCrud(API_PATH + '/session');
+const api = new SessionApi(API_PATH + '/session');
 const clientApi = new ClientApi(API_PATH + "/client");
 const operatorApi = new OperatorApi(API_PATH);
 
@@ -49,8 +49,8 @@ export function* postSearchRequest(action: PostSearchSessionRequestAction) {
 
 export function* search(action: SearchSessionsAction) {
   try {
-    const resultSetSize = yield call(api.getResultSetSize, action.searchId);
     const records = yield call(api.search, action.searchId, action.pageSize, action.page);
+    const resultSetSize = yield call(api.getResultSetSize, action.searchId, '');
     yield put(searchSessionsSuccess(records, resultSetSize));
   } catch (error) {
     yield put(searchSessionsFailure(error));
@@ -79,5 +79,17 @@ export function* getOperators(action: GetOperatorsAction) {
     yield put(getOperatorsSuccess(operators));
   } catch(error) {
     yield put(getOperatorsFailure(error));
+  }
+}
+
+export function* removeAll(action: DeleteAllAction) {
+  try {
+    yield call(api.deleteAll, action.operatorId);
+    yield put(deleteAllSuccess());
+    if (action.callback) {
+      yield call(action.callback);
+    }
+  } catch (error) {
+    yield put(deleteAllFailure(error));
   }
 }

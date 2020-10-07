@@ -49,13 +49,13 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
     validate: (values) => {
       const errors: { clientName?: string, applicationType?: string, grantTypes?: string } = {};
       if (!values['clientName']) {
-        errors.clientName = 'Поле должно быть заполнено'
+        errors.clientName = t('validation.notEmpty')
       }
       if (!values['applicationType']) {
-        errors.applicationType = 'Поле должно быть заполнено'
+        errors.applicationType = t('validation.notEmpty')
       }
       if (!values['grantTypes'] || values['grantTypes'].length === 0) {
-        errors.grantTypes = 'Поле должно быть заполнено'
+        errors.grantTypes = t('validation.notEmpty')
       }
       return errors;
     }
@@ -121,14 +121,14 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
           <Form.Control style={{ minWidth: "300px", maxWidth: "500px" }}>
             <DualListField
               options={roles ? roles : []}
-              initialValues={formik.initialValues.scopes}
+              initialValues={formik.initialValues.scope}
               placeholder="Введите имя роли"
-              name="scopes"
+              name="scope"
               isLoading={rolesLoading}
               onInputChange={e => dispatch(getRoles(e.target.value))}
               onSelectionChange={formik.setFieldValue}
-              touched={formik.touched.scopes}
-              error={formik.errors.scopes} />
+              touched={formik.touched.scope}
+              error={formik.errors.scope} />
           </Form.Control>
         </Form.Field>
       }

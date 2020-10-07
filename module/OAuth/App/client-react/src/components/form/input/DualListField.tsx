@@ -105,6 +105,9 @@ export const DualListField: React.FC<DualListFieldProps> = ({
   useEffect(() => {
     if (initialValues) {
       setValues(initialValues)
+      if (onSelectionChange && initialValues.length > 0) {
+        onSelectionChange(name, [...initialValues.map(option => getOptionValue ? getOptionValue(option) : option.value)]);
+      }
     }
   }, [initialValues])
 
@@ -133,7 +136,7 @@ export const DualListField: React.FC<DualListFieldProps> = ({
       const nextValues = values.filter(valueOption => !newValues.find(newValue => (getOptionValue ?
         getOptionValue(valueOption) : valueOption.value) === newValue ));
       if (onSelectionChange) {
-        onSelectionChange(name, nextValues);
+        onSelectionChange(name, nextValues.map(option => getOptionValue ? getOptionValue(option) : option.value));
       }
       setValues(nextValues);
     }

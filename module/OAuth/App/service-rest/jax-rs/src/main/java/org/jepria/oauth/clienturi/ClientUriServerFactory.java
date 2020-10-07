@@ -1,6 +1,7 @@
 package org.jepria.oauth.clienturi;
 
 import org.jepria.oauth.clienturi.dao.ClientUriDao;
+import org.jepria.oauth.main.rest.jersey.OAuthServerFactory;
 import org.jepria.server.ServerFactory;
 import org.jepria.server.data.Dao;
 import org.jepria.server.service.rest.EntityService;
@@ -8,11 +9,11 @@ import org.jepria.server.service.rest.EntityServiceImpl;
 
 import javax.inject.Inject;
 
-public class ClientUriServerFactory extends ServerFactory<Dao> {
+public class ClientUriServerFactory extends OAuthServerFactory<Dao> {
 
   @Inject
   public ClientUriServerFactory(ClientUriDao dao) {
-    super(dao, "jdbc/RFInfoDS");
+    super(dao, "jdbc/OAuthDS");
   }
 
   public ClientUriService getService() {

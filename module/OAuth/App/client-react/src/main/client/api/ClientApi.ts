@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { buildError, ConnectorCrud, handleAxiosError } from '../../../rest/connector/ConnectorCrud';
 import { ClientSearchTemplate, Client, Option } from '../types';
 
@@ -6,7 +5,7 @@ export default class ClientApi extends ConnectorCrud<Client, Client, Client, Cli
 
   getClients = (clientName?: string): Promise<Array<Client>> => {
     return new Promise<Array<Client>>((resolve, reject) => {
-      axios.get(
+      this.getAxios().get(
         this.baseUrl + `?clientName=${clientName}`,
         {
           headers: {
@@ -29,7 +28,7 @@ export default class ClientApi extends ConnectorCrud<Client, Client, Client, Cli
 
   getRoles = (roleName?: string): Promise<Array<Option>> => {
     return new Promise<Array<Option>>((resolve, reject) => {
-      axios.get(
+      this.getAxios().get(
         this.baseUrl + `/role?roleName=${roleName}&maxRowCount=25`,
         {
           headers: {

@@ -1,5 +1,5 @@
 import { ConnectorBase } from './ConnectorBase';
-import { SearchRequest, NetworkError, UNKNOWN_ERROR, BAD_REQUEST, NOT_FOUND, SERVER_ERROR, AUTHORIZATION_FAILED, ACCESS_DENIED } from '../types';
+import { SearchRequest, NetworkError, BAD_REQUEST, NOT_FOUND, SERVER_ERROR, AUTHORIZATION_FAILED, ACCESS_DENIED } from '../types';
 import { AxiosResponse, AxiosError } from 'axios';
 
 /**

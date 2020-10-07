@@ -22,6 +22,9 @@ export const GET_OPERATORS = 'GET_OPERATORS'
 export const GET_OPERATORS_SUCCESS = 'GET_OPERATORS_SUCCESS'
 export const GET_OPERATORS_FAILURE = 'GET_OPERATORS_FAILURE'
 export const SELECT_SESSION_RECORDS = "SELECT_SESSION_RECORDS"
+export const DELETE_ALL = 'DELETE_ALL'
+export const DELETE_ALL_SUCCESS = 'DELETE_ALL_SUCCESS'
+export const DELETE_ALL_FAILURE = 'DELETE_ALL_FAILURE'
 
 export interface DeleteSessionAction {
   type: typeof DELETE_SESSION
@@ -138,6 +141,22 @@ export interface SelectRecordsAction {
   records: Array<Session>
 }
 
+export interface DeleteAllAction {
+  type: typeof DELETE_ALL
+  operatorId: number
+  loadingMessage: string
+  callback?(): any
+}
+
+export interface DeleteAllSuccessAction {
+  type: typeof DELETE_ALL_SUCCESS
+}
+
+export interface DeleteAllFailureAction {
+  type: typeof DELETE_ALL_FAILURE
+  error: any
+}
+
 export type SessionActionTypes = 
 DeleteSessionAction | 
 DeleteSessionSuccessAction | 
@@ -159,7 +178,10 @@ GetClientsFailureAction |
 GetOperatorsAction |
 GetOperatorsSuccessAction |
 GetOperatorsFailureAction |
-SelectRecordsAction;
+SelectRecordsAction |
+DeleteAllAction | 
+DeleteAllSuccessAction | 
+DeleteAllFailureAction;
 
 export function deleteSession(sessionIds: string[], loadingMessage: string, callback?: () => any): SessionActionTypes {
   return {
@@ -317,3 +339,26 @@ export function selectRecords(records: Array<Session>): SessionActionTypes {
     records: records
   }
 }
+
+export function deleteAll(operatorId: number, loadingMessage: string, callback?: () => any): SessionActionTypes {
+  return {
+    type: DELETE_ALL,
+    operatorId,
+    loadingMessage,
+    callback: callback
+  }
+}
+
+export function deleteAllSuccess(): SessionActionTypes {
+  return {
+    type: DELETE_ALL_SUCCESS
+  }
+}
+
+export function deleteAllFailure(error: any): SessionActionTypes {
+  return {
+    type: DELETE_ALL_FAILURE,
+    error: error
+  }
+}
+

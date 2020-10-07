@@ -66,7 +66,7 @@ const ClientViewPage: React.FC = () => {
         <Form.Field>
           <Form.Label>{t('client.scopes')}:</Form.Label>
           <List>
-            {current?.scopes?.map(scope => <ListOption key={scope.value}>{scope.name}</ListOption>)}
+            {current?.scope?.map(scope => <ListOption key={scope.value}>{scope.name}</ListOption>)}
           </List>
         </Form.Field>
       }

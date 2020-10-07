@@ -18,4 +18,6 @@ public interface SessionService extends EntityService {
   List<SessionDto> find(SessionSearchDto template, Credential credential);
 
   List<OptionDto<String>> getOperators(String operatorName, Integer maxRowCount);
+
+  void deleteAll(Integer operatorId, Credential credential);
 }

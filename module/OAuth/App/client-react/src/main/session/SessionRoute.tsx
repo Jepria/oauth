@@ -29,12 +29,15 @@ import { UserContext } from '../../user/UserContext';
 import { Loader } from '@jfront/oauth-ui';
 import { Forbidden } from '../../user/Forbidden';
 import { useTranslation } from 'react-i18next';
+import deleteAll from './images/deleteAll.png';
+import { DeleteAllDialog } from './delete-all-dialog/DeleteAllDialog';
 
 const SessionRoute: React.FC = () => {
 
   const { isRoleLoading, isUserInRole, currentUser } = useContext(UserContext);
   const [hasViewRole, setViewRole] = useState<boolean | null>(null);
   const [hasDeleteRole, setDeleteRole] = useState<boolean>(false);
+  const [showDeleteAll, setDeleteAll] = useState<boolean>(false);
   const { path } = useRouteMatch();
   const { pathname } = useLocation();
   const history = useHistory<HistoryState>();
@@ -52,6 +55,8 @@ const SessionRoute: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser])
+
+  console.log(showDeleteAll)
 
   return (
     <>
@@ -77,6 +82,9 @@ const SessionRoute: React.FC = () => {
                 }));
               }
             }} disabled={selectedRecords.length === 0 || !hasDeleteRole} />
+            <ToolbarButtonBase onClick={() => setDeleteAll(true)} disabled={!hasDeleteRole}>
+              <img src={deleteAll} alt=''/>
+            </ToolbarButtonBase>
             <ToolbarSplitter />
             <ToolbarButtonBase onClick={() => {
               dispatch(setCurrentRecord(undefined, () => {
@@ -106,6 +114,7 @@ const SessionRoute: React.FC = () => {
             </Route>
           </Switch>
         </Panel.Content>
+        {showDeleteAll && <DeleteAllDialog onCancel={() => setDeleteAll(false)}/>}
       </Panel>}
     </>
   );

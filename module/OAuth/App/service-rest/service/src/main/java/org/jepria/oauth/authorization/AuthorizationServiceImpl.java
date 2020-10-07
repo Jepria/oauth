@@ -14,6 +14,7 @@ import org.jepria.oauth.sdk.token.rsa.VerifierRSA;
 import org.jepria.oauth.session.SessionService;
 import org.jepria.oauth.session.dto.SessionCreateDto;
 import org.jepria.oauth.session.dto.SessionDto;
+import org.jepria.oauth.session.dto.SessionSearchDto;
 import org.jepria.server.data.RuntimeSQLException;
 import org.jepria.server.service.security.Credential;
 
@@ -53,20 +54,22 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     this.keyService = keyService;
   }
 
+  private void checkResponseType(String clientId, String responseType) {
+    if (!ResponseType.implies(responseType)) {
+      throw new OAuthRuntimeException(UNSUPPORTED_RESPONSE_TYPE);
+    }
+    List<String> clientResponseTypes = clientService.getClientResponseTypes(clientId);
+    if (clientResponseTypes.size() == 0 || !clientResponseTypes.stream().anyMatch(clientResponseType -> clientResponseType.equals(responseType))) {
+      throw new OAuthRuntimeException(UNAUTHORIZED_CLIENT, "Client doesn't have enough permissions to use responseType=" + responseType);
+    }
+  }
+
   @Override
   public SessionDto authorize(String responseType,
                               String clientId,
                               String redirectUri,
                               String codeChallenge) {
-    if (!ResponseType.implies(responseType)) {
-      throw new OAuthRuntimeException(UNSUPPORTED_RESPONSE_TYPE);
-    }
-
-    List<String> clientResponseTypes = clientService.getClientResponseTypes(clientId);
-    if (clientResponseTypes.size() == 0 || !clientResponseTypes.stream().anyMatch(clientResponseType -> clientResponseType.equals(responseType))) {
-      throw new OAuthRuntimeException(UNAUTHORIZED_CLIENT, "Client doesn't have enough permissions to use responseType=" + responseType);
-    }
-
+    checkResponseType(clientId, responseType);
     SessionCreateDto sessionDto = new SessionCreateDto();
     sessionDto.setAuthorizationCode(generateCode());
     sessionDto.setClientId(clientId);
@@ -94,13 +97,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
                               String codeChallenge,
                               String sessionToken,
                               String issuer) {
-    if (!ResponseType.implies(responseType)) {
-      throw new OAuthRuntimeException(UNSUPPORTED_RESPONSE_TYPE);
-    }
-    List<String> clientResponseTypes = clientService.getClientResponseTypes(clientId);
-    if (clientResponseTypes.size() == 0 || !clientResponseTypes.stream().anyMatch(clientResponseType -> clientResponseType.equals(responseType))) {
-      throw new OAuthRuntimeException(UNAUTHORIZED_CLIENT, "Client doesn't have enough permissions to use responseType=" + responseType);
-    }
+    checkResponseType(clientId, responseType);
     try {
       KeyDto keyDto = keyService.getKeys(null, serverCredential);
       Token token = TokenImpl.parseFromString(sessionToken);
@@ -109,17 +106,26 @@ public class AuthorizationServiceImpl implements AuthorizationService {
       Verifier verifier = new VerifierRSA(null, issuer, new Date(), keyDto.getPublicKey());
       if (verifier.verify(token)) {
         String[] subject = token.getSubject().split(":");
-
-        SessionCreateDto sessionDto = new SessionCreateDto();
-        sessionDto.setAuthorizationCode(generateCode());
-        sessionDto.setClientId(clientId);
-        sessionDto.setRedirectUri(redirectUri);
-        sessionDto.setOperatorId(Integer.valueOf(subject[1]));
-        sessionDto.setSessionTokenId(token.getJti());
-        sessionDto.setSessionTokenDateIns(token.getIssueTime());
-        sessionDto.setSessionTokenDateFinish(token.getExpirationTime());
-        sessionDto.setCodeChallenge(codeChallenge);
-        return (SessionDto) sessionService.getRecordById(String.valueOf(sessionService.create(sessionDto, serverCredential)), serverCredential);
+        SessionSearchDto sessionSearchDto = new SessionSearchDto();
+        sessionSearchDto.setAuthorizationCode(token.getJti());
+        List<SessionDto> sessionDtoList = sessionService.find(sessionSearchDto, serverCredential);
+        if (sessionDtoList != null && !sessionDtoList.isEmpty() && sessionDtoList.size() == 1 && sessionDtoList.get(0).getSessionTokenDateFinish().after(new Date())) {
+          SessionCreateDto sessionCreateDto = new SessionCreateDto();
+          sessionCreateDto.setAuthorizationCode(generateCode());
+          sessionCreateDto.setClientId(clientId);
+          sessionCreateDto.setRedirectUri(redirectUri);
+          sessionCreateDto.setOperatorId(Integer.valueOf(subject[1]));
+          sessionCreateDto.setSessionTokenId(token.getJti());
+          sessionCreateDto.setSessionTokenDateIns(token.getIssueTime());
+          sessionCreateDto.setSessionTokenDateFinish(token.getExpirationTime());
+          sessionCreateDto.setCodeChallenge(codeChallenge);
+          return (SessionDto) sessionService.getRecordById(String.valueOf(sessionService.create(sessionCreateDto, serverCredential)), serverCredential);
+        } else {
+          /**
+           * Сессия истекла или не найдена
+           */
+          return authorize(responseType, clientId, redirectUri, codeChallenge);
+        }
       } else {
         /**
          * Сессия истекла или не валидна

@@ -8,6 +8,13 @@
   "saveMessage": "Сохранение изменений",
   "deleteMessage": "Удаление записи",
   "dataLoadingMessage": "Загрузка данных",
+  "errodDialogHeader": "Ошибка",
+  "validation": {
+    "notEmpty": "Поле должно быть заполнено",
+    "onlyDigits": "Значение должно состоять из цифр",
+    "onlySymbolsAndDigits": "Значение должно состоять из букв английского алфавита и цифр",
+    "maxLength": "Максимальная длина значения не больше 32 символов"
+  },
   "client": {
     "moduleName": "Приложение",
     "clientId": "ID приложения",
@@ -52,7 +59,10 @@
     },
     "accessToken": "Токен доступа",
     "refreshToken": "Токен обновления",
-    "sessionToken": "Токен сессии"
+    "sessionToken": "Токен сессии",
+    "deleteAllMessage": "Вы уверены, что хотите удалить все сессии пользователя?",
+    "deleteAllDialogHeader": "Удаление всех активных сессий пользователя",
+    "deleteAllDialogCancel": "Отмена"
   },
   "key": {
     "toolbar": {

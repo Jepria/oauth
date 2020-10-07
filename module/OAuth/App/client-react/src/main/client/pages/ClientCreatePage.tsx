@@ -26,23 +26,23 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
     validate: (values) => {
       const errors: { clientId?: string, clientName?: string, applicationType?: string, grantTypes?: string } = {};
       if (!values['clientId']) {
-        errors.clientId = 'Поле должно быть заполнено'
+        errors.clientId = t('validation.notEmpty')
       } else {
         if (!/[A-Za-z0-9]/.test(values['clientId'])) {
-          errors.clientId = 'Значение должно состоять из букв английского алфавита и цифр'
+          errors.clientId = t('validation.onlySymbolsAndDigits')
         }
         if (values['clientId'].length > 32) {
-          errors.clientId = 'Максимальная длина значения не больше 32 символов'
+          errors.clientId = t('validation.maxLength')
         }
       }
       if (!values['clientName']) {
-        errors.clientName = 'Поле должно быть заполнено'
+        errors.clientName = t('validation.notEmpty')
       }
       if (!values['applicationType']) {
-        errors.applicationType = 'Поле должно быть заполнено'
+        errors.applicationType = t('validation.notEmpty')
       }
       if (!values['grantTypes'] || values['grantTypes'].length === 0) {
-        errors.grantTypes = 'Поле должно быть заполнено'
+        errors.grantTypes = t('validation.notEmpty')
       }
       return errors;
     }
@@ -137,16 +137,16 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
           <Form.Label>{t('client.scopes')}:</Form.Label>
           <Form.Control
             style={{ minWidth: "300px", maxWidth: "500px" }}
-            error={formik.errors.scopes}>
+            error={formik.errors.scope}>
             <DualListField
               options={roles ? roles : []}
               placeholder="Введите имя роли"
-              name="scopes"
+              name="scope"
               isLoading={rolesLoading}
               onInputChange={e => dispatch(getRoles(e.target.value))}
               onSelectionChange={formik.setFieldValue}
-              touched={formik.touched.scopes}
-              error={formik.errors.scopes}
+              touched={formik.touched.scope}
+              error={formik.errors.scope}
               style={{ height: "200px" }} />
           </Form.Control>
         </Form.Field>

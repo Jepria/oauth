@@ -5,14 +5,6 @@ import org.jepria.oauth.exception.OAuthRuntimeException;
 import org.jepria.oauth.key.KeyService;
 import org.jepria.oauth.key.dto.KeyDto;
 import org.jepria.oauth.sdk.GrantType;
-import org.jepria.oauth.session.SessionService;
-import org.jepria.oauth.session.dto.SessionCreateDto;
-import org.jepria.oauth.session.dto.SessionDto;
-import org.jepria.oauth.session.dto.SessionSearchDto;
-import org.jepria.oauth.session.dto.SessionUpdateDto;
-import org.jepria.oauth.token.TokenService;
-import org.jepria.oauth.token.dto.TokenDto;
-import org.jepria.oauth.token.dto.TokenInfoDto;
 import org.jepria.oauth.sdk.ResponseType;
 import org.jepria.oauth.sdk.token.Signer;
 import org.jepria.oauth.sdk.token.Token;
@@ -20,11 +12,16 @@ import org.jepria.oauth.sdk.token.TokenImpl;
 import org.jepria.oauth.sdk.token.Verifier;
 import org.jepria.oauth.sdk.token.rsa.SignerRSA;
 import org.jepria.oauth.sdk.token.rsa.VerifierRSA;
+import org.jepria.oauth.session.SessionService;
+import org.jepria.oauth.session.dto.SessionCreateDto;
+import org.jepria.oauth.session.dto.SessionDto;
+import org.jepria.oauth.session.dto.SessionSearchDto;
+import org.jepria.oauth.session.dto.SessionUpdateDto;
+import org.jepria.oauth.token.dto.TokenDto;
+import org.jepria.oauth.token.dto.TokenInfoDto;
 import org.jepria.server.service.security.Credential;
 
 import java.net.URI;
-import java.security.MessageDigest;
-import java.security.SecureRandom;
 import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -80,7 +77,7 @@ public class TokenServiceImpl implements TokenService {
     if (result.size() == 1) {
       return result.get(0);
     } else {
-      throw new OAuthRuntimeException(INVALID_GRANT, "Authorization request not found");
+      return null;
     }
   }
 
@@ -129,6 +126,7 @@ public class TokenServiceImpl implements TokenService {
           null,
           false,
           serverCredential);
+      if (session == null) throw new OAuthRuntimeException(INVALID_GRANT, "Authorization request not found");
       if (TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - session.getDateIns().getTime()) > 10) {
         throw new OAuthRuntimeException(INVALID_GRANT, "Authorization code active time has expired.");
       }
@@ -173,6 +171,7 @@ public class TokenServiceImpl implements TokenService {
         null,
         false,
         serverCredential);
+    if (session == null) throw new OAuthRuntimeException(INVALID_GRANT, "Authorization request not found");
     if (TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - session.getDateIns().getTime()) > 10) {
       throw new OAuthRuntimeException(INVALID_GRANT, "Authorization code active time has expired.");
     }
@@ -191,16 +190,20 @@ public class TokenServiceImpl implements TokenService {
       serverCredential);
     return tokenDto;
   }
-  
+
+  private void checkClientGrantTypes(String clientId, String grantType) {
+    List<String> clientGrantTypes = clientService.getClientGrantTypes(clientId);
+    if (clientGrantTypes.size() == 0 || !clientGrantTypes.stream().anyMatch(clientGrantType -> clientGrantType.equals(grantType))) {
+      throw new OAuthRuntimeException(UNAUTHORIZED_CLIENT, "Client doesn't have enough permissions to use responseType=" + grantType);
+    }
+  }
+
   @Override
   public TokenDto create(String clientId,
                          String username,
                          Integer userId,
                          String issuer) {
-    List<String> clientGrantTypes = clientService.getClientGrantTypes(clientId);
-    if (clientGrantTypes.size() == 0 || !clientGrantTypes.stream().anyMatch(clientGrantType -> clientGrantType.equals(GrantType.PASSWORD))) {
-      throw new OAuthRuntimeException(UNAUTHORIZED_CLIENT, "Client doesn't have enough permissions to use responseType=" + GrantType.PASSWORD);
-    }
+    checkClientGrantTypes(clientId, GrantType.PASSWORD);
     KeyDto keyDto = keyService.getKeys(null, serverCredential);
     return createTokenPair(keyDto.getPrivateKey(), issuer, clientId, username, userId);
   }
@@ -209,10 +212,7 @@ public class TokenServiceImpl implements TokenService {
   public TokenDto create(String clientId,
                          String refreshTokenString,
                          String issuer) {
-    List<String> clientGrantTypes = clientService.getClientGrantTypes(clientId);
-    if (clientGrantTypes.size() == 0 || !clientGrantTypes.stream().anyMatch(clientGrantType -> clientGrantType.equals(GrantType.REFRESH_TOKEN))) {
-      throw new OAuthRuntimeException(UNAUTHORIZED_CLIENT, "Client doesn't have enough permissions to use responseType=" + GrantType.REFRESH_TOKEN);
-    }
+    checkClientGrantTypes(clientId, GrantType.REFRESH_TOKEN);
     KeyDto keyDto = keyService.getKeys(null, serverCredential);
     try {
       Token refreshToken = TokenImpl.parseFromString(refreshTokenString);
@@ -225,6 +225,7 @@ public class TokenServiceImpl implements TokenService {
             refreshToken.getJti(),
             true,
             serverCredential);
+        if (sessionDto == null) throw new OAuthRuntimeException(INVALID_GRANT, "Authorization request not found");
         String[] subject = refreshToken.getSubject().split(":");
         sessionService.deleteRecord(String.valueOf(sessionDto.getSessionId()), serverCredential);
         return createTokenPair(keyDto.getPrivateKey(), issuer, refreshToken.getAudience().isEmpty() ? null : refreshToken.getAudience().get(0), subject[0], Integer.valueOf(subject[1]));
@@ -240,10 +241,7 @@ public class TokenServiceImpl implements TokenService {
   public TokenDto create(String clientId,
                          Integer clientOperatorId,
                          String issuer) {
-    List<String> clientGrantTypes = clientService.getClientGrantTypes(clientId);
-    if (clientOperatorId == null || clientGrantTypes.size() == 0 || !clientGrantTypes.stream().anyMatch(clientGrantType -> clientGrantType.equals(GrantType.CLIENT_CREDENTIALS))) {
-      throw new OAuthRuntimeException(UNAUTHORIZED_CLIENT, "Client doesn't have enough permissions to use responseType=" + GrantType.CLIENT_CREDENTIALS);
-    }
+    checkClientGrantTypes(clientId, GrantType.CLIENT_CREDENTIALS);
     KeyDto keyDto = keyService.getKeys(null, serverCredential);
     return createTokenPair(keyDto.getPrivateKey(), issuer, clientId, clientId, clientOperatorId);
   }
@@ -323,7 +321,9 @@ public class TokenServiceImpl implements TokenService {
           null,
           true,
           serverCredential);
-      sessionService.deleteRecord(String.valueOf(sessionDto.getSessionId()), serverCredential);
+      if (sessionDto != null) {
+        sessionService.deleteRecord(String.valueOf(sessionDto.getSessionId()), serverCredential);
+      }
     } catch (ParseException e) {
       throw new OAuthRuntimeException(SERVER_ERROR, e);
     } catch (IllegalArgumentException ex) {

@@ -17,7 +17,7 @@ public class ClientDto implements Serializable {
   String tokenAuthMethod;
   List<String> grantTypes;
   List<String> responseTypes;
-  List<OptionDto<String>> scopes;
+  List<OptionDto<String>> scope;
 
   public String getClientId() {
     return clientId;
@@ -83,11 +83,11 @@ public class ClientDto implements Serializable {
     this.responseTypes = responseTypes;
   }
 
-  public List<OptionDto<String>> getScopes() {
-    return scopes;
+  public List<OptionDto<String>> getScope() {
+    return scope;
   }
 
-  public void setScopes(List<OptionDto<String>> scopes) {
-    this.scopes = scopes;
+  public void setScope(List<OptionDto<String>> scope) {
+    this.scope = scope;
   }
 }

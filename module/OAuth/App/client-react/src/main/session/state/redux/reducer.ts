@@ -1,4 +1,4 @@
-import { SessionActionTypes, DELETE_SESSION_SUCCESS, POST_SESSION_SEARCH_REQUEST_SUCCESS, SEARCH_SESSIONS_SUCCESS, GET_SESSION_BY_ID_SUCCESS, SET_SESSION_CURRENT_RECORD, GET_CLIENTS_SUCCESS, GET_OPERATORS_SUCCESS, DELETE_SESSION_FAILURE, GET_CLIENTS_FAILURE, GET_OPERATORS_FAILURE, GET_SESSION_BY_ID_FAILURE, POST_SESSION_SEARCH_REQUEST_FAILURE, SEARCH_SESSIONS_FAILURE, DELETE_SESSION, GET_CLIENTS, GET_OPERATORS, GET_SESSION_BY_ID, POST_SESSION_SEARCH_REQUEST, SEARCH_SESSIONS, SELECT_SESSION_RECORDS } from "./actions";
+import { SessionActionTypes, DELETE_SESSION_SUCCESS, POST_SESSION_SEARCH_REQUEST_SUCCESS, SEARCH_SESSIONS_SUCCESS, GET_SESSION_BY_ID_SUCCESS, SET_SESSION_CURRENT_RECORD, GET_CLIENTS_SUCCESS, GET_OPERATORS_SUCCESS, DELETE_SESSION_FAILURE, GET_CLIENTS_FAILURE, GET_OPERATORS_FAILURE, GET_SESSION_BY_ID_FAILURE, POST_SESSION_SEARCH_REQUEST_FAILURE, SEARCH_SESSIONS_FAILURE, DELETE_SESSION, GET_CLIENTS, GET_OPERATORS, GET_SESSION_BY_ID, POST_SESSION_SEARCH_REQUEST, SEARCH_SESSIONS, SELECT_SESSION_RECORDS, DELETE_ALL, DELETE_ALL_FAILURE, DELETE_ALL_SUCCESS } from "./actions";
 import { SessionState } from "../../types";
 
 export const initialState: SessionState = {
@@ -26,6 +26,25 @@ export function sessionReducer(state: SessionState = initialState, action: Sessi
         isLoading: false
       }
     case DELETE_SESSION_FAILURE:
+      return {
+        ...state,
+        error: action.error,
+        isLoading: false
+      }
+    case DELETE_ALL:
+      return {
+        ...state,
+        message: action.loadingMessage,
+        isLoading: true
+      }
+    case DELETE_ALL_SUCCESS:
+      return {
+        ...state,
+        current: undefined,
+        selectedRecords: [],
+        isLoading: false
+      }
+    case DELETE_ALL_FAILURE:
       return {
         ...state,
         error: action.error,

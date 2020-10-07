@@ -24,7 +24,7 @@ export const ClientListPage: React.FC = () => {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchId, searchRequest, dispatch]);
-
+  
   return (
     <Grid<Client>
       columns={[

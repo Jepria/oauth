@@ -2,7 +2,8 @@ import React from 'react'
 import { AppState } from '../redux/store';
 import { connect } from 'react-redux';
 import { ACCESS_DENIED, AUTHORIZATION_FAILED, BadRequest, BAD_REQUEST, NetworkError, NotFound, NOT_FOUND, ServerError } from '../rest/types';
-import { ErrorDialog } from '../components/dialog/ErrorDialog';
+import { ErrorDialog } from '../components/dialog/error-dialog/ErrorDialog';
+import { Translation } from 'react-i18next';
 
 
 export interface ErrorNotificationProps {
@@ -34,79 +35,121 @@ class ErrorBoundary extends React.Component<ErrorNotificationProps, ErrorBoundar
     if (error) {
       if (typeof error === "string") {
         return (
-          <>
-            <ErrorDialog
-              errorMessage={error}
-              onClose={() => this.setState({ error: undefined })} />
-            {this.props.children}
-          </>
+          <Translation>
+            {
+              (t) =>
+                <>
+                  <ErrorDialog
+                    header={t('errodDialogHeader')}
+                    errorMessage={error}
+                    onClose={() => this.setState({ error: undefined })} />
+                  {this.props.children}
+                </>
+            }
+          </Translation>
         )
       } else if ((error as NetworkError).type) {
         switch ((error as NetworkError).type) {
           case BAD_REQUEST: {
             return (
-              <>
-                <ErrorDialog
-                  errorCode={BAD_REQUEST}
-                  errorMessage={JSON.stringify((error as BadRequest).constraintViolations)}
-                  onClose={() => this.setState({ error: undefined })} />
-                {this.props.children}
-              </>
+              <Translation>
+                {
+                  (t) =>
+                    <>
+                      <ErrorDialog
+                        header={t('errodDialogHeader')}
+                        errorCode={BAD_REQUEST}
+                        errorMessage={JSON.stringify((error as BadRequest).constraintViolations)}
+                        onClose={() => this.setState({ error: undefined })} />
+                      {this.props.children}
+                    </>
+                }
+              </Translation>
             )
           }
           case AUTHORIZATION_FAILED: {
             return (
-              <>
-                <ErrorDialog
-                  errorCode={AUTHORIZATION_FAILED}
-                  errorMessage="Authorization failed"
-                  onClose={() => this.setState({ error: undefined })} />
-                {this.props.children}
-              </>
+              <Translation>
+                {
+                  (t) =>
+                    <>
+                      <ErrorDialog
+                        header={t('errodDialogHeader')}
+                        errorCode={AUTHORIZATION_FAILED}
+                        errorMessage="Authorization failed"
+                        onClose={() => this.setState({ error: undefined })} />
+                      {this.props.children}
+                    </>
+                }
+              </Translation>
             )
           }
           case ACCESS_DENIED: {
             return (
-              <>
-                <ErrorDialog
-                  errorCode={ACCESS_DENIED}
-                  errorMessage="Недостаточно прав доступа"
-                  onClose={() => this.setState({ error: undefined })} />
-                {this.props.children}
-              </>
+              <Translation>
+                {
+                  (t) =>
+                    <>
+                      <ErrorDialog
+                        header={t('errodDialogHeader')}
+                        errorCode={ACCESS_DENIED}
+                        errorMessage="Недостаточно прав доступа"
+                        onClose={() => this.setState({ error: undefined })} />
+                      {this.props.children}
+                    </>
+                }
+              </Translation>
             )
           }
           case NOT_FOUND: {
             return (
-              <>
-                <ErrorDialog
-                  errorCode={NOT_FOUND}
-                  errorMessage={(error as NotFound).url + " URL не найден"}
-                  onClose={() => this.setState({ error: undefined })} />
-                {this.props.children}
-              </>
+              <Translation>
+                {
+                  (t) =>
+                    <>
+                      <ErrorDialog
+                        header={t('errodDialogHeader')}
+                        errorCode={NOT_FOUND}
+                        errorMessage={(error as NotFound).url + " URL не найден"}
+                        onClose={() => this.setState({ error: undefined })} />
+                      {this.props.children}
+                    </>
+                }
+              </Translation>
             )
           }
           default: {
             return (
-              <>
-                <ErrorDialog
-                  errorId={(error as ServerError).errorId}
-                  errorCode={(error as ServerError).errorCode}
-                  errorMessage={(error as ServerError).errorMessage}
-                  onClose={() => this.setState({ error: undefined })} />
-                {this.props.children}
-              </>
+              <Translation>
+                {
+                  (t) =>
+                    <>
+                      <ErrorDialog
+                        header={t('errodDialogHeader')}
+                        errorId={(error as ServerError).errorId}
+                        errorCode={(error as ServerError).errorCode}
+                        errorMessage={(error as ServerError).errorMessage}
+                        onClose={() => this.setState({ error: undefined })}/>
+                      {this.props.children}
+                    </>
+                }
+              </Translation>
             )
           }
         }
       } else {
         return (
-          <>
-            <ErrorDialog
-              errorDescription={(error as Error).message}
-              onClose={() => this.setState({ error: undefined })} />
-          </>
+          <Translation>
+            {
+              (t) =>
+                <>
+                  <ErrorDialog
+                    header={t('errodDialogHeader')}
+                    errorDescription={(error as Error).message}
+                    onClose={() => this.setState({ error: undefined })} />
+                </>
+            }
+          </Translation>
         )
       }
     } else {

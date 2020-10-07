@@ -42,6 +42,14 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
     return Response.ok().build();
   }
 
+  @DELETE
+  @Path("/delete-all/{operatorId}")
+  @RolesAllowed("OADeleteSession")
+  public Response deleteAll(@PathParam("operatorId") Integer operatorId) {
+    sessionServerFactory.getService().deleteAll(operatorId, securityContext.getCredential());
+    return Response.ok().build();
+  }
+
   @GET
   @Path("/{sessionId}")
   @RolesAllowed("OAViewSession")

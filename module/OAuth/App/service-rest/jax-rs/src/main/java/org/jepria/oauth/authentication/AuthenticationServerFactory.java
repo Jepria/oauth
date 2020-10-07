@@ -3,12 +3,12 @@ package org.jepria.oauth.authentication;
 import org.jepria.oauth.authentication.dao.AuthenticationDao;
 import org.jepria.oauth.clienturi.ClientUriServerFactory;
 import org.jepria.oauth.key.KeyServerFactory;
+import org.jepria.oauth.main.rest.jersey.OAuthServerFactory;
 import org.jepria.oauth.session.SessionServerFactory;
-import org.jepria.server.ServerFactory;
 
 import javax.inject.Inject;
 
-public class AuthenticationServerFactory extends ServerFactory<AuthenticationDao> {
+public class AuthenticationServerFactory extends OAuthServerFactory<AuthenticationDao> {
 
   @Inject
   SessionServerFactory sessionServerFactory;
@@ -19,7 +19,7 @@ public class AuthenticationServerFactory extends ServerFactory<AuthenticationDao
 
   @Inject
   public AuthenticationServerFactory(AuthenticationDao dao) {
-    super(dao, "jdbc/RFInfoDS");
+    super(dao, "jdbc/OAuthDS");
   }
 
   public AuthenticationService getService() {

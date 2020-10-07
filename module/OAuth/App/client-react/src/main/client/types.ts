@@ -5,7 +5,7 @@ export interface Client {
   clientSecret?: string;
   applicationType?: string;
   grantTypes?: Array<string>;
-  scopes?: Array<Option>;
+  scope?: Array<Option>;
 }
 
 export interface ColumnSortConfiguration {

@@ -14,6 +14,7 @@ import org.jepria.oauth.sdk.token.rsa.EncryptorRSA;
 import org.jepria.oauth.sdk.token.rsa.SignatureVerifierRSA;
 import org.jepria.oauth.sdk.token.rsa.SignerRSA;
 import org.jepria.oauth.session.SessionService;
+import org.jepria.oauth.session.dto.SessionCreateDto;
 import org.jepria.oauth.session.dto.SessionDto;
 import org.jepria.oauth.session.dto.SessionSearchDto;
 import org.jepria.oauth.session.dto.SessionUpdateDto;
@@ -139,6 +140,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     Integer operatorId = loginByPassword(username, password);
     KeyDto keyDto = keyService.getKeys(null, serverCredential);
     Token sessionToken = generateSessionToken(username, operatorId, host, keyDto.getPrivateKey(), null);
+    SessionCreateDto sessionCreateDto = new SessionCreateDto();
+    sessionCreateDto.setAuthorizationCode(sessionToken.getJti());
+    sessionCreateDto.setSessionTokenId(sessionToken.getJti());
+    sessionCreateDto.setClientId(clientId);
+    sessionCreateDto.setRedirectUri(redirectUri);
+    sessionCreateDto.setSessionTokenDateIns(sessionToken.getIssueTime());
+    sessionCreateDto.setSessionTokenDateFinish(sessionToken.getExpirationTime());
+    sessionCreateDto.setOperatorId(operatorId);
+    sessionService.create(sessionCreateDto, serverCredential);
     updateSession(session,
       operatorId,
       sessionToken.getJti(),

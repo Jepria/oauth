@@ -25,12 +25,12 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
     validate: (values) => {
       const errors: { operatorId?: string, maxRowCount?: string } = {};
       if (!values['maxRowCount']) {
-        errors.maxRowCount = 'Поле должно быть заполнено'
+        errors.maxRowCount = t('validation.notEmpty')
       } else if (!/[0-9]/.test(`${values['maxRowCount']}`)) {
-        errors.maxRowCount = 'Значение должно состоять из цифр'
+        errors.maxRowCount = t('validation.onlyDigits')
       }
       if (!values['operatorId']) {
-        errors.operatorId = 'Поле должно быть заполнено'
+        errors.operatorId = t('validation.notEmpty')
       }
       return errors;
     },

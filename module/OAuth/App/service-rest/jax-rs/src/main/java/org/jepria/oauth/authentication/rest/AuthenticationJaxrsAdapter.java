@@ -67,8 +67,7 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
             getHostContext());
     Response response;
     if (CODE.equalsIgnoreCase(responseType)) {
-      response = Response.
-          status(302)
+      response = Response.status(302)
           .location(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + authCode + "&" + (state != null ? STATE + "=" + state : "")))
           .cookie(new NewCookie(SESSION_ID,
               sessionToken.getToken(),

@@ -8,6 +8,13 @@
   "saveMessage": "Saving changes in progress",
   "deleteMessage": "Deleting record in progress",
   "dataLoadingMessage": "Loading data",
+  "errodDialogHeader": "Error",
+  "validation": {
+    "notEmpty": "Must be not empty",
+    "onlyDigits": "Must contain only digits",
+    "onlySymbolsAndDigits": "Must contain only english characters and digits",
+    "maxLength": "Maximum length 32 symbols"
+  },
   "client": {
     "moduleName": "Client",
     "clientId": "Client ID",
@@ -52,7 +59,10 @@
       "id": "ID",
       "dateIns": "Date of creation",
       "dateFinish": "Expiration date"
-    }
+    },
+    "deleteAllMessage": "Do you really want to delete all user sessions?",
+    "deleteAllDialogHeader": "Delete all user sessions",
+    "deleteAllDialogCancel": "Cancel"
   },
   "key": {
     "toolbar": {

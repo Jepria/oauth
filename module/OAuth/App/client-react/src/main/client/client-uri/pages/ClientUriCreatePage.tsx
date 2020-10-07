@@ -26,7 +26,7 @@ export const ClientUriCreatePage = React.forwardRef<any, HTMLAttributes<HTMLForm
       const errors: { clientUri?: string } = {};
 
       if (!values['clientUri']) {
-        errors.clientUri = 'Поле должно быть заполнено'
+        errors.clientUri = t('validation.notEmpty')
       }
       return errors;
     }

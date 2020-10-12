@@ -26,7 +26,7 @@ import {
   ToolbarSplitter,
   ToolbarButtonBase
 } from '@jfront/ui-core';
-import { UserPanel } from '../../../user/UserPanel';
+import { UserPanel } from '@jfront/oauth-ui';
 import { useTranslation } from 'react-i18next';
 import { ClientState } from '../types';
 import { getClientById } from '../state/redux/actions';

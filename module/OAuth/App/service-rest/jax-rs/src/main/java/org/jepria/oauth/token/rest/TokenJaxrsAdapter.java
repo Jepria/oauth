@@ -57,6 +57,7 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
       @FormParam("code") String authCode,
       @FormParam("username") String username,
       @FormParam("password") String password,
+      @FormParam("password_hash") String passwordHash,
       @FormParam("code_verifier") String codeVerifier,
       @FormParam("refresh_token") String refreshToken) {
     if (authHeader != null) {
@@ -106,7 +107,12 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
         } else {
           throw new OAuthRuntimeException(ACCESS_DENIED, "Client authorization failed");
         }
-        Integer userId = authenticationServerFactory.getService().loginByPassword(username, password);
+        Integer userId = null;
+        if (password != null) {
+          userId = authenticationServerFactory.getService().loginByPassword(username, password);
+        } else if (passwordHash != null) {
+          userId = authenticationServerFactory.getService().loginByPasswordHash(username, passwordHash);
+        }
         result = tokenServerFactory.getService().create(clientId, username, userId, getHostContext());
         break;
       }

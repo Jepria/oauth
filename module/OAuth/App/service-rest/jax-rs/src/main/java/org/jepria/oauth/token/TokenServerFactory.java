@@ -2,9 +2,8 @@ package org.jepria.oauth.token;
 
 import org.jepria.oauth.client.ClientServerFactory;
 import org.jepria.oauth.key.KeyServerFactory;
-import org.jepria.oauth.main.rest.jersey.OAuthServerFactory;
+import org.jepria.oauth.main.server.OAuthServerFactory;
 import org.jepria.oauth.session.SessionServerFactory;
-import org.jepria.server.ServerFactory;
 
 import javax.inject.Inject;
 

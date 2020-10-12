@@ -1,39 +1,97 @@
 package org.jepria.oauth.authentication.dao;
 
+import org.jepria.compat.server.dao.CallContext;
 import org.jepria.compat.server.dao.ResultSetMapper;
 import org.jepria.compat.server.db.Db;
 import org.jepria.oauth.session.dto.SessionDto;
 import org.jepria.server.data.DaoSupport;
-import org.jepria.server.service.security.pkg_Operator;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.CallableStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.List;
 
-import static org.jepria.compat.server.JepRiaServerConstant.DEFAULT_DATA_SOURCE_JNDI_NAME;
 import static org.jepria.oauth.session.SessionFieldNames.CODE_CHALLENGE;
 import static org.jepria.oauth.session.SessionFieldNames.SESSION_ID;
 
 public class AuthenticationDaoImpl implements AuthenticationDao {
-  
-  protected Db getDb() {
-    return new Db(DEFAULT_DATA_SOURCE_JNDI_NAME);
-  }
-  
+
   @Override
   public Integer loginByPassword(String username, String password) {
-    Integer operatorId = null;
-    Db db = getDb();
+
+    Integer result = null;
+    String sqlQuery =
+        " begin"
+            + "  ? := pkg_Operator.Login("
+            + " operatorLogin => ?"
+            + ", password => ?"
+            + ");"
+            + "  ? := pkg_Operator.GetCurrentUserID;"
+            + " end;";
+    Db db = CallContext.getDb();
     try {
-      operatorId = pkg_Operator.logon(db, username, password, null);
-    } catch (SQLException e) {
-      e.printStackTrace();
+      CallableStatement callableStatement = db.prepare(sqlQuery);
+      // Установим Логин.
+      callableStatement.setString(2, username);
+      // Установим Пароль.
+      callableStatement.setString(3, password);
+
+      callableStatement.registerOutParameter(1, Types.VARCHAR);
+      callableStatement.registerOutParameter(4, Types.INTEGER);
+
+      callableStatement.execute();
+
+      result = callableStatement.getInt(4);
+      if (callableStatement.wasNull())
+        result = null;
+
+    } catch (SQLException throwables) {
+      throwables.printStackTrace();
     } finally {
-      db.closeAll();
+      db.closeStatement(sqlQuery);
     }
-    return operatorId;
+
+    return result;
+  }
+
+  @Override
+  public Integer loginByHash(String username, String passwordHash) {
+    Integer result = null;
+    String sqlQuery =
+        " begin"
+            + "  ? := pkg_Operator.Login("
+            + " operatorLogin => ?"
+            + ", passwordHash => ?"
+            + ");"
+            + "  ? := pkg_Operator.GetCurrentUserID;"
+            + " end;";
+    Db db = CallContext.getDb();
+    try {
+      CallableStatement callableStatement = db.prepare(sqlQuery);
+      // Установим Логин.
+      callableStatement.setString(2, username);
+      // Установим Пароль.
+      callableStatement.setString(3, passwordHash);
+
+      callableStatement.registerOutParameter(1, Types.VARCHAR);
+      callableStatement.registerOutParameter(4, Types.INTEGER);
+
+      callableStatement.execute();
+
+      result = callableStatement.getInt(4);
+      if (callableStatement.wasNull())
+        result = null;
+
+    } catch (SQLException throwables) {
+      throwables.printStackTrace();
+    } finally {
+      db.closeStatement(sqlQuery);
+    }
+
+    return result;
   }
   
   @Override

@@ -14,6 +14,8 @@ public interface AuthenticationService {
    */
   Integer loginByPassword(String username, String password);
 
+  Integer loginByPasswordHash(String username, String passwordHash);
+
   /**
    * Проверка секретного слова клиентского приложения в системе
    *

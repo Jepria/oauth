@@ -6,9 +6,9 @@ import {
 } from "react-router-dom";
 import ClientRoute from './ClientRoute';
 import ClientUriRoute from './client-uri/ClientUriRoute';
-import { UserContext } from '../../user/UserContext';
 import { Loader } from '@jfront/oauth-ui';
-import { Forbidden } from '../../user/Forbidden';
+import { UserContext } from '@jfront/oauth-user'
+import { Forbidden } from '@jfront/oauth-ui'
 
 const ClientModuleRoute: React.FC = () => {
 

@@ -22,6 +22,7 @@ const SessionListPage: React.FC = () => {
     } else if (!searchId && searchRequest) {
       dispatch(postSearchSessionRequest(searchRequest, t('dataLoadingMessage')));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchId, searchRequest, dispatch]);
 
   return (

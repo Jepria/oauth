@@ -59,10 +59,26 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
   };
 
+  @Override
   public Integer loginByPassword(String username, String password) {
     Integer operatorId;
     try {
       operatorId = dao.loginByPassword(username, password);
+    } catch (RuntimeSQLException th) {
+      throw new OAuthRuntimeException(SERVER_ERROR, th);
+    }
+    if (operatorId == null) {
+      throw new OAuthRuntimeException(ACCESS_DENIED, "Wrong username/password.");
+    } else {
+      return operatorId;
+    }
+  }
+
+  @Override
+  public Integer loginByPasswordHash(String username, String passwordHash) {
+    Integer operatorId;
+    try {
+      operatorId = dao.loginByHash(username, passwordHash);
     } catch (RuntimeSQLException th) {
       throw new OAuthRuntimeException(SERVER_ERROR, th);
     }

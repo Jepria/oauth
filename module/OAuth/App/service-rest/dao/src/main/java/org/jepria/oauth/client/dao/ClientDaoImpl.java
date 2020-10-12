@@ -1,7 +1,6 @@
 package org.jepria.oauth.client.dao;
 
 import org.jepria.compat.server.dao.ResultSetMapper;
-import org.jepria.compat.server.db.Db;
 import org.jepria.oauth.client.dto.ClientCreateDto;
 import org.jepria.oauth.client.dto.ClientDto;
 import org.jepria.oauth.client.dto.ClientSearchDto;

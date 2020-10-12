@@ -15,7 +15,7 @@ import { LoadingPanel } from '../../components/mask';
 import { ClientState } from './types';
 import ClientSearchPage from './pages/ClientSearchPage';
 import { ClientListPage } from './pages/ClientListPage';
-import { setCurrentRecord, deleteClient, searchClients, selectRecords } from './state/redux/actions';
+import { setCurrentRecord, deleteClient, searchClients } from './state/redux/actions';
 import { HistoryState } from '../../components/HistoryState';
 import {
   Panel,
@@ -29,8 +29,8 @@ import {
   ToolbarSplitter,
   ToolbarButtonBase
 } from '@jfront/ui-core';
-import { UserPanel } from '../../user/UserPanel';
-import { UserContext } from '../../user/UserContext';
+import { UserPanel } from '@jfront/oauth-ui';
+import { UserContext } from '@jfront/oauth-user'
 import { useTranslation } from 'react-i18next';
 
 const ClientRoute: React.FC = () => {

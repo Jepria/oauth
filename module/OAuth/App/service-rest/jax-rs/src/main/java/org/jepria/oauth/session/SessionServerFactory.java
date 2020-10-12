@@ -1,10 +1,7 @@
 package org.jepria.oauth.session;
 
-import org.jepria.oauth.main.rest.jersey.OAuthServerFactory;
+import org.jepria.oauth.main.server.OAuthServerFactory;
 import org.jepria.oauth.session.dao.SessionDao;
-import org.jepria.oauth.session.dao.SessionDaoImpl;
-import org.jepria.server.ServerFactory;
-import org.jepria.server.data.Dao;
 import org.jepria.server.service.rest.SearchService;
 import org.jepria.server.service.rest.SearchServiceImpl;
 

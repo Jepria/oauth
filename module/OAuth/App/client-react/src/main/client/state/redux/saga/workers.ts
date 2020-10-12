@@ -9,7 +9,7 @@ import {
   SearchClientsAction, searchClientsSuccess, 
   SetCurrentRecordAction, setCurrentRecordSuccess, GetRolesAction, 
   getRolesSuccess, updateClientFailure, createClientFailure, deleteClientFailure, 
-  getClientByIdFailure, postSearchClientRequestFailure, searchClientsFailure, getRolesFailure, selectRecords, SelectRecordsAction} from '../actions';
+  getClientByIdFailure, postSearchClientRequestFailure, searchClientsFailure, getRolesFailure } from '../actions';
 import { put, call, all } from 'redux-saga/effects';
 
 const api = new ClientApi(API_PATH + '/client');

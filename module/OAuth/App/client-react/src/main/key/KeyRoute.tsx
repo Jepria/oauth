@@ -16,8 +16,8 @@ import {
   TabPanel, Tab, Toolbar,
   ToolbarButtonBase
 } from '@jfront/ui-core';
-import { UserPanel } from '../../user/UserPanel';
-import { UserContext } from '../../user/UserContext';
+import { UserPanel } from '@jfront/oauth-ui';
+import { UserContext } from '@jfront/oauth-user'
 import { useTranslation } from 'react-i18next';
 
 const KeyRoute: React.FC = () => {

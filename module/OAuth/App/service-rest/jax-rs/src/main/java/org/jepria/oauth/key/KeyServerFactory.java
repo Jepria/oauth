@@ -1,8 +1,7 @@
 package org.jepria.oauth.key;
 
 import org.jepria.oauth.key.dao.KeyDao;
-import org.jepria.oauth.main.rest.jersey.OAuthServerFactory;
-import org.jepria.server.ServerFactory;
+import org.jepria.oauth.main.server.OAuthServerFactory;
 
 import javax.inject.Inject;
 

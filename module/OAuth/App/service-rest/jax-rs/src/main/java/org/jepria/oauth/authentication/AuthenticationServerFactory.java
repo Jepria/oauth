@@ -3,7 +3,7 @@ package org.jepria.oauth.authentication;
 import org.jepria.oauth.authentication.dao.AuthenticationDao;
 import org.jepria.oauth.clienturi.ClientUriServerFactory;
 import org.jepria.oauth.key.KeyServerFactory;
-import org.jepria.oauth.main.rest.jersey.OAuthServerFactory;
+import org.jepria.oauth.main.server.OAuthServerFactory;
 import org.jepria.oauth.session.SessionServerFactory;
 
 import javax.inject.Inject;

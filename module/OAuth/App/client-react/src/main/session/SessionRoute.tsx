@@ -24,10 +24,10 @@ import {
   ToolbarSplitter,
   ToolbarButtonBase
 } from '@jfront/ui-core';
-import { UserPanel } from '../../user/UserPanel';
-import { UserContext } from '../../user/UserContext';
+import { UserPanel } from '@jfront/oauth-ui';
+import { UserContext } from '@jfront/oauth-user'
+import { Forbidden } from '@jfront/oauth-ui'
 import { Loader } from '@jfront/oauth-ui';
-import { Forbidden } from '../../user/Forbidden';
 import { useTranslation } from 'react-i18next';
 import deleteAll from './images/deleteAll.png';
 import { DeleteAllDialog } from './delete-all-dialog/DeleteAllDialog';

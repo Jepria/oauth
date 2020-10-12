@@ -101,6 +101,7 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
     } else {
       response = Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR_QUERY_PARAM + UNSUPPORTED_RESPONSE_TYPE)).build();
     }
+
     return response;
   }
 

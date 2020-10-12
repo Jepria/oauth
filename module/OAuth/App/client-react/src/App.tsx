@@ -1,7 +1,7 @@
 import React from 'react';
 import { OAuthWebContext } from '@jfront/oauth-ui';
 import AppRouter from './main/AppRouter';
-import { UserContextProvider } from './user/UserContextProvider';
+import { UserContextProvider } from '@jfront/oauth-user';
 import axios from 'axios'
 import { Provider } from 'react-redux';
 import { configureStore } from './redux/configureStore';

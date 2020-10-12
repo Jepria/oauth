@@ -8,12 +8,12 @@ import ClientRoute from './client/ClientModuleRoute';
 import SessionRoute from './session/SessionRoute';
 import KeyRoute from './key/KeyRoute';
 import { Loader, OAuthSecuredFragment } from '@jfront/oauth-ui';
-import { UserContext } from '../user/UserContext';
+import { UserContext } from '@jfront/oauth-user';
 
 const AppRouter: React.FC = () => {
 
   const { currentUser, isUserLoading } = useContext(UserContext);
-
+  
   return (
     <OAuthSecuredFragment>
       {currentUser.username !== "Guest" && !isUserLoading &&

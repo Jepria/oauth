@@ -1,7 +1,7 @@
 package org.jepria.oauth.clienturi;
 
 import org.jepria.oauth.clienturi.dao.ClientUriDao;
-import org.jepria.oauth.main.rest.jersey.OAuthServerFactory;
+import org.jepria.oauth.main.server.OAuthServerFactory;
 import org.jepria.server.ServerFactory;
 import org.jepria.server.data.Dao;
 import org.jepria.server.service.rest.EntityService;

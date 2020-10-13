@@ -98,6 +98,7 @@
               </additionalJOptions>
               <docencoding>UTF-8</docencoding>
               <encoding>UTF-8</encoding>
+              <overview>/overview.html</overview>
               <doctitle>${project.artifactId} API Reference</doctitle>
               <windowtitle>>${project.artifactId} JavaDoc</windowtitle>
               <show>private</show>

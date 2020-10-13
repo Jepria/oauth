@@ -1,0 +1,85 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<script>
+  function addOnloadHandler(handler) {
+    if (window.attachEvent) {
+      window.attachEvent('onload', handler);
+    } else {
+      if (window.onload) {
+        var currOnnLoad = window.onload;
+        var newOnLoad = function (evt) {
+          currOnnLoad(evt);
+          handler(evt);
+        };
+        window.onload = newOnLoad;
+      } else {
+        window.onload = handler;
+      }
+    }
+  }
+
+</script>
+  <body bgcolor="white">
+    <div></div>
+    <h2>Содержание</h2>
+    <ul>
+      <li><a href="#about">Описание</a>
+      <li><a href="#about">Установка</a>
+      <li><a href="#error">Ошибки</a>
+      <li><a href="#todo">Доработки</a>
+      <li><a href="#releaseNotes">Замечания к версиям</a></li>
+    </ul>
+    <h3><a name="about">Описание</a></h3>
+    Сервис реализующий стандарт авторизации OAuth 2.0.
+    <h3><a name="deploy">Установка</a></h3>
+    <div>Перед установкой необходимо убедиться в наличии бинарного репозитория на локальном окружении, с которого производится установка данного модуля.</div>
+    <div>Рекомендуется устанавливать на все сервера в рамках окружения для поддержки отказоустойчивости системы.</div>
+    <h4><a name="deploy">Источники данных</a></h4>
+    <div>Требует наличия настроенного источника данных "jdbc/OAuthDS".</div>
+    <div>При отсутствии вышеуказанного источника, по умолчанию, использует "jdbc/RFInfoDS".</div>
+    <div>Имя запасного источника данных можно настроить через переменную окружения "OAUTH_BACKUP_DATASOURCE".</div>
+    <h4><a name="deploy">Настройка балансировщика</a></h4>
+    <div>Для поддержки отказоустойчивости и горизонтального масштабирования рекомендуется включать балансировщик нагрузки.</div>
+    <h5>Пример настройки Apache HTTPD:</h5>
+    <pre>
+    worker.properties:
+      worker.list=worker1,worker2,worker3,lb,status
+
+      worker.lb.type=lb
+      worker.lb.balance_workers=worker1,worker2,worker3
+      worker.lb.sticky_session=True
+
+      worker.status.type=status
+
+      worker.worker1.port=8011
+      worker.worker1.host=localhost
+      worker.worker1.type=ajp13
+
+      worker.worker2.port=8012
+      worker.worker2.host=localhost
+      worker.worker2.type=ajp13
+
+      worker.worker3.port=8013
+      worker.worker3.host=localhost
+      worker.worker3.type=ajp13
+    mod_jk.conf:
+      JkMount /oauth lb
+      JkMount /oauth/* lb
+    </pre>
+    <h5>Apache Tomcat</h5>
+    <pre lang="xml">
+    Требуется добавить jvmRoute для поддержки load balancer'a: &lt;Engine name="Catalina" defaultHost="localhost" jvmRoute="worker1"/&gt;
+    Рекомендуется включить &lt;Valve className="org.apache.catalina.ha.session.JvmRouteBinderValve"/&gt;. Для поддержки привязанных к серверам сессий при отказе балансировщика.
+    </pre>
+    <h3><a name="error">Ошибки</a></h3>
+    <br/>
+    <h3><a name="todo">Доработки</a></h3>
+    <br/>
+    <h3><a name="releaseNotes">Замечания к версиям</a></h3>
+    <h4>Версии</h4>
+    <ul>
+      <li><a href="#1.0.0">1.0.0 (n/a)</a></li>
+    </ul>
+    <h5><a name="1.0.0">1.0.0 (n/a)</a></h5>
+  </body>
+</html>

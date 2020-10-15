@@ -1,24 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
-<script>
-  function addOnloadHandler(handler) {
-    if (window.attachEvent) {
-      window.attachEvent('onload', handler);
-    } else {
-      if (window.onload) {
-        var currOnnLoad = window.onload;
-        var newOnLoad = function (evt) {
-          currOnnLoad(evt);
-          handler(evt);
-        };
-        window.onload = newOnLoad;
-      } else {
-        window.onload = handler;
-      }
-    }
-  }
-
-</script>
   <body bgcolor="white">
     <div></div>
     <h2>Содержание</h2>
@@ -38,6 +19,20 @@
     <div>Требует наличия настроенного источника данных "jdbc/OAuthDS".</div>
     <div>При отсутствии вышеуказанного источника, по умолчанию, использует "jdbc/RFInfoDS".</div>
     <div>Имя запасного источника данных можно настроить через переменную окружения "OAUTH_BACKUP_DATASOURCE".</div>
+    <h4><a name="deploy">Время жизни токенов</a></h4>
+    Время жизни токенов настраивается через переменные окружения. Время жизни измеряется в часах.
+    <h5>Сессия SSO</h5>
+    <div><span style="font-weight: bold">Настройка в context.xml Tomcat: </span> &lt;Environment name="OAUTH_SSO_TOKEN_LIFE_TIME" value="32" type="java.lang.String" override="true"/&gt;</div>
+    <div>Также можно настроить через переменную окружения ОС "OAUTH_SSO_TOKEN_LIFE_TIME".</div>
+    <div>Время жизни по-умолчанию 24 часа.</div>
+    <h5>Access Token</h5>
+    <div><span style="font-weight: bold">Настройка в context.xml Tomcat: </span> &lt;Environment name="OAUTH_ACCESS_TOKEN_LIFE_TIME" value="32" type="java.lang.String" override="true"/&gt;</div>
+    <div>Также можно настроить через переменную окружения ОС "OAUTH_ACCESS_TOKEN_LIFE_TIME".</div>
+    <div>Время жизни по-умолчанию 8 часов.</div>
+    <h5>Refresh Token</h5>
+    <div><span style="font-weight: bold">Настройка в context.xml Tomcat: </span> &lt;Environment name="OAUTH_REFRESH_TOKEN_LIFE_TIME" value="32" type="java.lang.String" override="true"/&gt;</div>
+    <div>Также можно настроить через переменную окружения ОС "OAUTH_REFRESH_TOKEN_LIFE_TIME".</div>
+    <div>Время жизни по-умолчанию 24 часа.</div>
     <h4><a name="deploy">Настройка балансировщика</a></h4>
     <div>Для поддержки отказоустойчивости и горизонтального масштабирования рекомендуется включать балансировщик нагрузки.</div>
     <h5>Пример настройки Apache HTTPD:</h5>
@@ -66,6 +61,8 @@
       JkMount /oauth lb
       JkMount /oauth/* lb
     </pre>
+    <div><b>Строго не рекомендуется</b> устанавливать OAuth и включать в Load Balancer инстанс Tomcat с установленным модулем Navigation.
+      Т.к. это приведет к тому, что Sticky sessions будут приводить все запросы на этот инстанс.</div>
     <h5>Apache Tomcat</h5>
     <pre lang="xml">
     Требуется добавить jvmRoute для поддержки load balancer'a: &lt;Engine name="Catalina" defaultHost="localhost" jvmRoute="worker1"/&gt;

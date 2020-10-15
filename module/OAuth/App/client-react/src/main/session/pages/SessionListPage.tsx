@@ -1,19 +1,25 @@
 import React, { useEffect } from 'react';
 import { setCurrentRecord, searchSessions, postSearchSessionRequest, selectRecords } from '../state/redux/actions';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { AppState } from '../../../redux/store';
-import { SessionState, Session } from '../types';
+import { SessionState, Session, SessionSearchTemplate } from '../types';
 import { TextCell } from '../../../components/cell/TextCell';
 import { DateCell } from '../../../components/cell/DateCell';
 import { Grid } from '@jfront/ui-core';
 import { useTranslation } from 'react-i18next';
+import queryString from 'query-string';
+
+const useQuery = () => {
+  return queryString.parse(useLocation().search);
+}
 
 const SessionListPage: React.FC = () => {
 
   const dispatch = useDispatch();
   const history = useHistory();
   const { t } = useTranslation();
+  const { pageSize, page, ...searchTemplate } = useQuery();
   const { records, current, searchId, searchRequest, resultSetSize, recordsLoading } = useSelector<AppState, SessionState>(state => state.session);
 
   useEffect(() => {
@@ -102,8 +108,11 @@ const SessionListPage: React.FC = () => {
             listSortConfiguration: sortConfig
           }
           dispatch(postSearchSessionRequest(newSearchRequest, t('dataLoadingMessage')));
+        } else 
+        if (pageSize && page) {
+          dispatch(postSearchSessionRequest({ template: searchTemplate as unknown as SessionSearchTemplate, listSortConfiguration: sortConfig }, t("dataLoadingMessage")));
         } else {
-          dispatch(postSearchSessionRequest({ template: { maxRowCount: 25 }, listSortConfiguration: sortConfig }, t('dataLoadingMessage')));
+          dispatch(postSearchSessionRequest({ template: { maxRowCount: 25 }, listSortConfiguration: sortConfig }, t("dataLoadingMessage")));
         }
       }}
       totalRowCount={resultSetSize}

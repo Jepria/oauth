@@ -7,6 +7,7 @@ import { postSearchClientRequest } from '../state/redux/actions';
 import { AppState } from '../../../redux/store';
 import { Form, TextInput, NumberInput } from '@jfront/ui-core';
 import { useTranslation } from 'react-i18next';
+import queryString from 'query-string';
 
 const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();
@@ -28,7 +29,10 @@ const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
     onSubmit: (values: ClientSearchTemplate) => {
       dispatch(postSearchClientRequest({
         template: values
-      }, t("dataLoadingMessage"), () => history.push('/ui/client/list')));
+      }, t("dataLoadingMessage"), () => {
+        const query = queryString.stringify(values)
+        history.push(`/ui/client/list?pageSize=25&page=1${query ? "&" + query : ""}`)
+      }));
     }
   })
 

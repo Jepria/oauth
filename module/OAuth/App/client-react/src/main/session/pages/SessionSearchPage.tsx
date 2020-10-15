@@ -7,6 +7,7 @@ import { postSearchSessionRequest, getClients, getOperators } from '../state/red
 import { AppState } from '../../../redux/store';
 import { Form, ComboBox, NumberInput, ComboBoxItem } from '@jfront/ui-core';
 import { useTranslation } from 'react-i18next';
+import queryString from 'query-string';
 
 const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();
@@ -37,7 +38,10 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
     onSubmit: (values: SessionSearchTemplate) => {
       dispatch(postSearchSessionRequest({
         template: values
-      }, t('dataLoadingMessage'), () => history.push('/ui/session/list')));
+      }, t('dataLoadingMessage'), () => {
+        const query = queryString.stringify(values)
+        history.push(`/ui/session/list?pageSize=25&page=1${query ? "&" + query : ""}`)
+      }));
     }
   })
 

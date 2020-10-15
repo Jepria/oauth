@@ -54,6 +54,7 @@ public interface AuthenticationService {
    * @param username имя пользователя
    * @param password пароль пользователя
    * @param host имя сервера
+   * @param sessionTokenLifeTime время жизни сессии
    * @return Session Token
    */
   SessionTokenDto authenticate(
@@ -62,7 +63,8 @@ public interface AuthenticationService {
     String clientId,
     String username,
     String password,
-    String host);
+    String host,
+    Integer sessionTokenLifeTime);
 
   /**
    * @param clientId ID клиентского приложения

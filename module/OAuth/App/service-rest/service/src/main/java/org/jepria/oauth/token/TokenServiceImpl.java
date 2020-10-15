@@ -30,8 +30,8 @@ import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 public class TokenServiceImpl implements TokenService {
 
-  private static final int ACCESS_TOKEN_LIFETIME = 3600 * 8; //8 hours
-  private static final int REFRESH_TOKEN_LIFETIME = 3600 * 24 * 7; //1 week
+//  private static final int ACCESS_TOKEN_LIFETIME = 3600 * 8; //8 hours
+//  private static final int REFRESH_TOKEN_LIFETIME = 3600 * 24 * 7; //1 week
   private static final String TOKEN_TYPE = "Bearer";
   private final SessionService sessionService;
   private final KeyService keyService;
@@ -65,7 +65,6 @@ public class TokenServiceImpl implements TokenService {
                                 String redirectUri,
                                 String accessTokenId,
                                 String refreshTokenId,
-                                Boolean hasToken,
                                 Credential credential) {
     SessionSearchDto searchTemplate = new SessionSearchDto();
     searchTemplate.setAuthorizationCode(authCode);
@@ -107,7 +106,8 @@ public class TokenServiceImpl implements TokenService {
                          String issuer,
                          String authCode,
                          String clientId,
-                         URI redirectUri) {
+                         URI redirectUri,
+                         Integer accessTokenLifeTime) {
     if (ResponseType.TOKEN.equals(responseType)) {
       KeyDto keyDto = keyService.getKeys(null, serverCredential);
       if (authCode == null) {
@@ -124,7 +124,6 @@ public class TokenServiceImpl implements TokenService {
           redirectUri.toString(),
           null,
           null,
-          false,
           serverCredential);
       if (session == null) throw new OAuthRuntimeException(INVALID_GRANT, "Authorization request not found");
       if (TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - session.getDateIns().getTime()) > 10) {
@@ -133,10 +132,10 @@ public class TokenServiceImpl implements TokenService {
       if (session.getAccessTokenId() != null) {
         throw new OAuthRuntimeException(INVALID_GRANT, "Request is finished.");
       }
-      Token accessToken = generateToken(session.getOperatorLogin(), null, session.getOperator().getValue(), issuer, keyDto.getPrivateKey(), 4);
+      Token accessToken = generateToken(session.getOperatorLogin(), null, session.getOperator().getValue(), issuer, keyDto.getPrivateKey(), accessTokenLifeTime);
       TokenDto tokenDto = new TokenDto();
       tokenDto.setAccessToken(accessToken.asString());
-      tokenDto.setExpiresIn(ACCESS_TOKEN_LIFETIME);
+      tokenDto.setExpiresIn(new Long(accessTokenLifeTime * 3600));
       tokenDto.setTokenType(TOKEN_TYPE);
       updateSession(session,
           accessToken.getJti(),
@@ -153,7 +152,8 @@ public class TokenServiceImpl implements TokenService {
   public TokenDto create(String clientId,
                          String authCode,
                          String issuer,
-                         URI redirectUri) {
+                         URI redirectUri,
+                         Integer accessTokenLifeTime) {
     KeyDto keyDto = keyService.getKeys(null, serverCredential);
     if (authCode == null) {
       throw new OAuthRuntimeException(INVALID_REQUEST, "Authorization code is null.");
@@ -169,7 +169,6 @@ public class TokenServiceImpl implements TokenService {
         redirectUri.toString(),
         null,
         null,
-        false,
         serverCredential);
     if (session == null) throw new OAuthRuntimeException(INVALID_GRANT, "Authorization request not found");
     if (TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - session.getDateIns().getTime()) > 10) {
@@ -178,10 +177,10 @@ public class TokenServiceImpl implements TokenService {
     if (session.getAccessTokenId() != null) {
       throw new OAuthRuntimeException(INVALID_GRANT, "Request is finished.");
     }
-    Token accessToken = generateToken(session.getOperatorLogin(), null, session.getOperator().getValue(), issuer, keyDto.getPrivateKey(), 4);
+    Token accessToken = generateToken(session.getOperatorLogin(), null, session.getOperator().getValue(), issuer, keyDto.getPrivateKey(), accessTokenLifeTime);
     TokenDto tokenDto = new TokenDto();
     tokenDto.setAccessToken(accessToken.asString());
-    tokenDto.setExpiresIn(ACCESS_TOKEN_LIFETIME);
+    tokenDto.setExpiresIn(new Long(accessTokenLifeTime * 3600));
     tokenDto.setTokenType(TOKEN_TYPE);
     updateSession(session,
       accessToken.getJti(),
@@ -202,16 +201,20 @@ public class TokenServiceImpl implements TokenService {
   public TokenDto create(String clientId,
                          String username,
                          Integer userId,
-                         String issuer) {
+                         String issuer,
+                         Integer accessTokenLifeTime,
+                         Integer refreshTokenLifeTime) {
     checkClientGrantTypes(clientId, GrantType.PASSWORD);
     KeyDto keyDto = keyService.getKeys(null, serverCredential);
-    return createTokenPair(keyDto.getPrivateKey(), issuer, clientId, username, userId);
+    return createTokenPair(keyDto.getPrivateKey(), issuer, clientId, username, userId, accessTokenLifeTime, refreshTokenLifeTime);
   }
   
   @Override
   public TokenDto create(String clientId,
                          String refreshTokenString,
-                         String issuer) {
+                         String issuer,
+                         Integer accessTokenLifeTime,
+                         Integer refreshTokenLifeTime) {
     checkClientGrantTypes(clientId, GrantType.REFRESH_TOKEN);
     KeyDto keyDto = keyService.getKeys(null, serverCredential);
     try {
@@ -223,12 +226,18 @@ public class TokenServiceImpl implements TokenService {
             null,
             null,
             refreshToken.getJti(),
-            true,
             serverCredential);
         if (sessionDto == null) throw new OAuthRuntimeException(INVALID_GRANT, "Authorization request not found");
         String[] subject = refreshToken.getSubject().split(":");
         sessionService.deleteRecord(String.valueOf(sessionDto.getSessionId()), serverCredential);
-        return createTokenPair(keyDto.getPrivateKey(), issuer, refreshToken.getAudience().isEmpty() ? null : refreshToken.getAudience().get(0), subject[0], Integer.valueOf(subject[1]));
+        return createTokenPair(
+            keyDto.getPrivateKey(),
+            issuer,
+            refreshToken.getAudience().isEmpty() ? null : refreshToken.getAudience().get(0),
+            subject[0],
+            Integer.valueOf(subject[1]),
+            accessTokenLifeTime,
+            refreshTokenLifeTime);
       } else {
         throw new OAuthRuntimeException(INVALID_GRANT, "Token verification failed");
       }
@@ -240,22 +249,26 @@ public class TokenServiceImpl implements TokenService {
   @Override
   public TokenDto create(String clientId,
                          Integer clientOperatorId,
-                         String issuer) {
+                         String issuer,
+                         Integer accessTokenLifeTime,
+                         Integer refreshTokenLifeTime) {
     checkClientGrantTypes(clientId, GrantType.CLIENT_CREDENTIALS);
     KeyDto keyDto = keyService.getKeys(null, serverCredential);
-    return createTokenPair(keyDto.getPrivateKey(), issuer, clientId, clientId, clientOperatorId);
+    return createTokenPair(keyDto.getPrivateKey(), issuer, clientId, clientId, clientOperatorId, accessTokenLifeTime, refreshTokenLifeTime);
   }
   
   private TokenDto createTokenPair(String privateKeyString,
                                    String issuer,
                                    String clientId,
                                    String username,
-                                   Integer userId) {
-    Token accessToken = generateToken(username, Collections.singletonList(clientId), userId, issuer, privateKeyString, 1);
-    Token refreshToken = generateToken(username, Collections.singletonList(clientId), userId, issuer, privateKeyString, 24 * 7);
+                                   Integer userId,
+                                   Integer accessTokenLifeHours,
+                                   Integer refreshTokenLifeHours) {
+    Token accessToken = generateToken(username, Collections.singletonList(clientId), userId, issuer, privateKeyString, accessTokenLifeHours);
+    Token refreshToken = generateToken(username, Collections.singletonList(clientId), userId, issuer, privateKeyString, refreshTokenLifeHours);
     TokenDto tokenDto = new TokenDto();
     tokenDto.setAccessToken(accessToken.asString());
-    tokenDto.setExpiresIn(ACCESS_TOKEN_LIFETIME); // 1 hours active time
+    tokenDto.setExpiresIn(new Long(accessTokenLifeHours * 3600));
     tokenDto.setTokenType("Bearer");
     tokenDto.setRefreshToken(refreshToken.asString());
 
@@ -285,7 +298,6 @@ public class TokenServiceImpl implements TokenService {
           null,
           token.getJti(),
           null,
-          true,
           serverCredential);
       if (sessionDto == null) {
         result.setActive(false);
@@ -319,7 +331,6 @@ public class TokenServiceImpl implements TokenService {
           null,
           token.getJti(),
           null,
-          true,
           serverCredential);
       if (sessionDto != null) {
         sessionService.deleteRecord(String.valueOf(sessionDto.getSessionId()), serverCredential);

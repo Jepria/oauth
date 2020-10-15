@@ -78,7 +78,7 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
               .location(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + session.getAuthorizationCode() + (state != null ? "&" + STATE + "=" + state : "")))
               .build();
         } else {
-          TokenDto tokenDto = tokenServerFactory.getService().create(responseType, clientId, getHostContext(), session.getAuthorizationCode(), URI.create(redirectUri));
+          TokenDto tokenDto = tokenServerFactory.getService().create(responseType, clientId, getHostContext(), session.getAuthorizationCode(), URI.create(redirectUri), 8);
           response = Response.status(302).location(URI.create(redirectUri
               + "#" + ACCESS_TOKEN_QUERY_PARAM + tokenDto.getAccessToken()
               + "&" + TOKEN_TYPE_QUERY_PARAM + tokenDto.getTokenType()

@@ -1,19 +1,25 @@
 import React, { useEffect } from 'react';
 import { setCurrentRecord, searchClients, postSearchClientRequest, selectRecords } from '../state/redux/actions';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { AppState } from '../../../redux/store';
-import { ClientState, Client } from '../types';
+import { ClientState, Client, ClientSearchTemplate } from '../types';
 import { GrantType, ApplicationType } from '@jfront/oauth-core';
 import { TextCell } from '../../../components/cell/TextCell';
 import { Grid } from '@jfront/ui-core';
 import { useTranslation } from 'react-i18next';
+import queryString from 'query-string';
+
+const useQuery = () => {
+  return queryString.parse(useLocation().search);
+}
 
 export const ClientListPage: React.FC = () => {
 
   const dispatch = useDispatch();
   const history = useHistory();
   const { t } = useTranslation();
+  const { pageSize, page, ...searchTemplate } = useQuery();
   const { records, current, searchId, searchRequest, resultSetSize, recordsLoading } = useSelector<AppState, ClientState>(state => state.client);
 
   useEffect(() => {
@@ -22,9 +28,9 @@ export const ClientListPage: React.FC = () => {
     } else if (!searchId && searchRequest) {
       dispatch(postSearchClientRequest(searchRequest, t("dataLoadingMessage")));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchId, searchRequest, dispatch]);
-  
+
   return (
     <Grid<Client>
       columns={[
@@ -88,7 +94,11 @@ export const ClientListPage: React.FC = () => {
           }
           dispatch(postSearchClientRequest(newSearchRequest, t("dataLoadingMessage")));
         } else {
-          dispatch(postSearchClientRequest({ template: { maxRowCount: 25 }, listSortConfiguration: sortConfig }, t("dataLoadingMessage")));
+          if (pageSize && page) {
+            dispatch(postSearchClientRequest({ template: searchTemplate as unknown as ClientSearchTemplate, listSortConfiguration: sortConfig }, t("dataLoadingMessage")));
+          } else {
+            dispatch(postSearchClientRequest({ template: { maxRowCount: 25 }, listSortConfiguration: sortConfig }, t("dataLoadingMessage")));
+          }
         }
       }}
       totalRowCount={resultSetSize}

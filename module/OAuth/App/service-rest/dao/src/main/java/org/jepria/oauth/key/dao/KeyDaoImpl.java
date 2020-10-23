@@ -1,16 +1,12 @@
 package org.jepria.oauth.key.dao;
 
 import org.jepria.compat.server.dao.ResultSetMapper;
-import org.jepria.compat.server.db.Db;
 import org.jepria.oauth.key.dto.KeyCreateDto;
 import org.jepria.oauth.key.dto.KeyDto;
 import org.jepria.server.data.DaoSupport;
-import org.jepria.server.data.RuntimeSQLException;
 
-import java.sql.CallableStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.jepria.oauth.key.KeyFieldNames.*;

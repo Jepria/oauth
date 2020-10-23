@@ -2,7 +2,7 @@ package org.jepria.oauth.token.dto;
 
 public class TokenDto {
   String token_type;
-  Integer expires_in;
+  Long expires_in;
   String access_token;
   String refresh_token;
 
@@ -14,11 +14,11 @@ public class TokenDto {
     this.token_type = token_type;
   }
 
-  public Integer getExpiresIn() {
+  public Long getExpiresIn() {
     return expires_in;
   }
 
-  public void setExpiresIn(Integer expires_in) {
+  public void setExpiresIn(Long expires_in) {
     this.expires_in = expires_in;
   }
 

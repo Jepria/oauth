@@ -62,7 +62,9 @@ function preparePage() {
     error = errors[error];
     document.getElementById('error-code').innerHTML=errorCode;
     document.getElementById('error').innerHTML=error;
-    document.getElementById('error').innerHTML=error;
+    if (parameters['error_id']) {
+        document.getElementById('error-id').innerHTML="Error ID: " + parameters['error_id'];
+    }
     var errorDescription = parameters['error_description'];
     if (errorDescription) {
         errorDescription = decodeURIComponent(errorDescription).applyXSSprotection();

@@ -6,11 +6,13 @@ import org.jepria.oauth.sdk.GrantType;
 import org.jepria.oauth.token.TokenServerFactory;
 import org.jepria.oauth.token.dto.TokenDto;
 import org.jepria.oauth.token.dto.TokenInfoDto;
+import org.jepria.server.env.EnvironmentPropertySupport;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
 import org.jepria.server.service.security.JepSecurityContext;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -21,6 +23,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+import static org.jepria.oauth.main.OAuthConstants.*;
 import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 /**
@@ -45,6 +48,36 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
     return URI.create(request.getRequestURL().toString()).resolve(request.getContextPath()).toString();
   }
 
+  private Integer getAccessTokenLifeTime() {
+    HttpSession session = request.getSession(false);
+    String tokenLifeTime = null;
+    if (session != null) {
+      tokenLifeTime = (String) session.getAttribute(OAUTH_ACCESS_TOKEN_LIFE_TIME);
+    }
+    if (tokenLifeTime == null) {
+      tokenLifeTime = EnvironmentPropertySupport.getInstance(request).getProperty(OAUTH_ACCESS_TOKEN_LIFE_TIME, OAUTH_ACCESS_TOKEN_LIFE_TIME_DEFAULT);
+      if (session != null) {
+        session.setAttribute(OAUTH_ACCESS_TOKEN_LIFE_TIME, tokenLifeTime);
+      }
+    }
+    return Integer.valueOf(tokenLifeTime);
+  }
+
+  private Integer getRefreshTokenLifeTime() {
+    HttpSession session = request.getSession(false);
+    String tokenLifeTime = null;
+    if (session != null) {
+      tokenLifeTime = (String) session.getAttribute(OAUTH_REFRESH_TOKEN_LIFE_TIME);
+    }
+    if (tokenLifeTime == null) {
+      tokenLifeTime = EnvironmentPropertySupport.getInstance(request).getProperty(OAUTH_REFRESH_TOKEN_LIFE_TIME, OAUTH_REFRESH_TOKEN_LIFE_TIME_DEFAULT);
+      if (session != null) {
+        session.setAttribute(OAUTH_REFRESH_TOKEN_LIFE_TIME, tokenLifeTime);
+      }
+    }
+    return Integer.valueOf(tokenLifeTime);
+  }
+
   @POST
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   public Response createToken(
@@ -56,6 +89,7 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
       @FormParam("code") String authCode,
       @FormParam("username") String username,
       @FormParam("password") String password,
+      @FormParam("password_hash") String passwordHash,
       @FormParam("code_verifier") String codeVerifier,
       @FormParam("refresh_token") String refreshToken) {
     if (authHeader != null) {
@@ -86,7 +120,7 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
         }
 
         URI redirectUri = URI.create(redirectUriDecoded);
-        result = tokenServerFactory.getService().create(clientId, authCode, getHostContext(), redirectUri);
+        result = tokenServerFactory.getService().create(clientId, authCode, getHostContext(), redirectUri, getAccessTokenLifeTime());
         break;
       }
       case GrantType.CLIENT_CREDENTIALS: {
@@ -96,7 +130,7 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
         } else {
           throw new OAuthRuntimeException(ACCESS_DENIED, "Client authorization failed");
         }
-        result = tokenServerFactory.getService().create(clientId, userId, getHostContext());
+        result = tokenServerFactory.getService().create(clientId, userId, getHostContext(), getAccessTokenLifeTime(), getRefreshTokenLifeTime());
         break;
       }
       case GrantType.PASSWORD: {
@@ -105,8 +139,13 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
         } else {
           throw new OAuthRuntimeException(ACCESS_DENIED, "Client authorization failed");
         }
-        Integer userId = authenticationServerFactory.getService().loginByPassword(username, password);
-        result = tokenServerFactory.getService().create(clientId, username, userId, getHostContext());
+        Integer userId = null;
+        if (password != null) {
+          userId = authenticationServerFactory.getService().loginByPassword(username, password);
+        } else if (passwordHash != null) {
+          userId = authenticationServerFactory.getService().loginByPasswordHash(username, passwordHash);
+        }
+        result = tokenServerFactory.getService().create(clientId, username, userId, getHostContext(), getAccessTokenLifeTime(), getRefreshTokenLifeTime());
         break;
       }
       case GrantType.REFRESH_TOKEN: {
@@ -115,7 +154,7 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
         } else {
           authenticationServerFactory.getService().loginByClientId(clientId);
         }
-        result = tokenServerFactory.getService().create(clientId, refreshToken, getHostContext());
+        result = tokenServerFactory.getService().create(clientId, refreshToken, getHostContext(), getAccessTokenLifeTime(), getRefreshTokenLifeTime());
         break;
       }
       default: {
@@ -159,9 +198,14 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
       clientSecret = clientCredentials[1];
     }
     authenticationServerFactory.getService().loginByClientSecret(clientId, clientSecret);
+
     tokenServerFactory.getService().delete(
         clientId,
         token);
+    HttpSession session = request.getSession(false);
+    if (session != null) {
+      session.invalidate();
+    }
     return Response.ok().build();
   }
 

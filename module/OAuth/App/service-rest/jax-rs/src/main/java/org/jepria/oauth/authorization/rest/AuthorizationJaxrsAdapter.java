@@ -23,6 +23,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
+import static org.jepria.oauth.main.OAuthConstants.AUTH_ID;
 import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
@@ -60,10 +61,10 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
       throw new OAuthRuntimeException(INVALID_REQUEST, "redirect_uri is invalid");
     }
     Response response = null;
-    SessionDto session;
+    SessionDto sessionDto;
 
     if (sessionToken != null) {
-      session = authorizationServerFactory
+      sessionDto = authorizationServerFactory
           .getService()
           .authorize(responseType,
               clientId,
@@ -71,63 +72,52 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
               codeChallenge,
               sessionToken,
               getHostContext());
-      if (session.getSessionTokenId() != null && new Date().before(session.getSessionTokenDateFinish()) && session.getOperator() != null) {
-        if (ResponseType.CODE.equals(responseType)) {
-          response = Response
-              .status(302)
-              .location(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + session.getAuthorizationCode() + (state != null ? "&" + STATE + "=" + state : "")))
-              .build();
-        } else {
-          TokenDto tokenDto = tokenServerFactory.getService().create(responseType, clientId, getHostContext(), session.getAuthorizationCode(), URI.create(redirectUri));
-          response = Response.status(302).location(URI.create(redirectUri
-              + "#" + ACCESS_TOKEN_QUERY_PARAM + tokenDto.getAccessToken()
-              + "&" + TOKEN_TYPE_QUERY_PARAM + tokenDto.getTokenType()
-              + "&" + EXPIRES_IN_QUERY_PARAM + tokenDto.getExpiresIn()
-              + "&" + STATE + "=" + state))
-              .cookie(new NewCookie(SESSION_ID,
-                  sessionToken,
-                  null,
-                  null,
-                  null,
-                  NewCookie.DEFAULT_MAX_AGE,
-                  false,
-                  true))
-              .build();
-        }
-      } else {
-        try {
-          response = Response.status(302).location(URI.create("/oauth/login/?"
-              + RESPONSE_TYPE + "=" + responseType
-              + "&" + CODE + "=" + session.getAuthorizationCode()
-              + "&" + REDIRECT_URI + "=" + redirectUriEncoded
-              + "&" + CLIENT_ID + "=" + session.getClient().getValue()
-              + "&" + CLIENT_NAME + "=" + URLEncoder.encode(session.getClient().getName(), StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20")
-              + "&" + STATE + "=" + state)).build();
-        } catch (UnsupportedEncodingException e) {
-          e.printStackTrace();
-        }
-      }
     } else {
-      session = authorizationServerFactory
+      sessionDto = authorizationServerFactory
           .getService()
           .authorize(responseType,
               clientId,
               redirectUri,
               codeChallenge);
+    }
+    if (sessionDto.getSessionTokenId() != null && new Date().before(sessionDto.getSessionTokenDateFinish()) && sessionDto.getOperator() != null) {
+      if (ResponseType.CODE.equals(responseType)) {
+        response = Response
+            .status(302)
+            .location(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + sessionDto.getAuthorizationCode() + (state != null ? "&" + STATE + "=" + state : "")))
+            .build();
+      } else {
+        TokenDto tokenDto = tokenServerFactory.getService().create(responseType, clientId, getHostContext(), sessionDto.getAuthorizationCode(), URI.create(redirectUri), 8);
+        response = Response.status(302).location(URI.create(redirectUri
+            + "#" + ACCESS_TOKEN_QUERY_PARAM + tokenDto.getAccessToken()
+            + "&" + TOKEN_TYPE_QUERY_PARAM + tokenDto.getTokenType()
+            + "&" + EXPIRES_IN_QUERY_PARAM + tokenDto.getExpiresIn()
+            + "&" + STATE + "=" + state))
+            .cookie(new NewCookie(SESSION_ID,
+                sessionToken,
+                null,
+                null,
+                null,
+                NewCookie.DEFAULT_MAX_AGE,
+                false,
+                true))
+            .build();
+      }
+    } else {
       try {
         response = Response.status(302).location(URI.create("/oauth/login/?"
             + RESPONSE_TYPE + "=" + responseType
-            + "&" + CODE + "=" + session.getAuthorizationCode()
+            + "&" + AUTH_ID + "=" + sessionDto.getSessionId()
             + "&" + REDIRECT_URI + "=" + redirectUriEncoded
-            + "&" + CLIENT_ID + "=" + session.getClient().getValue()
-            + "&" + CLIENT_NAME + "=" + URLEncoder.encode(session.getClient().getName(), StandardCharsets.UTF_8.name()).replaceAll("\\+","%20")
+            + "&" + CLIENT_ID + "=" + sessionDto.getClient().getValue()
+            + "&" + CLIENT_NAME + "=" + URLEncoder.encode(sessionDto.getClient().getName(), StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20")
             + "&" + STATE + "=" + state)).build();
       } catch (UnsupportedEncodingException e) {
         e.printStackTrace();
       }
     }
     return response;
-  }
+}
 
   /**
    * Get next separator for URI

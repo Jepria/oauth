@@ -1,6 +1,8 @@
 package org.jepria.oauth.clienturi.dto;
 
-public class ClientUriSearchDto {
+import java.io.Serializable;
+
+public class ClientUriSearchDto implements Serializable {
   String clientUriId;
   String clientId;
 

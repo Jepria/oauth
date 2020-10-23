@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { buildError, handleAxiosError } from '../../../rest/connector/ConnectorCrud';
 import { Operator } from '../types';
 
 export default class OperatorApi {
@@ -27,9 +28,9 @@ export default class OperatorApi {
         } else if (response.status === 204) {
           resolve([]);
         } else {
-          reject(response);
+          reject(buildError(response))
         }
-      }).catch(error => reject(error));
+      }).catch(error => reject(handleAxiosError(error)));
     });
   }
 }

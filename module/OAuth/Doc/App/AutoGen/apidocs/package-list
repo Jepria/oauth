@@ -20,11 +20,13 @@ org.jepria.oauth.key
 org.jepria.oauth.key.dao
 org.jepria.oauth.key.dto
 org.jepria.oauth.key.rest
+org.jepria.oauth.main
 org.jepria.oauth.main.dto
 org.jepria.oauth.main.exception
 org.jepria.oauth.main.rest.jersey
 org.jepria.oauth.main.rest.jersey.inject
 org.jepria.oauth.main.security
+org.jepria.oauth.main.server
 org.jepria.oauth.session
 org.jepria.oauth.session.dao
 org.jepria.oauth.session.dto

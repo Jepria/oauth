@@ -1,7 +1,6 @@
 package org.jepria.oauth.client.dao;
 
 import org.jepria.compat.server.dao.ResultSetMapper;
-import org.jepria.compat.server.db.Db;
 import org.jepria.oauth.client.dto.ClientCreateDto;
 import org.jepria.oauth.client.dto.ClientDto;
 import org.jepria.oauth.client.dto.ClientSearchDto;
@@ -19,7 +18,6 @@ import java.util.stream.Collectors;
 import static org.jepria.oauth.client.ClientFieldNames.*;
 
 public class ClientDaoImpl implements ClientDao {
-
 
   @Override
   public List<?> find(Object template, Integer operatorId) {
@@ -45,7 +43,8 @@ public class ClientDaoImpl implements ClientDao {
           dto.setClientNameEn(rs.getString(CLIENT_NAME_EN));
           dto.setApplicationType(rs.getString(APPLICATION_TYPE));
           dto.setGrantTypes(getClientGrantTypes(dto.getClientId(), operatorId));
-          dto.setScopes(getClientRoles(getInteger(rs, OPERATOR_ID)));
+          Integer clientOperatorId = getInteger(rs, OPERATOR_ID);
+          if (clientOperatorId != null) dto.setScope(getClientRoles(clientOperatorId, operatorId));
         }
       }
       , ClientDto.class
@@ -58,7 +57,7 @@ public class ClientDaoImpl implements ClientDao {
   }
 
   @Override
-  public List<ClientDto> findByPrimaryKey(Map<String, ?> primaryKeyMap, Integer operatorId) {
+  public List<ClientDto> findByPrimaryKey(Map<String, ?> primaryKeyMap, final Integer operatorId) {
     String sqlQuery =
       "begin  "
         + "? := pkg_OAuth.findClient("
@@ -80,7 +79,8 @@ public class ClientDaoImpl implements ClientDao {
           dto.setClientNameEn(rs.getString(CLIENT_NAME_EN));
           dto.setApplicationType(rs.getString(APPLICATION_TYPE));
           dto.setGrantTypes(getClientGrantTypes(dto.getClientId(), operatorId));
-          dto.setScopes(getClientRoles(getInteger(rs, OPERATOR_ID)));
+          Integer clientOperatorId = getInteger(rs, OPERATOR_ID);
+          if (clientOperatorId != null) dto.setScope(getClientRoles(getInteger(rs, OPERATOR_ID), operatorId));
         }
       }
       , ClientDto.class
@@ -211,14 +211,15 @@ public class ClientDaoImpl implements ClientDao {
     return result;
   }
 
-  private List<OptionDto<String>> getClientRoles(Integer clientOperatorId) {
+  private List<OptionDto<String>> getClientRoles(Integer clientOperatorId, Integer operatorId) {
     String sqlQuery =
       "begin  "
         + "? := pkg_operator.getRoles("
           + "operatorId => ? "
+//          + ", operatorIdIns => ? "
         + ");"
         + " end;";
-    List<OptionDto<String>> result = null;
+    List<OptionDto<String>> result;
     result = DaoSupport.getInstance().find(sqlQuery,
       new ResultSetMapper<OptionDto<String>>() {
         @Override

@@ -1,37 +1,40 @@
 import React, { useEffect } from 'react';
-import { setCurrentRecord, searchClientUri } from '../state/redux/actions';
+import { setCurrentRecord, searchClientUri, selectRecords } from '../state/redux/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, useParams, useLocation } from 'react-router-dom';
-import { AppState } from '../../../store';
+import { AppState } from '../../../../redux/store';
 import { ClientUriState, ClientUri } from '../types';
 import { HistoryState } from '../../../../components/HistoryState';
 import { TextCell } from '../../../../components/cell/TextCell';
 import { Grid } from '@jfront/ui-core';
+import { useTranslation } from 'react-i18next';
 
 export const ClientUriListPage: React.FC = () => {
 
   const dispatch = useDispatch();
   const history = useHistory();
   const { clientId } = useParams<any>();
+  const { t } = useTranslation();
   const { records, current } = useSelector<AppState, ClientUriState>(state => state.clientUri);
   const { state } = useLocation<HistoryState>();
 
   useEffect(() => {
     if (clientId) {
-      dispatch(searchClientUri(clientId));
+      dispatch(searchClientUri(clientId, t('dataLoadingMessage')));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientId, dispatch]);
 
   return (
     <Grid<ClientUri>
       columns={[
         {
-          Header: "ID",
+          Header: t('clientUri.clientUriId'),
           accessor: "clientUriId",
           Cell: ({ value }: any) => <TextCell>{value}</TextCell>
         },
         {
-          Header: "URL для переадресации",
+          Header: t('clientUri.clientUri'),
           accessor: "clientUri",
           Cell: ({ value }: any) => <TextCell>{value}</TextCell>
         },
@@ -42,9 +45,11 @@ export const ClientUriListPage: React.FC = () => {
           if (selected.length === 1) {
             if (selected[0] !== current) {
               dispatch(setCurrentRecord(selected[0]))
+              dispatch(selectRecords(selected))
             }
           } else if (current) {
             dispatch(setCurrentRecord(undefined))
+            dispatch(selectRecords(selected))
           }
         }
       }}

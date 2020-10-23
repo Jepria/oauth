@@ -1,24 +1,24 @@
 package org.jepria.oauth.session.dto;
 
-public class SessionSearchDto {
+import java.io.Serializable;
 
-  Integer sessionId;
+public class SessionSearchDto implements Serializable {
+
+  String sessionId;
   String authorizationCode;
   Integer operatorId;
   String clientId;
   String sessionTokenId;
   String accessTokenId;
   String refreshTokenId;
-  Boolean isBlocked;
   String redirectUri;
-  Boolean hasToken;
   Integer maxRowCount;
 
-  public Integer getSessionId() {
+  public String getSessionId() {
     return sessionId;
   }
 
-  public void setSessionId(Integer sessionId) {
+  public void setSessionId(String sessionId) {
     this.sessionId = sessionId;
   }
 
@@ -70,28 +70,12 @@ public class SessionSearchDto {
     this.refreshTokenId = refreshTokenId;
   }
 
-  public Boolean getBlocked() {
-    return isBlocked;
-  }
-
-  public void setBlocked(Boolean blocked) {
-    isBlocked = blocked;
-  }
-
   public String getRedirectUri() {
     return redirectUri;
   }
 
   public void setRedirectUri(String redirectUri) {
     this.redirectUri = redirectUri;
-  }
-
-  public Boolean getHasToken() {
-    return hasToken;
-  }
-
-  public void setHasToken(Boolean hasToken) {
-    this.hasToken = hasToken;
   }
 
   public Integer getMaxRowCount() {

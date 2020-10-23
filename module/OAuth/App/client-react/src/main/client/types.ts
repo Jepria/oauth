@@ -1,11 +1,11 @@
 export interface Client {
-  clientId?: string;
-  clientName: string;
+  clientId: string;
+  clientName?: string;
   clientNameEn?: string;
   clientSecret?: string;
-  applicationType: string;
-  grantTypes: Array<string>;
-  scopes?: Array<Option>;
+  applicationType?: string;
+  grantTypes?: Array<string>;
+  scope?: Array<Option>;
 }
 
 export interface ColumnSortConfiguration {
@@ -27,7 +27,10 @@ export interface ClientSearchTemplate {
 
 export interface ClientState {
   isLoading: boolean;
+  recordsLoading: boolean;
+  rolesLoading: boolean;
   current?: Client;
+  selectedRecords: Array<Client>
   records: Array<Client>;
   searchId?: string;
   resultSetSize?: number;

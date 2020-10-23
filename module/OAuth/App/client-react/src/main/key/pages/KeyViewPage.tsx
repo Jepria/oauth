@@ -1,41 +1,40 @@
 import React, { useEffect } from 'react';
 import { Text } from '../../../components/form/Field';
-import { AppState } from '../../store';
+import { AppState } from '../../../redux/store';
 import { KeyState } from '../types';
 import { useSelector, useDispatch } from 'react-redux';
 import { getKey } from '../state/redux/actions';
-import { Panel, Form } from '@jfront/ui-core';
+import { Form } from '@jfront/ui-core';
+import { useTranslation } from 'react-i18next';
 
 const KeyViewPage: React.FC = () => {
 
   const dispatch = useDispatch();
   const { current } = useSelector<AppState, KeyState>(state => state.key);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!current) {
-      dispatch(getKey());
+      dispatch(getKey(t('dataLoading')));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current, dispatch]);
 
   return (
-    <Panel>
-      <Panel.Content>
-        <Form>
-          <Form.Field>
-            <Form.Label>ID:</Form.Label>
-            <Text>{current?.keyId}</Text>
-          </Form.Field>
-          <Form.Field>
-            <Form.Label>Публичный ключ:</Form.Label>
-            <Text width="200px">{current?.publicKey}</Text>
-          </Form.Field>
-          <Form.Field>
-            <Form.Label>Дата создания:</Form.Label>
-            <Text>{current?.dateIns}</Text>
-          </Form.Field>
-        </Form>
-      </Panel.Content>
-    </Panel>
+    <Form>
+      <Form.Field>
+        <Form.Label>{t('key.keyId')}:</Form.Label>
+        <Text>{current?.keyId}</Text>
+      </Form.Field>
+      <Form.Field>
+        <Form.Label>{t('key.publicKey')}:</Form.Label>
+        <Text width="200px">{current?.publicKey}</Text>
+      </Form.Field>
+      <Form.Field>
+        <Form.Label>{t('key.dateIns')}:</Form.Label>
+        <Text>{current?.dateIns ? new Date(current?.dateIns).toLocaleString() : ''}</Text>
+      </Form.Field>
+    </Form>
   )
 
 }

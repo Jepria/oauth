@@ -1,38 +1,37 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Text } from '../../../../components/form/Field';
-import { AppState } from '../../../store';
+import { AppState } from '../../../../redux/store';
 import { ClientUriState } from '../types';
 import { useSelector, useDispatch } from 'react-redux';
 import { getClientUriById } from '../state/redux/actions';
-import { Panel, Form } from '@jfront/ui-core';
+import { Form } from '@jfront/ui-core';
+import { useTranslation } from 'react-i18next';
 
 export const ClientUriViewPage: React.FC = () => {
 
   const dispatch = useDispatch();
   const { clientId, clientUriId } = useParams<any>();
+  const { t } = useTranslation();
   const { current } = useSelector<AppState, ClientUriState>(state => state.clientUri);
 
   useEffect(() => {
     if (!current && clientId && clientUriId) {
-      dispatch(getClientUriById(clientId, clientUriId));
+      dispatch(getClientUriById(clientId, clientUriId, t('dataLoadingMessage')));
     }
-  }, [current, clientId, clientUriId, dispatch]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <Panel>
-      <Panel.Content>
-        <Form>
-          <Form.Field>
-            <Form.Label >ID записи:</Form.Label>
-            <Text>{current?.clientUriId}</Text>
-          </Form.Field>
-          <Form.Field>
-            <Form.Label>URL для переадресации:</Form.Label>
-            <Text>{current?.clientUri}</Text>
-          </Form.Field>
-        </Form>
-      </Panel.Content>
-    </Panel>
+    <Form>
+      <Form.Field>
+        <Form.Label >{t('clientUri.clientUriId')}:</Form.Label>
+        <Text>{current?.clientUriId}</Text>
+      </Form.Field>
+      <Form.Field>
+        <Form.Label>{t('clientUri.clientUri')}:</Form.Label>
+        <Text>{current?.clientUri}</Text>
+      </Form.Field>
+    </Form>
   )
 }

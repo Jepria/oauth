@@ -14,6 +14,8 @@ public interface AuthenticationService {
    */
   Integer loginByPassword(String username, String password);
 
+  Integer loginByPasswordHash(String username, String passwordHash);
+
   /**
    * Проверка секретного слова клиентского приложения в системе
    *
@@ -46,21 +48,23 @@ public interface AuthenticationService {
    * Результат -> созданная SSO сессия OAuth
    * </pre>
    *
-   * @param authCode одноразовый код
+   * @param sessionId id авторизационной сессии
    * @param redirectUri URL для перенаправления
    * @param clientId ID клиентского приложения
    * @param username имя пользователя
    * @param password пароль пользователя
    * @param host имя сервера
+   * @param sessionTokenLifeTime время жизни сессии
    * @return Session Token
    */
   SessionTokenDto authenticate(
-    String authCode,
+    String sessionId,
     String redirectUri,
     String clientId,
     String username,
     String password,
-    String host);
+    String host,
+    Integer sessionTokenLifeTime);
 
   /**
    * @param clientId ID клиентского приложения

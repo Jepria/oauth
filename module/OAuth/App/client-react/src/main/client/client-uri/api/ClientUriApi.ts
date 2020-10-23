@@ -1,19 +1,14 @@
 import axios from 'axios';
-import { ClientUri } from '../types';
+import { ConnectorBase } from '../../../../rest/connector/ConnectorBase';
+import { buildError, handleAxiosError } from '../../../../rest/connector/ConnectorCrud';
+import { ClientUri, ClientUriCreateDto } from '../types';
 
-export default class ClientUriApi {
+export default class ClientUriApi extends ConnectorBase {
 
-  private url: string;
-
-  constructor(url: string) {
-    this.url = url;
-    axios.defaults.withCredentials = true;
-  }
-
-  create = (clientId: string, clientUri: ClientUri): Promise<ClientUri> => {
+  create = (clientId: string, clientUri: ClientUriCreateDto): Promise<ClientUri> => {
     return new Promise<ClientUri>((resolve, reject) => {
       axios.post(
-        `${this.url}/${clientId}/client-uri`,
+        `${this.baseUrl}/${clientId}/client-uri`,
         clientUri,
         {
           headers: {
@@ -40,16 +35,16 @@ export default class ClientUriApi {
             }
           }).catch(error => reject(error));
         } else {
-          reject(response);
+          reject(buildError(response))
         }
-      }).catch(error => reject(error));
+      }).catch(error => reject(handleAxiosError(error)));
     });
   }
 
   delete = (clientId: string, clientUriId: string): Promise<void> => {
     return new Promise<void>((resolve, reject) => {
       axios.delete(
-        `${this.url}/${clientId}/client-uri/${clientUriId}`,
+        `${this.baseUrl}/${clientId}/client-uri/${clientUriId}`,
         {
           headers: {
             'Accept': 'application/json;charset=utf-8',
@@ -57,15 +52,15 @@ export default class ClientUriApi {
           }
         }
       ).then(response => {
-        response.status === 200 ? resolve() : reject(response);
-      }).catch(error => reject(error));
+        response.status === 200 ? resolve() : reject(buildError(response));
+      }).catch(error => reject(handleAxiosError(error)));
     })
   }
 
   search = (clientId: string): Promise<Array<ClientUri>> => {
     return new Promise<Array<ClientUri>>((resolve, reject) => {
       axios.get(
-        `${this.url}/${clientId}/client-uri`,
+        `${this.baseUrl}/${clientId}/client-uri`,
         {
           headers: {
             'Accept': 'application/json;charset=utf-8',
@@ -79,16 +74,16 @@ export default class ClientUriApi {
         } else if (response.status === 204) {
           resolve([]);
         } else {
-          reject(response);
+          reject(buildError(response))
         }
-      }).catch(error => reject(error));
+      }).catch(error => reject(handleAxiosError(error)));
     });
   }
 
   getRecordById = (clientId: string, clientUriId: string): Promise<ClientUri> => {
     return new Promise<ClientUri>((resolve, reject) => {
       axios.get(
-        `${this.url}/${clientId}/client-uri/${clientUriId}`,
+        `${this.baseUrl}/${clientId}/client-uri/${clientUriId}`,
         {
           headers: {
             'Accept': 'application/json;charset=utf-8',
@@ -99,9 +94,9 @@ export default class ClientUriApi {
         if (response.status === 200) {
           resolve(response.data);
         } else {
-          reject(response);
+          reject(buildError(response))
         }
-      }).catch(error => reject(error));
+      }).catch(error => reject(handleAxiosError(error)));
     });
   }
 }

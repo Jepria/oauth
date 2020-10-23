@@ -42,6 +42,14 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
     return Response.ok().build();
   }
 
+  @DELETE
+  @Path("/delete-all/{operatorId}")
+  @RolesAllowed("OADeleteSession")
+  public Response deleteAll(@PathParam("operatorId") Integer operatorId) {
+    sessionServerFactory.getService().deleteAll(operatorId, securityContext.getCredential());
+    return Response.ok().build();
+  }
+
   @GET
   @Path("/{sessionId}")
   @RolesAllowed("OAViewSession")
@@ -59,7 +67,6 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
   public Response postSearch(SearchRequestDto<SessionSearchDto> searchRequestDto,
                              @HeaderParam(ExtendedResponse.REQUEST_HEADER_NAME) String extendedResponse,
                              @HeaderParam("Cache-Control") String cacheControl) {
-    searchRequestDto.getTemplate().setHasToken(true);
     return searchEndpointAdapter.postSearch(searchRequestDto, extendedResponse, cacheControl);
   }
 
@@ -73,8 +80,8 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
     SessionSearchDto searchRequestDto = new SessionSearchDto();
     searchRequestDto.setSessionId(result.getTemplate().getSessionId());
     searchRequestDto.setOperatorId(result.getTemplate().getOperatorId());
-    searchRequestDto.setBlocked(result.getTemplate().getBlocked());
     searchRequestDto.setClientId(result.getTemplate().getClientId());
+    searchRequestDto.setMaxRowCount(result.getTemplate().getMaxRowCount());
 
     SearchRequestDto<SessionSearchDto> searchTemplate = new SearchRequestDto<>();
     searchTemplate.setTemplate(searchRequestDto);

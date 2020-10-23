@@ -4,10 +4,12 @@ import org.jepria.oauth.authentication.AuthenticationServerFactory;
 import org.jepria.oauth.authentication.dto.SessionTokenDto;
 import org.jepria.oauth.token.TokenServerFactory;
 import org.jepria.oauth.token.dto.TokenDto;
+import org.jepria.server.env.EnvironmentPropertySupport;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -20,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Date;
 
+import static org.jepria.oauth.main.OAuthConstants.*;
 import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 /**
@@ -37,12 +40,42 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
     return URI.create(request.getRequestURL().toString()).resolve(request.getContextPath()).toString();
   }
 
+  private Integer getAccessTokenLifeTime() {
+    HttpSession session = request.getSession(false);
+    String tokenLifeTime = null;
+    if (session != null) {
+      tokenLifeTime = (String) session.getAttribute(OAUTH_ACCESS_TOKEN_LIFE_TIME);
+    }
+    if (tokenLifeTime == null) {
+      tokenLifeTime = EnvironmentPropertySupport.getInstance(request).getProperty(OAUTH_ACCESS_TOKEN_LIFE_TIME, OAUTH_ACCESS_TOKEN_LIFE_TIME_DEFAULT);
+      if (session != null) {
+        session.setAttribute(OAUTH_ACCESS_TOKEN_LIFE_TIME, tokenLifeTime);
+      }
+    }
+    return Integer.valueOf(tokenLifeTime);
+  }
+
+  private Integer getSessionTokenLifeTime() {
+    HttpSession session = request.getSession(false);
+    String tokenLifeTime = null;
+    if (session != null) {
+      tokenLifeTime = (String) session.getAttribute(OAUTH_SSO_TOKEN_LIFE_TIME);
+    }
+    if (tokenLifeTime == null) {
+      tokenLifeTime = EnvironmentPropertySupport.getInstance(request).getProperty(OAUTH_SSO_TOKEN_LIFE_TIME, OAUTH_SSO_TOKEN_LIFE_TIME_DEFAULT);
+      if (session != null) {
+        session.setAttribute(OAUTH_SSO_TOKEN_LIFE_TIME, tokenLifeTime);
+      }
+    }
+    return Integer.valueOf(tokenLifeTime);
+  }
+
   @POST
   @Path("/authenticate")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   public Response authenticate(
       @QueryParam("response_type") String responseType,
-      @QueryParam("code") String authCode,
+      @QueryParam("authId") String authId,
       @QueryParam("redirect_uri") String redirectUriEncoded,
       @QueryParam("client_id") String clientId,
       @QueryParam("client_name") String clientName,
@@ -58,17 +91,20 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
     }
 
     SessionTokenDto sessionToken = authenticationServerFactory.getService()
-        .authenticate(authCode,
+        .authenticate(authId,
             redirectUri,
             clientId,
             username,
             password,
-            getHostContext());
+            getHostContext(),
+            getSessionTokenLifeTime());
     Response response;
     if (CODE.equalsIgnoreCase(responseType)) {
-      response = Response.
-          status(302)
-          .location(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + authCode + "&" + (state != null ? STATE + "=" + state : "")))
+      response = Response.status(302)
+          .location(URI.create(redirectUri +
+              getSeparator(redirectUri) +
+              CODE + "=" + sessionToken.getAuthorizationCode() +
+              "&" + (state != null ? STATE + "=" + state : "")))
           .cookie(new NewCookie(SESSION_ID,
               sessionToken.getToken(),
               null,
@@ -81,7 +117,12 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
               true))
           .build();
     } else if (TOKEN.equalsIgnoreCase(responseType)) {
-      TokenDto tokenDto = tokenServerFactory.getService().create(responseType, getHostContext(), authCode, clientId, URI.create(redirectUri));
+      TokenDto tokenDto = tokenServerFactory.getService().create(responseType,
+          getHostContext(),
+          sessionToken.getAuthorizationCode(),
+          clientId,
+          URI.create(redirectUri),
+          getAccessTokenLifeTime());
       response = Response.status(302).location(URI.create(redirectUri
           + "#" + ACCESS_TOKEN_QUERY_PARAM + tokenDto.getAccessToken()
           + "&" + TOKEN_TYPE_QUERY_PARAM + tokenDto.getTokenType()
@@ -101,6 +142,7 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
     } else {
       response = Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR_QUERY_PARAM + UNSUPPORTED_RESPONSE_TYPE)).build();
     }
+
     return response;
   }
 
@@ -118,12 +160,18 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();
     }
-    authenticationServerFactory
-        .getService()
-        .logout(clientId,
-            redirectUri,
-            sessionToken,
-            getHostContext());
+    if (sessionToken != null) {
+      authenticationServerFactory
+          .getService()
+          .logout(clientId,
+              redirectUri,
+              sessionToken,
+              getHostContext());
+    }
+    HttpSession session = request.getSession(false);
+    if (session != null) {
+      session.invalidate();
+    }
     return Response.status(302)
         .location(URI.create(redirectUri + getSeparator(redirectUri) + STATE + "=" + state))
         .cookie(new NewCookie(SESSION_ID, "", null, null, NewCookie.DEFAULT_VERSION, null, 0, new Date(), false, true))

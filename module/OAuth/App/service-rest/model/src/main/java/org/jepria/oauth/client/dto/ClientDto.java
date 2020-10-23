@@ -3,9 +3,10 @@ package org.jepria.oauth.client.dto;
 import org.jepria.server.data.OptionDto;
 import org.jepria.server.data.PrimaryKey;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class ClientDto {
+public class ClientDto implements Serializable {
 
   @PrimaryKey
   String clientId;
@@ -16,7 +17,7 @@ public class ClientDto {
   String tokenAuthMethod;
   List<String> grantTypes;
   List<String> responseTypes;
-  List<OptionDto<String>> scopes;
+  List<OptionDto<String>> scope;
 
   public String getClientId() {
     return clientId;
@@ -82,11 +83,11 @@ public class ClientDto {
     this.responseTypes = responseTypes;
   }
 
-  public List<OptionDto<String>> getScopes() {
-    return scopes;
+  public List<OptionDto<String>> getScope() {
+    return scope;
   }
 
-  public void setScopes(List<OptionDto<String>> scopes) {
-    this.scopes = scopes;
+  public void setScope(List<OptionDto<String>> scope) {
+    this.scope = scope;
   }
 }

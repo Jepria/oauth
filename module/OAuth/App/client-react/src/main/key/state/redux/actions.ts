@@ -2,15 +2,15 @@ import { Key } from "../../types";
 
 export const GET_KEY = 'GET_KEY';
 export const GET_KEY_SUCCESS = 'GET_KEY_SUCCESS';
+export const GET_KEY_FAILURE = 'GET_KEY_FAILURE';
 export const UPDATE_KEY = 'UPDATE_KEY';
 export const UPDATE_KEY_SUCCESS = 'UPDATE_KEY_SUCCESS';
-export const KEY_LOADING = 'KEY_LOADING';
-export const KEY_FAILURE = 'KEY_FAILURE';
-
+export const UPDATE_KEY_FAILURE = 'UPDATE_KEY_FAILURE';
 
 export interface GetKeyAction {
   type: typeof GET_KEY
-  callback?(): any;
+  loadingMessage: string
+  callback?(): any
 }
 
 export interface GetKeySuccessAction {
@@ -18,37 +18,39 @@ export interface GetKeySuccessAction {
   key: Key
 }
 
+export interface GetKeyFailureAction {
+  type: typeof GET_KEY_FAILURE
+  error: any
+}
+
 export interface UpdateKeyAction {
   type: typeof UPDATE_KEY
-  callback?(): any;
+  loadingMessage: string
+  callback?(): any
 }
 
 export interface UpdateKeySuccessAction {
   type: typeof UPDATE_KEY_SUCCESS
 }
 
-export interface LoadingAction {
-  type: typeof KEY_LOADING
-  message: string
-}
-
-export interface FailureAction {
-  type: typeof KEY_FAILURE
-  error: Error
+export interface UpdateKeyFailureAction {
+  type: typeof UPDATE_KEY_FAILURE
+  error: any
 }
 
 export type KeyActionTypes = 
 GetKeyAction |
 GetKeySuccessAction |
+GetKeyFailureAction |
 UpdateKeyAction |
 UpdateKeySuccessAction |
-LoadingAction |
-FailureAction;
+UpdateKeyFailureAction;
 
 
-export function getKey(callback?: () => any): KeyActionTypes {
+export function getKey(loadingMessage: string, callback?: () => any): KeyActionTypes {
   return {
     type: GET_KEY,
+    loadingMessage,
     callback: callback
   }
 }
@@ -60,9 +62,17 @@ export function getKeySuccess(key: Key): KeyActionTypes {
   }
 }
 
-export function updateKey(callback?: () => any): KeyActionTypes {
+
+export function getKeyFailure(error: any): KeyActionTypes {
+  return {
+    type: GET_KEY_FAILURE,
+    error: error
+  }
+}
+export function updateKey(loadingMessage: string, callback?: () => any): KeyActionTypes {
   return {
     type: UPDATE_KEY,
+    loadingMessage,
     callback: callback
   }
 }
@@ -73,16 +83,9 @@ export function updateKeySuccess(): KeyActionTypes {
   }
 }
 
-export function onLoading(message: string): KeyActionTypes {
+export function updateKeyFailure(error: any): KeyActionTypes {
   return {
-    type: KEY_LOADING,
-    message: message
-  }
-}
-
-export function onFailure(error: Error): KeyActionTypes {
-  return {
-    type: KEY_FAILURE,
+    type: UPDATE_KEY_FAILURE,
     error: error
   }
 }

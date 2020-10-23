@@ -21,8 +21,6 @@ import org.jepria.oauth.key.dao.KeyDao;
 import org.jepria.oauth.key.dao.KeyDaoImpl;
 import org.jepria.oauth.key.rest.KeyJaxrsAdapter;
 import org.jepria.oauth.main.exception.OAuthExceptionMapper;
-import org.jepria.oauth.main.rest.jersey.inject.ClientLocaleFeature;
-import org.jepria.oauth.main.rest.jersey.inject.ClientLocaleSupplier;
 import org.jepria.oauth.session.SessionServerFactory;
 import org.jepria.oauth.session.dao.SessionDao;
 import org.jepria.oauth.session.dao.SessionDaoImpl;
@@ -31,24 +29,10 @@ import org.jepria.oauth.token.TokenServerFactory;
 import org.jepria.oauth.token.rest.TokenJaxrsAdapter;
 import org.jepria.server.service.rest.jersey.ApplicationConfigBase;
 
-import java.util.Locale;
-
 public class Application extends ApplicationConfigBase {
 
   public Application() {
     super();
-    register(RequestLogFilter.class);
-    register(ClientLocaleFeature.class);
-    register(new AbstractBinder() {
-      @Override
-      protected void configure() {
-        bindFactory(ClientLocaleSupplier.class)
-            .to(Locale.class)
-            .proxy(true)
-            .proxyForSameScope(false)
-            .in(RequestScoped.class);
-      }
-    });
     register(ClientDaoImpl.class);
     register(new AbstractBinder() {
       @Override

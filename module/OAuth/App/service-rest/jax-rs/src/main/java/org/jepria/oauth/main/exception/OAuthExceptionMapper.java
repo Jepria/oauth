@@ -25,7 +25,7 @@ import java.util.Base64;
 
 import static org.jepria.oauth.sdk.OAuthConstants.*;
 
-public class OAuthExceptionMapper implements ExceptionMapper<OAuthRuntimeException> {
+public class OAuthExceptionMapper implements ExceptionMapper<Throwable> {
 
   @Context
   ResourceInfo resourceInfo;
@@ -36,14 +36,22 @@ public class OAuthExceptionMapper implements ExceptionMapper<OAuthRuntimeExcepti
   ExceptionManager exceptionManager = new ExceptionManagerImpl();
 
   @Override
-  public Response toResponse(OAuthRuntimeException exception) {
-    String errorId = exceptionManager.registerException(exception);
-    String exceptionCode = exception.getExceptionCode();
-    String error = ERROR_QUERY_PARAM + exceptionCode + "&"
-      + ERROR_DESCRIPTION_QUERY_PARAM + URIUtil.encodeURIComponent(exception.getMessage()) + "&"
-      + ERROR_ID_QUERY_PARAM + errorId;
+  public Response toResponse(Throwable th) {
+    String errorId = exceptionManager.registerException(th), exceptionCode, error;
+    if (th instanceof OAuthRuntimeException) {
+      OAuthRuntimeException exception = (OAuthRuntimeException) th;
+      exceptionCode = exception.getExceptionCode();
+      error = ERROR_QUERY_PARAM + exceptionCode + "&"
+          + ERROR_DESCRIPTION_QUERY_PARAM + URIUtil.encodeURIComponent(exception.getMessage()) + "&"
+          + ERROR_ID_QUERY_PARAM + errorId;
+    } else {
+      exceptionCode = SERVER_ERROR;
+      error = ERROR_QUERY_PARAM + exceptionCode + "&"
+          + ERROR_DESCRIPTION_QUERY_PARAM + URIUtil.encodeURIComponent(th.getMessage()) + "&"
+          + ERROR_ID_QUERY_PARAM + errorId;
+    }
     if (resourceInfo.getResourceClass().equals(AuthorizationJaxrsAdapter.class)
-      || resourceInfo.getResourceClass().equals(AuthenticationJaxrsAdapter.class)) {
+        || resourceInfo.getResourceClass().equals(AuthenticationJaxrsAdapter.class)) {
       MultivaluedMap<String, String> params = uriInfo.getQueryParameters(true);
       String encodedRedirectUri = params.getFirst(REDIRECT_URI);
       String state = params.getFirst(STATE);
@@ -56,21 +64,21 @@ public class OAuthExceptionMapper implements ExceptionMapper<OAuthRuntimeExcepti
           e.printStackTrace();
         }
         String escapedRedirectUri = URIUtil.encodeURIComponent(URI.create(redirectUri + getSeparator(redirectUri)
-          + error + "&"
-          + STATE + "=" + state).toString());
-        return Response.status(302).location(
-          URI.create(OAUTH_ERROR_CONTEXT_PATH + "?"
             + error + "&"
-            + REDIRECT_URI + "=" + escapedRedirectUri)).build();
+            + STATE + "=" + state).toString());
+        return Response.status(302).location(
+            URI.create(OAUTH_ERROR_CONTEXT_PATH + "?"
+                + error + "&"
+                + REDIRECT_URI + "=" + escapedRedirectUri)).build();
       } else {
         return Response.status(302).location(
-          URI.create(OAUTH_ERROR_CONTEXT_PATH + "?" + error)).build();
+            URI.create(OAUTH_ERROR_CONTEXT_PATH + "?" + error)).build();
       }
     } else {
       ErrorDto errorDto = new ErrorDto();
       errorDto.setErrorId(errorId);
       errorDto.setError(exceptionCode);
-      errorDto.setErrorDescription(exception.getMessage());
+      errorDto.setErrorDescription(th.getMessage());
       errorDto.setErrorUri(URI.create(request.getRequestURL().toString().replaceFirst(request.getRequestURI(), OAUTH_ERROR_CONTEXT_PATH) + "?" + error).toString());
 
       switch (exceptionCode) {

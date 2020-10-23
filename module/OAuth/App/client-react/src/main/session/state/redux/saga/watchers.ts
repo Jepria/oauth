@@ -1,12 +1,13 @@
 import { all, takeLatest, takeEvery  } from "redux-saga/effects";
-import { DELETE_SESSION, GET_SESSION_BY_ID, POST_SESSION_SEARCH_REQUEST, SEARCH_SESSIONS, SET_CURRENT_RECORD, GET_CLIENTS, GET_OPERATORS } from "../actions";
-import { remove, getById, postSearchRequest, search, setCurrentSession, getClients, getOperators } from "./workers";
+import { DELETE_SESSION, GET_SESSION_BY_ID, POST_SESSION_SEARCH_REQUEST, SEARCH_SESSIONS, SET_SESSION_CURRENT_RECORD, GET_CLIENTS, GET_OPERATORS, DELETE_ALL } from "../actions";
+import { remove, getById, postSearchRequest, search, setCurrentSession, getClients, getOperators, removeAll } from "./workers";
 
 
 function* entityWatcher() {
   yield takeEvery(DELETE_SESSION, remove);
+  yield takeEvery(DELETE_ALL, removeAll);
   yield takeEvery(GET_SESSION_BY_ID, getById);
-  yield takeEvery(SET_CURRENT_RECORD, setCurrentSession);
+  yield takeEvery(SET_SESSION_CURRENT_RECORD, setCurrentSession);
 }
 
 function* searchWatcher() {

@@ -71,8 +71,8 @@ public class SessionDaoIT extends DaoTestBase {
       byte[] codeChallenge = new byte[64];
       sr.nextBytes(codeChallenge);
       sessionCreateDto.setCodeChallenge(encoder.encodeToString(codeChallenge));
-      Integer sessionId = (Integer) dao.create(sessionCreateDto, 1);
-      SessionDto sessionDto = (SessionDto) dao.findByPrimaryKey(new HashMap<String, Integer>() {{
+      String sessionId = (String) dao.create(sessionCreateDto, 1);
+      SessionDto sessionDto = (SessionDto) dao.findByPrimaryKey(new HashMap<String, String>() {{
         put(SESSION_ID, sessionId);
       }}, 1).get(0);
       assertEquals(sessionDto.getAuthorizationCode(), sessionCreateDto.getAuthorizationCode());
@@ -107,7 +107,7 @@ public class SessionDaoIT extends DaoTestBase {
       sessionUpdateDto.setSessionTokenId(encoder.encodeToString(newSessionTokenId));
       sessionUpdateDto.setSessionTokenDateIns(new Date());
       sessionUpdateDto.setSessionTokenDateFinish(new Date(new Date().getTime() + 1000000));
-      dao.update(new HashMap<String, Integer>() {{
+      dao.update(new HashMap<String, String>() {{
         put(SESSION_ID, sessionId);
       }}, sessionUpdateDto, 1);
 
@@ -118,7 +118,6 @@ public class SessionDaoIT extends DaoTestBase {
       sessionSearchDto.setClientId(properties.getProperty("client.id"));
       sessionSearchDto.setOperatorId(7);
       sessionSearchDto.setRedirectUri(properties.getProperty("client.redirect_uri"));
-      sessionSearchDto.setBlocked(false);
       List<SessionDto> result = (List<SessionDto>) dao.find(sessionSearchDto, 1);
       assertFalse(result.isEmpty());
       assertTrue(result.size() == 1);
@@ -128,10 +127,10 @@ public class SessionDaoIT extends DaoTestBase {
       assertEquals(result.get(0).getSessionTokenId(), sessionUpdateDto.getSessionTokenId());
 
       //block
-      dao.delete(new HashMap<String, Integer>() {{
+      dao.delete(new HashMap<String, String>() {{
         put(SESSION_ID, sessionId);
       }}, 1);
-      result = (List<SessionDto>) dao.findByPrimaryKey(new HashMap<String, Integer>() {{
+      result = (List<SessionDto>) dao.findByPrimaryKey(new HashMap<String, String>() {{
         put(SESSION_ID, sessionId);
       }}, 1);
       assertTrue(result.isEmpty());

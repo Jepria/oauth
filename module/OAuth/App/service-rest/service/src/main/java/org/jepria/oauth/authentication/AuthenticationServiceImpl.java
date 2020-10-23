@@ -14,6 +14,7 @@ import org.jepria.oauth.sdk.token.rsa.EncryptorRSA;
 import org.jepria.oauth.sdk.token.rsa.SignatureVerifierRSA;
 import org.jepria.oauth.sdk.token.rsa.SignerRSA;
 import org.jepria.oauth.session.SessionService;
+import org.jepria.oauth.session.dto.SessionCreateDto;
 import org.jepria.oauth.session.dto.SessionDto;
 import org.jepria.oauth.session.dto.SessionSearchDto;
 import org.jepria.oauth.session.dto.SessionUpdateDto;
@@ -28,7 +29,6 @@ import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 public class AuthenticationServiceImpl implements AuthenticationService {
 
-  public static int DEFAULT_EXPIRE_TIME = 24 * 7;
   private final AuthenticationDao dao;
   private final SessionService sessionService;
   private final ClientUriService clientUriService;
@@ -58,10 +58,26 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
   };
 
+  @Override
   public Integer loginByPassword(String username, String password) {
     Integer operatorId;
     try {
       operatorId = dao.loginByPassword(username, password);
+    } catch (RuntimeSQLException th) {
+      throw new OAuthRuntimeException(SERVER_ERROR, th);
+    }
+    if (operatorId == null) {
+      throw new OAuthRuntimeException(ACCESS_DENIED, "Wrong username/password.");
+    } else {
+      return operatorId;
+    }
+  }
+
+  @Override
+  public Integer loginByPasswordHash(String username, String passwordHash) {
+    Integer operatorId;
+    try {
+      operatorId = dao.loginByHash(username, passwordHash);
     } catch (RuntimeSQLException th) {
       throw new OAuthRuntimeException(SERVER_ERROR, th);
     }
@@ -120,13 +136,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
   @Override
   public SessionTokenDto authenticate(
-    String authCode,
+    String sessionId,
     String redirectUri,
     String clientId,
     String username,
     String password,
-    String host) {
-    SessionDto session = getSession(authCode, clientId, redirectUri);
+    String host,
+    Integer sessionTokenLifeTime) {
+    SessionDto session = getSession(sessionId, clientId, redirectUri);
     if (TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - session.getDateIns().getTime()) > 10) {
       throw new OAuthRuntimeException(ACCESS_DENIED, "Authorization code not found or has expired");
     }
@@ -138,7 +155,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
     Integer operatorId = loginByPassword(username, password);
     KeyDto keyDto = keyService.getKeys(null, serverCredential);
-    Token sessionToken = generateSessionToken(username, operatorId, host, keyDto.getPrivateKey(), null);
+    Token sessionToken = generateSessionToken(username, operatorId, host, keyDto.getPrivateKey(), sessionTokenLifeTime);
+    SessionCreateDto sessionCreateDto = new SessionCreateDto();
+    sessionCreateDto.setAuthorizationCode(sessionToken.getJti());
+    sessionCreateDto.setSessionTokenId(sessionToken.getJti());
+    sessionCreateDto.setClientId(clientId);
+    sessionCreateDto.setRedirectUri(redirectUri);
+    sessionCreateDto.setSessionTokenDateIns(sessionToken.getIssueTime());
+    sessionCreateDto.setSessionTokenDateFinish(sessionToken.getExpirationTime());
+    sessionCreateDto.setOperatorId(operatorId);
+    sessionService.create(sessionCreateDto, serverCredential);
     updateSession(session,
       operatorId,
       sessionToken.getJti(),
@@ -157,6 +183,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       throw new OAuthRuntimeException(SERVER_ERROR, e);
     }
     sessionTokenDto.setToken(sessionToken.asString());
+    sessionTokenDto.setAuthorizationCode(session.getAuthorizationCode());
     return sessionTokenDto;
   }
 
@@ -181,7 +208,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       if (verifier.verify(token) && issuer.equals(token.getIssuer())) {
         SessionSearchDto searchTemplate = new SessionSearchDto();
         searchTemplate.setSessionTokenId(token.getJti());
-        searchTemplate.setBlocked(false);
         sessionService
           .find(searchTemplate, serverCredential)
           .stream()
@@ -192,10 +218,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
   }
 
-  private SessionDto getSession(String authCode, String clientId, String redirectUri) {
+  private SessionDto getSession(String sessionId, String clientId, String redirectUri) {
     SessionSearchDto searchTemplate = new SessionSearchDto();
     searchTemplate.setClientId(clientId);
-    searchTemplate.setAuthorizationCode(authCode);
+    searchTemplate.setSessionId(sessionId);
     searchTemplate.setRedirectUri(redirectUri);
     List<SessionDto> sessions = sessionService.find(searchTemplate, serverCredential);
     if (sessions.size() == 1) {
@@ -240,7 +266,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
        * Create token with JWT lib
        */
       Token token = new TokenImpl(tokenId, Collections.EMPTY_LIST, username + ":" + operatorId,
-        issuer, addHours(new Date(), expiresIn == null ? DEFAULT_EXPIRE_TIME : expiresIn), new Date());
+        issuer, addHours(new Date(), expiresIn), new Date());
       /**
        * Sign token with private key
        */

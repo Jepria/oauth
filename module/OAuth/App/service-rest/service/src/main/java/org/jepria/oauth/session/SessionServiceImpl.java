@@ -12,9 +12,9 @@ import org.jepria.server.service.security.Credential;
 import java.util.List;
 
 public class SessionServiceImpl extends EntityServiceImpl implements SessionService {
-  
+
   private final SessionDao dao;
-  
+
   public SessionServiceImpl(SessionDao dao, RecordDefinition recordDefinition) {
     super(dao, recordDefinition);
     this.dao = dao;
@@ -28,5 +28,15 @@ public class SessionServiceImpl extends EntityServiceImpl implements SessionServ
   @Override
   public List<OptionDto<String>> getOperators(String operatorName, Integer maxRowCount) {
     return dao.getOperators(operatorName, maxRowCount);
+  }
+
+  @Override
+  public void deleteAll(Integer operatorId, Credential credential) {
+    SessionSearchDto sessionSearchDto = new SessionSearchDto();
+    sessionSearchDto.setOperatorId(operatorId);
+    List<SessionDto> result = find(sessionSearchDto, credential);
+    if (result != null) {
+      result.stream().forEach(sessionDto -> deleteRecord(String.valueOf(sessionDto.getSessionId()), credential));
+    }
   }
 }

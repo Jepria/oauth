@@ -9,7 +9,7 @@ import java.util.Date;
 public class SessionDto implements Serializable {
 
   @PrimaryKey
-  Integer sessionId;
+  String sessionId;
   String authorizationCode;
   Date dateIns;
   OptionDto<Integer> operator;
@@ -27,11 +27,11 @@ public class SessionDto implements Serializable {
   String redirectUri;
   OptionDto<String> client;
 
-  public Integer getSessionId() {
+  public String getSessionId() {
     return sessionId;
   }
 
-  public void setSessionId(Integer sessionId) {
+  public void setSessionId(String sessionId) {
     this.sessionId = sessionId;
   }
 

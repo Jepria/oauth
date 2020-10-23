@@ -78,7 +78,7 @@ public class AuthenticationServiceTest {
     when(sessionService.find(any(SessionSearchDto.class), any())).thenAnswer((Answer<List<SessionDto>>) invocationOnMock -> {
       SessionSearchDto template = invocationOnMock.getArgument(0);
       SessionDto sessionDto = new SessionDto();
-      sessionDto.setSessionId(1);
+      sessionDto.setSessionId("1");
       sessionDto.setAuthorizationCode("authCode");
       sessionDto.setRedirectUri("http://redirecturi");
       sessionDto.setDateIns(new Date((new Date().getTime() - 1000)));
@@ -86,7 +86,7 @@ public class AuthenticationServiceTest {
       client.setName("testClientName");
       client.setValue("testClient");
       sessionDto.setClient(client);
-      if (sessionDto.getAuthorizationCode().equals(template.getAuthorizationCode())
+      if (sessionDto.getSessionId().equals(template.getSessionId())
           && sessionDto.getRedirectUri().equals(template.getRedirectUri())
           && sessionDto.getClient().getValue().equals(template.getClientId())) {
         return Collections.singletonList(sessionDto);
@@ -157,7 +157,7 @@ public class AuthenticationServiceTest {
   
   @Test
   public void authenticationTest() {
-    SessionTokenDto sessionTokenDto = authenticationService.authenticate("authCode",
+    SessionTokenDto sessionTokenDto = authenticationService.authenticate("1",
         "http://redirecturi",
         "testClient",
         "testUser",

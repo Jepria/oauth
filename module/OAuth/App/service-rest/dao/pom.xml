@@ -6,7 +6,7 @@
 
     <groupId>org.jepria.oauth</groupId>
     <artifactId>dao</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -15,14 +15,14 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
         <oracle.version>11.2.0.4</oracle.version>
-        <jepria-rest.version>12.2.0-SNAPSHOT</jepria-rest.version>
-        <oauth.version>1.0.0-SNAPSHOT</oauth.version>
+        <jepria-rest.version>12.2.0</jepria-rest.version>
+        <oauth.version>1.0.0</oauth.version>
     </properties>
 
     <parent>
         <groupId>org.jepria.oauth</groupId>
         <artifactId>service-rest</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.0</version>
     </parent>
 
     <dependencies>
@@ -35,7 +35,7 @@
         <dependency>
             <groupId>org.jepria.oauth</groupId>
             <artifactId>model</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>com.oracle</groupId>

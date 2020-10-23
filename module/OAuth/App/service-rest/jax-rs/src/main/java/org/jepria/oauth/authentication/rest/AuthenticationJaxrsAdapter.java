@@ -75,7 +75,7 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   public Response authenticate(
       @QueryParam("response_type") String responseType,
-      @QueryParam("code") String authCode,
+      @QueryParam("authId") String authId,
       @QueryParam("redirect_uri") String redirectUriEncoded,
       @QueryParam("client_id") String clientId,
       @QueryParam("client_name") String clientName,
@@ -91,7 +91,7 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
     }
 
     SessionTokenDto sessionToken = authenticationServerFactory.getService()
-        .authenticate(authCode,
+        .authenticate(authId,
             redirectUri,
             clientId,
             username,
@@ -101,7 +101,10 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
     Response response;
     if (CODE.equalsIgnoreCase(responseType)) {
       response = Response.status(302)
-          .location(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + authCode + "&" + (state != null ? STATE + "=" + state : "")))
+          .location(URI.create(redirectUri +
+              getSeparator(redirectUri) +
+              CODE + "=" + sessionToken.getAuthorizationCode() +
+              "&" + (state != null ? STATE + "=" + state : "")))
           .cookie(new NewCookie(SESSION_ID,
               sessionToken.getToken(),
               null,
@@ -114,7 +117,12 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
               true))
           .build();
     } else if (TOKEN.equalsIgnoreCase(responseType)) {
-      TokenDto tokenDto = tokenServerFactory.getService().create(responseType, getHostContext(), authCode, clientId, URI.create(redirectUri), getAccessTokenLifeTime());
+      TokenDto tokenDto = tokenServerFactory.getService().create(responseType,
+          getHostContext(),
+          sessionToken.getAuthorizationCode(),
+          clientId,
+          URI.create(redirectUri),
+          getAccessTokenLifeTime());
       response = Response.status(302).location(URI.create(redirectUri
           + "#" + ACCESS_TOKEN_QUERY_PARAM + tokenDto.getAccessToken()
           + "&" + TOKEN_TYPE_QUERY_PARAM + tokenDto.getTokenType()

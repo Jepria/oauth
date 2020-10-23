@@ -55,7 +55,7 @@ public class TokenServiceTest {
     when(sessionService.find(any(SessionSearchDto.class), any())).thenAnswer((Answer<List<SessionDto>>) invocationOnMock -> {
       SessionSearchDto template = invocationOnMock.getArgument(0);
       SessionDto sessionDto = new SessionDto();
-      sessionDto.setSessionId(1);
+      sessionDto.setSessionId("1");
       sessionDto.setAuthorizationCode(template.getAuthorizationCode());
       sessionDto.setRedirectUri(template.getRedirectUri());
       sessionDto.setDateIns(new Date((new Date().getTime() - 1000)));

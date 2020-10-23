@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class SessionSearchDto implements Serializable {
 
-  Integer sessionId;
+  String sessionId;
   String authorizationCode;
   Integer operatorId;
   String clientId;
@@ -14,11 +14,11 @@ public class SessionSearchDto implements Serializable {
   String redirectUri;
   Integer maxRowCount;
 
-  public Integer getSessionId() {
+  public String getSessionId() {
     return sessionId;
   }
 
-  public void setSessionId(Integer sessionId) {
+  public void setSessionId(String sessionId) {
     this.sessionId = sessionId;
   }
 

@@ -39,6 +39,7 @@
     "redirectUri": "URL переадресации",
     "client": {
       "legend": "Приложение",
+      "placeholder": "Введите наименование приложения",
       "id": "ID",
       "name": "Наименование",
       "redirectUri": "URL переадресации"
@@ -48,6 +49,7 @@
     "operatorName": "Имя пользователя",
     "operator": {
       "legend": "Пользователь",
+      "placeholder": "Введите имя пользователя",
       "id": "ID",
       "login": "Логин",
       "name": "Имя"

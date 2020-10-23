@@ -67,7 +67,7 @@ public class AuthorizationServiceTest {
       
       SessionDto sessionDto = new SessionDto();
       SecureRandom sr = SecureRandom.getInstanceStrong();
-      sessionDto.setSessionId(sr.nextInt());
+      sessionDto.setSessionId(String.valueOf(sr.nextInt()));
       sessionDto.setDateIns((new Date()));
       sessionDto.setCodeChallenge(sessionCreateDto.getCodeChallenge());
       sessionDto.setAuthorizationCode(sessionCreateDto.getAuthorizationCode());

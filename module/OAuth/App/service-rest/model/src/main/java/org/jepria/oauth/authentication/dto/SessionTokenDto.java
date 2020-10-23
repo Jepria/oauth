@@ -3,8 +3,17 @@ package org.jepria.oauth.authentication.dto;
 import java.util.Date;
 
 public class SessionTokenDto {
+  String authorizationCode;
   String token;
   Date expirationDate;
+
+  public String getAuthorizationCode() {
+    return authorizationCode;
+  }
+
+  public void setAuthorizationCode(String authorizationCode) {
+    this.authorizationCode = authorizationCode;
+  }
 
   public String getToken() {
     return token;

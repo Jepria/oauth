@@ -53,6 +53,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
           <ComboBox
             name="operatorId"
             isLoading={operatorsLoading}
+            placeholder={t('session.operator.placeholder')}
             value={formik.values.operatorId}
             error={formik.errors.operatorId}
             onInputChange={(e: { target: { value: string | undefined; }; }) => dispatch(getOperators(e.target.value))}
@@ -67,6 +68,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
           <ComboBox
             options={clients ? clients : []}
             name="clientId"
+            placeholder={t('session.client.placeholder')}
             isLoading={clientsLoading}
             value={formik.values.clientId}
             error={formik.errors.clientId}

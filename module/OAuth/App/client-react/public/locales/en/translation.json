@@ -45,12 +45,14 @@
     "sessionToken": "Session token",
     "client": {
       "legend": "Application",
+      "placeholder": "Enter application name",
       "id": "ID",
       "name": "Name",
       "redirectUri": "Redirect URL"
     },
     "operator": {
       "legend": "Operator",
+      "placeholder": "Enter operator name",
       "id": "ID",
       "login": "Login",
       "name": "Name"

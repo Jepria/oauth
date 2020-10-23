@@ -43,7 +43,7 @@ public class SessionDaoImpl implements SessionDao {
       new ResultSetMapper<SessionDto>() {
         @Override
         public void map(ResultSet rs, SessionDto dto) throws SQLException {
-          dto.setSessionId(getInteger(rs, SESSION_ID));
+          dto.setSessionId(rs.getString(SESSION_ID));
           dto.setAuthorizationCode(rs.getString(AUTHORIZATION_CODE));
           dto.setDateIns(getTimestamp(rs, DATE_INS));
           dto.setRedirectUri(rs.getString(REDIRECT_URI));
@@ -106,7 +106,7 @@ public class SessionDaoImpl implements SessionDao {
       new ResultSetMapper<SessionDto>() {
         @Override
         public void map(ResultSet rs, SessionDto dto) throws SQLException {
-          dto.setSessionId(getInteger(rs, SESSION_ID));
+          dto.setSessionId(rs.getString(SESSION_ID));
           dto.setAuthorizationCode(rs.getString(AUTHORIZATION_CODE));
           dto.setDateIns(getTimestamp(rs, DATE_INS));
           dto.setRedirectUri(rs.getString(REDIRECT_URI));

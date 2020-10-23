@@ -4,7 +4,7 @@ import java.util.Date;
 
 public class SessionUpdateDto {
 
-  Integer sessionId;
+  String sessionId;
   String authorizationCode;
   String redirectUri;
   String clientId;
@@ -20,11 +20,11 @@ public class SessionUpdateDto {
   Date refreshTokenDateFinish;
   String codeChallenge;
 
-  public Integer getSessionId() {
+  public String getSessionId() {
     return sessionId;
   }
 
-  public void setSessionId(Integer sessionId) {
+  public void setSessionId(String sessionId) {
     this.sessionId = sessionId;
   }
 

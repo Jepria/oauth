@@ -5,8 +5,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Client, ClientState } from '../types';
 import { createClient, getRoles } from '../state/redux/actions';
 import { GrantType, ApplicationGrantType } from '@jfront/oauth-core';
-import { SelectInput, TextInput, CheckBoxGroup, CheckBox, Form } from '@jfront/ui-core';
-import { DualListField } from '../../../components/form/input/DualListField';
+import { SelectInput, TextInput, CheckBoxGroup, CheckBox, Form} from '@jfront/ui-core';
+import { DualList } from '@jfront/ui-dual-list';
 import { AppState } from '../../../redux/store';
 import { useTranslation } from 'react-i18next';
 
@@ -138,7 +138,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
           <Form.Control
             style={{ minWidth: "300px", maxWidth: "500px" }}
             error={formik.errors.scope}>
-            <DualListField
+            <DualList
               options={roles ? roles : []}
               placeholder="Введите имя роли"
               name="scope"

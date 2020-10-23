@@ -136,14 +136,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
   @Override
   public SessionTokenDto authenticate(
-    String authCode,
+    String sessionId,
     String redirectUri,
     String clientId,
     String username,
     String password,
     String host,
     Integer sessionTokenLifeTime) {
-    SessionDto session = getSession(authCode, clientId, redirectUri);
+    SessionDto session = getSession(sessionId, clientId, redirectUri);
     if (TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - session.getDateIns().getTime()) > 10) {
       throw new OAuthRuntimeException(ACCESS_DENIED, "Authorization code not found or has expired");
     }
@@ -183,6 +183,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       throw new OAuthRuntimeException(SERVER_ERROR, e);
     }
     sessionTokenDto.setToken(sessionToken.asString());
+    sessionTokenDto.setAuthorizationCode(session.getAuthorizationCode());
     return sessionTokenDto;
   }
 
@@ -217,10 +218,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
   }
 
-  private SessionDto getSession(String authCode, String clientId, String redirectUri) {
+  private SessionDto getSession(String sessionId, String clientId, String redirectUri) {
     SessionSearchDto searchTemplate = new SessionSearchDto();
     searchTemplate.setClientId(clientId);
-    searchTemplate.setAuthorizationCode(authCode);
+    searchTemplate.setSessionId(sessionId);
     searchTemplate.setRedirectUri(redirectUri);
     List<SessionDto> sessions = sessionService.find(searchTemplate, serverCredential);
     if (sessions.size() == 1) {

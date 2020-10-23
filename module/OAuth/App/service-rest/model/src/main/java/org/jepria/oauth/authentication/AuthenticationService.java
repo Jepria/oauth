@@ -48,7 +48,7 @@ public interface AuthenticationService {
    * Результат -> созданная SSO сессия OAuth
    * </pre>
    *
-   * @param authCode одноразовый код
+   * @param sessionId id авторизационной сессии
    * @param redirectUri URL для перенаправления
    * @param clientId ID клиентского приложения
    * @param username имя пользователя
@@ -58,7 +58,7 @@ public interface AuthenticationService {
    * @return Session Token
    */
   SessionTokenDto authenticate(
-    String authCode,
+    String sessionId,
     String redirectUri,
     String clientId,
     String username,

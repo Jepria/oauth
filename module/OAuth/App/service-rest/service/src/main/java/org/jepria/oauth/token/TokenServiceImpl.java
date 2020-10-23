@@ -30,8 +30,6 @@ import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 public class TokenServiceImpl implements TokenService {
 
-//  private static final int ACCESS_TOKEN_LIFETIME = 3600 * 8; //8 hours
-//  private static final int REFRESH_TOKEN_LIFETIME = 3600 * 24 * 7; //1 week
   private static final String TOKEN_TYPE = "Bearer";
   private final SessionService sessionService;
   private final KeyService keyService;

@@ -2,6 +2,7 @@ package org.jepria.oauth.authorization.rest;
 
 import org.jepria.oauth.authorization.AuthorizationServerFactory;
 import org.jepria.oauth.exception.OAuthRuntimeException;
+import org.jepria.oauth.main.rest.jersey.LoginAttemptLimitFilter;
 import org.jepria.oauth.sdk.ResponseType;
 import org.jepria.oauth.session.dto.SessionDto;
 import org.jepria.oauth.token.TokenServerFactory;
@@ -11,10 +12,8 @@ import org.jepria.server.service.rest.JaxrsAdapterBase;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.NewCookie;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.*;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -22,8 +21,10 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.Map;
 
 import static org.jepria.oauth.main.OAuthConstants.AUTH_ID;
+import static org.jepria.oauth.main.rest.jersey.LoginAttemptLimitFilter.CURRENT_ATTEMPT_COUNT;
 import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
@@ -33,6 +34,8 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
   TokenServerFactory tokenServerFactory;
   @Context
   HttpServletRequest request;
+  @Context
+  ContainerRequestContext containerRequestContext;
 
   private String getHostContext() {
     return URI.create(request.getRequestURL().toString()).resolve(request.getContextPath()).toString();
@@ -48,6 +51,14 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
                             @QueryParam("code_challenge") String codeChallenge,
                             @QueryParam("state") String state,
                             @CookieParam(SESSION_ID) String sessionToken) {
+
+    Map<String, Cookie> cookieMap = containerRequestContext.getCookies();
+    if (cookieMap.containsKey(CURRENT_ATTEMPT_COUNT)) {
+      if (Integer.valueOf(cookieMap.get(CURRENT_ATTEMPT_COUNT).getValue()).compareTo(LoginAttemptLimitFilter.getMaxAttemptCount()) > 0) {
+        throw new OAuthRuntimeException(ACCESS_DENIED, "Превышено количество неуспешных попыток входа, обратитесь в службу технической поддержки для восстановления доступа.");
+      }
+    }
+
     String redirectUri = null;
     if (redirectUriEncoded == null) {
       throw new OAuthRuntimeException(INVALID_REQUEST, "redirect_uri is null");

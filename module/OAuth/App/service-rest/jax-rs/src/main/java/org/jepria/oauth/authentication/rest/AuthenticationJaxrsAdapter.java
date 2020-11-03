@@ -2,6 +2,9 @@ package org.jepria.oauth.authentication.rest;
 
 import org.jepria.oauth.authentication.AuthenticationServerFactory;
 import org.jepria.oauth.authentication.dto.SessionTokenDto;
+import org.jepria.oauth.exception.OAuthRuntimeException;
+import org.jepria.oauth.main.rest.jersey.LoginAttempt;
+import org.jepria.oauth.main.rest.jersey.LoginAttemptLimitFilter;
 import org.jepria.oauth.token.TokenServerFactory;
 import org.jepria.oauth.token.dto.TokenDto;
 import org.jepria.server.env.EnvironmentPropertySupport;
@@ -11,6 +14,7 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
@@ -18,11 +22,14 @@ import javax.ws.rs.core.Response;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Date;
 
 import static org.jepria.oauth.main.OAuthConstants.*;
+import static org.jepria.oauth.main.rest.jersey.LoginAttemptLimitFilter.CURRENT_ATTEMPT_COUNT;
+import static org.jepria.oauth.main.rest.jersey.LoginAttemptLimitFilter.DEFAULT_MAX_ATTEMPT_COUNT;
 import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 /**
@@ -35,6 +42,8 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
   TokenServerFactory tokenServerFactory;
   @Context
   HttpServletRequest request;
+  @Context
+  ContainerRequestContext containerRequestContext;
 
   private String getHostContext() {
     return URI.create(request.getRequestURL().toString()).resolve(request.getContextPath()).toString();
@@ -73,6 +82,7 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
   @POST
   @Path("/authenticate")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+  @LoginAttempt
   public Response authenticate(
       @QueryParam("response_type") String responseType,
       @QueryParam("authId") String authId,
@@ -81,7 +91,7 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
       @QueryParam("client_name") String clientName,
       @QueryParam("state") String state,
       @FormParam("username") String username,
-      @FormParam("password") String password) {
+      @FormParam("password") String password) throws UnsupportedEncodingException {
     String redirectUri = null;
 
     try {
@@ -89,15 +99,34 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();
     }
-
-    SessionTokenDto sessionToken = authenticationServerFactory.getService()
-        .authenticate(authId,
-            redirectUri,
-            clientId,
-            username,
-            password,
-            getHostContext(),
-            getSessionTokenLifeTime());
+    if (((Integer) containerRequestContext.getProperty(CURRENT_ATTEMPT_COUNT)).compareTo(LoginAttemptLimitFilter.getMaxAttemptCount()) > 0) {
+      throw new OAuthRuntimeException(ACCESS_DENIED, "Превышено количество неуспешных попыток входа, обратитесь в службу технической поддержки для восстановления доступа.");
+    }
+    SessionTokenDto sessionToken;
+    try {
+      sessionToken = authenticationServerFactory.getService()
+          .authenticate(authId,
+              redirectUri,
+              clientId,
+              username,
+              password,
+              getHostContext(),
+              getSessionTokenLifeTime());
+    } catch (OAuthRuntimeException ex) {
+      if (ex.getExceptionCode().equals(ACCESS_DENIED)) {
+        return Response.status(302).location(URI.create("/oauth/login/?"
+            + RESPONSE_TYPE + "=" + responseType
+            + "&" + AUTH_ID + "=" + authId
+            + "&" + REDIRECT_URI + "=" + redirectUriEncoded
+            + "&" + CLIENT_ID + "=" + clientId
+            + "&" + CLIENT_NAME + "=" + URLEncoder.encode(clientName, StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20")
+            + "&" + STATE + "=" + state
+            + "&" + ERROR_QUERY_PARAM + ACCESS_DENIED)).build();
+      } else {
+        throw ex;
+      }
+    }
+    containerRequestContext.setProperty(CURRENT_ATTEMPT_COUNT, 0);
     Response response;
     if (CODE.equalsIgnoreCase(responseType)) {
       response = Response.status(302)

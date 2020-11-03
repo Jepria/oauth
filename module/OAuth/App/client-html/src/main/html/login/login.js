@@ -42,7 +42,7 @@ function refreshFormParameters() {
 }
 
 function isErrorResponse() {
-  if (parameters['error-code'] === '401') {
+  if (parameters['error'] === 'access_denied') {
     document.getElementById("error-message-container").className = "has-error";
     document.getElementById('error-message').appendChild(document.createTextNode("Неверные данные!"));
   } else {

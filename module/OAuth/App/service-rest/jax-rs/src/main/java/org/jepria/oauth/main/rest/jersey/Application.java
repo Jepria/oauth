@@ -33,6 +33,7 @@ public class Application extends ApplicationConfigBase {
 
   public Application() {
     super();
+    register(LoginAttemptLimitFilter.class);
     register(ClientDaoImpl.class);
     register(new AbstractBinder() {
       @Override

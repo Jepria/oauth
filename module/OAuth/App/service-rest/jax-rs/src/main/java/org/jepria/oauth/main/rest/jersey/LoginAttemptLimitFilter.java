@@ -1,5 +1,7 @@
 package org.jepria.oauth.main.rest.jersey;
 
+import org.jepria.server.env.EnvironmentPropertySupport;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -17,12 +19,13 @@ import java.util.Map;
 public class LoginAttemptLimitFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
   public static final Integer DEFAULT_MAX_ATTEMPT_COUNT = 3;
+  public static final String OAUTH_LOGIN_MAX_ATTEMPT_COUNT = "OAUTH_LOGIN_MAX_ATTEMPT_COUNT";
   public static final String CURRENT_ATTEMPT_COUNT = "CURRENT_ATTEMPT_COUNT";
   @Context
   private HttpServletResponse httpServletResponse;
 
-  public static Integer getMaxAttemptCount() {
-    return DEFAULT_MAX_ATTEMPT_COUNT;
+  public static Integer getMaxAttemptCount(HttpServletRequest httpServletRequest) {
+    return Integer.valueOf(EnvironmentPropertySupport.getInstance(httpServletRequest).getProperty(OAUTH_LOGIN_MAX_ATTEMPT_COUNT, DEFAULT_MAX_ATTEMPT_COUNT.toString()));
   }
 
   @Override

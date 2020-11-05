@@ -99,7 +99,7 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();
     }
-    if (((Integer) containerRequestContext.getProperty(CURRENT_ATTEMPT_COUNT)).compareTo(LoginAttemptLimitFilter.getMaxAttemptCount()) > 0) {
+    if (((Integer) containerRequestContext.getProperty(CURRENT_ATTEMPT_COUNT)).compareTo(LoginAttemptLimitFilter.getMaxAttemptCount(request)) > 0) {
       throw new OAuthRuntimeException(ACCESS_DENIED, "Превышено количество неуспешных попыток входа, обратитесь в службу технической поддержки для восстановления доступа.");
     }
     SessionTokenDto sessionToken;

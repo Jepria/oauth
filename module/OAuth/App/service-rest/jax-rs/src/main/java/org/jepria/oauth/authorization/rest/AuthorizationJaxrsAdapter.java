@@ -54,7 +54,7 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
 
     Map<String, Cookie> cookieMap = containerRequestContext.getCookies();
     if (cookieMap.containsKey(CURRENT_ATTEMPT_COUNT)) {
-      if (Integer.valueOf(cookieMap.get(CURRENT_ATTEMPT_COUNT).getValue()).compareTo(LoginAttemptLimitFilter.getMaxAttemptCount()) > 0) {
+      if (Integer.valueOf(cookieMap.get(CURRENT_ATTEMPT_COUNT).getValue()).compareTo(LoginAttemptLimitFilter.getMaxAttemptCount(request)) > 0) {
         throw new OAuthRuntimeException(ACCESS_DENIED, "Превышено количество неуспешных попыток входа, обратитесь в службу технической поддержки для восстановления доступа.");
       }
     }

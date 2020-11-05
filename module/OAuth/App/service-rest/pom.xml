@@ -6,7 +6,7 @@
 
   <groupId>org.jepria.oauth</groupId>
   <artifactId>service-rest</artifactId>
-  <version>1.1.0-SNAPSHOT</version>
+  <version>1.0.1</version>
   <packaging>pom</packaging>
 
   <modules>
@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.jepria.oauth</groupId>
     <artifactId>OAuth</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
+    <version>1.0.1</version>
   </parent>
 
   <build>

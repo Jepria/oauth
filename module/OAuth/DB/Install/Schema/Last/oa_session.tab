@@ -42,6 +42,11 @@ create table
 
 
 
+create materialized view log on oa_session
+/
+
+
+
 -- index: oa_session_ix_client_id_actual
 -- Индекс для внешнего ключа.
 create index

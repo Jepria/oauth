@@ -71,6 +71,8 @@ end;
 
 drop package pkg_OAuth
 /
+drop package pkg_OAuthCommon
+/
 drop package pkg_OAuthInternal
 /
 

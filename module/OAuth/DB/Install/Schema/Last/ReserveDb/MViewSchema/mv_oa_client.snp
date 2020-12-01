@@ -1,0 +1,85 @@
+-- mview: mv_oa_client
+-- Клиентские приложения
+-- (материализованное представление).
+--
+create materialized view
+  mv_oa_client
+build deferred
+using no index
+refresh
+  fast
+  on demand
+as
+select
+  -- SVN root: JEP/Module/OAuth
+  *
+from
+  &sourceSchema..oa_client@&sourceDbLink
+/
+
+
+
+-- index: mv_oa_client_pk
+alter table
+  mv_oa_client
+add (
+  constraint mv_oa_client_pk primary key
+    ( client_id)
+    using index tablespace &indexTablespace
+)
+/
+
+-- index: mv_oa_client_ix_short_name
+-- Индекс для поиска по client_short_name
+-- (создается неуникальным для материализованного представления).
+create index
+  mv_oa_client_ix_short_name
+on
+  mv_oa_client (
+    client_short_name
+  )
+tablespace &indexTablespace
+/
+
+-- index: mv_oa_client_ix_upper_short_nm
+-- Индекс для поиска по client_short_name без учета регистра
+-- (создается неуникальным для материализованного представления).
+create index
+  mv_oa_client_ux_upper_short_nm
+on
+  mv_oa_client (
+    upper( client_short_name)
+  )
+tablespace &indexTablespace
+/
+
+-- index: mv_oa_client_ix_upper_name
+-- Индекс для поиска по client_name без учета регистра.
+create index
+  mv_oa_client_ix_upper_name
+on
+  mv_oa_client (
+    upper( client_name)
+  )
+tablespace &indexTablespace
+/
+
+-- index: mv_oa_client_ix_upper_name_en
+-- Индекс для поиска по client_name_en без учета регистра.
+create index
+  mv_oa_client_ix_upper_name_en
+on
+  mv_oa_client (
+    upper( client_name_en)
+  )
+tablespace &indexTablespace
+/
+
+
+
+comment on materialized view mv_oa_client is
+  'Клиентские приложения (материализованное представление) [ SVN root: JEP/Module/OAuth]'
+/
+
+-- Устанавливает комментарии к полям из таблицы oa_client
+@oms-run Install/Schema/Last/set-client-comment.sql mv_oa_client

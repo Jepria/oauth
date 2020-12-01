@@ -1,0 +1,51 @@
+-- mview: mv_oa_key
+-- Хранилище RSA ключей
+-- (материализованное представление).
+--
+create materialized view
+  mv_oa_key
+build deferred
+using no index
+refresh
+  fast
+  on demand
+as
+select
+  -- SVN root: JEP/Module/OAuth
+  *
+from
+  &sourceSchema..oa_key@&sourceDbLink
+/
+
+
+
+-- index: mv_oa_key_pk
+alter table
+  mv_oa_key
+add (
+  constraint mv_oa_key_pk primary key
+    ( key_id)
+    using index tablespace &indexTablespace
+)
+/
+
+-- index: mv_oa_key_ix_is_actual_dt_ins
+-- Индекс для выборки актуальных и неактуальных записей.
+create index
+  mv_oa_key_ix_is_actual_dt_ins
+on
+  mv_oa_key (
+    is_actual
+    , date_ins desc
+  )
+tablespace &indexTablespace
+/
+
+
+
+comment on materialized view mv_oa_key is
+  'Хранилище RSA ключей (материализованное представление) [ SVN root: JEP/Module/OAuth]'
+/
+
+-- Устанавливает комментарии к полям из таблицы oa_key
+@oms-run Install/Schema/Last/set-key-comment.sql mv_oa_key

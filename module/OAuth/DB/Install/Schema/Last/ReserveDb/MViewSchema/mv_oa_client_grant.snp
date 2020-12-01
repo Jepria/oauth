@@ -1,0 +1,39 @@
+-- mview: mv_oa_client_grant
+-- Список грантов клиентского приложения
+-- (материализованное представление).
+--
+create materialized view
+  mv_oa_client_grant
+build deferred
+using no index
+refresh
+  fast
+  on demand
+as
+select
+  -- SVN root: JEP/Module/OAuth
+  *
+from
+  &sourceSchema..oa_client_grant@&sourceDbLink
+/
+
+
+
+-- index: mv_oa_client_grant_pk
+alter table
+  mv_oa_client_grant
+add (
+  constraint mv_oa_client_grant_pk primary key
+    ( client_id, grant_type)
+    using index tablespace &indexTablespace
+)
+/
+
+
+
+comment on materialized view mv_oa_client_grant is
+  'Список грантов клиентского приложения (материализованное представление) [ SVN root: JEP/Module/OAuth]'
+/
+
+-- Устанавливает комментарии к полям из таблицы oa_client_grant
+@oms-run Install/Schema/Last/set-client_grant-comment.sql mv_oa_client_grant

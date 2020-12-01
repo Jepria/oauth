@@ -1,0 +1,126 @@
+-- mview: mv_oa_session
+-- Пользовательские сессии
+-- (материализованное представление).
+--
+create materialized view
+  mv_oa_session
+build deferred
+using no index
+refresh
+  fast
+  on demand
+as
+select
+  -- SVN root: JEP/Module/OAuth
+  *
+from
+  &sourceSchema..oa_session@&sourceDbLink
+/
+
+
+
+-- index: mv_oa_session_pk
+-- Первичный ключ исходной таблицы.
+alter table
+  mv_oa_session
+add (
+  constraint mv_oa_session_pk primary key
+    ( session_id)
+    using index tablespace &indexTablespace
+)
+/
+
+-- index: mv_oa_session_ix_auth_code
+-- Индекс для выборки по auth_code
+-- (создается неуникальным для материализованного представления).
+create index
+  mv_oa_session_ix_auth_code
+on
+  mv_oa_session (
+    auth_code
+  )
+tablespace &indexTablespace
+/
+
+-- index: mv_oa_session_ix_access_token
+-- Индекс для выборки по access_token
+-- (создается неуникальным для материализованного представления).
+create index
+  mv_oa_session_ix_access_token
+on
+  mv_oa_session (
+    access_token
+  )
+tablespace &indexTablespace
+/
+
+-- index: mv_oa_session_ix_refresh_token
+-- Индекс для выборки по refresh_token
+-- (создается неуникальным для материализованного представления).
+create index
+  mv_oa_session_ix_refresh_token
+on
+  mv_oa_session (
+    refresh_token
+  )
+tablespace &indexTablespace
+/
+
+-- index: mv_oa_session_ix_client_id_act
+-- Индекс для выборки по client_id.
+create index
+  mv_oa_session_ix_client_id_act
+on
+  mv_oa_session (
+    client_id
+    , case when date_finish is null then 1 end
+  )
+tablespace &indexTablespace
+/
+
+-- index: mv_oa_session_ix_up_actual_ru
+-- Индекс для поиска актуальных записей по redirect_uri.
+create index
+  mv_oa_session_ix_up_actual_ru
+on
+  mv_oa_session (
+    upper(
+      case when date_finish is null then redirect_uri end
+    )
+  )
+tablespace &indexTablespace
+/
+
+-- index: mv_oa_session_ix_session_token
+-- Индекс для выборки записей по session_token.
+create index
+  mv_oa_session_ix_session_token
+on
+  mv_oa_session (
+    session_token
+  )
+tablespace &indexTablespace
+/
+
+-- index: mv_oa_session_ix_actual_dt_ins
+-- Индекс для выборки актуальных записей.
+create index
+  mv_oa_session_ix_actual_dt_ins
+on
+  mv_oa_session (
+    case when date_finish is null then date_ins end desc
+  )
+tablespace &indexTablespace
+/
+
+
+
+comment on materialized view mv_oa_session is
+  'Пользовательские сессии (материализованное представление) [ SVN root: JEP/Module/OAuth]'
+/
+comment on column mv_oa_session.date_finish is
+  'Дата блокировки (неактуальности) сессии'
+/
+
+-- Устанавливает комментарии к полям из таблицы oa_session
+@oms-run Install/Schema/Last/set-session-comment.sql mv_oa_session

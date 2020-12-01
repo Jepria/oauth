@@ -7,40 +7,6 @@ create or replace package body pkg_OAuth is
 
 
 
-/* group: Коды ошибок */
-
-/* iconst: UniqueViolated_ErrCode
-  Код ошибки нарушения уникальности.
-*/
-UniqueViolated_ErrCode constant pls_integer := -1;
-
-/* iconst: IllegalArgument_ErrCode
-  Код ошибки "Указано некорректное значение входного параметра".
-*/
-IllegalArgument_ErrCode constant pls_integer := -20002;
-
-/* iconst: ClientWrong_ErrCode
-  Код ошибки "Указаны неверные данные клиентского приложения".
-*/
-ClientWrong_ErrCode constant pls_integer := -20003;
-
-/* iconst: ClientUriWrong_ErrCode
-  Код ошибки "Указан несуществующий URI клиентского приложения".
-*/
-ClientUriWrong_ErrCode constant pls_integer := -20004;
-
-/* iconst: AccessTokenWrong_ErrCode
-  Код ошибки "Нарушено ограничение уникальности accessToken".
-*/
-AccessTokenWrong_ErrCode constant pls_integer := -20005;
-
-/* iconst: RefreshTokenWrong_ErrCode
-  Код ошибки "Нарушено ограничение уникальности refreshToken".
-*/
-RefreshTokenWrong_ErrCode constant pls_integer := -20006;
-
-
-
 /* group: Тип клиентского приложения */
 
 /* iconst: Browser_AppType
@@ -101,13 +67,14 @@ RefreshToken_GrantType constant varchar2(20) := 'refresh_token';
   Логер пакета.
 */
 logger lg_logger_t := lg_logger_t.getLogger(
-  moduleName    => Module_Name
+  moduleName    => pkg_OAuthCommon.Module_Name
   , objectName  => 'pkg_OAuth'
 );
 
 
 
 /* group: Функции */
+
 
 
 
@@ -453,7 +420,7 @@ begin
     then null;
     else
       raise_application_error(
-        IllegalArgument_ErrCode
+        pkg_OAuthCommon.IllegalArgument_ErrCode
         , 'Указано некорректное значение входного параметра'
           || ' applicationType: "' || applicationType || '".'
       );
@@ -474,7 +441,7 @@ begin
     );
     if badGrantTab is not null and badGrantTab.count() > 0 then
       raise_application_error(
-        IllegalArgument_ErrCode
+        pkg_OAuthCommon.IllegalArgument_ErrCode
         , 'Указано некорректное значение в параметре grantTypeList:'
           || ' "' || badGrantTab(1) || '".'
       );
@@ -562,7 +529,7 @@ is
     rec.client_id                 := oa_client_seq.nextval;
     rec.client_short_name         := clientShortName;
     if applicationType in ( Web_AppType, Service_AppType) then
-      rec.client_secret := pkg_OptionCrypto.encrypt(
+      rec.client_secret := pkg_OAuthCommon.encrypt(
         rawtohex( dbms_crypto.randomBytes( 32))
       );
     end if;
@@ -602,7 +569,7 @@ begin
   savepoint pkg_OAuth_createClient;
   pkg_Operator.isRole(
     operatorId      => operatorId
-    , roleShortName => OACreateClient_RoleSName
+    , roleShortName => pkg_OAuthCommon.OACreateClient_RoleSName
   );
   checkClientArgs(
     grantTypeTab        => grantTypeTab
@@ -625,7 +592,7 @@ begin
   return rec.client_id;
 exception when others then
   rollback to pkg_OAuth_createClient;
-  if sqlcode = IllegalArgument_ErrCode then
+  if sqlcode = pkg_OAuthCommon.IllegalArgument_ErrCode then
     raise;
   else
     raise_application_error(
@@ -738,7 +705,7 @@ is
   begin
     if applicationType in ( Web_AppType, Service_AppType) then
       if rec.client_secret is null then
-        rec.client_secret := pkg_OptionCrypto.encrypt(
+        rec.client_secret := pkg_OAuthCommon.encrypt(
           rawtohex( dbms_crypto.randomBytes( 32))
         );
       end if;
@@ -839,7 +806,7 @@ begin
   savepoint pkg_OAuth_updateClient;
   pkg_Operator.isRole(
     operatorId      => operatorId
-    , roleShortName => OAEditClient_RoleSName
+    , roleShortName => pkg_OAuthCommon.OAEditClient_RoleSName
   );
   checkClientArgs(
     grantTypeTab        => grantTypeTab
@@ -869,7 +836,7 @@ begin
   refreshClientGrant();
 exception when others then
   rollback to pkg_OAuth_updateClient;
-  if sqlcode = IllegalArgument_ErrCode then
+  if sqlcode = pkg_OAuthCommon.IllegalArgument_ErrCode then
     raise;
   else
     raise_application_error(
@@ -910,7 +877,7 @@ begin
   savepoint pkg_OAuth_deleteClient;
   pkg_Operator.isRole(
     operatorId      => operatorId
-    , roleShortName => OADeleteClient_RoleSName
+    , roleShortName => pkg_OAuthCommon.OADeleteClient_RoleSName
   );
   lockClient(
     rec
@@ -994,12 +961,12 @@ begin
       clientSecret is null
       or clientSecret is not null
         and cl.client_secret is not null
-        and cl.client_secret = pkg_OptionCrypto.encrypt( clientSecret)
+        and cl.client_secret = pkg_OAuthCommon.encrypt( clientSecret)
     )
   ;
   if isFound = 0 then
     raise_application_error(
-      ClientWrong_ErrCode
+      pkg_OAuthCommon.ClientWrong_ErrCode
       , 'Указаны неверные данные клиентского приложения ('
         || 'clientShortName="' || clientShortName || '"'
         || ').'
@@ -1007,7 +974,7 @@ begin
   end if;
   return operatorId;
 exception when others then
-  if sqlcode = ClientWrong_ErrCode then
+  if sqlcode = pkg_OAuthCommon.ClientWrong_ErrCode then
     raise;
   else
     raise_application_error(
@@ -1023,38 +990,8 @@ exception when others then
 end verifyClientCredentials;
 
 /* func: findClient
-  Поиск клиентского приложения.
-
-  Параметры:
-  clientShortName             - Краткое наименование приложения
-                                (по умолчанию без ограничений)
-  clientName                  - Наименование клиентского приложения на языке
-                                по умолчанию
-                                (по умолчанию без ограничений)
-  clientNameEn                - Наименование клиентского приложения на
-                                английском языке
-                                (по умолчанию без ограничений)
-  maxRowCount                 - Максимальное количество выводимых строк
-                                (по умолчанию без ограничений)
-  operatorId                  - Id оператора, выполняющего операцию
-
-  Возврат (курсор):
-  client_short_name           - Краткое наименование приложения
-  client_secret               - Случайная криптографически устойчивая строка
-  client_name                 - Имя клиентского приложения
-  client_name_en              - Имя клиентского приложения на английском
-  application_type            - Тип клиентского приложения
-  date_ins                    - Дата создания записи
-  create_operator_id          - Id оператора, создавшего запись
-  create_operator_name        - Имя оператора, создавшего запись
-  create_operator_name_en     - Имя оператора, создавшего запись на англ.
-  change_date                 - Дата последнего изменения записи
-  change_operator_id          - Id оператора, изменившего запись
-  change_operator_name        - Имя оператора, изменившего запись
-  change_operator_name_en     - Имя оператора, изменившего запись на англ.
-  client_operator_id          - ID оператора клиентского приложения
-
-  (сортировка по date_ins в обратном порядке)
+  Поиск клиентского приложения
+  (подробнее <pkg_OAuthCommon.findClient>).
 */
 function findClient(
   clientShortName varchar2 := null
@@ -1065,128 +1002,21 @@ function findClient(
 )
 return sys_refcursor
 is
-
-  -- Возвращаемый курсор
-  rc sys_refcursor;
-
-  -- Динамически формируемый текст запроса
-  dsql dyn_dynamic_sql_t := dyn_dynamic_sql_t( '
-select
-  a.client_short_name
-  , pkg_OptionCrypto.decrypt( a.client_secret) as client_secret
-  , a.client_name
-  , a.client_name_en
-  , a.application_type
-  , a.date_ins
-  , a.create_operator_id
-  , a.create_operator_name
-  , a.create_operator_name_en
-  , a.change_date
-  , a.change_operator_id
-  , a.change_operator_name
-  , a.change_operator_name_en
-  , a.client_operator_id
-from
-  (
-  select
-    t.client_short_name
-    , t.client_secret
-    , t.client_name
-    , t.client_name_en
-    , t.application_type
-    , t.date_ins
-    , t.operator_id_ins as create_operator_id
-    , iop.operator_name as create_operator_name
-    , iop.operator_name_en as create_operator_name_en
-    , t.change_date
-    , t.change_operator_id
-    , cop.operator_name as change_operator_name
-    , cop.operator_name_en as change_operator_name_en
-    , t.operator_id as client_operator_id
-  from
-    oa_client t
-    inner join op_operator iop
-      on iop.operator_id = t.operator_id_ins
-    inner join op_operator cop
-      on cop.operator_id = t.change_operator_id
-  where
-    t.is_deleted = 0
-    and (
-      $(condition)
-    )
-  order by
-    t.date_ins desc
-    , t.client_id desc
-  ) a
-where
-  $(rownumCondition)
-'
-  );
-
--- findClient
 begin
-  pkg_Operator.isRole(
-    operatorId      => operatorId
-    , roleShortName => OAViewClient_RoleSName
-  );
-  dsql.addCondition(
-    'upper( t.client_short_name) like upper( :clientShortName)'
-    , clientShortName is null
-  );
-  if clientName is not null and clientNameEn is not null then
-    dsql.addCondition(
-      '( upper( t.client_name) like upper( :clientName)'
-      || ' or upper( t.client_name_en) like upper( :clientNameEn))'
-    );
-  else
-    dsql.addCondition(
-      'upper( t.client_name) like upper( :clientName)'
-      , clientName is null
-    );
-    dsql.addCondition(
-      'upper( t.client_name_en) like upper( :clientNameEn)'
-      , clientNameEn is null
-    );
-  end if;
-  dsql.useCondition( 'condition');
-  dsql.addCondition( 'rownum <=', maxRowCount is null);
-  dsql.useCondition( 'rownumCondition');
-  open rc for
-    dsql.getSqlText()
-  using
-    clientShortName
-    , clientName
-    , clientNameEn
-    , maxRowCount
+  return
+    pkg_OAuthCommon.findClient(
+      clientShortName         => clientShortName
+      , clientName            => clientName
+      , clientNameEn          => clientNameEn
+      , maxRowCount           => maxRowCount
+      , operatorId            => operatorId
+    )
   ;
-  return rc;
-exception when others then
-  raise_application_error(
-    pkg_Error.ErrorStackInfo
-    , logger.errorStack(
-        'Ошибка при поиске клиентского приложения ('
-        || ' clientShortName="' || clientShortName || '"'
-        || ', clientName="' || clientName || '"'
-        || ', clientNameEn="' || clientNameEn || '"'
-        || ', operatorId=' || operatorId
-        || ').'
-      )
-    , true
-  );
 end findClient;
 
 /* func: getClientGrant
-  Возвращает список грантов клиентского приложения.
-
-  Параметры:
-  clientShortName             - Краткое наименование приложения
-  operatorId                  - Id оператора, выполняющего операцию
-
-  Возврат (курсор):
-  client_short_name           - Краткое наименование приложения
-  grant_type                  - Тип гранта
-
-  (сортировка по grant_type)
+  Возвращает список грантов клиентского приложения
+  (подробнее <pkg_OAuthCommon.getClientGrant>).
 */
 function getClientGrant(
   clientShortName varchar2
@@ -1194,40 +1024,13 @@ function getClientGrant(
 )
 return sys_refcursor
 is
-
-  -- Возвращаемый курсор
-  rc sys_refcursor;
-
 begin
-  pkg_Operator.isRole(
-    operatorId      => operatorId
-    , roleShortName => OAViewClient_RoleSName
-  );
-  open rc for
-    select
-      cl.client_short_name
-      , cg.grant_type
-    from
-      oa_client cl
-      inner join oa_client_grant cg
-        on cg.client_id = cl.client_id
-    where
-      cl.client_short_name = clientShortName
-    order by
-      cg.grant_type
+  return
+    pkg_OAuthCommon.getClientGrant(
+      clientShortName         => clientShortName
+      , operatorId            => operatorId
+    )
   ;
-  return rc;
-exception when others then
-  raise_application_error(
-    pkg_Error.ErrorStackInfo
-    , logger.errorStack(
-        'Ошибка при возврате списка грантов клиентского приложения ('
-        || 'clientShortName="' || clientShortName || '"'
-        || ', operatorId=' || operatorId
-        || ').'
-      )
-    , true
-  );
 end getClientGrant;
 
 /* func: getRoles
@@ -1287,42 +1090,6 @@ exception when others then
   );
 end getRoles;
 
-/* ifunc: getClientId
-  Возвращает Id клиентского приложения либо выбрасывает исключение
-  ClientWrong_ErrCode если приложение не найдено.
-
-  Параметры:
-  clientShortName             - Краткое наименование приложения
-*/
-function getClientId(
-  clientShortName varchar2
-)
-return integer
-is
-
-  clientId integer;
-
-begin
-  select
-    max( cl.client_id)
-  into clientId
-  from
-    oa_client cl
-  where
-    cl.client_short_name = clientShortName
-    and cl.is_deleted = 0
-  ;
-  if clientId is null then
-    raise_application_error(
-      ClientWrong_ErrCode
-      , 'Указаны неверные данные клиентского приложения ('
-        || 'clientShortName="' || clientShortName || '"'
-        || ').'
-    );
-  end if;
-  return clientId;
-end getClientId;
-
 
 
 /* group: URI клиентского приложения */
@@ -1352,9 +1119,11 @@ is
 begin
   pkg_Operator.isRole(
     operatorId      => operatorId
-    , roleShortName => OACreateClient_RoleSName
+    , roleShortName => pkg_OAuthCommon.OACreateClient_RoleSName
   );
-  rec.client_id     := getClientId( clientShortName => clientShortName);
+  rec.client_id     :=
+    pkg_OAuthCommon.getClientId( clientShortName => clientShortName)
+  ;
   rec.client_uri_id := oa_client_uri_seq.nextval;
   rec.client_uri    := clientUri;
   rec.date_ins      := systimestamp;
@@ -1366,7 +1135,7 @@ begin
   ;
   return rec.client_uri_id;
 exception when others then
-  if sqlcode = ClientWrong_ErrCode then
+  if sqlcode = pkg_OAuthCommon.ClientWrong_ErrCode then
     raise;
   else
     raise_application_error(
@@ -1398,7 +1167,7 @@ is
 begin
   pkg_Operator.isRole(
     operatorId      => operatorId
-    , roleShortName => OAEditClient_RoleSName
+    , roleShortName => pkg_OAuthCommon.OAEditClient_RoleSName
   );
   delete
     oa_client_uri d
@@ -1425,27 +1194,8 @@ exception when others then
 end deleteClientUri;
 
 /* func: findClientUri
-  Поиск URI клиентского приложения.
-
-  Параметры:
-  clientUriId                 - Id записи с URI клиентского приложения
-                                (по умолчанию без ограничений)
-  clientShortName             - Краткое наименование приложения
-                                (по умолчанию без ограничений)
-  maxRowCount                 - Максимальное количество выводимых строк
-                                (по умолчанию без ограничений)
-  operatorId                  - Id оператора, выполняющего операцию
-
-  Возврат (курсор):
-  client_uri_id               - Id записи с URI клиентского приложения
-  client_short_name           - Краткое наименование приложения
-  client_uri                  - URI клиентского приложения
-  date_ins                    - Дата создания записи
-  operator_id                 - Id оператора, создавшего запись
-  operator_name               - Имя оператора, создавшего запись
-  operator_name_en            - Имя оператора, создавшего запись на англ.
-
-  (сортировка по date_ins в обратном порядке)
+  Поиск URI клиентского приложения
+  (подробнее <pkg_OAuthCommon.findClientUri>).
 */
 function findClientUri(
   clientUriId integer := null
@@ -1455,72 +1205,15 @@ function findClientUri(
 )
 return sys_refcursor
 is
-
-  -- Возвращаемый курсор
-  rc sys_refcursor;
-
-  -- Динамически формируемый текст запроса
-  dsql dyn_dynamic_sql_t := dyn_dynamic_sql_t( '
-select
-  a.*
-from
-  (
-  select
-    t.client_uri_id
-    , cl.client_short_name
-    , t.client_uri
-    , t.date_ins
-    , t.operator_id
-    , op.operator_name
-    , op.operator_name_en
-  from
-    oa_client_uri t
-    inner join oa_client cl
-      on cl.client_id = t.client_id
-    inner join op_operator op
-      on op.operator_id = t.operator_id
-  where
-    $(condition)
-  order by
-    t.date_ins desc
-    , t.client_id desc
-  ) a
-where
-  $(rownumCondition)
-'
-  );
-
--- findClientUri
 begin
-  pkg_Operator.isRole(
-    operatorId      => operatorId
-    , roleShortName => OAViewClient_RoleSName
-  );
-  dsql.addCondition( 't.client_uri_id =', clientUriId is null);
-  dsql.addCondition( 'cl.client_short_name =', clientShortName is null);
-  dsql.useCondition( 'condition');
-  dsql.addCondition( 'rownum <=', maxRowCount is null);
-  dsql.useCondition( 'rownumCondition');
-  open rc for
-    dsql.getSqlText()
-  using
-    clientUriId
-    , clientShortName
-    , maxRowCount
+  return
+    pkg_OAuthCommon.findClientUri(
+      clientUriId             => clientUriId
+      , clientShortName       => clientShortName
+      , maxRowCount           => maxRowCount
+      , operatorId            => operatorId
+    )
   ;
-  return rc;
-exception when others then
-  raise_application_error(
-    pkg_Error.ErrorStackInfo
-    , logger.errorStack(
-        'Ошибка при поиске URI клиентского приложения ('
-        || 'clientUriId=' || clientUriId
-        || ', clientShortName="' || clientShortName || '"'
-        || ', operatorId=' || operatorId
-        || ').'
-      )
-    , true
-  );
 end findClientUri;
 
 
@@ -1528,28 +1221,8 @@ end findClientUri;
 /* group: Пользовательские сессии */
 
 /* func: createSession
-  Создает пользовательскую сессию.
-
-  Параметры:
-  authСode                    - Авторизационный код (One-Time-Password)
-  clientShortName             - Краткое наименование приложения
-  redirectUri                 - URI для перенаправления
-  operatorId                  - Id пользователя, владельца сессии
-  codeChallenge               - Криптографически случайная строка,
-                                используется при авторизации по PKCE
-  accessToken                 - Уникальный UUID токена доступа
-  accessTokenDateIns          - Дата создания токена доступа
-  accessTokenDateFinish       - Дата окончания действия токена доступа
-  refreshToken                - Уникальный UUID токена обновления
-  refreshTokenDateIns         - Дата создания токена обновления
-  refreshTokenDateFinish      - Дата окончания действия токена обновления
-  sessionToken                - UUID токена сессии
-  sessionTokenDateIns         - Дата создания токена сессии
-  sessionTokenDateFinish      - Дата окончания действия токена сессии
-  operatorIdIns               - Id оператора, выполняющего операцию
-
-  Возврат:
-  Id созданной записи
+  Создает пользовательскую сессию
+  (подробнее <pkg_OAuthCommon.createSession>).
 */
 function createSession(
   authCode varchar2
@@ -1570,132 +1243,31 @@ function createSession(
 )
 return integer
 is
-
-  rec oa_session%rowtype;
-
 begin
-  pkg_Operator.isRole(
-    operatorId      => operatorIdIns
-    , roleShortName => OACreateSession_RoleSName
-  );
-  rec.session_id                  := oa_session_seq.nextval;
-  rec.auth_code                   := authCode;
-  if clientShortName is not null then
-    rec.client_id := getClientId( clientShortName => clientShortName);
-  end if;
-  rec.redirect_uri                := redirectUri;
-  rec.operator_id                 := operatorId;
-  rec.code_challenge              := codeChallenge;
-  rec.access_token                := accessToken;
-  rec.access_token_date_ins       := accessTokenDateIns;
-  rec.access_token_date_finish    := accessTokenDateFinish;
-  rec.refresh_token               := refreshToken;
-  rec.refresh_token_date_ins      := refreshTokenDateIns;
-  rec.refresh_token_date_finish   := refreshTokenDateFinish;
-  rec.session_token               := sessionToken;
-  rec.session_token_date_ins      := sessionTokenDateIns;
-  rec.session_token_date_finish   := sessionTokenDateFinish;
-  rec.date_ins                    := systimestamp;
-  rec.operator_id_ins             := operatorIdIns;
-  insert into
-    oa_session
-  values
-    rec
+  return
+    pkg_OAuthCommon.createSession(
+      authCode                  => authCode
+      , clientShortName         => clientShortName
+      , redirectUri             => redirectUri
+      , operatorId              => operatorId
+      , codeChallenge           => codeChallenge
+      , accessToken             => accessToken
+      , accessTokenDateIns      => accessTokenDateIns
+      , accessTokenDateFinish   => accessTokenDateFinish
+      , refreshToken            => refreshToken
+      , refreshTokenDateIns     => refreshTokenDateIns
+      , refreshTokenDateFinish  => refreshTokenDateFinish
+      , sessionToken            => sessionToken
+      , sessionTokenDateIns     => sessionTokenDateIns
+      , sessionTokenDateFinish  => sessionTokenDateFinish
+      , operatorIdIns           => operatorIdIns
+    )
   ;
-  return rec.session_id;
-exception when others then
-  if sqlcode = ClientWrong_ErrCode then
-    raise;
-  else
-    raise_application_error(
-      coalesce(
-          case
-              when sqlcode = pkg_Error.ParentKeyNotFound
-                    and sqlerrm like '%OA_SESSION_FK_CLIENT_URI%' then
-                ClientUriWrong_ErrCode
-              when sqlcode = UniqueViolated_ErrCode then
-                case
-                  when sqlerrm like '%OA_SESSION_UK_ACCESS_TOKEN%' then
-                    AccessTokenWrong_ErrCode
-                  when sqlerrm like '%OA_SESSION_UK_REFRESH_TOKEN%' then
-                    RefreshTokenWrong_ErrCode
-                end
-            end
-          , pkg_Error.ErrorStackInfo
-        )
-      , logger.errorStack(
-          'Ошибка при создании пользовательской сессии ('
-          || 'authCode="' || authCode || '"'
-          || ', clientShortName="' || clientShortName || '"'
-          || ', client_id=' || rec.client_id
-          || ', operatorId=' || operatorId
-          || ', redirectUri="' || redirectUri || '"'
-          || ', accessToken="' || accessToken || '"'
-          || ', refreshToken="' || refreshToken || '"'
-          || ', operatorIdIns=' || operatorIdIns
-          || ').'
-        )
-      , true
-    );
-  end if;
 end createSession;
 
-/* iproc: lockSession
-  Блокирует и возвращает данные записи в oa_session.
-
-  Параметры:
-  dataRec                     - Данные записи
-                                (возврат)
-  sessionId                   - Id пользовательской сессии
-*/
-procedure lockSession(
-  dataRec out nocopy oa_session%rowtype
-  , sessionId integer
-)
-is
-begin
-  select
-    t.*
-  into dataRec
-  from
-    oa_session t
-  where
-    t.session_id = sessionId
-  for update nowait
-  ;
-exception when others then
-  raise_application_error(
-    pkg_Error.ErrorStackInfo
-    , logger.errorStack(
-        'Ошибка при блокировке записи в oa_session ('
-        || ' sessionId=' || sessionId
-        || ').'
-      )
-    , true
-  );
-end lockSession;
-
 /* proc: updateSession
-  Обновляет пользовательскую сессию.
-
-  Параметры:
-  sessionId                   - Id пользовательской сессии
-  authСode                    - Авторизационный код (One-Time-Password)
-  clientShortName             - Краткое наименование приложения
-  redirectUri                 - URI для перенаправления
-  operatorId                  - Id пользователя, владельца сессии
-  codeChallenge               - Криптографически случайная строка,
-                                используется при авторизации по PKCE
-  accessToken                 - Уникальный UUID токена доступа
-  accessTokenDateIns          - Дата создания токена доступа
-  accessTokenDateFinish       - Дата окончания действия токена доступа
-  refreshToken                - Уникальный UUID токена обновления
-  refreshTokenDateIns         - Дата создания токена обновления
-  refreshTokenDateFinish      - Дата окончания действия токена обновления
-  sessionToken                - UUID токена сессии
-  sessionTokenDateIns         - Дата создания токена сессии
-  sessionTokenDateFinish      - Дата окончания действия токена сессии
-  operatorIdIns               - Id оператора, выполняющего операцию
+  Обновляет пользовательскую сессию
+  (подробнее <pkg_OAuthCommon.updateSession>).
 */
 procedure updateSession(
   sessionId integer
@@ -1716,178 +1288,46 @@ procedure updateSession(
   , operatorIdIns integer
 )
 is
-
-  rec oa_session%rowtype;
-
 begin
-  pkg_Operator.isRole(
-    operatorId      => operatorIdIns
-    , roleShortName => OAEditSession_RoleSName
+  pkg_OAuthCommon.updateSession(
+    sessionId                 => sessionId
+    , authCode                => authCode
+    , clientShortName         => clientShortName
+    , redirectUri             => redirectUri
+    , operatorId              => operatorId
+    , codeChallenge           => codeChallenge
+    , accessToken             => accessToken
+    , accessTokenDateIns      => accessTokenDateIns
+    , accessTokenDateFinish   => accessTokenDateFinish
+    , refreshToken            => refreshToken
+    , refreshTokenDateIns     => refreshTokenDateIns
+    , refreshTokenDateFinish  => refreshTokenDateFinish
+    , sessionToken            => sessionToken
+    , sessionTokenDateIns     => sessionTokenDateIns
+    , sessionTokenDateFinish  => sessionTokenDateFinish
+    , operatorIdIns           => operatorIdIns
   );
-  lockSession( rec, sessionId);
-  rec.client_id :=
-    case when clientShortName is not null then
-      getClientId( clientShortName => clientShortName)
-    end
-  ;
-
-  update
-    oa_session d
-  set
-    d.auth_code                   = authCode
-    , d.client_id                 = rec.client_id
-    , d.redirect_uri              = redirectUri
-    , d.operator_id               = operatorId
-    , d.code_challenge            = codeChallenge
-    , d.access_token              = accessToken
-    , d.access_token_date_ins     = accessTokenDateIns
-    , d.access_token_date_finish  = accessTokenDateFinish
-    , d.refresh_token             = refreshToken
-    , d.refresh_token_date_ins    = refreshTokenDateIns
-    , d.refresh_token_date_finish = refreshTokenDateFinish
-    , d.session_token             = sessionToken
-    , d.session_token_date_ins    = sessionTokenDateIns
-    , d.session_token_date_finish = sessionTokenDateFinish
-    -- разблокируем сессию при редактировании
-    , d.is_manual_blocked = null
-    , d.date_finish = null
-  where
-    d.session_id = rec.session_id
-  ;
-exception when others then
-  if sqlcode = ClientWrong_ErrCode then
-    raise;
-  else
-    raise_application_error(
-      coalesce(
-          case
-              when sqlcode = pkg_Error.ParentKeyNotFound
-                    and sqlerrm like '%OA_SESSION_FK_CLIENT_URI%' then
-                ClientUriWrong_ErrCode
-              when sqlcode = UniqueViolated_ErrCode then
-                case
-                  when sqlerrm like '%OA_SESSION_UK_ACCESS_TOKEN%' then
-                    AccessTokenWrong_ErrCode
-                  when sqlerrm like '%OA_SESSION_UK_REFRESH_TOKEN%' then
-                    RefreshTokenWrong_ErrCode
-                end
-            end
-          , pkg_Error.ErrorStackInfo
-        )
-      , logger.errorStack(
-          'Ошибка при обновлении пользовательской сессии ('
-          || 'sessionId=' || sessionId
-          || ', authCode="' || authCode || '"'
-          || ', clientShortName="' || clientShortName || '"'
-          || ', client_id=' || rec.client_id
-          || ', operatorId=' || operatorId
-          || ', redirectUri="' || redirectUri || '"'
-          || ', accessToken="' || accessToken || '"'
-          || ', refreshToken="' || refreshToken || '"'
-          || ', operatorIdIns=' || operatorIdIns
-          || ').'
-        )
-      , true
-    );
-  end if;
 end updateSession;
 
 /* proc: blockSession
-  Блокирует пользовательскую сессию.
-
-  Параметры:
-  sessionId                   - Id пользовательской сессии
-  operatorIdIns               - Id оператора, выполняющего операцию
+  Блокирует пользовательскую сессию
+  (подробнее <pkg_OAuthCommon.blockSession>).
 */
 procedure blockSession(
   sessionId integer
   , operatorId integer
 )
 is
-
-  rec oa_session%rowtype;
-
 begin
-  pkg_Operator.isRole(
-    operatorId      => operatorId
-    , roleShortName => OAEditSession_RoleSName
-  );
-  lockSession( rec, sessionId);
-  if rec.is_manual_blocked is null then
-    update
-      oa_session d
-    set
-      d.is_manual_blocked = 1
-      , d.date_finish = systimestamp
-    where
-      d.session_id = rec.session_id
-    ;
-  end if;
-exception when others then
-  raise_application_error(
-    pkg_Error.ErrorStackInfo
-    , logger.errorStack(
-        'Ошибка при блокировке пользовательской сессии ('
-        || 'sessionId=' || sessionId
-        || ', operatorId=' || operatorId
-        || ').'
-      )
-    , true
+  pkg_OAuthCommon.blockSession(
+    sessionId     => sessionId
+    , operatorId  => operatorId
   );
 end blockSession;
 
 /* func: findSession
-  Поиск пользовательской сессии.
-
-  Параметры:
-  sessionId                   - Id пользовательской сессии
-                                (по умолчанию без ограничений)
-  authСode                    - Авторизационный код (One-Time-Password)
-                                (по умолчанию без ограничений)
-  clientShortName             - Краткое наименование приложения
-                                (по умолчанию без ограничений)
-  redirectUri                 - URI для перенаправления
-                                (по умолчанию без ограничений)
-  operatorId                  - Id пользователя, владельца сессии
-                                (по умолчанию без ограничений)
-  codeChallenge               - Криптографически случайная строка,
-                                используется при авторизации по PKCE
-                                (по умолчанию без ограничений)
-  accessToken                 - Уникальный UUID токена доступа
-                                (по умолчанию без ограничений)
-  refreshToken                - Уникальный UUID токена обновления
-                                (по умолчанию без ограничений)
-  sessionToken                - UUID токена сессии
-                                (по умолчанию без ограничений)
-  maxRowCount                 - Максимальное количество выводимых строк
-                                (по умолчанию без ограничений)
-  operatorIdIns               - Id оператора, выполняющего операцию
-
-  Возврат (курсор):
-  session_id                  - Идентификатор записи
-  auth_code                   - Авторизационный код (One-Time-Password)
-  client_short_name           - Краткое наименование приложения
-  client_name                 - Имя клиентского приложения
-  client_name_en              - Имя клиентского приложения на английском
-  redirect_uri                - URI для перенаправления
-  operator_id                 - Id пользователя, владельца сессии
-  operator_name               - Имя пользователя, владельца сессии
-  operator_login              - Логин пользователя, владельца сессии
-  code_challenge              - Криптографически случайная строка,
-                                используется при авторизации по PKCE
-  access_token                - Уникальный UUID токена доступа
-  access_token_date_ins       - Дата создания токена доступа
-  access_token_date_finish    - Дата окончания действия токена доступа
-  refresh_token               - Уникальный UUID токена обновления
-  refresh_token_date_ins      - Дата создания токена обновления
-  refresh_token_date_finish   - Дата окончания действия токена обновления
-  session_token               - Уникальный UUID токена сессии
-  session_token_date_ins      - Дата создания токена сессии
-  session_token_date_finish   - Дата окончания действия токена сессии
-  date_ins                    - Дата создания записи
-  operator_id_ins             - ID пользователя, создавшего запись
-
-  (сортировка по date_ins в обратном порядке)
+  Поиск пользовательской сессии
+  (подробнее <pkg_OAuthCommon.findSession>).
 */
 function findSession(
   sessionId integer := null
@@ -1904,110 +1344,22 @@ function findSession(
 )
 return sys_refcursor
 is
-
-  -- Возвращаемый курсор
-  rc sys_refcursor;
-
-  -- Динамически формируемый текст запроса
-  dsql dyn_dynamic_sql_t := dyn_dynamic_sql_t( '
-select
-  a.*
-from
-  (
-  select
-    t.session_id
-    , t.auth_code
-    , cl.client_short_name
-    , cl.client_name
-    , cl.client_name_en
-    , t.redirect_uri
-    , t.operator_id
-    , op.operator_name
-    , op.login as operator_login
-    , t.code_challenge
-    , t.access_token
-    , t.access_token_date_ins
-    , t.access_token_date_finish
-    , t.refresh_token
-    , t.refresh_token_date_ins
-    , t.refresh_token_date_finish
-    , t.session_token
-    , t.session_token_date_ins
-    , t.session_token_date_finish
-    , t.date_ins
-    , t.operator_id_ins
-  from
-    v_oa_session t
-    inner join oa_client cl
-      on cl.client_id = t.client_id
-    left join op_operator op
-      on op.operator_id = t.operator_id
-  where
-    t.is_blocked = 0
-    and (
-      $(condition)
-    )
-  order by
-    t.date_ins desc
-    , t.session_id desc
-  ) a
-where
-  $(rownumCondition)
-'
-  );
-
--- findSession
 begin
-  pkg_Operator.isRole(
-    operatorId      => operatorIdIns
-    , roleShortName => OAViewSession_RoleSName
-  );
-  dsql.addCondition( 't.session_id =', sessionId is null);
-  dsql.addCondition( 't.auth_code =', authCode is null);
-  dsql.addCondition(
-    'upper( cl.client_short_name) like upper( :clientShortName)'
-    , clientShortName is null
-  );
-  dsql.addCondition(
-    'upper( t.redirect_uri) like upper( :redirectUri)'
-    , redirectUri is null
-  );
-  dsql.addCondition( 't.operator_id =', operatorId is null);
-  dsql.addCondition( 't.code_challenge =', codeChallenge is null);
-  dsql.addCondition( 't.access_token =', accessToken is null);
-  dsql.addCondition( 't.refresh_token =', refreshToken is null);
-  dsql.addCondition( 't.session_token =', sessionToken is null);
-  dsql.useCondition( 'condition');
-  dsql.addCondition( 'rownum <=', maxRowCount is null);
-  dsql.useCondition( 'rownumCondition');
-  open rc for
-    dsql.getSqlText()
-  using
-    sessionId
-    , authCode
-    , clientShortName
-    , redirectUri
-    , operatorId
-    , codeChallenge
-    , accessToken
-    , refreshToken
-    , sessionToken
-    , maxRowCount
+  return
+    pkg_OAuthCommon.findSession(
+      sessionId               => sessionId
+      , authCode              => authCode
+      , clientShortName       => clientShortName
+      , redirectUri           => redirectUri
+      , operatorId            => operatorId
+      , codeChallenge         => codeChallenge
+      , accessToken           => accessToken
+      , refreshToken          => refreshToken
+      , sessionToken          => sessionToken
+      , maxRowCount           => maxRowCount
+      , operatorIdIns         => operatorIdIns
+    )
   ;
-  return rc;
-exception when others then
-  raise_application_error(
-    pkg_Error.ErrorStackInfo
-    , logger.errorStack(
-        'Ошибка при поиске пользовательской сессии ('
-        || 'sessionId=' || sessionId
-        || ', clientShortName="' || clientShortName || '"'
-        || ', operatorId=' || operatorId
-        || ', operatorIdIns=' || operatorIdIns
-        || ').'
-      )
-    , true
-  );
 end findSession;
 
 
@@ -2038,7 +1390,7 @@ is
 begin
   pkg_Operator.isRole(
     operatorId      => operatorId
-    , roleShortName => OAUpdateKey_RoleSName
+    , roleShortName => pkg_OAuthCommon.OAUpdateKey_RoleSName
   );
   lock table oa_key in exclusive mode nowait;
   update
@@ -2073,18 +1425,8 @@ exception when others then
 end setKey;
 
 /* func: getKey
-  Возвращает ключи.
-
-  Параметры:
-  isExpired                   - Признак истекшего срока действия ключа
-  operatorId                  - Id оператора, выполняющего операцию
-
-  Возврат (курсор):
-  key_id                      - Id записи с ключами
-  public_key                  - Публичный ключ
-  private_key                 - Приватный ключ
-  is_expired                  - Признак истекшего срока действия ключа
-  date_ins                    - Дата создания записи
+  Возвращает ключи
+  (подробнее <pkg_OAuthCommon.getKey>).
 */
 function getKey(
   isExpired integer
@@ -2092,54 +1434,13 @@ function getKey(
 )
 return sys_refcursor
 is
-
-  -- Возвращаемый курсор
-  rc sys_refcursor;
-
 begin
-  pkg_Operator.isRole(
-    operatorId      => operatorId
-    , roleShortName => OAViewKey_RoleSName
-  );
-  open rc for
-    select
-      t.key_id
-      , t.public_key
-      , t.private_key
-      , t.is_expired
-      , t.date_ins
-    from
-      (
-      select
-        k.*
-        , case when
-              k.date_ins < systimestamp - INTERVAL '3' MONTH
-            then 1
-          end
-          as is_expired
-      from
-        oa_key k
-      where
-        k.is_actual = 1
-      ) t
-    where
-      nullif( isExpired, t.is_expired) is null
-    order by
-      t.date_ins desc
-      , t.key_id desc
+  return
+    pkg_OAuthCommon.getKey(
+      isExpired               => isExpired
+      , operatorId            => operatorId
+    )
   ;
-  return rc;
-exception when others then
-  raise_application_error(
-    pkg_Error.ErrorStackInfo
-    , logger.errorStack(
-        'Ошибка при возврате ключей ('
-        || 'isExpired=' || isExpired
-        || ', operatorId=' || operatorId
-        || ').'
-      )
-    , true
-  );
 end getKey;
 
 end pkg_OAuth;

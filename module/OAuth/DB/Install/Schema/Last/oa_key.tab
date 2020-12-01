@@ -23,6 +23,11 @@ create table
 
 
 
+create materialized view log on oa_key
+/
+
+
+
 -- index: oa_key_ix_is_actual_date_ins
 -- Индекс для выборки актуальных и неактуальных записей.
 create index
@@ -40,21 +45,6 @@ tablespace &indexTablespace
 comment on table oa_key is
   'Хранилище RSA ключей [ SVN root: JEP/Module/OAuth]'
 /
-comment on column oa_key.key_id is
-  'Id записи с ключами'
-/
-comment on column oa_key.public_key is
-  'Публичный ключ'
-/
-comment on column oa_key.private_key is
-  'Приватный ключ'
-/
-comment on column oa_key.is_actual is
-  'Признак актуальной записи (1 - актуальная; 0 - неактуальная)'
-/
-comment on column oa_key.date_ins is
-  'Дата создания записи'
-/
-comment on column oa_key.operator_id_ins is
-  'Id оператора, создавшего запись'
-/
+
+-- Устанавливает комментарии к полям
+@oms-run Install/Schema/Last/set-key-comment.sql oa_key

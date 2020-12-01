@@ -46,70 +46,70 @@ declare
 -- main
 begin
   mergeRole(
-    roleShortName => pkg_OAuth.OAViewClient_RoleSName
+    roleShortName => pkg_OAuthCommon.OAViewClient_RoleSName
     , roleName    =>
         'OAuth: просмотр зарегистрированных клиентских приложений'
     , roleNameEn  =>
         'OAuth: OAViewClient'
   );
   mergeRole(
-    roleShortName => pkg_OAuth.OACreateClient_RoleSName
+    roleShortName => pkg_OAuthCommon.OACreateClient_RoleSName
     , roleName    =>
         'OAuth: регистрация клиентских приложений'
     , roleNameEn  =>
         'OAuth: OACreateClient'
   );
   mergeRole(
-    roleShortName => pkg_OAuth.OAEditClient_RoleSName
+    roleShortName => pkg_OAuthCommon.OAEditClient_RoleSName
     , roleName    =>
         'OAuth: редактирование учетных данных клиентских приложений'
     , roleNameEn  =>
         'OAuth: OAEditClient'
   );
   mergeRole(
-    roleShortName => pkg_OAuth.OADeleteClient_RoleSName
+    roleShortName => pkg_OAuthCommon.OADeleteClient_RoleSName
     , roleName    =>
         'OAuth: удаление клиентских приложений'
     , roleNameEn  =>
         'OAuth: OADeleteClient'
   );
   mergeRole(
-    roleShortName => pkg_OAuth.OAViewSession_RoleSName
+    roleShortName => pkg_OAuthCommon.OAViewSession_RoleSName
     , roleName    =>
         'OAuth: просмотр пользовательских сессий'
     , roleNameEn  =>
         'OAuth: OAViewSession'
   );
   mergeRole(
-    roleShortName => pkg_OAuth.OACreateSession_RoleSName
+    roleShortName => pkg_OAuthCommon.OACreateSession_RoleSName
     , roleName    =>
         'OAuth: создание пользовательских сессий'
     , roleNameEn  =>
         'OAuth: OACreateSession'
   );
   mergeRole(
-    roleShortName => pkg_OAuth.OAEditSession_RoleSName
+    roleShortName => pkg_OAuthCommon.OAEditSession_RoleSName
     , roleName    =>
         'OAuth: редактирование пользовательских сессий'
     , roleNameEn  =>
         'OAuth: OAEditSession'
   );
   mergeRole(
-    roleShortName => pkg_OAuth.OADeleteSession_RoleSName
+    roleShortName => pkg_OAuthCommon.OADeleteSession_RoleSName
     , roleName    =>
         'OAuth: удаление пользовательских сессий'
     , roleNameEn  =>
         'OAuth: OADeleteSession'
   );
   mergeRole(
-    roleShortName => pkg_OAuth.OAUpdateKey_RoleSName
+    roleShortName => pkg_OAuthCommon.OAUpdateKey_RoleSName
     , roleName    =>
         'OAuth: обновление ключей'
     , roleNameEn  =>
         'OAuth: OAUpdateKey'
   );
   mergeRole(
-    roleShortName => pkg_OAuth.OAViewKey_RoleSName
+    roleShortName => pkg_OAuthCommon.OAViewKey_RoleSName
     , roleName    =>
         'OAuth: просмотр ключей'
     , roleNameEn  =>

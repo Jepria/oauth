@@ -28,12 +28,18 @@
 #   с учетом регистра, например "Install/Schema/Last/test_view.vw.$(lu): ...";
 #
 
+Common/pkg_OAuthCommon.pkb.$(lu): \
+  Common/pkg_OAuthCommon.pks.$(lu) \
+
+
 pkg_OAuth.pkb.$(lu): \
   pkg_OAuth.pks.$(lu) \
+  Common/pkg_OAuthCommon.pks.$(lu) \
 
 
 pkg_OAuthInternal.pkb.$(lu): \
   pkg_OAuthInternal.pks.$(lu) \
+  Common/pkg_OAuthCommon.pks.$(lu) \
   Install/Schema/Last/v_oa_session.vw.$(lu) \
 
 
@@ -43,5 +49,24 @@ Install/Schema/Last/v_oa_session.vw.$(lu): \
 
 Install/Data/Last/op_group.sql.$(lu): \
   Install/Data/Last/op_role.sql.$(lu) \
+
+
+Common/pkg_OAuthCommon.pkb.$(lu2): \
+  Common/pkg_OAuthCommon.pks.$(lu2) \
+
+
+ReserveDb/pkg_OAuth.pkb.$(lu2): \
+  ReserveDb/pkg_OAuth.pks.$(lu2) \
+  Common/pkg_OAuthCommon.pks.$(lu2) \
+
+
+ReserveDb/pkg_OAuthInternal.pkb.$(lu2): \
+  ReserveDb/pkg_OAuthInternal.pks.$(lu2) \
+  Common/pkg_OAuthCommon.pks.$(lu2) \
+  Install/Schema/Last/ReserveDb/v_oa_session.vw.$(lu2) \
+
+
+Install/Schema/Last/ReserveDb/v_oa_session.vw.$(lu2): \
+  Install/Schema/Last/set-session-comment.sql \
 
 

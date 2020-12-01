@@ -20,21 +20,14 @@ create table
 
 
 
+create materialized view log on oa_client_uri
+/
+
+
+
 comment on table oa_client_uri is
   'URI для клиентского приложения [ SVN root: JEP/Module/OAuth]'
 /
-comment on column oa_client_uri.client_uri_id is
-  'Id записи с URI клиентского приложения'
-/
-comment on column oa_client_uri.client_id is
-  'Id клиентского приложения'
-/
-comment on column oa_client_uri.client_uri is
-  'URI клиентского приложения'
-/
-comment on column oa_client_uri.date_ins is
-  'Дата создания записи'
-/
-comment on column oa_client_uri.operator_id is
-  'Id оператора, создавшего запись'
-/
+
+-- Устанавливает комментарии к полям
+@oms-run Install/Schema/Last/set-client_uri-comment.sql oa_client_uri

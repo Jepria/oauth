@@ -7,69 +7,6 @@ create or replace package pkg_OAuth is
 
 
 
-/* group: Константы */
-
-/* const: Module_Name
-  Название модуля, к которому относится пакет.
-*/
-Module_Name constant varchar2(30) := 'OAuth';
-
-
-
-/* group: Роли */
-
-/* const: OAViewClient_RoleSName
-  Краткое имя роли "Просмотр зарегистрированных клиентских приложений".
-*/
-OAViewClient_RoleSName constant varchar2(50) := 'OAViewClient';
-
-/* const: OACreateClient_RoleSName
-  Краткое имя роли "Регистрация клиентских приложений".
-*/
-OACreateClient_RoleSName constant varchar2(50) := 'OACreateClient';
-
-/* const: OAEditClient_RoleSName
-  Краткое имя роли "Редактирование учетных данных клиентских приложений".
-*/
-OAEditClient_RoleSName constant varchar2(50) := 'OAEditClient';
-
-/* const: OADeleteClient_RoleSName
-  Краткое имя роли "Удаление клиентских приложений".
-*/
-OADeleteClient_RoleSName constant varchar2(50) := 'OADeleteClient';
-
-/* const: OAViewSession_RoleSName
-  Краткое имя роли "Просмотр пользовательских сессий".
-*/
-OAViewSession_RoleSName constant varchar2(50) := 'OAViewSession';
-
-/* const: OACreateSession_RoleSName
-  Краткое имя роли "Создание пользовательских сессий".
-*/
-OACreateSession_RoleSName constant varchar2(50) := 'OACreateSession';
-
-/* const: OAEditSession_RoleSName
-  Краткое имя роли "Редактирование пользовательских сессий".
-*/
-OAEditSession_RoleSName constant varchar2(50) := 'OAEditSession';
-
-/* const: OADeleteSession_RoleSName
-  Краткое имя роли "Удаление пользовательских сессий".
-*/
-OADeleteSession_RoleSName constant varchar2(50) := 'OADeleteSession';
-
-/* const: OAUpdateKey_RoleSName
-  Краткое имя роли "Обновление ключей".
-*/
-OAUpdateKey_RoleSName constant varchar2(50) := 'OAUpdateKey';
-
-/* const: OAViewKey_RoleSName
-  Краткое имя роли "Просмотр ключей".
-*/
-OAViewKey_RoleSName constant varchar2(50) := 'OAViewKey';
-
-
-
 /* group: Функции */
 
 
@@ -166,38 +103,8 @@ function verifyClientCredentials(
 return integer;
 
 /* pfunc: findClient
-  Поиск клиентского приложения.
-
-  Параметры:
-  clientShortName             - Краткое наименование приложения
-                                (по умолчанию без ограничений)
-  clientName                  - Наименование клиентского приложения на языке
-                                по умолчанию
-                                (по умолчанию без ограничений)
-  clientNameEn                - Наименование клиентского приложения на
-                                английском языке
-                                (по умолчанию без ограничений)
-  maxRowCount                 - Максимальное количество выводимых строк
-                                (по умолчанию без ограничений)
-  operatorId                  - Id оператора, выполняющего операцию
-
-  Возврат (курсор):
-  client_short_name           - Краткое наименование приложения
-  client_secret               - Случайная криптографически устойчивая строка
-  client_name                 - Имя клиентского приложения
-  client_name_en              - Имя клиентского приложения на английском
-  application_type            - Тип клиентского приложения
-  date_ins                    - Дата создания записи
-  create_operator_id          - Id оператора, создавшего запись
-  create_operator_name        - Имя оператора, создавшего запись
-  create_operator_name_en     - Имя оператора, создавшего запись на англ.
-  change_date                 - Дата последнего изменения записи
-  change_operator_id          - Id оператора, изменившего запись
-  change_operator_name        - Имя оператора, изменившего запись
-  change_operator_name_en     - Имя оператора, изменившего запись на англ.
-  client_operator_id          - ID оператора клиентского приложения
-
-  (сортировка по date_ins в обратном порядке)
+  Поиск клиентского приложения
+  (подробнее <pkg_OAuthCommon.findClient>).
 
   ( <body::findClient>)
 */
@@ -211,17 +118,8 @@ function findClient(
 return sys_refcursor;
 
 /* pfunc: getClientGrant
-  Возвращает список грантов клиентского приложения.
-
-  Параметры:
-  clientShortName             - Краткое наименование приложения
-  operatorId                  - Id оператора, выполняющего операцию
-
-  Возврат (курсор):
-  client_short_name           - Краткое наименование приложения
-  grant_type                  - Тип гранта
-
-  (сортировка по grant_type)
+  Возвращает список грантов клиентского приложения
+  (подробнее <pkg_OAuthCommon.getClientGrant>).
 
   ( <body::getClientGrant>)
 */
@@ -305,27 +203,8 @@ procedure deleteClientUri(
 );
 
 /* pfunc: findClientUri
-  Поиск URI клиентского приложения.
-
-  Параметры:
-  clientUriId                 - Id записи с URI клиентского приложения
-                                (по умолчанию без ограничений)
-  clientShortName             - Краткое наименование приложения
-                                (по умолчанию без ограничений)
-  maxRowCount                 - Максимальное количество выводимых строк
-                                (по умолчанию без ограничений)
-  operatorId                  - Id оператора, выполняющего операцию
-
-  Возврат (курсор):
-  client_uri_id               - Id записи с URI клиентского приложения
-  client_short_name           - Краткое наименование приложения
-  client_uri                  - URI клиентского приложения
-  date_ins                    - Дата создания записи
-  operator_id                 - Id оператора, создавшего запись
-  operator_name               - Имя оператора, создавшего запись
-  operator_name_en            - Имя оператора, создавшего запись на англ.
-
-  (сортировка по date_ins в обратном порядке)
+  Поиск URI клиентского приложения
+  (подробнее <pkg_OAuthCommon.findClientUri>).
 
   ( <body::findClientUri>)
 */
@@ -342,28 +221,8 @@ return sys_refcursor;
 /* group: Пользовательские сессии */
 
 /* pfunc: createSession
-  Создает пользовательскую сессию.
-
-  Параметры:
-  authСode                    - Авторизационный код (One-Time-Password)
-  clientShortName             - Краткое наименование приложения
-  redirectUri                 - URI для перенаправления
-  operatorId                  - Id пользователя, владельца сессии
-  codeChallenge               - Криптографически случайная строка,
-                                используется при авторизации по PKCE
-  accessToken                 - Уникальный UUID токена доступа
-  accessTokenDateIns          - Дата создания токена доступа
-  accessTokenDateFinish       - Дата окончания действия токена доступа
-  refreshToken                - Уникальный UUID токена обновления
-  refreshTokenDateIns         - Дата создания токена обновления
-  refreshTokenDateFinish      - Дата окончания действия токена обновления
-  sessionToken                - UUID токена сессии
-  sessionTokenDateIns         - Дата создания токена сессии
-  sessionTokenDateFinish      - Дата окончания действия токена сессии
-  operatorIdIns               - Id оператора, выполняющего операцию
-
-  Возврат:
-  Id созданной записи
+  Создает пользовательскую сессию
+  (подробнее <pkg_OAuthCommon.createSession>).
 
   ( <body::createSession>)
 */
@@ -387,26 +246,8 @@ function createSession(
 return integer;
 
 /* pproc: updateSession
-  Обновляет пользовательскую сессию.
-
-  Параметры:
-  sessionId                   - Id пользовательской сессии
-  authСode                    - Авторизационный код (One-Time-Password)
-  clientShortName             - Краткое наименование приложения
-  redirectUri                 - URI для перенаправления
-  operatorId                  - Id пользователя, владельца сессии
-  codeChallenge               - Криптографически случайная строка,
-                                используется при авторизации по PKCE
-  accessToken                 - Уникальный UUID токена доступа
-  accessTokenDateIns          - Дата создания токена доступа
-  accessTokenDateFinish       - Дата окончания действия токена доступа
-  refreshToken                - Уникальный UUID токена обновления
-  refreshTokenDateIns         - Дата создания токена обновления
-  refreshTokenDateFinish      - Дата окончания действия токена обновления
-  sessionToken                - UUID токена сессии
-  sessionTokenDateIns         - Дата создания токена сессии
-  sessionTokenDateFinish      - Дата окончания действия токена сессии
-  operatorIdIns               - Id оператора, выполняющего операцию
+  Обновляет пользовательскую сессию
+  (подробнее <pkg_OAuthCommon.updateSession>).
 
   ( <body::updateSession>)
 */
@@ -430,11 +271,8 @@ procedure updateSession(
 );
 
 /* pproc: blockSession
-  Блокирует пользовательскую сессию.
-
-  Параметры:
-  sessionId                   - Id пользовательской сессии
-  operatorIdIns               - Id оператора, выполняющего операцию
+  Блокирует пользовательскую сессию
+  (подробнее <pkg_OAuthCommon.blockSession>).
 
   ( <body::blockSession>)
 */
@@ -444,57 +282,8 @@ procedure blockSession(
 );
 
 /* pfunc: findSession
-  Поиск пользовательской сессии.
-
-  Параметры:
-  sessionId                   - Id пользовательской сессии
-                                (по умолчанию без ограничений)
-  authСode                    - Авторизационный код (One-Time-Password)
-                                (по умолчанию без ограничений)
-  clientShortName             - Краткое наименование приложения
-                                (по умолчанию без ограничений)
-  redirectUri                 - URI для перенаправления
-                                (по умолчанию без ограничений)
-  operatorId                  - Id пользователя, владельца сессии
-                                (по умолчанию без ограничений)
-  codeChallenge               - Криптографически случайная строка,
-                                используется при авторизации по PKCE
-                                (по умолчанию без ограничений)
-  accessToken                 - Уникальный UUID токена доступа
-                                (по умолчанию без ограничений)
-  refreshToken                - Уникальный UUID токена обновления
-                                (по умолчанию без ограничений)
-  sessionToken                - UUID токена сессии
-                                (по умолчанию без ограничений)
-  maxRowCount                 - Максимальное количество выводимых строк
-                                (по умолчанию без ограничений)
-  operatorIdIns               - Id оператора, выполняющего операцию
-
-  Возврат (курсор):
-  session_id                  - Идентификатор записи
-  auth_code                   - Авторизационный код (One-Time-Password)
-  client_short_name           - Краткое наименование приложения
-  client_name                 - Имя клиентского приложения
-  client_name_en              - Имя клиентского приложения на английском
-  redirect_uri                - URI для перенаправления
-  operator_id                 - Id пользователя, владельца сессии
-  operator_name               - Имя пользователя, владельца сессии
-  operator_login              - Логин пользователя, владельца сессии
-  code_challenge              - Криптографически случайная строка,
-                                используется при авторизации по PKCE
-  access_token                - Уникальный UUID токена доступа
-  access_token_date_ins       - Дата создания токена доступа
-  access_token_date_finish    - Дата окончания действия токена доступа
-  refresh_token               - Уникальный UUID токена обновления
-  refresh_token_date_ins      - Дата создания токена обновления
-  refresh_token_date_finish   - Дата окончания действия токена обновления
-  session_token               - Уникальный UUID токена сессии
-  session_token_date_ins      - Дата создания токена сессии
-  session_token_date_finish   - Дата окончания действия токена сессии
-  date_ins                    - Дата создания записи
-  operator_id_ins             - ID пользователя, создавшего запись
-
-  (сортировка по date_ins в обратном порядке)
+  Поиск пользовательской сессии
+  (подробнее <pkg_OAuthCommon.findSession>).
 
   ( <body::findSession>)
 */
@@ -538,18 +327,8 @@ function setKey(
 return integer;
 
 /* pfunc: getKey
-  Возвращает ключи.
-
-  Параметры:
-  isExpired                   - Признак истекшего срока действия ключа
-  operatorId                  - Id оператора, выполняющего операцию
-
-  Возврат (курсор):
-  key_id                      - Id записи с ключами
-  public_key                  - Публичный ключ
-  private_key                 - Приватный ключ
-  is_expired                  - Признак истекшего срока действия ключа
-  date_ins                    - Дата создания записи
+  Возвращает ключи
+  (подробнее <pkg_OAuthCommon.getKey>).
 
   ( <body::getKey>)
 */

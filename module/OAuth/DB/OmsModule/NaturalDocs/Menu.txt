@@ -2,7 +2,7 @@ Format: 1.5
 
 
 Title: OAuth
-SubTitle: Версия 1.0.0
+SubTitle: Версия 1.1.0
 
 # You can add a footer to your documentation like this:
 # Footer: [text]
@@ -57,6 +57,16 @@ Group: О модуле  {
 
 Group: Пакеты  {
 
+   Group: Common  {
+
+      Group: pkg_OAuthCommon  {
+
+         File: Спецификация  (no auto-title, Common/pkg_OAuthCommon.pks)
+         File: Реализация  (no auto-title, Common/pkg_OAuthCommon.pkb)
+         }  # Group: pkg_OAuthCommon
+
+      }  # Group: Common
+
    Group: pkg_OAuth  {
 
       File: Спецификация  (no auto-title, pkg_OAuth.pks)
@@ -69,6 +79,22 @@ Group: Пакеты  {
       File: Реализация  (no auto-title, pkg_OAuthInternal.pkb)
       }  # Group: pkg_OAuthInternal
 
+   Group: ReserveDb  {
+
+      Group: pkg_OAuth  {
+
+         File: Спецификация  (no auto-title, ReserveDb/pkg_OAuth.pks)
+         File: Реализация  (no auto-title, ReserveDb/pkg_OAuth.pkb)
+         }  # Group: pkg_OAuth
+
+      Group: pkg_OAuthInternal  {
+
+         File: Спецификация  (no auto-title, ReserveDb/pkg_OAuthInternal.pks)
+         File: Реализация  (no auto-title, ReserveDb/pkg_OAuthInternal.pkb)
+         }  # Group: pkg_OAuthInternal
+
+      }  # Group: ReserveDb
+
    Group: Test  {
 
       Group: pkg_OAuthTest  {
@@ -76,6 +102,16 @@ Group: Пакеты  {
          File: Спецификация  (no auto-title, Test/pkg_OAuthTest.pks)
          File: Реализация  (no auto-title, Test/pkg_OAuthTest.pkb)
          }  # Group: pkg_OAuthTest
+
+      Group: ReserveDb  {
+
+         Group: pkg_OAuthTest  {
+
+            File: Спецификация  (no auto-title, Test/ReserveDb/pkg_OAuthTest.pks)
+            File: Реализация  (no auto-title, Test/ReserveDb/pkg_OAuthTest.pkb)
+            }  # Group: pkg_OAuthTest
+
+         }  # Group: ReserveDb
 
       }  # Group: Test
 
@@ -95,9 +131,48 @@ Group: Скрипты  {
 
          }  # Group: Data
 
+      Group: Grant  {
+
+         Group: Last  {
+
+            Group: ReserveDb  {
+
+               Group: MViewSchema  {
+
+                  File: run  (no auto-title, Install/Grant/Last/ReserveDb/MViewSchema/run.sql)
+                  }  # Group: MViewSchema
+
+               }  # Group: ReserveDb
+
+            File: link-user  (no auto-title, Install/Grant/Last/link-user.sql)
+            File: master-table  (no auto-title, Install/Grant/Last/master-table.sql)
+            }  # Group: Last
+
+         }  # Group: Grant
+
       Group: Schema  {
 
          Group: Last  {
+
+            Group: ReserveDb  {
+
+               Group: MViewSchema  {
+
+                  File: run  (no auto-title, Install/Schema/Last/ReserveDb/MViewSchema/run.sql)
+                  File: revert  (no auto-title, Install/Schema/Last/ReserveDb/MViewSchema/revert.sql)
+                  File: mv_oa_client  (no auto-title, Install/Schema/Last/ReserveDb/MViewSchema/mv_oa_client.snp)
+                  File: mv_oa_client_grant  (no auto-title, Install/Schema/Last/ReserveDb/MViewSchema/mv_oa_client_grant.snp)
+                  File: mv_oa_client_uri  (no auto-title, Install/Schema/Last/ReserveDb/MViewSchema/mv_oa_client_uri.snp)
+                  File: mv_oa_key  (no auto-title, Install/Schema/Last/ReserveDb/MViewSchema/mv_oa_key.snp)
+                  File: mv_oa_session  (no auto-title, Install/Schema/Last/ReserveDb/MViewSchema/mv_oa_session.snp)
+                  }  # Group: MViewSchema
+
+               File: run  (no auto-title, Install/Schema/Last/ReserveDb/run.sql)
+               File: revert  (no auto-title, Install/Schema/Last/ReserveDb/revert.sql)
+               File: oa_session  (no auto-title, Install/Schema/Last/ReserveDb/oa_session.tab)
+               File: oa_session_seq  (no auto-title, Install/Schema/Last/ReserveDb/oa_session_seq.sqs)
+               File: v_oa_session  (no auto-title, Install/Schema/Last/ReserveDb/v_oa_session.vw)
+               }  # Group: ReserveDb
 
             File: run  (no auto-title, Install/Schema/Last/run.sql)
             File: revert  (no auto-title, Install/Schema/Last/revert.sql)
@@ -114,11 +189,22 @@ Group: Скрипты  {
             File: v_oa_session  (no auto-title, Install/Schema/Last/v_oa_session.vw)
             }  # Group: Last
 
+         Group: 1.1.0  {
+
+            File: run  (no auto-title, Install/Schema/1.1.0/run.sql)
+            File: revert  (no auto-title, Install/Schema/1.1.0/revert.sql)
+            }  # Group: 1.1.0
+
          }  # Group: Schema
 
       }  # Group: Install
 
    Group: Test  {
+
+      Group: ReserveDb  {
+
+         File: run  (no auto-title, Test/ReserveDb/run.sql)
+         }  # Group: ReserveDb
 
       File: run  (no auto-title, Test/run.sql)
       }  # Group: Test
@@ -130,6 +216,7 @@ Group: Индекс  {
    Group: Объекты БД  {
 
       Database View Index: Представления
+      Database Materialized View Index: М-Представления
       Database Table Index: Таблицы
       Database Index Index: Индексы
       Database Sequence Index: Последовательности

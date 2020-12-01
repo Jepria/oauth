@@ -1,0 +1,10 @@
+-- table: oa_session( ReserveDb)
+-- Пользовательские сессии, созданные в резервной БД.
+-- Для создания таблицы используется скрипт создания таблицы <oa_session>
+-- в основной БД.
+
+@oms-run Install/Schema/Last/oa_session.tab
+
+comment on table oa_session is
+  'Пользовательские сессии, созданные в резервной БД [ SVN root: JEP/Module/OAuth]'
+/

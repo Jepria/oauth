@@ -379,9 +379,13 @@ LOAD_FILE_MASK :=
 loadTarget =                             \
   $(addsuffix .$(lu),                    \
     $(wildcard $(addprefix Install/Schema/Last/,*.vw *.trg)) \
+    $(wildcard $(addprefix Common/,*.typ *.pks *.tyb *.pkb)) \
     $(wildcard *.typ *.pks *.tyb *.pkb) \
   )                                      \
   $(addsuffix .$(lu2),                  \
+    $(wildcard $(addprefix Install/Schema/Last/ReserveDb/,*.vw *.trg)) \
+    $(wildcard $(addprefix Common/,*.typ *.pks *.tyb *.pkb)) \
+    $(wildcard $(addprefix ReserveDb/,*.typ *.pks *.tyb *.pkb)) \
   )                                      \
   $(addsuffix .$(lu3),                  \
   )                                      \
@@ -423,11 +427,25 @@ load-clean: load-clean.oms
 # При первоначальной установке модуля в БД должно указываться значение "Last".
 INSTALL_VERSION  =
 
+# build var: SOURCE_DBLINK
+# Имя линка к основной БД, доступного пользователю, указываемому в параметре
+# <LOAD_USERID3>.
+SOURCE_DBLINK =
+
+# build var: SOURCE_SCHEMA
+# Схема в основной БД, в которую установлены объекты модуля, используется при
+# установке под <LOAD_USERID3>.
+SOURCE_SCHEMA =
+
+
+
 # Список дополнительных параметров установки, используемых в модуле.
 # Обеспечивает сохранение в логе установки значений дополнительных параметров
 # ( в случае наличия у них непустых значений).
 # Формат: список имен параметров с пробелом в качестве разделителя.
-installAddonOptionList =
+installAddonOptionList = \
+  SOURCE_DBLINK \
+  SOURCE_SCHEMA \
 
 
 # Список объектов для обязательной проверки блокировок перед установкой и
@@ -464,9 +482,15 @@ installBeforeTarget =                          \
     $(installBeforeOmsAction)                  \
   )                                            \
   $(addsuffix .$(ru2),                        \
+    $(if $(INSTALL_VERSION), \
+      $(wildcard Install/Config/$(INSTALL_VERSION)/ReserveDb/before-action.sql),) \
+    $(wildcard Install/Config/ReserveDb/before-action.sql)      \
     $(installBeforeOmsAction)                  \
   )                                            \
   $(addsuffix .$(ru3),                        \
+    $(if $(INSTALL_VERSION), \
+      $(wildcard Install/Config/$(INSTALL_VERSION)/ReserveDb/MViewSchema/before-action.sql),) \
+    $(wildcard Install/Config/ReserveDb/MViewSchema/before-action.sql)      \
     $(installBeforeOmsAction)                  \
   )                                            \
 
@@ -485,8 +509,10 @@ installSchemaTarget =                   \
     $(wildcard Install/Schema/$(INSTALL_VERSION)/run.sql)      \
   )                                      \
   $(addsuffix .$(lu2),                  \
+    $(wildcard Install/Schema/$(INSTALL_VERSION)/ReserveDb/run.sql) \
   )                                      \
   $(addsuffix .$(lu3),                  \
+    $(wildcard Install/Schema/$(INSTALL_VERSION)/ReserveDb/MViewSchema/run.sql) \
   )                                      \
 
 
@@ -564,6 +590,7 @@ installDataTarget = \
     $(call getInstallDataFile) \
   ) \
   $(addsuffix .$(lu2), \
+    $(call getInstallDataFile,ReserveDb) \
   ) \
   $(addsuffix .$(lu3), \
   ) \
@@ -637,6 +664,9 @@ installBatchTarget = \
     $(wildcard Install/Batch/Last/*/batch.xml) \
   ) \
   $(addsuffix .$(lu2), \
+    $(wildcard Install/Batch/Last/ReserveDb/*.job.sql) \
+    $(wildcard Install/Batch/Last/ReserveDb/*/*.job.sql) \
+    $(wildcard Install/Batch/Last/ReserveDb/*/batch.xml) \
   ) \
   $(addsuffix .$(lu3), \
   ) \
@@ -670,9 +700,15 @@ installAfterTarget =                          \
   )                                            \
   $(addsuffix .$(ru2),                        \
     $(installAfterOmsAction)                  \
+    $(wildcard Install/Config/ReserveDb/after-action.sql)      \
+    $(if $(INSTALL_VERSION), \
+      $(wildcard Install/Config/$(INSTALL_VERSION)/ReserveDb/after-action.sql),) \
   )                                            \
   $(addsuffix .$(ru3),                        \
     $(installAfterOmsAction)                  \
+    $(wildcard Install/Config/ReserveDb/MViewSchema/after-action.sql)      \
+    $(if $(INSTALL_VERSION), \
+      $(wildcard Install/Config/$(INSTALL_VERSION)/ReserveDb/MViewSchema/after-action.sql),) \
   )                                            \
 
 
@@ -712,6 +748,11 @@ installTestTarget = \
     ) \
   ) \
   $(addsuffix .$(lu2), \
+    $(wildcard \
+      $(addprefix Test/ReserveDb/, \
+        *.typ *.pks *.tyb *.pkb \
+      ) \
+    ) \
   ) \
   $(addsuffix .$(lu3), \
   ) \
@@ -743,6 +784,7 @@ testTarget = \
     $(wildcard Test/$(testScript)) \
   ) \
   $(addsuffix .$(ru2), \
+    $(wildcard Test/ReserveDb/$(testScript)) \
   ) \
   $(addsuffix .$(ru3), \
   ) \
@@ -793,9 +835,15 @@ uninstallBeforeTarget = \
     $(uninstallBeforeOmsAction) \
   ) \
   $(addsuffix .$(ru2), \
+    $(if $(INSTALL_VERSION), \
+      $(wildcard Install/Config/$(INSTALL_VERSION)/ReserveDb/Revert/before-action.sql),) \
+    $(wildcard Install/Config/ReserveDb/before-action.sql) \
     $(uninstallBeforeOmsAction) \
   ) \
   $(addsuffix .$(ru3), \
+    $(if $(INSTALL_VERSION), \
+      $(wildcard Install/Config/$(INSTALL_VERSION)/ReserveDb/MViewSchema/Revert/before-action.sql),) \
+    $(wildcard Install/Config/ReserveDb/MViewSchema/before-action.sql) \
     $(uninstallBeforeOmsAction) \
   ) \
 
@@ -814,8 +862,10 @@ uninstallSchemaTarget = \
     $(wildcard Install/Schema/$(INSTALL_VERSION)/revert.sql) \
   ) \
   $(addsuffix .$(ru2), \
+    $(wildcard Install/Schema/$(INSTALL_VERSION)/ReserveDb/revert.sql) \
   ) \
   $(addsuffix .$(ru3), \
+    $(wildcard Install/Schema/$(INSTALL_VERSION)/ReserveDb/MViewSchema/revert.sql) \
   ) \
 
 
@@ -840,6 +890,11 @@ uninstallLoadTarget = \
     ,) \
   ) \
   $(addsuffix .$(ru2), \
+    $(if $(INSTALL_VERSION), \
+      $(foreach m, *.typ *.vw *.pks *.trg *.tyb *.pkb, \
+        $(wildcard Install/Schema/$(INSTALL_VERSION)/ReserveDb/Revert/$(m)) \
+      ) \
+    ,) \
   ) \
   $(addsuffix .$(ru3), \
   ) \
@@ -893,9 +948,15 @@ uninstallAfterTarget = \
   ) \
   $(addsuffix .$(ru2), \
     $(uninstallAfterOmsAction) \
+    $(wildcard Install/Config/ReserveDb/after-action.sql) \
+    $(if $(INSTALL_VERSION), \
+      $(wildcard Install/Config/$(INSTALL_VERSION)/ReserveDb/Revert/after-action.sql),) \
   ) \
   $(addsuffix .$(ru3), \
     $(uninstallAfterOmsAction) \
+    $(wildcard Install/Config/ReserveDb/MViewSchema/after-action.sql) \
+    $(if $(INSTALL_VERSION), \
+      $(wildcard Install/Config/$(INSTALL_VERSION)/ReserveDb/MViewSchema/Revert/after-action.sql),) \
   ) \
 
 
@@ -954,8 +1015,10 @@ grantTarget =                           \
     $(wildcard Install/Grant/$(grantVersion)/$(grantScript)) \
   )                                     \
   $(addsuffix .$(ru2),                  \
+    $(wildcard Install/Grant/$(grantVersion)/ReserveDb/$(grantScript)) \
   )                                     \
   $(addsuffix .$(ru3),                  \
+    $(wildcard Install/Grant/$(grantVersion)/ReserveDb/MViewSchema/$(grantScript)) \
   )                                     \
 
 

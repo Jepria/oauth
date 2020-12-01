@@ -1,0 +1,9 @@
+-- sequence: oa_session_seq( ReserveDb)
+-- Последовательность для заполнения первичного ключа таблицы
+-- <oa_session( ReserveDb)>.
+-- Генерирует только четные Id (нечетные используются в основной БД).
+create sequence
+  oa_session_seq
+-- только четные Id (нечетные используются в основной БД)
+start with 2 increment by 2
+/

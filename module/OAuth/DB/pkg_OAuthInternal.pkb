@@ -9,7 +9,7 @@ create or replace package body pkg_OAuthInternal is
   Логер пакета.
 */
 logger lg_logger_t := lg_logger_t.getLogger(
-  moduleName    => pkg_OAuth.Module_Name
+  moduleName    => pkg_OAuthCommon.Module_Name
   , objectName  => 'pkg_OAuthInternal'
 );
 

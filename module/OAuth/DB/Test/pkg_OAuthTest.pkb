@@ -24,7 +24,7 @@ Test_Pr constant varchar2(20) := '$OAuth.Test$:';
   Логер пакета.
 */
 logger lg_logger_t := lg_logger_t.getLogger(
-  moduleName    => pkg_OAuth.Module_Name
+  moduleName    => pkg_OAuthCommon.Module_Name
   , objectName  => 'pkg_OAuthTest'
 );
 
@@ -211,7 +211,7 @@ is
             , '$(testOperNameEn)', testOperNameEn)
             , '$(clientSecretDec)'
                 , case when chRec.client_secret is not null then
-                    pkg_OptionCrypto.decrypt( chRec.client_secret)
+                    pkg_OAuthCommon.decrypt( chRec.client_secret)
                   end
               )
             , '$(dateIns)', to_char( chRec.date_ins))
@@ -589,7 +589,7 @@ $(Test_Pr)client1  ; $(clientSecretDec) ; $(Test_Pr)Тестовый клиен�
       'verifyClientCredentials', 'unknown client'
       , clientShortName       => '?unknown?'
       , clientSecret          =>
-          pkg_OptionCrypto.decrypt( lastRec.client_secret)
+          pkg_OAuthCommon.decrypt( lastRec.client_secret)
       , execErrorCode         => -20003
       , execErrorMessageMask  =>
           'ORA-20003: Указаны неверные данные клиентского приложения (clientShortName="%").%'
@@ -610,7 +610,7 @@ $(Test_Pr)client1  ; $(clientSecretDec) ; $(Test_Pr)Тестовый клиен�
       'verifyClientCredentials', 'web-client: good secret'
       , clientShortName       => 'client1'
       , clientSecret          =>
-          pkg_OptionCrypto.decrypt( lastRec.client_secret)
+          pkg_OAuthCommon.decrypt( lastRec.client_secret)
       , resultNumber          => lastRec.operator_id
     );
     checkCase(
@@ -1475,7 +1475,7 @@ $(clientUriId)  ; $(webClientSName)  ; Тестовый URI 1     ; $(dateIns)  
     checkCase(
       'createSession', 'NULL-значения параметров'
       , execErrorMessageMask  =>
-          '%ORA-01400: cannot insert NULL into ("INFORMATION"."OA_SESSION"."AUTH_CODE")%'
+          '%ORA-01400: cannot insert NULL into ("%"."OA_SESSION"."AUTH_CODE")%'
     );
     checkCase(
       'createSession', 'Некорректный clientShortName'

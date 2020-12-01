@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<batch short_name="OAuthClearOldData">
+  <name>Контроль актуальности данных OAuth в резервной БД</name>
+  <batch_config>
+    <retry_count>2</retry_count>
+    <retry_interval>10</retry_interval>
+    <schedule>
+      <name>ежедневно в 02:00</name>
+      <interval type="hh24">
+        <value>2</value>
+      </interval>
+      <interval type="mi">
+        <value>0</value>
+      </interval>
+    </schedule>
+    <option short_name="MaxExecTimeHour" type="number" name="Максимальное время выполнения в часах">
+      <value>1</value>
+    </option>
+    <option short_name="SaveDayCount" type="number" name="Число дней, за которые сохраняются неактуальные данные">
+      <value>31</value>
+    </option>
+  </batch_config>
+  <content id="1" job="initialization" module="Scheduler"/>
+  <content id="2" job="set_date_finish">
+    <condition id="1">true</condition>
+  </content>
+  <content id="3" job="commit" module="Scheduler">
+    <condition id="2">true</condition>
+  </content>
+  <content id="4" job="clear">
+    <condition id="3">true</condition>
+  </content>
+  <content id="5" job="commit" module="Scheduler">
+    <condition id="4">true</condition>
+  </content>
+  <content id="6" job="retry_batch" module="Scheduler">
+    <condition id="5">skip</condition>
+    <condition id="5">error</condition>
+  </content>
+</batch>

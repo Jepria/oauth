@@ -26,18 +26,14 @@ create table
 
 
 
+create materialized view log on oa_client_grant
+/
+
+
+
 comment on table oa_client_grant is
   'Список грантов клиентского приложения [ SVN root: JEP/Module/OAuth]'
 /
-comment on column oa_client_grant.client_id is
-  'Id клиентского приложения'
-/
-comment on column oa_client_grant.grant_type is
-  'Тип гранта'
-/
-comment on column oa_client_grant.date_ins is
-  'Дата создания записи'
-/
-comment on column oa_client_grant.operator_id is
-  'Id оператора, создавшего запись'
-/
+
+-- Устанавливает комментарии к полям
+@oms-run Install/Schema/Last/set-client_grant-comment.sql oa_client_grant

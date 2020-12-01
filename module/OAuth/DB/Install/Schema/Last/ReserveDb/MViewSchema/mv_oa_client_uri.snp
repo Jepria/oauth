@@ -1,0 +1,52 @@
+-- mview: mv_oa_client_uri
+-- URI для клиентского приложения
+-- (материализованное представление).
+--
+create materialized view
+  mv_oa_client_uri
+build deferred
+using no index
+refresh
+  fast
+  on demand
+as
+select
+  -- SVN root: JEP/Module/OAuth
+  *
+from
+  &sourceSchema..oa_client_uri@&sourceDbLink
+/
+
+
+
+-- index: mv_oa_client_uri_pk
+alter table
+  mv_oa_client_uri
+add (
+  constraint mv_oa_client_uri_pk primary key
+    ( client_uri_id)
+    using index tablespace &indexTablespace
+)
+/
+
+-- index: mv_oa_client_uri_ix_cl_id_uri
+-- Индекс для выборки по client_id.
+create index
+  mv_oa_client_uri_ix_cl_id_uri
+on
+  mv_oa_client_uri (
+    client_id
+    , client_uri
+  )
+tablespace &indexTablespace
+/
+
+
+
+
+comment on materialized view mv_oa_client_uri is
+  'URI для клиентского приложения (материализованное представление) [ SVN root: JEP/Module/OAuth]'
+/
+
+-- Устанавливает комментарии к полям из таблицы oa_client_uri
+@oms-run Install/Schema/Last/set-client_uri-comment.sql mv_oa_client_uri

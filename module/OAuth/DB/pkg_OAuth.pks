@@ -84,15 +84,8 @@ procedure deleteClient(
 );
 
 /* pfunc: verifyClientCredentials
-  Проверяет данные клиентского приложения.
-
-  Параметры:
-  clientShortName             - Краткое наименование приложения
-  clientSecret                - Секретное слово приложения
-                                (по умолчанию отсутствует)
-
-  Возврат:
-  Id оператора, привязанного к приложению (если привязка существует).
+  Проверяет данные клиентского приложения
+  (подробнее <pkg_OAuthCommon.verifyClientCredentials>).
 
   ( <body::verifyClientCredentials>)
 */

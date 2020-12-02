@@ -124,7 +124,8 @@ is
       from
         oa_client d
       where
-        not exists
+        d.client_secret is not null
+        and not exists
           (
           select
             null
@@ -349,8 +350,10 @@ is
         , clientName varchar2 := null
         , clientNameEn varchar2 := null
         , maxRowCount integer := null
+        , clientSecret varchar2 := null
         , operatorId integer := testOperId
         , resultRowCount integer := null
+        , resultNumber number := None_Integer
         , resultCsv clob := null
         , clientCsv clob := null
         , clientGrantCsv clob := null
@@ -455,6 +458,11 @@ is
                 clientShortName               => clientShortName
                 , operatorId                  => operatorId
               );
+            when 'verifyClientCredentials' then
+              resNum := pkg_OAuth.verifyClientCredentials(
+                clientShortName               => clientShortName
+                , clientSecret                => clientSecret
+              );
           end case;
           if isWaitError then
             pkg_TestUtility.failTest(
@@ -511,6 +519,14 @@ is
             where
               t.client_id = chId
             ;
+          end if;
+          if nullif( None_Integer, resultNumber) is not null then
+            pkg_TestUtility.compareChar(
+              actualString        => resNum
+              , expectedString    => resultNumber
+              , failMessageText   =>
+                  cinfo || 'Неожиданный результат выполнения функции'
+            );
           end if;
           if resultRowCount is not null then
             pkg_TestUtility.compareRowCount(
@@ -589,6 +605,27 @@ $(client_short_name) ; $(clientSecretDec) ; $(client_name)   ; $(client_name_en)
       'findClient', 'by clientNameEn'
       , clientNameEn          => client1.client_name_en
       , resultRowCount        => 1
+    );
+    checkCase(
+      'verifyClientCredentials', 'unknown client'
+      , clientShortName       => '?unknown?'
+      , clientSecret          => null
+      , execErrorCode         => -20003
+      , execErrorMessageMask  =>
+          'ORA-20003: Указаны неверные данные клиентского приложения (clientShortName="%").%'
+    );
+    checkCase(
+      'verifyClientCredentials', 'bad secret'
+      , clientShortName       => client1.client_short_name
+      , clientSecret          => client1.client_secret
+      , execErrorCode         => -20003
+    );
+    checkCase(
+      'verifyClientCredentials', 'good secret'
+      , clientShortName       => client1.client_short_name
+      , clientSecret          =>
+          pkg_OAuthCommon.decrypt( client1.client_secret)
+      , resultNumber          => client1.operator_id
     );
     checkCase(
       'getClientGrant', 'client1'

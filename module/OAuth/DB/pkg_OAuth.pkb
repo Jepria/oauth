@@ -32,35 +32,6 @@ Native_AppType constant varchar2(20) := 'native';
 
 
 
-/* group: Тип гранта */
-
-/* iconst: AuthorizationCode_GrantType
-  Тип гранта "authorization_code".
-*/
-AuthorizationCode_GrantType constant varchar2(20) := 'authorization_code';
-
-/* iconst: Implicit_GrantType
-  Тип гранта "implicit".
-*/
-Implicit_GrantType constant varchar2(20) := 'implicit';
-
-/* iconst: ClientCredentials_GrantType
-  Тип гранта "client_credentials".
-*/
-ClientCredentials_GrantType constant varchar2(20) := 'client_credentials';
-
-/* iconst: Password_GrantType
-  Тип гранта "password".
-*/
-Password_GrantType constant varchar2(20) := 'password';
-
-/* iconst: RefreshToken_GrantType
-  Тип гранта "refresh_token".
-*/
-RefreshToken_GrantType constant varchar2(20) := 'refresh_token';
-
-
-
 /* group: Переменные */
 
 /* ivar: logger
@@ -433,11 +404,11 @@ begin
       dual
     ;
     badGrantTab := grantTypeTab multiset except cmn_string_table_t(
-      AuthorizationCode_GrantType
-      , Implicit_GrantType
-      , ClientCredentials_GrantType
-      , Password_GrantType
-      , RefreshToken_GrantType
+      pkg_OAuthCommon.AuthorizationCode_GrantType
+      , pkg_OAuthCommon.Implicit_GrantType
+      , pkg_OAuthCommon.ClientCredentials_GrantType
+      , pkg_OAuthCommon.Password_GrantType
+      , pkg_OAuthCommon.RefreshToken_GrantType
     );
     if badGrantTab is not null and badGrantTab.count() > 0 then
       raise_application_error(
@@ -541,7 +512,7 @@ is
     rec.change_date               := curTime;
     rec.change_operator_id        := operatorId;
     if applicationType in ( Web_AppType, Service_AppType)
-          and ClientCredentials_GrantType member of grantTypeTab
+          and pkg_OAuthCommon.ClientCredentials_GrantType member of grantTypeTab
         then
       rec.operator_id := createOperator(
         clientShortName       => clientShortName
@@ -718,7 +689,7 @@ is
     rec.change_date               := curTime;
     rec.change_operator_id        := operatorId;
     if applicationType in ( Web_AppType, Service_AppType)
-          and ClientCredentials_GrantType member of grantTypeTab
+          and pkg_OAuthCommon.ClientCredentials_GrantType member of grantTypeTab
         then
       if rec.operator_id is null then
         rec.operator_id := createOperator(
@@ -740,9 +711,11 @@ is
     elsif rec.operator_id is not null
         and (
           grantTypeTab is null
-          or ClientCredentials_GrantType not member of grantTypeTab
+          or pkg_OAuthCommon.ClientCredentials_GrantType
+              not member of grantTypeTab
         )
-        and ClientCredentials_GrantType member of oldGrantTypeTab
+        and pkg_OAuthCommon.ClientCredentials_GrantType
+              member of oldGrantTypeTab
       then
         deleteOperator(
           operatorId      => rec.operator_id
@@ -885,7 +858,8 @@ begin
     , clientShortName => clientShortName
   );
   if rec.operator_id is not null
-        and ClientCredentials_GrantType member of oldGrantTypeTab
+        and pkg_OAuthCommon.ClientCredentials_GrantType
+            member of oldGrantTypeTab
       then
     deleteOperator(
       operatorId      => rec.operator_id
@@ -919,15 +893,8 @@ exception when others then
 end deleteClient;
 
 /* func: verifyClientCredentials
-  Проверяет данные клиентского приложения.
-
-  Параметры:
-  clientShortName             - Краткое наименование приложения
-  clientSecret                - Секретное слово приложения
-                                (по умолчанию отсутствует)
-
-  Возврат:
-  Id оператора, привязанного к приложению (если привязка существует).
+  Проверяет данные клиентского приложения
+  (подробнее <pkg_OAuthCommon.verifyClientCredentials>).
 */
 function verifyClientCredentials(
   clientShortName varchar2
@@ -935,58 +902,13 @@ function verifyClientCredentials(
 )
 return integer
 is
-
-  isFound integer;
-
-  operatorId integer;
-
 begin
-  select
-    count(*) as is_found
-    , max(
-        case when cg.grant_type is not null then
-          cl.operator_id
-        end
-      )
-      as operator_id
-  into isFound, operatorId
-  from
-    oa_client cl
-    left join oa_client_grant cg
-      on cg.client_id = cl.client_id
-        and cg.grant_type = ClientCredentials_GrantType
-  where
-    cl.client_short_name = clientShortName
-    and (
-      clientSecret is null
-      or clientSecret is not null
-        and cl.client_secret is not null
-        and cl.client_secret = pkg_OAuthCommon.encrypt( clientSecret)
+  return
+    pkg_OAuthCommon.verifyClientCredentials(
+      clientShortName   => clientShortName
+      , clientSecret    => clientSecret
     )
   ;
-  if isFound = 0 then
-    raise_application_error(
-      pkg_OAuthCommon.ClientWrong_ErrCode
-      , 'Указаны неверные данные клиентского приложения ('
-        || 'clientShortName="' || clientShortName || '"'
-        || ').'
-    );
-  end if;
-  return operatorId;
-exception when others then
-  if sqlcode = pkg_OAuthCommon.ClientWrong_ErrCode then
-    raise;
-  else
-    raise_application_error(
-      pkg_Error.ErrorStackInfo
-      , logger.errorStack(
-          'Ошибка при проверке данных клиентского приложения ('
-          || 'clientShortName="' || clientShortName || '"'
-          || ').'
-        )
-      , true
-    );
-  end if;
 end verifyClientCredentials;
 
 /* func: findClient

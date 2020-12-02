@@ -13,6 +13,18 @@ create or replace package pkg_OAuth is
 
 /* group: Клиентское приложение */
 
+/* pfunc: verifyClientCredentials
+  Проверяет данные клиентского приложения
+  (подробнее <pkg_OAuthCommon.verifyClientCredentials>).
+
+  ( <body::verifyClientCredentials>)
+*/
+function verifyClientCredentials(
+  clientShortName varchar2
+  , clientSecret varchar2 := null
+)
+return integer;
+
 /* pfunc: findClient
   Поиск клиентского приложения
   (подробнее <pkg_OAuthCommon.findClient>).
@@ -88,26 +100,8 @@ function createSession(
 return integer;
 
 /* pproc: updateSession
-  Обновляет пользовательскую сессию.
-
-  Параметры:
-  sessionId                   - Id пользовательской сессии
-  authСode                    - Авторизационный код (One-Time-Password)
-  clientShortName             - Краткое наименование приложения
-  redirectUri                 - URI для перенаправления
-  operatorId                  - Id пользователя, владельца сессии
-  codeChallenge               - Криптографически случайная строка,
-                                используется при авторизации по PKCE
-  accessToken                 - Уникальный UUID токена доступа
-  accessTokenDateIns          - Дата создания токена доступа
-  accessTokenDateFinish       - Дата окончания действия токена доступа
-  refreshToken                - Уникальный UUID токена обновления
-  refreshTokenDateIns         - Дата создания токена обновления
-  refreshTokenDateFinish      - Дата окончания действия токена обновления
-  sessionToken                - UUID токена сессии
-  sessionTokenDateIns         - Дата создания токена сессии
-  sessionTokenDateFinish      - Дата окончания действия токена сессии
-  operatorIdIns               - Id оператора, выполняющего операцию
+  Обновляет пользовательскую сессию
+  (подробнее <pkg_OAuthCommon.updateSession>).
 
   ( <body::updateSession>)
 */
@@ -131,11 +125,8 @@ procedure updateSession(
 );
 
 /* pproc: blockSession
-  Блокирует пользовательскую сессию.
-
-  Параметры:
-  sessionId                   - Id пользовательской сессии
-  operatorIdIns               - Id оператора, выполняющего операцию
+  Блокирует пользовательскую сессию
+  (подробнее <pkg_OAuthCommon.blockSession>).
 
   ( <body::blockSession>)
 */

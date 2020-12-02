@@ -82,35 +82,64 @@ OAViewKey_RoleSName constant varchar2(50) := 'OAViewKey';
 
 /* group: Коды ошибок */
 
-/* iconst: UniqueViolated_ErrCode
+/* const: UniqueViolated_ErrCode
   Код ошибки нарушения уникальности.
 */
 UniqueViolated_ErrCode constant pls_integer := -1;
 
-/* iconst: IllegalArgument_ErrCode
+/* const: IllegalArgument_ErrCode
   Код ошибки "Указано некорректное значение входного параметра".
 */
 IllegalArgument_ErrCode constant pls_integer := -20002;
 
-/* iconst: ClientWrong_ErrCode
+/* const: ClientWrong_ErrCode
   Код ошибки "Указаны неверные данные клиентского приложения".
 */
 ClientWrong_ErrCode constant pls_integer := -20003;
 
-/* iconst: ClientUriWrong_ErrCode
+/* const: ClientUriWrong_ErrCode
   Код ошибки "Указан несуществующий URI клиентского приложения".
 */
 ClientUriWrong_ErrCode constant pls_integer := -20004;
 
-/* iconst: AccessTokenWrong_ErrCode
+/* const: AccessTokenWrong_ErrCode
   Код ошибки "Нарушено ограничение уникальности accessToken".
 */
 AccessTokenWrong_ErrCode constant pls_integer := -20005;
 
-/* iconst: RefreshTokenWrong_ErrCode
+/* const: RefreshTokenWrong_ErrCode
   Код ошибки "Нарушено ограничение уникальности refreshToken".
 */
 RefreshTokenWrong_ErrCode constant pls_integer := -20006;
+
+
+
+/* group: Тип гранта */
+
+/* const: AuthorizationCode_GrantType
+  Тип гранта "authorization_code".
+*/
+AuthorizationCode_GrantType constant varchar2(20) := 'authorization_code';
+
+/* const: Implicit_GrantType
+  Тип гранта "implicit".
+*/
+Implicit_GrantType constant varchar2(20) := 'implicit';
+
+/* const: ClientCredentials_GrantType
+  Тип гранта "client_credentials".
+*/
+ClientCredentials_GrantType constant varchar2(20) := 'client_credentials';
+
+/* const: Password_GrantType
+  Тип гранта "password".
+*/
+Password_GrantType constant varchar2(20) := 'password';
+
+/* const: RefreshToken_GrantType
+  Тип гранта "refresh_token".
+*/
+RefreshToken_GrantType constant varchar2(20) := 'refresh_token';
 
 
 
@@ -155,6 +184,25 @@ return varchar2;
 
 
 /* group: Клиентское приложение */
+
+/* pfunc: verifyClientCredentials
+  Проверяет данные клиентского приложения.
+
+  Параметры:
+  clientShortName             - Краткое наименование приложения
+  clientSecret                - Секретное слово приложения
+                                (по умолчанию отсутствует)
+
+  Возврат:
+  Id оператора, привязанного к приложению (если привязка существует).
+
+  ( <body::verifyClientCredentials>)
+*/
+function verifyClientCredentials(
+  clientShortName varchar2
+  , clientSecret varchar2 := null
+)
+return integer;
 
 /* pfunc: findClient
   Поиск клиентского приложения.

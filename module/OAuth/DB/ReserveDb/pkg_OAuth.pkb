@@ -25,6 +25,25 @@ logger lg_logger_t := lg_logger_t.getLogger(
 
 /* group: Клиентское приложение */
 
+/* func: verifyClientCredentials
+  Проверяет данные клиентского приложения
+  (подробнее <pkg_OAuthCommon.verifyClientCredentials>).
+*/
+function verifyClientCredentials(
+  clientShortName varchar2
+  , clientSecret varchar2 := null
+)
+return integer
+is
+begin
+  return
+    pkg_OAuthCommon.verifyClientCredentials(
+      clientShortName   => clientShortName
+      , clientSecret    => clientSecret
+    )
+  ;
+end verifyClientCredentials;
+
 /* func: findClient
   Поиск клиентского приложения
   (подробнее <pkg_OAuthCommon.findClient>).

@@ -153,6 +153,77 @@ end decrypt;
 
 /* group: Клиентское приложение */
 
+/* func: verifyClientCredentials
+  Проверяет данные клиентского приложения.
+
+  Параметры:
+  clientShortName             - Краткое наименование приложения
+  clientSecret                - Секретное слово приложения
+                                (по умолчанию отсутствует)
+
+  Возврат:
+  Id оператора, привязанного к приложению (если привязка существует).
+*/
+function verifyClientCredentials(
+  clientShortName varchar2
+  , clientSecret varchar2 := null
+)
+return integer
+is
+
+  isFound integer;
+
+  operatorId integer;
+
+begin
+  select
+    count(*) as is_found
+    , max(
+        case when cg.grant_type is not null then
+          cl.operator_id
+        end
+      )
+      as operator_id
+  into isFound, operatorId
+  from
+    oa_client cl
+    left join oa_client_grant cg
+      on cg.client_id = cl.client_id
+        and cg.grant_type = ClientCredentials_GrantType
+  where
+    cl.client_short_name = clientShortName
+    and (
+      clientSecret is null
+      or clientSecret is not null
+        and cl.client_secret is not null
+        and cl.client_secret = pkg_OAuthCommon.encrypt( clientSecret)
+    )
+  ;
+  if isFound = 0 then
+    raise_application_error(
+      ClientWrong_ErrCode
+      , 'Указаны неверные данные клиентского приложения ('
+        || 'clientShortName="' || clientShortName || '"'
+        || ').'
+    );
+  end if;
+  return operatorId;
+exception when others then
+  if sqlcode = ClientWrong_ErrCode then
+    raise;
+  else
+    raise_application_error(
+      pkg_Error.ErrorStackInfo
+      , logger.errorStack(
+          'Ошибка при проверке данных клиентского приложения ('
+          || 'clientShortName="' || clientShortName || '"'
+          || ').'
+        )
+      , true
+    );
+  end if;
+end verifyClientCredentials;
+
 /* func: findClient
   Поиск клиентского приложения.
 

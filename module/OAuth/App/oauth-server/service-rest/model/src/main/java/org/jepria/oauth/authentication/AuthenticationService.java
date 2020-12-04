@@ -29,7 +29,6 @@ public interface AuthenticationService {
    * Проверка ID клиентского приложения в системе
    *
    * @param clientId ID клиентского приложения
-   * @return уникальный ID клиенского приложения
    */
   void loginByClientId(String clientId);
 
@@ -38,14 +37,13 @@ public interface AuthenticationService {
    * @param clientId ID клиентского приложения
    * @param authorizationCode одноразовый код
    * @param codeVerifier проверочный код
-   * @return уникальный ID клиенского приложения
    */
   void loginByAuthorizationCode(String clientId, String authorizationCode, String codeVerifier);
 
   /**
    * <pre>
    * Аутентификация OAuth, по логину/паролю пользвателя.
-   * Результат -> созданная SSO сессия OAuth
+   * Результат созданная SSO сессия OAuth
    * </pre>
    *
    * @param sessionId id авторизационной сессии

@@ -17,33 +17,12 @@
   </properties>
 
   <modules>
-    <module>oauth-server</module>
     <module>oauth-admin</module>
+    <module>oauth-server</module>
   </modules>
 
   <build>
     <plugins>
-      <plugin>
-        <artifactId>maven-clean-plugin</artifactId>
-        <version>3.1.0</version>
-        <executions>
-          <execution>
-            <id>clean-distr</id>
-            <goals>
-              <goal>clean</goal>
-            </goals>
-            <phase>clean</phase>
-            <inherited>false</inherited>
-            <configuration>
-              <filesets>
-                <fileset>
-                  <directory>lib</directory>
-                </fileset>
-              </filesets>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>org.apache.tomcat.maven</groupId>
         <artifactId>tomcat7-maven-plugin</artifactId>

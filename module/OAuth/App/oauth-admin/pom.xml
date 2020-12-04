@@ -10,7 +10,6 @@
   <packaging>pom</packaging>
 
   <properties>
-    <javadoc.directory>../Doc/App/AutoGen</javadoc.directory>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
@@ -35,98 +34,8 @@
   </properties>
 
   <modules>
-    <module>./client-react</module>
-    <module>./service-rest</module>
-    <module>./webapp</module>
+    <module>client-react</module>
+    <module>service-rest</module>
+    <module>webapp</module>
   </modules>
-
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-clean-plugin</artifactId>
-        <version>3.1.0</version>
-        <executions>
-          <execution>
-            <id>clean-dist</id>
-            <goals>
-              <goal>clean</goal>
-            </goals>
-            <phase>clean</phase>
-            <inherited>false</inherited>
-            <configuration>
-              <filesets>
-                <fileset>
-                  <directory>dist</directory>
-                </fileset>
-              </filesets>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.tomcat.maven</groupId>
-        <artifactId>tomcat7-maven-plugin</artifactId>
-        <version>2.2</version>
-        <inherited>false</inherited>
-        <configuration>
-          <ignorePackaging>true</ignorePackaging>
-          <url>http://vsmlapprfid1:8080/manager/text</url>
-          <username>admin</username>
-          <password>admin0</password>
-          <path>/oauth</path>
-          <warFile>${project.basedir}/dist/oauth.war</warFile>
-          <update>true</update>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.1.1</version>
-        <executions>
-          <execution>
-            <!-- Compile javadoc for child modules-->
-            <id>javadoc</id>
-            <goals>
-              <goal>javadoc</goal>
-            </goals>
-            <phase>install</phase>
-            <configuration>
-              <additionalJOptions>
-                <additionalJOption>-J-Xmx1g</additionalJOption>
-                <additionalJOption>-Xdoclint:none</additionalJOption>
-              </additionalJOptions>
-              <docencoding>UTF-8</docencoding>
-              <encoding>UTF-8</encoding>
-              <overview>/overview.html</overview>
-              <doctitle>${project.artifactId} API Reference</doctitle>
-              <windowtitle>>${project.artifactId} JavaDoc</windowtitle>
-              <show>private</show>
-            </configuration>
-          </execution>
-          <execution>
-            <!-- Aggregate javadoc from child modules to output report directory-->
-            <id>aggregate</id>
-            <goals>
-              <goal>aggregate</goal>
-            </goals>
-            <phase>install</phase>
-            <inherited>false</inherited>
-            <configuration>
-              <reportOutputDirectory>${javadoc.directory}</reportOutputDirectory>
-              <additionalJOptions>
-                <additionalJOption>-J-Xmx1g</additionalJOption>
-                <additionalJOption>-Xdoclint:none</additionalJOption>
-              </additionalJOptions>
-              <docencoding>UTF-8</docencoding>
-              <encoding>UTF-8</encoding>
-              <doctitle>${project.artifactId} API Reference</doctitle>
-              <windowtitle>>${project.artifactId} JavaDoc</windowtitle>
-              <overview>overview.html</overview>
-              <show>private</show>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
 </project>

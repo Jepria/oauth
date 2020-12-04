@@ -23,6 +23,16 @@
     </dependency>
     <dependency>
       <groupId>org.jepria.oauth</groupId>
+      <artifactId>oauth-admin-service</artifactId>
+      <version>1.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jepria.oauth</groupId>
+      <artifactId>oauth-admin-dao</artifactId>
+      <version>1.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jepria.oauth</groupId>
       <artifactId>oauth-server-dao</artifactId>
       <version>1.0.1</version>
     </dependency>

@@ -76,6 +76,7 @@ public interface TokenService {
    * Создание токена для всех OAuth GrantType Client credentials
    *
    * @param clientId ID клиентского приложения
+   * @param clientOperatorId operator id приложения
    * @param issuer имя сервера
    * @param accessTokenLifeTime Время жизни токена доступа
    * @param refreshTokenLifeTime Время жизни токена обновления

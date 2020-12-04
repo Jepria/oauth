@@ -1,7 +1,6 @@
 package org.jepria.oauth;
 
 import oracle.jdbc.pool.OracleConnectionPoolDataSource;
-import org.jepria.oauth.key.KeyDaoIT;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 

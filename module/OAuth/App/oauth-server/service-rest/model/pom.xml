@@ -23,6 +23,12 @@
     </parent>
 
     <dependencies>
+        <!--OAuth-->
+        <dependency>
+            <groupId>org.jepria.oauth</groupId>
+            <artifactId>oauth-admin-model</artifactId>
+            <version>1.0.1</version>
+        </dependency>
         <!-- JepRia -->
         <dependency>
             <groupId>org.jepria</groupId>

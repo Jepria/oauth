@@ -14,9 +14,6 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
 
-import static org.jepria.oauth.session.SessionFieldNames.CODE_CHALLENGE;
-import static org.jepria.oauth.session.SessionFieldNames.SESSION_ID;
-
 public class AuthenticationDaoImpl implements AuthenticationDao {
 
   @Override
@@ -131,8 +128,8 @@ public class AuthenticationDaoImpl implements AuthenticationDao {
       new ResultSetMapper<SessionDto>() {
         @Override
         public void map(ResultSet rs, SessionDto dto) throws SQLException {
-          dto.setSessionId(rs.getString(SESSION_ID));
-          dto.setCodeChallenge(rs.getString(CODE_CHALLENGE));
+          dto.setSessionId(rs.getString("SESSION_ID"));
+          dto.setCodeChallenge(rs.getString("CODE_CHALLENGE"));
         }
       }
       , SessionDto.class

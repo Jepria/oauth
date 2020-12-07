@@ -1,4 +1,4 @@
-package org.jepria;
+package org.jepria.oauth.main;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;

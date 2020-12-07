@@ -1,5 +1,6 @@
 package org.jepria.oauth.authorization;
 
+import org.jepria.oauth.client.dto.ClientDto;
 import org.jepria.oauth.exception.OAuthRuntimeException;
 import org.jepria.oauth.client.ClientService;
 import org.jepria.oauth.key.KeyService;
@@ -80,12 +81,18 @@ public class AuthorizationServiceTest {
       operator.setName("testUser");
       sessionDto.setOperator(operator);
       sessionDto.setRedirectUri(sessionCreateDto.getRedirectUri());
-      sessions.put(sessionDto.getSessionId().toString(), sessionDto);
-      return sessionDto.getSessionId().toString();
+      sessions.put(sessionDto.getSessionId(), sessionDto);
+      return sessionDto.getSessionId();
     });
     
     //clientService mocks
     when(clientService.getClientResponseTypes(eq("testClient"))).thenReturn(ResponseType.getResponseTypes());
+    //clientService mocks
+    ClientDto clientDto = new ClientDto();
+    clientDto.setClientId("testClient");
+    clientDto.setClientName("Test client");
+    clientDto.setClientNameEn("Test client en");
+    when(clientService.getClient(any(), any(), any())).thenReturn(Collections.singletonList(clientDto));
     //keyService mocks
     KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
     kpg.initialize(2048);

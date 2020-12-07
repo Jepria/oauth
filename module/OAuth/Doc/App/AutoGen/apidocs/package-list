@@ -1,4 +1,3 @@
-org.jepria
 org.jepria.oauth.authentication
 org.jepria.oauth.authentication.dao
 org.jepria.oauth.authentication.dto

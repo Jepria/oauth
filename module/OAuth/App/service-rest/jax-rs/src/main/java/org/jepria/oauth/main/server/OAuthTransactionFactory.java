@@ -71,8 +71,9 @@ public class OAuthTransactionFactory {
         result = call(method, args, dataSourceJndiName, moduleName);
       } catch (Throwable ex) {
         if (ex.getMessage().contains("DataSource 'java:/comp/env/" + dataSourceJndiName +"' not found")) {
-          ex.printStackTrace();
           result = call(method, args, backupDataSourceJndiName, moduleName);
+        } else {
+          throw ex;
         }
       }
       return result;

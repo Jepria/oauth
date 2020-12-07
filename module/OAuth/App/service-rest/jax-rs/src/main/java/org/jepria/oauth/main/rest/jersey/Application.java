@@ -34,6 +34,16 @@ public class Application extends ApplicationConfigBase {
   public Application() {
     super();
     register(LoginAttemptLimitFilter.class);
+    registerClient();
+    registerClientUri();
+    registerSession();
+    registerKey();
+    registerToken();
+    registerAuthentication();
+    registerAuthorization();
+  }
+
+  void registerClient() {
     register(ClientDaoImpl.class);
     register(new AbstractBinder() {
       @Override
@@ -49,6 +59,9 @@ public class Application extends ApplicationConfigBase {
       }
     });
     register(ClientJaxrsAdapter.class);
+  }
+  
+  void registerClientUri() {
     register(ClientUriDaoImpl.class);
     register(new AbstractBinder() {
       @Override
@@ -64,6 +77,9 @@ public class Application extends ApplicationConfigBase {
       }
     });
     register(ClientUriJaxrsAdapter.class);
+  }
+  
+  void registerSession() {
     register(SessionDaoImpl.class);
     register(new AbstractBinder() {
       @Override
@@ -79,6 +95,9 @@ public class Application extends ApplicationConfigBase {
       }
     });
     register(SessionJaxrsAdapter.class);
+  }
+  
+  void registerKey() {
     register(KeyDaoImpl.class);
     register(new AbstractBinder() {
       @Override
@@ -94,6 +113,31 @@ public class Application extends ApplicationConfigBase {
       }
     });
     register(KeyJaxrsAdapter.class);
+  }
+  
+  void registerToken() {
+    register(TokenServerFactory.class);
+    register(new AbstractBinder() {
+      @Override
+      protected void configure() {
+        bind(TokenServerFactory.class).to(TokenServerFactory.class).in(RequestScoped.class);
+      }
+    });
+    register(TokenJaxrsAdapter.class);
+  }
+  
+  void registerAuthorization() {
+    register(AuthorizationServerFactory.class);
+    register(new AbstractBinder() {
+      @Override
+      protected void configure() {
+        bind(AuthorizationServerFactory.class).to(AuthorizationServerFactory.class).in(RequestScoped.class);
+      }
+    });
+    register(AuthorizationJaxrsAdapter.class);
+  }
+  
+  void registerAuthentication() {
     register(AuthenticationDaoImpl.class);
     register(new AbstractBinder() {
       @Override
@@ -109,24 +153,8 @@ public class Application extends ApplicationConfigBase {
       }
     });
     register(AuthenticationJaxrsAdapter.class);
-    register(TokenServerFactory.class);
-    register(new AbstractBinder() {
-      @Override
-      protected void configure() {
-        bind(TokenServerFactory.class).to(TokenServerFactory.class).in(RequestScoped.class);
-      }
-    });
-    register(TokenJaxrsAdapter.class);
-    register(AuthorizationServerFactory.class);
-    register(new AbstractBinder() {
-      @Override
-      protected void configure() {
-        bind(AuthorizationServerFactory.class).to(AuthorizationServerFactory.class).in(RequestScoped.class);
-      }
-    });
-    register(AuthorizationJaxrsAdapter.class);
   }
-
+  
   @Override
   protected void registerCorsHandler() {
   }

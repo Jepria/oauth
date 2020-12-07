@@ -1,6 +1,7 @@
 package org.jepria.oauth.token;
 
 import org.jepria.oauth.client.ClientService;
+import org.jepria.oauth.client.dto.ClientDto;
 import org.jepria.oauth.key.KeyService;
 import org.jepria.oauth.key.dto.KeyDto;
 import org.jepria.oauth.sdk.GrantType;
@@ -25,10 +26,7 @@ import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.*;
@@ -95,6 +93,12 @@ public class TokenServiceTest {
     keyDto.setPrivateKey(encoder.encodeToString(pvt.getEncoded()));
     when(keyService.getKeys(isNull(), any())).thenReturn(keyDto);
     when(clientService.getClientGrantTypes(notNull())).thenReturn(GrantType.getGrantTypes());
+    //clientService mocks
+    ClientDto clientDto = new ClientDto();
+    clientDto.setClientId("testClient");
+    clientDto.setClientName("Test client");
+    clientDto.setClientNameEn("Test client en");
+    when(clientService.getClient(any(), any(), any())).thenReturn(Collections.singletonList(clientDto));
   }
   
   @Test

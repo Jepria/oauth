@@ -1,6 +1,5 @@
 package org.jepria.oauth.client;
 
-import org.jepria.oauth.client.ClientService;
 import org.jepria.oauth.client.dao.ClientDao;
 import org.jepria.oauth.client.dto.ClientDto;
 import org.jepria.oauth.client.dto.ClientSearchDto;
@@ -45,8 +44,9 @@ public class ClientServiceImpl implements ClientService {
   }
   
   @Override
-  public List<ClientDto> getClient(String clientName, Integer operatorId) {
+  public List<ClientDto> getClient(String clientId, String clientName, Integer operatorId) {
     ClientSearchDto searchDto = new ClientSearchDto();
+    searchDto.setClientId(clientId);
     searchDto.setClientName(clientName);
     return (List<ClientDto>) dao.find(searchDto, operatorId);
   }

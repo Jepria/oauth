@@ -18,12 +18,10 @@
     <oracle.version>11.2.0.4</oracle.version>
     <jersey.version>2.29</jersey.version>
     <antcontrib.version>1.0b3</antcontrib.version>
-    <jepria.version>12.2.0</jepria.version>
+    <jepria.version>12.3.0-SNAPSHOT</jepria.version>
     <jepriatoolkit.version>7.15.0</jepriatoolkit.version>
     <tomcat.version>7.0.68</tomcat.version>
     <log4j.version>1.2.17</log4j.version>
-    <gwtlog.version>3.2.1</gwtlog.version>
-    <gwt.version>2.8.0</gwt.version>
     <commonsfileupload.version>1.2.2</commonsfileupload.version>
     <commonsio.version>2.4</commonsio.version>
     <jakartawsrsapi.version>2.1.5</jakartawsrsapi.version>

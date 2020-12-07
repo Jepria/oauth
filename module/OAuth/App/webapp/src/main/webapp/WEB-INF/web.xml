@@ -64,7 +64,7 @@
 
   <filter>
     <filter-name>client-react-filter</filter-name>
-    <filter-class>org.jepria.ClientReactFilter</filter-class>
+    <filter-class>org.jepria.oauth.main.ClientReactFilter</filter-class>
   </filter>
   <filter-mapping>
     <filter-name>client-react-filter</filter-name>

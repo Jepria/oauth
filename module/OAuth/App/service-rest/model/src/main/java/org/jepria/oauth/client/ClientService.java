@@ -36,7 +36,7 @@ public interface ClientService {
 
   List<String> getApplicationGrantTypes(String applicationTypeCodes);
   
-  List<ClientDto> getClient(String clientName, Integer operatorId);
+  List<ClientDto> getClient(String clientId, String clientName, Integer operatorId);
 
   List<OptionDto<String>> getRoles(String roleName, String roleNameEn, Integer maxRowCount, Integer operatorId);
 }

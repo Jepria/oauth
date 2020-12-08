@@ -18,17 +18,7 @@
   <dependencies>
     <dependency>
       <groupId>org.jepria.oauth</groupId>
-      <artifactId>oauth-admin-model</artifactId>
-      <version>1.0.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jepria.oauth</groupId>
-      <artifactId>oauth-admin-dao</artifactId>
-      <version>1.0.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jepria.oauth</groupId>
-      <artifactId>oauth-admin-service</artifactId>
+      <artifactId>oauth-admin-core</artifactId>
       <version>1.0.1</version>
     </dependency>
     <dependency>
@@ -42,30 +32,12 @@
       <artifactId>oauth-sdk</artifactId>
       <version>${oauth-sdk.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <version>5.6.0</version>
-      <scope>test</scope>
-    </dependency>
     <!-- Jepria obsolete runtime dependencies -->
     <!-- TODO Эти зависимости не нужны для Rest/Jersey, они нужны для функционирования текущей версии Джеприи в целом. Необходимо убрать эти зависимости со временем -->
     <dependency>
       <groupId>com.oracle</groupId>
       <artifactId>ojdbc6dms</artifactId>
       <version>${oracle.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.allen-sauer.gwt.log</groupId>
-      <artifactId>gwt-log</artifactId>
-      <version>${gwtlog.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.gwt</groupId>
-      <artifactId>gwt-servlet</artifactId>
-      <version>${gwt.version}-customized</version>
-      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>commons-fileupload</groupId>
@@ -144,44 +116,37 @@
       <artifactId>jepria-rest</artifactId>
       <version>${jepria.version}</version>
     </dependency>
-    <!-- JepRia Toolkit -->
     <!-- javax needs for compilation -->
     <dependency>
-      <groupId>org.apache.tomcat</groupId>
-      <artifactId>tomcat-catalina-ant</artifactId>
-      <version>${tomcat.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.tomcat</groupId>
-      <artifactId>tomcat-coyote</artifactId>
-      <version>${tomcat.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.tomcat</groupId>
-      <artifactId>tomcat-util</artifactId>
-      <version>${tomcat.version}</version>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.1.0</version>
       <scope>provided</scope>
     </dependency>
     <!--Jersey bean validation-->
     <dependency>
       <groupId>org.glassfish.jersey.ext</groupId>
       <artifactId>jersey-bean-validation</artifactId>
-      <version>2.26-b09</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.hibernate</groupId>
-          <artifactId>hibernate-validator</artifactId>
-        </exclusion>
-      </exclusions>
-      <scope>runtime</scope>
+      <version>${jersey.version}</version>
     </dependency>
-    <!--Hibernate validator-->
+    <!--Testing-->
     <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-validator</artifactId>
-      <version>5.4.3.Final</version>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>3.3.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>5.6.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <version>3.3.0</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.rest-assured</groupId>
@@ -212,6 +177,11 @@
         <configuration>
           <attachClasses>true</attachClasses>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.22.2</version>
       </plugin>
     </plugins>
   </build>

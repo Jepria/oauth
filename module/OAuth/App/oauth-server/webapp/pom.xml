@@ -18,197 +18,13 @@
   <dependencies>
     <dependency>
       <groupId>org.jepria.oauth</groupId>
-      <artifactId>oauth-server-model</artifactId>
-      <version>1.0.1</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jepria.oauth</groupId>
-      <artifactId>oauth-server-dao</artifactId>
-      <version>1.0.1</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jepria.oauth</groupId>
-      <artifactId>oauth-server-service</artifactId>
-      <version>1.0.1</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jepria.oauth</groupId>
-      <artifactId>oauth-server-jax-rs</artifactId>
+      <artifactId>oauth-server-service-rest</artifactId>
       <version>1.0.1</version>
       <classifier>classes</classifier>
       <scope>runtime</scope>
     </dependency>
-    <dependency>
-      <groupId>com.nimbusds</groupId>
-      <artifactId>nimbus-jose-jwt</artifactId>
-      <version>7.9</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <version>5.6.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jepria</groupId>
-      <artifactId>oauth-sdk</artifactId>
-      <version>${oauth-sdk.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <!-- Jepria obsolete runtime dependencies -->
-    <!-- TODO Эти зависимости не нужны для Rest/Jersey, они нужны для функционирования текущей версии Джеприи в целом. Необходимо убрать эти зависимости со временем -->
-    <dependency>
-      <groupId>com.oracle</groupId>
-      <artifactId>ojdbc6dms</artifactId>
-      <version>${oracle.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.allen-sauer.gwt.log</groupId>
-      <artifactId>gwt-log</artifactId>
-      <version>${gwtlog.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.gwt</groupId>
-      <artifactId>gwt-servlet</artifactId>
-      <version>${gwt.version}-customized</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>commons-fileupload</groupId>
-      <artifactId>commons-fileupload</artifactId>
-      <version>${commonsfileupload.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>${commonsio.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <!-- Rest/Jersey -->
-    <!-- Jepria/Jersey: application compile dependencies -->
-    <dependency>
-      <groupId>org.glassfish.jersey.core</groupId>
-      <artifactId>jersey-server</artifactId>
-      <version>${jersey.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>jakarta.ws.rs</groupId>
-      <artifactId>jakarta.ws.rs-api</artifactId>
-      <version>${jakartawsrsapi.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.core</groupId>
-      <artifactId>jersey-common</artifactId>
-      <version>${jersey.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.containers</groupId>
-      <artifactId>jersey-container-servlet-core</artifactId>
-      <version>${jersey.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.code</groupId>
-      <artifactId>gson</artifactId>
-      <version>${gson.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.inject</groupId>
-      <artifactId>jersey-hk2</artifactId>
-      <version>${jerseyhk2.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.javassist</groupId>
-          <artifactId>javassist</artifactId>
-        </exclusion>
-      </exclusions>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.javassist</groupId>
-      <artifactId>javassist</artifactId>
-      <version>${javassist.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>jakarta.json.bind</groupId>
-      <artifactId>jakarta.json.bind-api</artifactId>
-      <version>${jakartajsonbindapi.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <!-- Jersey -->
-    <!-- Log4j -->
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>${log4j.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <!-- JepRia -->
-    <dependency>
-      <groupId>org.jepria</groupId>
-      <artifactId>jepria-rest</artifactId>
-      <version>${jepria.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <!-- JepRia Toolkit -->
-    <!-- javax needs for compilation -->
-    <dependency>
-      <groupId>org.apache.tomcat</groupId>
-      <artifactId>tomcat-catalina-ant</artifactId>
-      <version>${tomcat.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.tomcat</groupId>
-      <artifactId>tomcat-coyote</artifactId>
-      <version>${tomcat.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.tomcat</groupId>
-      <artifactId>tomcat-util</artifactId>
-      <version>${tomcat.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <!--Jersey bean validation-->
-    <dependency>
-      <groupId>org.glassfish.jersey.ext</groupId>
-      <artifactId>jersey-bean-validation</artifactId>
-      <version>2.26-b09</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.hibernate</groupId>
-          <artifactId>hibernate-validator</artifactId>
-        </exclusion>
-      </exclusions>
-      <scope>runtime</scope>
-    </dependency>
-    <!--Hibernate validator-->
-    <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-validator</artifactId>
-      <version>5.4.3.Final</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.rest-assured</groupId>
-      <artifactId>rest-assured</artifactId>
-      <version>4.1.2</version>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
+
   <build>
     <finalName>oauth</finalName>
     <plugins>
@@ -282,7 +98,7 @@
               <overWrite>true</overWrite>
               <sourceFile>${project.build.directory}/${build.finalName}.war</sourceFile>
               <destinationFile>
-                ../../lib/oauth.war
+                ../lib/oauth.war
               </destinationFile>
             </configuration>
           </execution>

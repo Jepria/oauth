@@ -10,9 +10,7 @@
   <packaging>pom</packaging>
 
   <modules>
-    <module>model</module>
-    <module>dao</module>
-    <module>service</module>
+    <module>core</module>
     <module>jax-rs</module>
   </modules>
 

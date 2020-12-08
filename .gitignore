@@ -2,6 +2,5 @@
 **/*.iml
 **/.vscode
 **/build
-**/yarn.lock
 **/yarn-error.log
 **/node_modules

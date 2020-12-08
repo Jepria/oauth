@@ -15,7 +15,7 @@ function App() {
   return (
     <OAuthWebContext
       clientId={'OAuthClient'}
-      redirectUri={`${process.env.NODE_ENV === 'development' ? "http://localhost:3000/oauth" : `/oauth/oauth`}`}
+      redirectUri={`${process.env.NODE_ENV === 'development' ? "http://localhost:3000/oauth" : `/oauth-admin/oauth`}`}
       oauthContextPath={`${process.env.NODE_ENV === 'development' ? 'http://localhost:8080/oauth/api' : `/oauth/api`}`}
       axiosInstance={axios}
       configureAxios>

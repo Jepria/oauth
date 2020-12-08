@@ -62,20 +62,8 @@
     <url-pattern>/api/meta/*</url-pattern>
   </filter-mapping>
 
-  <filter>
-    <filter-name>client-react-filter</filter-name>
-    <filter-class>org.jepria.ClientReactFilter</filter-class>
-  </filter>
-  <filter-mapping>
-    <filter-name>client-react-filter</filter-name>
-    <url-pattern>/ui/*</url-pattern>
-    <url-pattern>/oauth</url-pattern>
-    <url-pattern>/oauth/*</url-pattern>
-  </filter-mapping>
-
   <welcome-file-list>
     <welcome-file>api-docs</welcome-file>
-    <welcome-file>index.html</welcome-file>
     <welcome-file>login.html</welcome-file>
     <welcome-file>error.html</welcome-file>
   </welcome-file-list>

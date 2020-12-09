@@ -57,8 +57,6 @@
     <url-pattern>/api/key/*</url-pattern>
     <url-pattern>/api/session</url-pattern>
     <url-pattern>/api/session/*</url-pattern>
-    <url-pattern>/api/token</url-pattern>
-    <url-pattern>/api/token/*</url-pattern>
     <url-pattern>/api/meta/*</url-pattern>
   </filter-mapping>
 

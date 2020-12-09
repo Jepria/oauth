@@ -20,7 +20,7 @@ function App() {
       axiosInstance={axios}
       configureAxios>
       <Provider store={store}>
-        <UserContextProvider baseUrl={`${process.env.NODE_ENV === 'development' ? 'http://localhost:8080/oauth/api' : `/oauth/api`}`}>
+        <UserContextProvider baseUrl={`${process.env.NODE_ENV === 'development' ? 'http://localhost:8080/oauth-admin/api' : `/oauth-admin/api`}`}>
           <ErrorNotification>
             <AppRouter />
           </ErrorNotification>

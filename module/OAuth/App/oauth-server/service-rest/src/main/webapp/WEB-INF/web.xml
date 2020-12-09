@@ -27,12 +27,6 @@
   </filter>
   <filter-mapping>
     <filter-name>CorsFilter</filter-name>
-    <url-pattern>/api/client</url-pattern>
-    <url-pattern>/api/client/*</url-pattern>
-    <url-pattern>/api/key</url-pattern>
-    <url-pattern>/api/key/*</url-pattern>
-    <url-pattern>/api/session</url-pattern>
-    <url-pattern>/api/session/*</url-pattern>
     <url-pattern>/api/token</url-pattern>
     <url-pattern>/api/token/*</url-pattern>
   </filter-mapping>

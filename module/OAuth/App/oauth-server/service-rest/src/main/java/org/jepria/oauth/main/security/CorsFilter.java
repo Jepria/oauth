@@ -4,6 +4,7 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URI;
 
 public class CorsFilter implements Filter {
   /**
@@ -28,7 +29,9 @@ public class CorsFilter implements Filter {
 
     // if there is no Origin header, then it is not a
     // cross origin request. We don't do anything.
-    if (httpServletRequest.getHeader("Origin") == null) {
+    String origin = httpServletRequest.getHeader("Origin");
+    String host = servletRequest.getScheme() + "://" + servletRequest.getServerName() + (servletRequest.getServerPort() != -1 ? ":" + servletRequest.getServerPort() : "");
+    if (httpServletRequest.getHeader("Origin") == null || origin.equals(host)) {
       filterChain.doFilter(servletRequest, servletResponse);
       return;
     }

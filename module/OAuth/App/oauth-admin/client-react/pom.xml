@@ -130,7 +130,7 @@
             <version>1.6.0</version>
             <configuration>
               <environmentVariables>
-                <PUBLIC_URL>/oauth</PUBLIC_URL>
+                <PUBLIC_URL>/oauth-admin</PUBLIC_URL>
               </environmentVariables>
             </configuration>
           </plugin>
@@ -150,8 +150,8 @@
             <version>1.6.0</version>
             <configuration>
               <environmentVariables>
-                <PUBLIC_URL>/oauth-react</PUBLIC_URL>
-                <API_PATH>/oauth-rest</API_PATH>
+                <PUBLIC_URL>/oauth-admin</PUBLIC_URL>
+                <API_PATH>/oauth-admin</API_PATH>
               </environmentVariables>
             </configuration>
           </plugin>

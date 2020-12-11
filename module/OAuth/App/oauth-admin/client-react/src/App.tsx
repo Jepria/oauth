@@ -1,12 +1,12 @@
 import React from 'react';
 import { OAuthWebContext } from '@jfront/oauth-ui';
-import AppRouter from './main/AppRouter';
+import AppRouter from './app/AppRouter';
 import { UserContextProvider } from '@jfront/oauth-user';
 import axios from 'axios'
 import { Provider } from 'react-redux';
-import { configureStore } from './redux/configureStore';
-import { sagas, reducers } from './redux/store';
-import { ErrorNotification } from './main/ErrorNotification';
+import { configureStore } from './app/store/configureStore';
+import { sagas, reducers } from './app/store';
+import { ErrorNotification } from './app/common/components/ErrorNotification';
 
 function App() {
 

@@ -33,35 +33,12 @@
   </properties>
 
   <modules>
-    <module>client-react</module>
-    <module>client-html</module>
-    <module>service-rest</module>
-    <module>webapp</module>
+    <module>oauth-admin</module>
+    <module>oauth-server</module>
   </modules>
 
   <build>
     <plugins>
-      <plugin>
-        <artifactId>maven-clean-plugin</artifactId>
-        <version>3.1.0</version>
-        <executions>
-          <execution>
-            <id>clean-dist</id>
-            <goals>
-              <goal>clean</goal>
-            </goals>
-            <phase>clean</phase>
-            <inherited>false</inherited>
-            <configuration>
-              <filesets>
-                <fileset>
-                  <directory>dist</directory>
-                </fileset>
-              </filesets>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>org.apache.tomcat.maven</groupId>
         <artifactId>tomcat7-maven-plugin</artifactId>

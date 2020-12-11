@@ -83,7 +83,7 @@ export const ClientListPage: React.FC = () => {
       }}
       onPaging={(pageNumber, pageSize) => {
         if (searchId) {
-          dispatch(searchClients(searchId, pageSize, pageNumber + 1, t("dataLoadingMessage")))
+          dispatch(searchClients(searchId, pageSize, pageNumber, t("dataLoadingMessage")))
         }
       }}
       onSort={(sortConfig) => {

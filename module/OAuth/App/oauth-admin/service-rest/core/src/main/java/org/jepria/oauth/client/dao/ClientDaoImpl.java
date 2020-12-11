@@ -216,7 +216,6 @@ public class ClientDaoImpl implements ClientDao {
       "begin  "
         + "? := pkg_operator.getRoles("
           + "operatorId => ? "
-//          + ", operatorIdIns => ? "
         + ");"
         + " end;";
     List<OptionDto<String>> result;

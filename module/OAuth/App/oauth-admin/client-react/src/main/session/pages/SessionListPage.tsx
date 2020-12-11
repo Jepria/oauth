@@ -98,7 +98,7 @@ const SessionListPage: React.FC = () => {
       }}
       onPaging={(pageNumber, pageSize) => {
         if (searchId) {
-          dispatch(searchSessions(searchId, pageSize, pageNumber + 1, t('dataLoadingMessage')))
+          dispatch(searchSessions(searchId, pageSize, pageNumber, t('dataLoadingMessage')))
         }
       }}
       onSort={(sortConfig) => {

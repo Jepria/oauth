@@ -1,6 +1,7 @@
 package org.jepria.oauth.token;
 
 import org.jepria.oauth.client.ClientService;
+import org.jepria.oauth.client.dto.ClientDto;
 import org.jepria.oauth.exception.OAuthRuntimeException;
 import org.jepria.oauth.key.KeyService;
 import org.jepria.oauth.key.dto.KeyDto;
@@ -106,6 +107,7 @@ public class TokenServiceImpl implements TokenService {
                          String clientId,
                          URI redirectUri,
                          Integer accessTokenLifeTime) {
+    checkClient(clientId);
     if (ResponseType.TOKEN.equals(responseType)) {
       KeyDto keyDto = keyService.getKeys(null, serverCredential);
       if (authCode == null) {
@@ -152,6 +154,7 @@ public class TokenServiceImpl implements TokenService {
                          String issuer,
                          URI redirectUri,
                          Integer accessTokenLifeTime) {
+    checkClient(clientId);
     KeyDto keyDto = keyService.getKeys(null, serverCredential);
     if (authCode == null) {
       throw new OAuthRuntimeException(INVALID_REQUEST, "Authorization code is null.");
@@ -187,7 +190,14 @@ public class TokenServiceImpl implements TokenService {
       serverCredential);
     return tokenDto;
   }
-
+  
+  private void checkClient(String clientId) {
+    List<ClientDto> result = clientService.getClient(clientId, null, serverCredential.getOperatorId());
+    if (result.size() != 1) {
+      throw new OAuthRuntimeException(UNAUTHORIZED_CLIENT, "Client not found");
+    }
+  }
+  
   private void checkClientGrantTypes(String clientId, String grantType) {
     List<String> clientGrantTypes = clientService.getClientGrantTypes(clientId);
     if (clientGrantTypes.size() == 0 || !clientGrantTypes.stream().anyMatch(clientGrantType -> clientGrantType.equals(grantType))) {
@@ -202,6 +212,7 @@ public class TokenServiceImpl implements TokenService {
                          String issuer,
                          Integer accessTokenLifeTime,
                          Integer refreshTokenLifeTime) {
+    checkClient(clientId);
     checkClientGrantTypes(clientId, GrantType.PASSWORD);
     KeyDto keyDto = keyService.getKeys(null, serverCredential);
     return createTokenPair(keyDto.getPrivateKey(), issuer, clientId, username, userId, accessTokenLifeTime, refreshTokenLifeTime);
@@ -213,6 +224,7 @@ public class TokenServiceImpl implements TokenService {
                          String issuer,
                          Integer accessTokenLifeTime,
                          Integer refreshTokenLifeTime) {
+    checkClient(clientId);
     checkClientGrantTypes(clientId, GrantType.REFRESH_TOKEN);
     KeyDto keyDto = keyService.getKeys(null, serverCredential);
     try {
@@ -250,6 +262,7 @@ public class TokenServiceImpl implements TokenService {
                          String issuer,
                          Integer accessTokenLifeTime,
                          Integer refreshTokenLifeTime) {
+    checkClient(clientId);
     checkClientGrantTypes(clientId, GrantType.CLIENT_CREDENTIALS);
     KeyDto keyDto = keyService.getKeys(null, serverCredential);
     return createTokenPair(keyDto.getPrivateKey(), issuer, clientId, clientId, clientOperatorId, accessTokenLifeTime, refreshTokenLifeTime);

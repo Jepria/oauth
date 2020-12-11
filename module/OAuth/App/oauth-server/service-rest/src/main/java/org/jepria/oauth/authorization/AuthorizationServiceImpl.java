@@ -1,6 +1,7 @@
 package org.jepria.oauth.authorization;
 
 import org.jepria.oauth.client.ClientService;
+import org.jepria.oauth.client.dto.ClientDto;
 import org.jepria.oauth.exception.OAuthRuntimeException;
 import org.jepria.oauth.key.KeyService;
 import org.jepria.oauth.key.dto.KeyDto;
@@ -53,6 +54,13 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     this.sessionService = sessionService;
     this.keyService = keyService;
   }
+  
+  private void checkClient(String clientId) {
+    List<ClientDto> result = clientService.getClient(clientId, null, serverCredential.getOperatorId());
+    if (result.size() != 1) {
+      throw new OAuthRuntimeException(UNAUTHORIZED_CLIENT, "Client not found");
+    }
+  }
 
   private void checkResponseType(String clientId, String responseType) {
     if (!ResponseType.implies(responseType)) {
@@ -69,6 +77,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
                               String clientId,
                               String redirectUri,
                               String codeChallenge) {
+    checkClient(clientId);
     checkResponseType(clientId, responseType);
     SessionCreateDto sessionDto = new SessionCreateDto();
     sessionDto.setAuthorizationCode(generateCode());
@@ -97,6 +106,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
                               String codeChallenge,
                               String sessionToken,
                               String issuer) {
+    checkClient(clientId);
     checkResponseType(clientId, responseType);
     try {
       KeyDto keyDto = keyService.getKeys(null, serverCredential);

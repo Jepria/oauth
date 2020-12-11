@@ -71,7 +71,7 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
   @GET
   @RolesAllowed({"OAViewClient", "OAViewSession"})
   public Response getClients(@QueryParam("clientName") String clientName) {
-    List<ClientDto> result = clientServerFactory.getService().getClient(clientName, securityContext.getCredential().getOperatorId());
+    List<ClientDto> result = clientServerFactory.getService().getClient(null, clientName, securityContext.getCredential().getOperatorId());
     if (result.isEmpty()) {
       return Response.noContent().build();
     } else {

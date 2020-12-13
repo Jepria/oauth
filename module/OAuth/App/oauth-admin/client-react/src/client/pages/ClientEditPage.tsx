@@ -2,11 +2,11 @@ import React, { useEffect, HTMLAttributes } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Client, ClientState } from '../types';
-import { AppState } from '../../app/store';
-import { getClientById, updateClient, getRoles } from '../state/actions';
+import { AppState } from '../../app/store/reducer';
+import { actions } from '../state/clientSlice';
 import { useFormik } from 'formik';
 import { GrantType, ApplicationGrantType } from '@jfront/oauth-core';
-import { Form, TextInput, CheckBoxGroup, CheckBox, SelectInput,  } from '@jfront/ui-core';
+import { Form, TextInput, CheckBoxGroup, CheckBox, SelectInput, } from '@jfront/ui-core';
 import { DualList } from '@jfront/ui-dual-list';
 import { Text } from '../../app/common/components/form/Field';
 import { useTranslation } from 'react-i18next';
@@ -26,15 +26,15 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
   ]
 
   useEffect(() => {
-    dispatch(getRoles(""));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    dispatch(actions.getRoles({ roleName: "" }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (!current && clientId) {
-      dispatch(getClientById(clientId, t("dataLoadingMessage")));
+      dispatch(actions.getRecordById({ clientId, loadingMessage: t("dataLoadingMessage") }));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current, clientId, dispatch]);
 
   const formik = useFormik<Client>({
@@ -42,8 +42,13 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
     enableReinitialize: true,
     onSubmit: (values: Client) => {
       if (clientId) {
-        dispatch(updateClient(clientId, values, t("saveMessage"), (client: Client) => {
-          history.push(`/ui/client/${client.clientId}/view/`);
+        dispatch(actions.update({
+          clientId,
+          client: values,
+          loadingMessage: t("saveMessage"),
+          callback: (client: Client) => {
+            history.push(`/ui/client/${client.clientId}/view/`);
+          }
         }));
       }
     },
@@ -126,7 +131,7 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
               placeholder="Введите имя роли"
               name="scope"
               isLoading={rolesLoading}
-              onInputChange={e => dispatch(getRoles(e.target.value))}
+              onInputChange={e => dispatch(actions.getRoles({roleName: e.target.value}))}
               onSelectionChange={formik.setFieldValue}
               touched={formik.touched.scope}
               error={formik.errors.scope} />

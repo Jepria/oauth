@@ -9,12 +9,12 @@ import {
 } from "react-router-dom";
 import { ClientUriCreatePage } from './pages/ClientUriCreatePage';
 import { ClientUriViewPage } from './pages/ClientUriViewPage';
-import { AppState } from '../../app/store';
+import { AppState } from '../../app/store/reducer';
 import { useSelector, useDispatch } from 'react-redux';
 import { LoadingPanel } from '../../app/common/components/mask';
 import { ClientUriState } from './types';
 import { ClientUriListPage } from './pages/ClientUriListPage';
-import { setCurrentRecord, deleteClientUri, searchClientUri } from './state/actions';
+import { actions } from './state/clientUriSlice';
 import { HistoryState } from '../../app/common/components/HistoryState';
 import {
   Panel,
@@ -29,7 +29,7 @@ import {
 import { UserPanel } from '@jfront/oauth-ui';
 import { useTranslation } from 'react-i18next';
 import { ClientState } from '../types';
-import { getClientById } from '../state/actions';
+import { actions as clientActions } from '../state/clientSlice'
 
 const ClientUriRoute: React.FC = () => {
 
@@ -45,7 +45,7 @@ const ClientUriRoute: React.FC = () => {
 
   useEffect(() => {
     if (!client.current) {
-      dispatch(getClientById(clientId, t('dataLoadingMessage')))
+      dispatch(clientActions.getRecordById({clientId, loadingMessage: t('dataLoadingMessage')}))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [client, clientId, dispatch])
@@ -61,28 +61,41 @@ const ClientUriRoute: React.FC = () => {
         </TabPanel>
         <Toolbar style={{ margin: 0 }}>
           <ToolbarButtonCreate onClick={() => {
-            dispatch(setCurrentRecord(undefined, () => {
-              history.push(`/ui/client/${clientId}/client-uri/create`, state)
+            dispatch(actions.setCurrentRecord({
+              currentRecord: undefined,
+              callback: () => {
+                history.push(`/ui/client/${clientId}/client-uri/create`, state)
+              }
             }));
           }} disabled={pathname.endsWith('/create')} />
-          <ToolbarButtonSave onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }} disabled={!pathname.endsWith('/create')} />
-          <ToolbarButtonView onClick={() => { history.push(`/ui/client/${clientId}/client-uri/${current?.clientUriId}/view`, state) }} disabled={!current || pathname.endsWith('view')} />
+          <ToolbarButtonSave
+            onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }}
+            disabled={!pathname.endsWith('/create')} />
+          <ToolbarButtonView
+            onClick={() => { history.push(`/ui/client/${clientId}/client-uri/${current?.clientUriId}/view`, state) }}
+            disabled={!current || pathname.endsWith('view')} />
           <ToolbarButtonDelete onClick={() => {
             if (window.confirm(t('delete'))) {
-              dispatch(deleteClientUri(clientId, selectedRecords.map(selectedRecord => String(selectedRecord.clientUriId)), t('deleteMessage'), () => {
-                if (pathname.endsWith('/list')) {
-                  dispatch(searchClientUri(clientId, t('dataLoadingMessage')));
-                } else {
-                  history.push(`/ui/client/${clientId}/client-uri/list`, state);
+              dispatch(actions.remove({
+                clientId, clientUriIds: selectedRecords.map(selectedRecord => String(selectedRecord.clientUriId)),
+                loadingMessage: t('deleteMessage'), callback: () => {
+                  if (pathname.endsWith('/list')) {
+                    dispatch(actions.search({ clientId, loadingMessage: t('dataLoadingMessage') }));
+                  } else {
+                    history.push(`/ui/client/${clientId}/client-uri/list`, state);
+                  }
                 }
               }));
             }
           }} disabled={selectedRecords.length === 0} />
           <ToolbarSplitter />
           <ToolbarButtonBase onClick={() => {
-            dispatch(setCurrentRecord(undefined, () => {
-              history.push(`/ui/client/${clientId}/client-uri/list`, state);
-            }))
+            dispatch(actions.setCurrentRecord({
+              currentRecord: undefined,
+              callback: () => {
+                history.push(`/ui/client/${clientId}/client-uri/list`, state)
+              }
+            }));
           }} disabled={pathname.endsWith('/list')}>{t('toolbar.list')}</ToolbarButtonBase>
         </Toolbar>
       </Panel.Header>

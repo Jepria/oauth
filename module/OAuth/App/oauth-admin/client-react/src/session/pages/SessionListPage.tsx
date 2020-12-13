@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
-import { setCurrentRecord, searchSessions, postSearchSessionRequest, selectRecords } from '../state/actions';
+import { actions } from '../state/sessionSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
-import { AppState } from '../../app/store';
+import { AppState } from '../../app/store/reducer';
 import { SessionState, Session, SessionSearchTemplate } from '../types';
 import { TextCell } from '../../app/common/components/cell/TextCell';
 import { DateCell } from '../../app/common/components/cell/DateCell';
@@ -24,11 +24,16 @@ const SessionListPage: React.FC = () => {
 
   useEffect(() => {
     if (searchId && searchRequest) {
-      dispatch(searchSessions(searchId, 25, 1, t('dataLoadingMessage')));
+      dispatch(actions.search({
+        searchId,
+        pageSize: 25,
+        page: 1,
+        loadingMessage: t('dataLoadingMessage')
+      }));
     } else if (!searchId && searchRequest) {
-      dispatch(postSearchSessionRequest(searchRequest, t('dataLoadingMessage')));
+      dispatch(actions.postSearchTemplate({ searchRequest, loadingMessage: t('dataLoadingMessage') }));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchId, searchRequest, dispatch]);
 
   return (
@@ -83,22 +88,27 @@ const SessionListPage: React.FC = () => {
       ]}
       isLoading={recordsLoading}
       data={React.useMemo(() => records, [records])}
-      onSelection={(selected) => {
-        if (selected) {
-          if (selected.length === 1) {
-            if (selected[0] !== current) {
-              dispatch(setCurrentRecord(selected[0]))
-              dispatch(selectRecords(selected))
+      onSelection={(records) => {
+        if (records) {
+          if (records.length === 1) {
+            if (records[0] !== current) {
+              dispatch(actions.setCurrentRecord({ currentRecord: records[0] }));
+              dispatch(actions.selectRecords({ records }));
             }
           } else if (current) {
-            dispatch(setCurrentRecord(undefined))
-            dispatch(selectRecords(selected))
+            dispatch(actions.setCurrentRecord({}));
+            dispatch(actions.selectRecords({ records }));
           }
         }
       }}
       onPaging={(pageNumber, pageSize) => {
         if (searchId) {
-          dispatch(searchSessions(searchId, pageSize, pageNumber, t('dataLoadingMessage')))
+          dispatch(actions.search({
+            searchId,
+            pageSize,
+            page: pageNumber,
+            loadingMessage: t('dataLoadingMessage')
+          }));
         }
       }}
       onSort={(sortConfig) => {
@@ -107,17 +117,28 @@ const SessionListPage: React.FC = () => {
             ...searchRequest,
             listSortConfiguration: sortConfig
           }
-          dispatch(postSearchSessionRequest(newSearchRequest, t('dataLoadingMessage')));
-        } else 
-        if (pageSize && page) {
-          dispatch(postSearchSessionRequest({ template: searchTemplate as unknown as SessionSearchTemplate, listSortConfiguration: sortConfig }, t("dataLoadingMessage")));
-        } else {
-          dispatch(postSearchSessionRequest({ template: { maxRowCount: 25 }, listSortConfiguration: sortConfig }, t("dataLoadingMessage")));
-        }
+          dispatch(actions.postSearchTemplate({ searchRequest: newSearchRequest, loadingMessage: t('dataLoadingMessage') }));
+        } else
+          if (pageSize && page) {
+            dispatch(actions.postSearchTemplate({
+              searchRequest: { template: searchTemplate as unknown as SessionSearchTemplate, listSortConfiguration: sortConfig },
+              loadingMessage: t('dataLoadingMessage')
+            }));
+          } else {
+            dispatch(actions.postSearchTemplate({
+              searchRequest: {
+                template: { maxRowCount: 25 },
+                listSortConfiguration: sortConfig
+              },
+              loadingMessage: t('dataLoadingMessage')
+            }));
+          }
       }}
       totalRowCount={resultSetSize}
-      onDoubleClick={(record) => current !== record ? dispatch(setCurrentRecord(record,
-        () => history.push(`/ui/session/${record?.sessionId}/view`))) : history.push(`/ui/session/${record?.sessionId}/view`)} />
+      onDoubleClick={currentRecord => current !== currentRecord ? dispatch(actions.setCurrentRecord({
+        currentRecord,
+        callback: () => history.push(`/ui/session/${currentRecord?.sessionId}/view`)
+      })) : history.push(`/ui/session/${currentRecord?.sessionId}/view`)} />
   );
 }
 

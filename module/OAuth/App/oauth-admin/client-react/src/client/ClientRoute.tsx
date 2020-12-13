@@ -9,13 +9,13 @@ import {
 import ClientCreatePage from './pages/ClientCreatePage';
 import ClientEditPage from './pages/ClientEditPage';
 import ClientViewPage from './pages/ClientViewPage';
-import { AppState } from '../app/store';
+import { AppState } from '../app/store/reducer';
 import { useSelector, useDispatch } from 'react-redux';
 import { LoadingPanel } from '../app/common/components/mask';
 import { ClientState } from './types';
 import ClientSearchPage from './pages/ClientSearchPage';
 import { ClientListPage } from './pages/ClientListPage';
-import { setCurrentRecord, deleteClient, searchClients } from './state/actions';
+import { actions } from './state/clientSlice';
 import { HistoryState } from '../app/common/components/HistoryState';
 import {
   Panel,
@@ -69,8 +69,10 @@ const ClientRoute: React.FC = () => {
           </TabPanel>
           <Toolbar style={{ margin: 0 }}>
             <ToolbarButtonCreate onClick={() => {
-              dispatch(setCurrentRecord(undefined, () => {
-                history.push('/ui/client/create')
+              dispatch(actions.setCurrentRecord({
+                currentRecord: undefined, callback: () => {
+                  history.push('/ui/client/create')
+                }
               }));
             }} disabled={pathname.endsWith('/create') || !hasCreateRole} />
             <ToolbarButtonSave
@@ -84,27 +86,37 @@ const ClientRoute: React.FC = () => {
               disabled={!current || pathname.endsWith('/view') || pathname.endsWith('/view/')} />
             <ToolbarButtonDelete onClick={() => {
               if (window.confirm(t('delete'))) {
-                dispatch(deleteClient(selectedRecords.map(selectRecord => selectRecord.clientId), t('deleteMessage'), () => {
-                  if (pathname.endsWith('/list') && searchId) {
-                    dispatch(searchClients(searchId, 25, 1, t('dataLoadingMessage')));
-                  } else {
-                    history.push('/ui/client/list');
+                dispatch(actions.remove({
+                  clientIds: selectedRecords.map(selectRecord => selectRecord.clientId),
+                  loadingMessage: t('deleteMessage'),
+                  callback: () => {
+                    if (pathname.endsWith('/list') && searchId) {
+                      dispatch(actions.search({ searchId, pageSize: 25, page: 1, loadingMessage: t('dataLoadingMessage') }));
+                    } else {
+                      history.push('/ui/client/list');
+                    }
                   }
                 }));
               }
             }} disabled={selectedRecords.length === 0 || !hasDeleteRole} />
             <ToolbarSplitter />
             <ToolbarButtonBase onClick={() => {
-              dispatch(setCurrentRecord(undefined, () => {
-                if (searchRequest) {
-                  history.push('/ui/client/list');
-                } else {
-                  history.push('/ui/client/search');
+              dispatch(actions.setCurrentRecord({
+                currentRecord: undefined, callback: () => {
+                  if (searchRequest) {
+                    history.push('/ui/client/list');
+                  } else {
+                    history.push('/ui/client/search');
+                  }
                 }
               }))
             }} disabled={pathname.endsWith('/search') || pathname.endsWith('/list')}>{t('toolbar.list')}</ToolbarButtonBase>
             <ToolbarButtonFind onClick={() => {
-              dispatch(setCurrentRecord(undefined, () => history.push('/ui/client/search')));
+              dispatch(actions.setCurrentRecord({
+                currentRecord: undefined, callback: () => {
+                  history.push('/ui/client/search')
+                }
+              }));
             }} />
             <ToolbarButtonBase onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }} disabled={!pathname.endsWith('/search')}>{t('toolbar.find')}</ToolbarButtonBase>
           </Toolbar>

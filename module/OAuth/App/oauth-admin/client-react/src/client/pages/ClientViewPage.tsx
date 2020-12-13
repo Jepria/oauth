@@ -2,10 +2,10 @@ import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { Text } from '../../app/common/components/form/Field';
-import { AppState } from '../../app/store';
+import { AppState } from '../../app/store/reducer';
 import { ClientState } from '../types';
 import { useSelector, useDispatch } from 'react-redux';
-import { getClientById } from '../state/actions';
+import { actions } from '../state/clientSlice';
 import { Form } from '@jfront/ui-core';
 import { GrantType, ApplicationType } from '@jfront/oauth-core';
 import { useTranslation } from 'react-i18next';
@@ -31,9 +31,9 @@ const ClientViewPage: React.FC = () => {
 
   useEffect(() => {
     if (!current && clientId) {
-      dispatch(getClientById(clientId, t("dataLoadingMessage")));
+      dispatch(actions.getRecordById({ clientId, loadingMessage: t("dataLoadingMessage") }));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
-import { setCurrentRecord, searchClientUri, selectRecords } from '../state/actions';
+import { actions } from '../state/clientUriSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, useParams, useLocation } from 'react-router-dom';
-import { AppState } from '../../../app/store';
+import { AppState } from '../../../app/store/reducer';
 import { ClientUriState, ClientUri } from '../types';
 import { HistoryState } from '../../../app/common/components/HistoryState';
 import { TextCell } from '../../../app/common/components/cell/TextCell';
@@ -20,9 +20,9 @@ export const ClientUriListPage: React.FC = () => {
 
   useEffect(() => {
     if (clientId) {
-      dispatch(searchClientUri(clientId, t('dataLoadingMessage')));
+      dispatch(actions.search({ clientId, loadingMessage: t('dataLoadingMessage') }));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientId, dispatch]);
 
   return (
@@ -40,22 +40,28 @@ export const ClientUriListPage: React.FC = () => {
         },
       ]}
       data={React.useMemo(() => records, [records])}
-      onSelection={(selected) => {
-        if (selected) {
-          if (selected.length === 1) {
-            if (selected[0] !== current) {
-              dispatch(setCurrentRecord(selected[0]))
-              dispatch(selectRecords(selected))
+      onSelection={(records) => {
+        if (records) {
+          if (records.length === 1) {
+            if (records[0] !== current) {
+              dispatch(actions.setCurrentRecord({ currentRecord: records[0] }));
+              dispatch(actions.selectRecords({ records }));
             }
           } else if (current) {
-            dispatch(setCurrentRecord(undefined))
-            dispatch(selectRecords(selected))
+            dispatch(actions.setCurrentRecord({}));
+            dispatch(actions.selectRecords({ records }));
           }
         }
       }}
-      onDoubleClick={(record) => current !== record ? dispatch(setCurrentRecord(record,
-        () => history.push(`/ui/client/${clientId}/client-uri/${record?.clientUriId}/view`, state)))
-        : history.push(`/ui/client/${clientId}/client-uri/${record?.clientUriId}/view`,
-          state)} />
+      onDoubleClick={(record) => {
+        if (current !== record) {
+          dispatch(actions.setCurrentRecord({
+            currentRecord: record,
+            callback: () => history.push(`/ui/client/${clientId}/client-uri/${record?.clientUriId}/view`, state)
+          }))
+        } else {
+          history.push(`/ui/client/${clientId}/client-uri/${record?.clientUriId}/view`, state)
+        }
+      }} />
   );
 }

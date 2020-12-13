@@ -3,7 +3,7 @@ import { useHistory, useParams } from 'react-router-dom';
 import { useFormik } from 'formik';
 import { useDispatch } from 'react-redux';
 import { ClientUri, ClientUriCreateDto } from '../types';
-import { createClientUri } from '../state/actions';
+import { actions } from '../state/clientUriSlice';
 import { Form, TextInput } from '@jfront/ui-core';
 import { useTranslation } from 'react-i18next';
 
@@ -17,8 +17,13 @@ export const ClientUriCreatePage = React.forwardRef<any, HTMLAttributes<HTMLForm
     initialValues: { clientUri: '' },
     onSubmit: (values: ClientUriCreateDto) => {
       if (clientId) {
-        dispatch(createClientUri(clientId, values, t('saveMessage'),(clientUri: ClientUri) => {
-          history.push(`/ui/client/${clientId}/client-uri/${clientUri.clientUriId}/view/`);
+        dispatch(actions.create({
+          clientId,
+          clientUri: values,
+          loadingMessage: t('saveMessage'),
+          callback: (clientUri: ClientUri) => {
+            history.push(`/ui/client/${clientId}/client-uri/${clientUri.clientUriId}/view/`);
+          }
         }));
       }
     },

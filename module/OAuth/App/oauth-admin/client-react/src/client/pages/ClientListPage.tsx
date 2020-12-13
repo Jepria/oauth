@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
-import { setCurrentRecord, searchClients, postSearchClientRequest, selectRecords } from '../state/actions';
+import { actions } from '../state/clientSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
-import { AppState } from '../../app/store';
+import { AppState } from '../../app/store/reducer';
 import { ClientState, Client, ClientSearchTemplate } from '../types';
 import { GrantType, ApplicationType } from '@jfront/oauth-core';
 import { TextCell } from '../../app/common/components/cell/TextCell';
@@ -24,9 +24,9 @@ export const ClientListPage: React.FC = () => {
 
   useEffect(() => {
     if (searchId && searchRequest) {
-      dispatch(searchClients(searchId, 25, 1, t("dataLoadingMessage")));
+      dispatch(actions.search({ searchId, pageSize: 25, page: 1, loadingMessage: t("dataLoadingMessage") }));
     } else if (!searchId && searchRequest) {
-      dispatch(postSearchClientRequest(searchRequest, t("dataLoadingMessage")));
+      dispatch(actions.postSearchTemplate({ searchRequest, loadingMessage: t("dataLoadingMessage") }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchId, searchRequest, dispatch]);
@@ -68,22 +68,22 @@ export const ClientListPage: React.FC = () => {
       ]}
       isLoading={recordsLoading}
       data={React.useMemo(() => records, [records])}
-      onSelection={(selected) => {
-        if (selected) {
-          if (selected.length === 1) {
-            if (selected[0] !== current) {
-              dispatch(setCurrentRecord(selected[0]))
-              dispatch(selectRecords(selected))
+      onSelection={(records) => {
+        if (records) {
+          if (records.length === 1) {
+            if (records[0] !== current) {
+              dispatch(actions.setCurrentRecord({ currentRecord: records[0] }));
+              dispatch(actions.selectRecords({ records }));
             }
           } else if (current) {
-            dispatch(setCurrentRecord(undefined))
-            dispatch(selectRecords(selected))
+            dispatch(actions.setCurrentRecord({}));
+            dispatch(actions.selectRecords({ records }));
           }
         }
       }}
       onPaging={(pageNumber, pageSize) => {
         if (searchId) {
-          dispatch(searchClients(searchId, pageSize, pageNumber, t("dataLoadingMessage")))
+          dispatch(actions.search({ searchId, pageSize, page: pageNumber, loadingMessage: t("dataLoadingMessage") }))
         }
       }}
       onSort={(sortConfig) => {
@@ -92,18 +92,29 @@ export const ClientListPage: React.FC = () => {
             ...searchRequest,
             listSortConfiguration: sortConfig
           }
-          dispatch(postSearchClientRequest(newSearchRequest, t("dataLoadingMessage")));
+          dispatch(actions.postSearchTemplate({ searchRequest: newSearchRequest, loadingMessage: t('dataLoadingMessage') }));
         } else {
           if (pageSize && page) {
-            dispatch(postSearchClientRequest({ template: searchTemplate as unknown as ClientSearchTemplate, listSortConfiguration: sortConfig }, t("dataLoadingMessage")));
+            dispatch(actions.postSearchTemplate({
+              searchRequest: { template: searchTemplate as unknown as ClientSearchTemplate, listSortConfiguration: sortConfig },
+              loadingMessage: t('dataLoadingMessage')
+            }));
           } else {
-            dispatch(postSearchClientRequest({ template: { maxRowCount: 25 }, listSortConfiguration: sortConfig }, t("dataLoadingMessage")));
+            dispatch(actions.postSearchTemplate({
+              searchRequest: {
+                template: { maxRowCount: 25 },
+                listSortConfiguration: sortConfig
+              },
+              loadingMessage: t('dataLoadingMessage')
+            }));
           }
         }
       }}
       totalRowCount={resultSetSize}
-      onDoubleClick={(record) => current !== record ? dispatch(setCurrentRecord(record,
-        () => history.push(`/ui/client/${record?.clientId}/view`))) : history.push(`/ui/client/${record?.clientId}/view`)}
+      onDoubleClick={(record) => current !== record ? dispatch(actions.setCurrentRecord({
+        currentRecord: record,
+        callback: () => history.push(`/ui/client/${record?.clientId}/view`)
+      })) : history.push(`/ui/client/${record?.clientId}/view`)}
     />
   );
 }

@@ -1,5 +1,5 @@
 import React from 'react'
-import { AppState } from '../../store';
+import { AppState } from '../../store/reducer';
 import { connect } from 'react-redux';
 import { ACCESS_DENIED, AUTHORIZATION_FAILED, BadRequest, BAD_REQUEST, NetworkError, NotFound, NOT_FOUND, ServerError } from '../rest/types';
 import { ErrorDialog } from './dialog/error-dialog/ErrorDialog';

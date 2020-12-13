@@ -3,8 +3,8 @@ import { useFormik } from 'formik'
 import { Dialog } from '../../app/common/components/dialog/Dialog';
 import { ComboBox, ComboBoxItem, Form } from '@jfront/ui-core';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppState } from '../../app/store';
-import { deleteAll, getOperators, searchSessions } from '../state/actions';
+import { AppState } from '../../app/store/reducer';
+import { actions } from '../state/sessionSlice';
 import { SessionState } from '../types';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
@@ -43,25 +43,35 @@ export const DeleteAllDialog = ({ onCancel }: DeleteAllDialogProps) => {
   const { pathname } = useLocation();
 
   const formik = useFormik<DeleteAllForm>({
-    initialValues: {  },
-    onSubmit: (values: DeleteAllForm) => {      
+    initialValues: {},
+    onSubmit: (values: DeleteAllForm) => {
       if (values.operatorId) {
         if (window.confirm(t('session.deleteAllMessage'))) {
-          dispatch(deleteAll(values.operatorId, t("deleteMessage"), () => {
-            onCancel();
-            if (pathname.endsWith('/list') && searchId) {
-              dispatch(searchSessions(searchId, 25, 1, t('dataLoadingMessage')));
-            } else if (pathname.endsWith('/view') && values.operatorId === current?.operator?.value) {
-              history.push('/ui/session/list');
-            } else if (pathname.endsWith('/search')) {
-              dispatch(getOperators(""));
+          dispatch(actions.removeAll({
+            operatorId: values.operatorId,
+            loadingMessage: t("deleteMessage"),
+            callback: () => {
+              onCancel();
+              if (pathname.endsWith('/list') && searchId) {
+                dispatch(actions.search({
+                  searchId,
+                  pageSize: 25,
+                  page: 1,
+                  loadingMessage: t('dataLoadingMessage')
+                }));
+              } else if (pathname.endsWith('/view') && values.operatorId === current?.operator?.value) {
+                history.push('/ui/session/list');
+              } else if (pathname.endsWith('/search')) {
+                dispatch(actions.getOperators({ operatorName: "" }));
+                dispatch(actions.getClients({ clientName: "" }));
+              }
             }
           }));
         }
       }
     },
     validate: (values) => {
-      const errors: { operatorId?: string} = {};
+      const errors: { operatorId?: string } = {};
       if (!values['operatorId']) {
         errors.operatorId = t('validation.notEmpty')
       }
@@ -70,7 +80,7 @@ export const DeleteAllDialog = ({ onCancel }: DeleteAllDialogProps) => {
   })
 
   useEffect(() => {
-    dispatch(getOperators(""));
+    dispatch(actions.getOperators({ operatorName: "" }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -78,14 +88,14 @@ export const DeleteAllDialog = ({ onCancel }: DeleteAllDialogProps) => {
     <Dialog header={t('session.deleteAllDialogHeader')}>
       <Form onSubmit={formik.handleSubmit}>
         <Form.Field>
-          <Form.Label style={{minWidth: 'unset', width: 'unset'}}>{t('session.operator.legend')}</Form.Label>
+          <Form.Label style={{ minWidth: 'unset', width: 'unset' }}>{t('session.operator.legend')}</Form.Label>
           <Form.Control>
             <ComboBox
               name="operatorId"
               isLoading={operatorsLoading}
               value={formik.values.operatorId}
               error={formik.errors.operatorId}
-              onInputChange={(e: { target: { value: string | undefined; }; }) => dispatch(getOperators(e.target.value))}
+              onInputChange={(e: { target: { value: string | undefined; }; }) => dispatch(actions.getOperators({ operatorName: e.target.value }))}
               onSelectionChange={formik.setFieldValue} style={{ maxWidth: '250px' }}>
               {operators?.map(operator => <ComboBoxItem key={operator.value} label={operator.name} value={operator.value} />)}
             </ComboBox>

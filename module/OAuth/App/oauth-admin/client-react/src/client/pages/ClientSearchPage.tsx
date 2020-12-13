@@ -3,8 +3,8 @@ import { useHistory } from 'react-router-dom';
 import { useFormik } from 'formik';
 import { useSelector, useDispatch } from 'react-redux';
 import { ClientSearchTemplate } from '../types';
-import { postSearchClientRequest } from '../state/actions';
-import { AppState } from '../../app/store';
+import { actions } from '../state/clientSlice';
+import { AppState } from '../../app/store/reducer';
 import { Form, TextInput, NumberInput } from '@jfront/ui-core';
 import { useTranslation } from 'react-i18next';
 import queryString from 'query-string';
@@ -27,11 +27,15 @@ const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
       return errors;
     },
     onSubmit: (values: ClientSearchTemplate) => {
-      dispatch(postSearchClientRequest({
-        template: values
-      }, t("dataLoadingMessage"), () => {
-        const query = queryString.stringify(values)
-        history.push(`/ui/client/list?pageSize=25&page=1${query ? "&" + query : ""}`)
+      dispatch(actions.postSearchTemplate({
+        searchRequest: {
+          template: values
+        },
+        loadingMessage: t("dataLoadingMessage"),
+        callback: () => {
+          const query = queryString.stringify(values)
+          history.push(`/ui/client/list?pageSize=25&page=1${query ? "&" + query : ""}`)
+        }
       }));
     }
   })
@@ -43,7 +47,7 @@ const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
         <Form.Control style={{ maxWidth: "200px" }}>
           <TextInput
             name="clientId"
-            value={formik.initialValues.clientId}
+            value={formik.values.clientId}
             onChange={formik.handleChange}
             error={formik.errors.clientId} />
         </Form.Control>

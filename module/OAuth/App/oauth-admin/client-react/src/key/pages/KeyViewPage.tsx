@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { Text } from '../../app/common/components/form/Field';
-import { AppState } from '../../app/store';
+import { AppState } from '../../app/store/reducer';
 import { KeyState } from '../types';
 import { useSelector, useDispatch } from 'react-redux';
-import { getKey } from '../state/actions';
+import { actions } from '../state/keySlice';
 import { Form } from '@jfront/ui-core';
 import { useTranslation } from 'react-i18next';
 
@@ -15,7 +15,7 @@ const KeyViewPage: React.FC = () => {
 
   useEffect(() => {
     if (!current) {
-      dispatch(getKey(t('dataLoading')));
+      dispatch(actions.getRecordById({ loadingMessage: t('dataLoadingMessage') }));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current, dispatch]);

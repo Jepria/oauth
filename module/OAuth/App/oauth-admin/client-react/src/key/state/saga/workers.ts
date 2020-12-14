@@ -1,30 +1,33 @@
 import { API_PATH } from '../../../config';
-import { GetKeyAction, UpdateKeyAction, getKeySuccess, updateKeySuccess, getKeyFailure, updateKeyFailure } from '../actions';
+import { GetKeyAction, UpdateKeyAction } from '../keyActions';
+import { actions } from '../keySlice';
 import { put, call } from 'redux-saga/effects';
 import KeyApi from '../../api/KeyApi';
+import { PayloadAction } from '@reduxjs/toolkit';
 
 const api = new KeyApi(API_PATH);
 
-export function* getKey(action: GetKeyAction) {
+export function* getKey(action: PayloadAction<GetKeyAction>) {
+  const { payload } = action;
   try {
     const record = yield call(api.getKey);
-    yield put(getKeySuccess(record));
-    if (action.callback) {
-      yield call(action.callback);
+    yield put(actions.getRecordByIdSuccess({key: record}));
+    if (payload.callback) {
+      yield call(payload.callback);
     }
   } catch (error) {
-    yield put(getKeyFailure(error));
+    yield put(actions.failure({error}));
   }
 }
 
-export function* updateKey(action: UpdateKeyAction) {
+export function* updateKey(action: PayloadAction<UpdateKeyAction>) {
   try {
     yield call(api.updateKey);
-    yield put(updateKeySuccess());
-    if (action.callback) {
-      yield call(action.callback);
+    yield put(actions.updateSuccess());
+    if (action.payload.callback) {
+      yield call(action.payload.callback);
     }
   } catch (error) {
-    yield put(updateKeyFailure(error));
+    yield put(actions.failure({error}));
   }
 }

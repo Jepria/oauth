@@ -67,7 +67,6 @@
     </dependency>
   </dependencies>
   <build>
-    <finalName>oauth-rest</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>

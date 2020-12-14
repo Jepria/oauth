@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Text } from '../../app/common/components/form/Field';
-import { AppState } from '../../app/store';
+import { AppState } from '../../app/store/reducer';
 import { SessionState } from '../types';
 import { useSelector, useDispatch } from 'react-redux';
-import { getSessionById } from '../state/actions';
+import { actions } from '../state/sessionSlice';
 import { Row, Form } from '@jfront/ui-core';
 import { useTranslation } from 'react-i18next';
 
@@ -17,9 +17,9 @@ const SessionViewPage: React.FC = () => {
 
   useEffect(() => {
     if (!current && sessionId) {
-      dispatch(getSessionById(sessionId, t('dataLoadingMessage')));
+      dispatch(actions.getRecordById({ sessionId, loadingMessage: t('dataLoadingMessage') }));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -87,7 +87,7 @@ const SessionViewPage: React.FC = () => {
               <Form.Label>{t('session.token.id')}:</Form.Label>
               <Text>{current?.refreshTokenId}</Text>
             </Form.Field>
-           {current.refreshTokenDateIns && <Form.Field>
+            {current.refreshTokenDateIns && <Form.Field>
               <Form.Label>{t('session.token.dateIns')}:</Form.Label>
               <Text>{new Date(current.refreshTokenDateIns).toLocaleString()}</Text>
             </Form.Field>}

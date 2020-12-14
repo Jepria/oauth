@@ -1,11 +1,11 @@
 import { all, takeLatest, takeEvery  } from "redux-saga/effects";
-import { UPDATE_KEY, GET_KEY } from "../actions";
+import { actions } from "../keySlice";
 import { updateKey, getKey } from "./workers";
 
 
 function* watchers() {
-  yield takeEvery(UPDATE_KEY, updateKey);
-  yield takeLatest(GET_KEY, getKey);
+  yield takeEvery(actions.update.type, updateKey);
+  yield takeLatest(actions.getRecordById.type, getKey);
 }
 
 export function* keySaga() {

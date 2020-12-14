@@ -3,8 +3,8 @@ import { useHistory } from 'react-router-dom';
 import { useFormik } from 'formik';
 import { useSelector, useDispatch } from 'react-redux';
 import { SessionSearchTemplate, SessionState } from '../types';
-import { postSearchSessionRequest, getClients, getOperators } from '../state/actions';
-import { AppState } from '../../app/store';
+import { actions } from '../state/sessionSlice';
+import { AppState } from '../../app/store/reducer';
 import { Form, ComboBox, NumberInput, ComboBoxItem } from '@jfront/ui-core';
 import { useTranslation } from 'react-i18next';
 import queryString from 'query-string';
@@ -16,8 +16,12 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
   const { clients, operators, searchRequest, clientsLoading, operatorsLoading } = useSelector<AppState, SessionState>(state => state.session);
 
   useEffect(() => {
-    dispatch(getOperators(""));
-    dispatch(getClients(""));
+    if (!clients) {
+      dispatch(actions.getClients({ clientName: "" }));
+    }
+    if (!operators) {
+      dispatch(actions.getOperators({ operatorName: "" }));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -36,11 +40,15 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
       return errors;
     },
     onSubmit: (values: SessionSearchTemplate) => {
-      dispatch(postSearchSessionRequest({
-        template: values
-      }, t('dataLoadingMessage'), () => {
-        const query = queryString.stringify(values)
-        history.push(`/ui/session/list?pageSize=25&page=1${query ? "&" + query : ""}`)
+      dispatch(actions.postSearchTemplate({
+        searchRequest: {
+          template: values
+        },
+        loadingMessage: t('dataLoadingMessage'),
+        callback: () => {
+          const query = queryString.stringify(values)
+          history.push(`/ui/session/list?pageSize=25&page=1${query ? "&" + query : ""}`)
+        }
       }));
     }
   })
@@ -56,7 +64,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
             placeholder={t('session.operator.placeholder')}
             value={formik.values.operatorId}
             error={formik.errors.operatorId}
-            onInputChange={(e: { target: { value: string | undefined; }; }) => dispatch(getOperators(e.target.value))}
+            onInputChange={(e: { target: { value: string | undefined; }; }) => dispatch(actions.getOperators({ operatorName: e.target.value }))}
             onSelectionChange={formik.setFieldValue} style={{ maxWidth: '250px' }}>
             {operators?.map(operator => <ComboBoxItem key={operator.value} label={operator.name} value={operator.value} />)}
           </ComboBox>
@@ -72,7 +80,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
             isLoading={clientsLoading}
             value={formik.values.clientId}
             error={formik.errors.clientId}
-            onInputChange={(e: { target: { value: string | undefined; }; }) => dispatch(getClients(e.target.value))}
+            onInputChange={(e: { target: { value: string | undefined; }; }) => dispatch(actions.getClients({ clientName: e.target.value }))}
             getOptionName={(option: { clientName: any; }) => {
               return option.clientName;
             }}

@@ -1,98 +1,99 @@
 import ClientApi from '../../api/ClientApi'
 import { API_PATH } from '../../../config'
 import {
-  CreateClientAction, createClientSuccess, 
-  UpdateClientAction, updateClientSuccess, 
-  DeleteClientAction, deleteClientSuccess, 
-  GetClientByIdAction, getClientByIdSuccess, 
-  PostSearchClientRequestAction, postSearchClientRequestSuccess, 
-  SearchClientsAction, searchClientsSuccess, 
-  SetCurrentRecordAction, setCurrentRecordSuccess, GetRolesAction, 
-  getRolesSuccess, updateClientFailure, createClientFailure, deleteClientFailure, 
-  getClientByIdFailure, postSearchClientRequestFailure, searchClientsFailure, getRolesFailure } from '../actions';
+  CreateClientAction,
+  UpdateClientAction,
+  DeleteClientAction,
+  GetClientByIdAction,
+  PostSearchClientRequestAction,
+  SearchClientsAction,
+  SetCurrentRecordAction,
+  GetRolesAction
+} from '../clientActions';
+import { actions } from '../clientSlice'
 import { put, call, all } from 'redux-saga/effects';
+import { PayloadAction } from '@reduxjs/toolkit';
 
 const api = new ClientApi(API_PATH + '/client');
 
-export function* create(action: CreateClientAction) {
+export function* create(action: PayloadAction<CreateClientAction>) {
   try {
-    const createdRecord = yield call(api.create, action.payload);
-    yield put(createClientSuccess(createdRecord));
-    if (action.callback) {
-      yield call(action.callback, createdRecord);
+    const createdRecord = yield call(api.create, action.payload.client);
+    yield put(actions.createSuccess({ client: createdRecord }));
+    if (action.payload.callback) {
+      yield call(action.payload.callback, createdRecord);
     }
   } catch (error) {
-    yield put(createClientFailure(error));
+    yield put(actions.failure(error));
   }
 }
 
-export function* update(action: UpdateClientAction) {
+export function* update(action: PayloadAction<UpdateClientAction>) {
   try {
-    const updatedRecord = yield call(api.update,action.clientId, action.payload);
-    yield put(updateClientSuccess(updatedRecord));
-    if (action.callback) {
-      yield call(action.callback, updatedRecord);
+    const updatedRecord = yield call(api.update, action.payload.clientId, action.payload.client);
+    yield put(actions.updateSuccess({ client: updatedRecord }));
+    if (action.payload.callback) {
+      yield call(action.payload.callback, updatedRecord);
     }
   } catch (error) {
-    yield put(updateClientFailure(error));
+    yield put(actions.failure(error));
   }
 }
 
-export function* remove(action: DeleteClientAction) {
+export function* remove(action: PayloadAction<DeleteClientAction>) {
   try {
-    yield all(action.clientIds.map(clientId => call(api.delete, clientId)));
-    yield put(deleteClientSuccess());
-    if (action.callback) {
-      yield call(action.callback);
+    yield all(action.payload.clientIds.map(clientId => call(api.delete, clientId)));
+    yield put(actions.removeSuccess());
+    if (action.payload.callback) {
+      yield call(action.payload.callback);
     }
   } catch (error) {
-    yield put(deleteClientFailure(error));
+    yield put(actions.failure(error));
   }
 }
 
-export function* getById(action: GetClientByIdAction) {
+export function* getById(action: PayloadAction<GetClientByIdAction>) {
   try {
-    const record = yield call(api.getRecordById, action.clientId);
-    yield put(getClientByIdSuccess(record));
+    const record = yield call(api.getRecordById, action.payload.clientId);
+    yield put(actions.getRecordByIdSuccess({ client: record }));
   } catch (error) {
-    yield put(getClientByIdFailure(error));
+    yield put(actions.failure(error));
   }
 }
 
-export function* postSearchRequest(action: PostSearchClientRequestAction) {
+export function* postSearchRequest(action: PayloadAction<PostSearchClientRequestAction>) {
   try {
-    const searchId = yield call(api.postSearchRequest, action.searchRequest);
-    yield put(postSearchClientRequestSuccess(searchId, action.searchRequest));
-    if (action.callback) {
-      yield call(action.callback);
+    const searchId = yield call(api.postSearchRequest, action.payload.searchRequest);
+    yield put(actions.postSearchTemplateSuccess({ searchId, searchRequest: action.payload.searchRequest }));
+    if (action.payload.callback) {
+      yield call(action.payload.callback);
     }
   } catch (error) {
-    yield put(postSearchClientRequestFailure(error));
+    yield put(actions.failure(error));
   }
 }
 
-export function* search(action: SearchClientsAction) {
+export function* search(action: PayloadAction<SearchClientsAction>) {
   try {
-    const records = yield call(api.search, action.searchId, action.pageSize, action.page);
-    const resultSetSize = yield call(api.getResultSetSize, action.searchId, '');
-    yield put(searchClientsSuccess(records, resultSetSize));
+    const records = yield call(api.search, action.payload.searchId, action.payload.pageSize, action.payload.page);
+    const resultSetSize = yield call(api.getResultSetSize, action.payload.searchId, '');
+    yield put(actions.searchSuccess({ clients: records, resultSetSize }));
   } catch (error) {
-    yield put(searchClientsFailure(error));
+    yield put(actions.failure(error));
   }
 }
 
-export function* setCurrentClient(action: SetCurrentRecordAction) {
-  yield put(setCurrentRecordSuccess(action.payload));
-  if (action.callback) {
-    yield call(action.callback);
+export function* setCurrentClient(action: PayloadAction<SetCurrentRecordAction>) {
+  if (action.payload.callback) {
+    yield call(action.payload.callback);
   }
 }
 
-export function* getRoles(action: GetRolesAction) {
-  const roles = yield call(api.getRoles, action.roleName);
+export function* getRoles(action: PayloadAction<GetRolesAction>) {
+  const roles = yield call(api.getRoles, action.payload.roleName);
   try {
-    yield put(getRolesSuccess(roles));
-  } catch(error) {
-    yield put(getRolesFailure(error));
+    yield put(actions.getRolesSuccess({ roles }));
+  } catch (error) {
+    yield put(actions.failure(error));
   }
 }

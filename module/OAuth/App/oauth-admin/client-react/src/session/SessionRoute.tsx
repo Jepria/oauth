@@ -7,13 +7,13 @@ import {
   useLocation
 } from "react-router-dom";
 import SessionViewPage from './pages/SessionViewPage';
-import { AppState } from '../app/store';
+import { AppState } from '../app/store/reducer';
 import { useSelector, useDispatch } from 'react-redux';
 import { LoadingPanel } from '../app/common/components/mask';
 import { SessionState } from './types';
 import SessionSearchPage from './pages/SessionSearchPage';
 import SessionListPage from './pages/SessionListPage';
-import { setCurrentRecord, deleteSession, searchSessions } from './state/actions';
+import { actions } from './state/sessionSlice';
 import { HistoryState } from '../app/common/components/HistoryState';
 import {
   Panel,
@@ -29,7 +29,6 @@ import { UserContext } from '@jfront/oauth-user'
 import { Forbidden } from '@jfront/oauth-ui'
 import { Loader } from '@jfront/oauth-ui';
 import { useTranslation } from 'react-i18next';
-import deleteAll from './images/deleteAll.png';
 import { DeleteAllDialog } from './delete-all-dialog/DeleteAllDialog';
 
 const SessionRoute: React.FC = () => {
@@ -70,35 +69,54 @@ const SessionRoute: React.FC = () => {
             <UserPanel />
           </TabPanel>
           <Toolbar style={{ margin: 0 }}>
-            <ToolbarButtonView onClick={() => { history.push(`/ui/session/${current?.sessionId}/view`) }} disabled={!current || pathname.endsWith('view')} />
+            <ToolbarButtonView
+              onClick={() => { history.push(`/ui/session/${current?.sessionId}/view`) }}
+              disabled={!current || pathname.endsWith('view')} />
             <ToolbarButtonDelete onClick={() => {
               if (window.confirm(t('delete'))) {
-                dispatch(deleteSession(selectedRecords.map(selectedRecord => String(selectedRecord.sessionId)), t('deleteMessage'), () => {
-                  if (pathname.endsWith('/list') && searchId) {
-                    dispatch(searchSessions(searchId, 25, 1, t('dataLoadingMessage')));
-                  } else {
-                    history.push('/ui/session/list');
+                dispatch(actions.remove({
+                  sessionIds: selectedRecords.map(selectedRecord => String(selectedRecord.sessionId)),
+                  loadingMessage: t('deleteMessage'),
+                  callback: () => {
+                    if (pathname.endsWith('/list') && searchId) {
+                      dispatch(actions.search({
+                        searchId,
+                        pageSize: 25,
+                        page: 1,
+                        loadingMessage: t('dataLoadingMessage')
+                      }));
+                    } else {
+                      history.push('/ui/session/list');
+                    }
                   }
-                }));
+                }))
               }
             }} disabled={selectedRecords.length === 0 || !hasDeleteRole} />
             <ToolbarButtonBase onClick={() => setDeleteAll(true)} disabled={!hasDeleteRole}>
-              <img src={process.env.PUBLIC_URL + '/images/deleteAll.png'} alt=""/>
+              <img src={process.env.PUBLIC_URL + '/images/deleteAll.png'} alt="" />
             </ToolbarButtonBase>
             <ToolbarSplitter />
             <ToolbarButtonBase onClick={() => {
-              dispatch(setCurrentRecord(undefined, () => {
-                if (searchRequest) {
-                  history.push('/ui/session/list');
-                } else {
-                  history.push('/ui/session/search');
+              dispatch(actions.setCurrentRecord({
+                currentRecord: undefined,
+                callback: () => {
+                  if (searchRequest) {
+                    history.push('/ui/session/list');
+                  } else {
+                    history.push('/ui/session/search');
+                  }
                 }
               }))
             }} disabled={pathname.endsWith('/search') || pathname.endsWith('/list')}>{t('toolbar.list')}</ToolbarButtonBase>
             <ToolbarButtonFind onClick={() => {
-              dispatch(setCurrentRecord(undefined, () => history.push('/ui/session/search')));
+              dispatch(actions.setCurrentRecord({
+                currentRecord: undefined,
+                callback: () => history.push('/ui/session/search')
+              }))
             }} />
-            <ToolbarButtonBase onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }} disabled={!pathname.endsWith('/search')}>{t('toolbar.find')}</ToolbarButtonBase>
+            <ToolbarButtonBase
+              onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }}
+              disabled={!pathname.endsWith('/search')}>{t('toolbar.find')}</ToolbarButtonBase>
           </Toolbar>
         </Panel.Header>
         <Panel.Content>
@@ -114,7 +132,7 @@ const SessionRoute: React.FC = () => {
             </Route>
           </Switch>
         </Panel.Content>
-        {showDeleteAll && <DeleteAllDialog onCancel={() => setDeleteAll(false)}/>}
+        {showDeleteAll && <DeleteAllDialog onCancel={() => setDeleteAll(false)} />}
       </Panel>}
     </>
   );

@@ -4,13 +4,12 @@ import AppRouter from './app/AppRouter';
 import { UserContextProvider } from '@jfront/oauth-user';
 import axios from 'axios'
 import { Provider } from 'react-redux';
-import { configureStore } from './app/store/configureStore';
-import { sagas, reducers } from './app/store';
+import configureStore from './app/store/configureStore';
 import { ErrorNotification } from './app/common/components/ErrorNotification';
 
 function App() {
 
-  const store = configureStore({}, sagas, reducers);
+  const store = configureStore();
 
   return (
     <OAuthWebContext

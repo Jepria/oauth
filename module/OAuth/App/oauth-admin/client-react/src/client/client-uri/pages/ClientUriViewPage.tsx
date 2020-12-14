@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Text } from '../../../app/common/components/form/Field';
-import { AppState } from '../../../app/store';
+import { AppState } from '../../../app/store/reducer';
 import { ClientUriState } from '../types';
 import { useSelector, useDispatch } from 'react-redux';
-import { getClientUriById } from '../state/actions';
+import { actions } from '../state/clientUriSlice';
 import { Form } from '@jfront/ui-core';
 import { useTranslation } from 'react-i18next';
 
@@ -17,9 +17,9 @@ export const ClientUriViewPage: React.FC = () => {
 
   useEffect(() => {
     if (!current && clientId && clientUriId) {
-      dispatch(getClientUriById(clientId, clientUriId, t('dataLoadingMessage')));
+      dispatch(actions.getRecordById({ clientId, clientUriId, loadingMessage: t('dataLoadingMessage') }));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

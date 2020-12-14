@@ -3,11 +3,11 @@ import { useHistory } from 'react-router-dom';
 import { useFormik } from 'formik';
 import { useDispatch, useSelector } from 'react-redux';
 import { Client, ClientState } from '../types';
-import { createClient, getRoles } from '../state/actions';
+import { actions } from '../state/clientSlice';
 import { GrantType, ApplicationGrantType } from '@jfront/oauth-core';
 import { SelectInput, TextInput, CheckBoxGroup, CheckBox, Form, } from '@jfront/ui-core';
 import { DualList } from '@jfront/ui-dual-list';
-import { AppState } from '../../app/store';
+import { AppState } from '../../app/store/reducer';
 import { useTranslation } from 'react-i18next';
 
 const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFormElement>>((props, ref) => {
@@ -19,8 +19,12 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
   const formik = useFormik<Client>({
     initialValues: { clientId: '', clientName: '', clientNameEn: '', applicationType: 'web', grantTypes: [] },
     onSubmit: (values: Client) => {
-      dispatch(createClient(values, t("saveMessage"), (client: Client) => {
-        history.push(`/ui/client/${client.clientId}/view/`);
+      dispatch(actions.create({
+        client: values, 
+        loadingMessage: t("saveMessage"), 
+        callback: (client: Client) => {
+          history.push(`/ui/client/${client.clientId}/view/`);
+        }
       }));
     },
     validate: (values) => {
@@ -57,7 +61,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
 
 
   useEffect(() => {
-    dispatch(getRoles(""));
+    dispatch(actions.getRoles({roleName: ""}));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -70,6 +74,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
           style={{ maxWidth: "200px" }}
           error={formik.errors.clientId}>
           <TextInput
+            maxLength={32}
             name="clientId"
             value={formik.values.clientId}
             onChange={formik.handleChange}
@@ -143,7 +148,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
               placeholder="Введите имя роли"
               name="scope"
               isLoading={rolesLoading}
-              onInputChange={e => dispatch(getRoles(e.target.value))}
+              onInputChange={e => dispatch(actions.getRoles({roleName: e.target.value}))}
               onSelectionChange={formik.setFieldValue}
               touched={formik.touched.scope}
               error={formik.errors.scope}

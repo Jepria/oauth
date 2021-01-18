@@ -12,7 +12,13 @@ export interface ErrorNotificationProps {
 }
 
 const mapStateToProps = (state: AppState, props: ErrorNotificationProps) => ({
-  error: state.client.error || state.session.error || state.key.error || state.clientUri.error,
+  error: state.client.crudSlice.error 
+  || state.session.searchSlice.error 
+  || state.session.crudSlice.error 
+  || state.session.searchSlice.error 
+  || state.key.error 
+  || state.clientUri.crudSlice.error
+  || state.clientUri.searchSlice.error,
   ...props
 })
 
@@ -129,7 +135,7 @@ class ErrorBoundary extends React.Component<ErrorNotificationProps, ErrorBoundar
                         errorId={(error as ServerError).errorId}
                         errorCode={(error as ServerError).errorCode}
                         errorMessage={(error as ServerError).errorMessage}
-                        onClose={() => this.setState({ error: undefined })}/>
+                        onClose={() => this.setState({ error: undefined })} />
                       {this.props.children}
                     </>
                 }

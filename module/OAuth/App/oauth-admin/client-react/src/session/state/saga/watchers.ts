@@ -1,25 +1,13 @@
 import { all, takeLatest, takeEvery  } from "redux-saga/effects";
-import { actions } from "../sessionSlice";
-import { remove, getById, postSearchRequest, search, setCurrentSession, getClients, getOperators, removeAll } from "./workers";
-
-
-function* entityWatcher() {
-  yield takeEvery(actions.remove.type, remove);
-  yield takeEvery(actions.removeAll.type, removeAll);
-  yield takeEvery(actions.getRecordById.type, getById);
-  yield takeEvery(actions.setCurrentRecord.type, setCurrentSession);
-}
-
-function* searchWatcher() {
-  yield takeLatest(actions.postSearchTemplate.type, postSearchRequest);
-  yield takeLatest(actions.search.type, search);
-  yield takeLatest(actions.getClients.type, getClients);
-  yield takeLatest(actions.getOperators.type, getOperators);
-}
+import { actions as crudActons } from "../sessionCrudSlice";
+import { actions as clientSlice } from "../sessionClientSlice";
+import { actions as operatorActions } from "../sessionOperatorSlice";
+import { getClients, getOperators, removeAll } from "./workers";
 
 export function* sessionSaga() {
   yield all([
-    entityWatcher(),
-    searchWatcher()
+    yield takeEvery(crudActons.removeAll.type, removeAll),
+    yield takeLatest(clientSlice.getOptionsStart.type, getClients),
+    yield takeLatest(operatorActions.getOptionsStart.type, getOperators)
   ]);
 }

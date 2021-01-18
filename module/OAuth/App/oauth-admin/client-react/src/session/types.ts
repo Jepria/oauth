@@ -1,3 +1,4 @@
+import { EntityState, SearchState } from "@jfront/core-redux-saga";
 import { Client } from "../client/types";
 
 export interface Operator {
@@ -49,19 +50,21 @@ export interface SessionSearchTemplate {
   maxRowCount: number
 }
 
-export interface SessionState {
+export interface ClientOptionState {
+  options: Client[];
   isLoading: boolean;
-  recordsLoading: boolean;
-  clientsLoading: boolean;
-  operatorsLoading: boolean;
-  current?: Session;
-  records: Array<Session>;
-  selectedRecords: Array<Session>;
-  clients?: Array<Client>;
-  operators?: Array<Operator>;
-  searchId?: string;
-  resultSetSize?: number;
-  searchRequest?: SearchRequest<SessionSearchTemplate>;
-  message?: string;
-  error?: Error;
+  error?: any;
+}
+
+export interface OperatorOptionState {
+  options: Operator[];
+  isLoading: boolean;
+  error?: any;
+}
+
+export interface SessionState {
+  searchSlice: SearchState<SessionSearchTemplate, Session>
+  crudSlice: EntityState<Session>
+  clientSlice: ClientOptionState
+  operatorSlice: OperatorOptionState
 }

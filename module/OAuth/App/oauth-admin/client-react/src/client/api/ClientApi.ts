@@ -1,7 +1,7 @@
-import { buildError, ConnectorCrud, handleAxiosError } from '../../app/common/rest/connector/ConnectorCrud';
-import { ClientSearchTemplate, Client, Option } from '../types';
+import { ConnectorBase, buildError, handleAxiosError } from '@jfront/core-rest';
+import { Client, Option } from '../types';
 
-export default class ClientApi extends ConnectorCrud<Client, Client, Client, ClientSearchTemplate> {
+export class ClientOptionsApi extends ConnectorBase {
 
   getClients = (clientName?: string): Promise<Array<Client>> => {
     return new Promise<Array<Client>>((resolve, reject) => {

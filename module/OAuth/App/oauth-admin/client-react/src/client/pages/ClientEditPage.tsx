@@ -1,22 +1,25 @@
 import React, { useEffect, HTMLAttributes } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Client, ClientState } from '../types';
+import { Client, RoleOptionState } from '../types';
 import { AppState } from '../../app/store/reducer';
-import { actions } from '../state/clientSlice';
+import { actions } from '../state/clientCrudSlice';
+import { actions as roleActions } from '../state/clientRoleSlice';
 import { useFormik } from 'formik';
 import { GrantType, ApplicationGrantType } from '@jfront/oauth-core';
 import { Form, TextInput, CheckBoxGroup, CheckBox, SelectInput, } from '@jfront/ui-core';
 import { DualList } from '@jfront/ui-dual-list';
 import { Text } from '../../app/common/components/form/Field';
 import { useTranslation } from 'react-i18next';
+import { EntityState } from '@jfront/core-redux-saga';
 
 const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const { clientId } = useParams<any>();
   const { t } = useTranslation();
-  const { current, roles, rolesLoading } = useSelector<AppState, ClientState>(state => state.client);
+  const { currentRecord } = useSelector<AppState, EntityState<Client>>(state => state.client.crudSlice);
+  const { options, isLoading } = useSelector<AppState, RoleOptionState>(state => state.client.roleSlice);
 
   const applicationTypeOptions = [
     { name: "Native", value: "native" },
@@ -26,27 +29,26 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
   ]
 
   useEffect(() => {
-    dispatch(actions.getRoles({ roleName: "" }));
+    dispatch(roleActions.getOptionsStart({ roleName: "" }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (!current && clientId) {
-      dispatch(actions.getRecordById({ clientId, loadingMessage: t("dataLoadingMessage") }));
+    if (!currentRecord && clientId) {
+      dispatch(actions.getRecordById({ primaryKey: clientId }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current, clientId, dispatch]);
+  }, [currentRecord, clientId, dispatch]);
 
   const formik = useFormik<Client>({
-    initialValues: { clientId: '', clientName: '', clientNameEn: '', ...current },
+    initialValues: { clientId: '', clientName: '', clientNameEn: '', ...currentRecord },
     enableReinitialize: true,
     onSubmit: (values: Client) => {
       if (clientId) {
         dispatch(actions.update({
-          clientId,
-          client: values,
-          loadingMessage: t("saveMessage"),
-          callback: (client: Client) => {
+          primaryKey: clientId,
+          values,
+          onSuccess: (client: Client) => {
             history.push(`/ui/client/${client.clientId}/view/`);
           }
         }));
@@ -71,7 +73,7 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
     <Form onSubmit={formik.handleSubmit} ref={ref}>
       <Form.Field>
         <Form.Label>{t('client.clientId')}:</Form.Label>
-        <Text>{current?.clientId}</Text>
+        <Text>{currentRecord?.clientId}</Text>
       </Form.Field>
       <Form.Field>
         <Form.Label required>{t('client.clientName')}:</Form.Label>
@@ -126,12 +128,12 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
           <Form.Label>{t('client.scopes')}:</Form.Label>
           <Form.Control style={{ minWidth: "300px", maxWidth: "500px" }}>
             <DualList
-              options={roles ? roles : []}
+              options={options}
               initialValues={formik.initialValues.scope}
               placeholder="Введите имя роли"
               name="scope"
-              isLoading={rolesLoading}
-              onInputChange={e => dispatch(actions.getRoles({roleName: e.target.value}))}
+              isLoading={isLoading}
+              onInputChange={e => dispatch(roleActions.getOptionsStart({roleName: e.target.value}))}
               onSelectionChange={formik.setFieldValue}
               touched={formik.touched.scope}
               error={formik.errors.scope} />

@@ -1,9 +1,9 @@
 import { combineReducers } from "@reduxjs/toolkit";
 import {  Reducer } from 'redux';
-import { reducer as clientReducer, initialState as clientInitialState } from '../../client/state/clientSlice';
-import { reducer as clientUriReducer, initialState as clientUriInitialState } from '../../client/client-uri/state/clientUriSlice';
+import { clientReducer, initialState as clientInitialState } from '../../client/state/clientReducer';
+import { clientUriReducer, initialState as clientUriInitialState } from '../../client/client-uri/state/clientUriReducer';
 import { reducer as keyReducer, initialState as keyInitialState } from '../../key/state/keySlice';
-import { reducer as sessionReducer, initialState as sessionInitialState } from '../../session/state/sessionSlice';
+import { sessionReducer, initialState as sessionInitialState } from '../../session/state/sessionReducer';
 import { ClientState } from '../../client/types';
 import { ClientUriState } from '../../client/client-uri/types';
 import { SessionState } from '../../session/types';

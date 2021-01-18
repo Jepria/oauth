@@ -4,12 +4,16 @@ import { Dialog } from '../../app/common/components/dialog/Dialog';
 import { ComboBox, ComboBoxItem, Form } from '@jfront/ui-core';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppState } from '../../app/store/reducer';
-import { actions } from '../state/sessionSlice';
-import { SessionState } from '../types';
+import { actions as searchActions } from '../state/sessionSearchSlice';
+import { actions as crudActions } from '../state/sessionCrudSlice';
+import { actions as operatorActions } from '../state/sessionOperatorSlice';
+import { actions as clientActions } from '../state/sessionClientSlice';
+import { OperatorOptionState, Session, SessionSearchTemplate } from '../types';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { useHistory, useLocation } from 'react-router-dom';
 import { HistoryState } from '../../app/common/components/HistoryState';
+import { EntityState, SearchState } from '@jfront/core-redux-saga';
 
 
 const Button = styled.button`
@@ -37,7 +41,9 @@ export interface DeleteAllDialogProps {
 export const DeleteAllDialog = ({ onCancel }: DeleteAllDialogProps) => {
 
   const dispatch = useDispatch();
-  const { searchId, current, operators, operatorsLoading } = useSelector<AppState, SessionState>(state => state.session);
+  const { currentRecord } = useSelector<AppState, EntityState<Session>>(state => state.session.crudSlice);
+  const { searchId } = useSelector<AppState, SearchState<SessionSearchTemplate, Session>>(state => state.session.searchSlice);
+  const operators = useSelector<AppState, OperatorOptionState>(state => state.session.operatorSlice);
   const { t } = useTranslation();
   const history = useHistory<HistoryState>();
   const { pathname } = useLocation();
@@ -47,23 +53,22 @@ export const DeleteAllDialog = ({ onCancel }: DeleteAllDialogProps) => {
     onSubmit: (values: DeleteAllForm) => {
       if (values.operatorId) {
         if (window.confirm(t('session.deleteAllMessage'))) {
-          dispatch(actions.removeAll({
+          dispatch(crudActions.removeAll({
             operatorId: values.operatorId,
             loadingMessage: t("deleteMessage"),
             callback: () => {
               onCancel();
               if (pathname.endsWith('/list') && searchId) {
-                dispatch(actions.search({
+                dispatch(searchActions.search({
                   searchId,
                   pageSize: 25,
-                  page: 1,
-                  loadingMessage: t('dataLoadingMessage')
+                  page: 1
                 }));
-              } else if (pathname.endsWith('/view') && values.operatorId === current?.operator?.value) {
+              } else if (pathname.endsWith('/view') && values.operatorId === currentRecord?.operator?.value) {
                 history.push('/ui/session/list');
               } else if (pathname.endsWith('/search')) {
-                dispatch(actions.getOperators({ operatorName: "" }));
-                dispatch(actions.getClients({ clientName: "" }));
+                dispatch(operatorActions.getOptionsStart({ operatorName: "" }));
+                dispatch(clientActions.getOptionsStart({ clientName: "" }));
               }
             }
           }));
@@ -80,7 +85,7 @@ export const DeleteAllDialog = ({ onCancel }: DeleteAllDialogProps) => {
   })
 
   useEffect(() => {
-    dispatch(actions.getOperators({ operatorName: "" }));
+    dispatch(operatorActions.getOptionsStart({ operatorName: "" }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -92,12 +97,12 @@ export const DeleteAllDialog = ({ onCancel }: DeleteAllDialogProps) => {
           <Form.Control>
             <ComboBox
               name="operatorId"
-              isLoading={operatorsLoading}
+              isLoading={operators.isLoading}
               value={formik.values.operatorId}
               error={formik.errors.operatorId}
-              onInputChange={(e: { target: { value: string | undefined; }; }) => dispatch(actions.getOperators({ operatorName: e.target.value }))}
+              onInputChange={(e: { target: { value: string | undefined; }; }) => dispatch(operatorActions.getOptionsStart({ operatorName: e.target.value }))}
               onSelectionChange={formik.setFieldValue} style={{ maxWidth: '250px' }}>
-              {operators?.map(operator => <ComboBoxItem key={operator.value} label={operator.name} value={operator.value} />)}
+              {operators.options.map(operator => <ComboBoxItem key={operator.value} label={operator.name} value={operator.value} />)}
             </ComboBox>
           </Form.Control>
         </Form.Field>

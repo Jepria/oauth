@@ -2,8 +2,9 @@ import React, { HTMLAttributes, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useFormik } from 'formik';
 import { useDispatch, useSelector } from 'react-redux';
-import { Client, ClientState } from '../types';
-import { actions } from '../state/clientSlice';
+import { Client, RoleOptionState } from '../types';
+import { actions } from '../state/clientCrudSlice';
+import { actions as roleActions } from '../state/clientRoleSlice';
 import { GrantType, ApplicationGrantType } from '@jfront/oauth-core';
 import { SelectInput, TextInput, CheckBoxGroup, CheckBox, Form, } from '@jfront/ui-core';
 import { DualList } from '@jfront/ui-dual-list';
@@ -14,15 +15,14 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
   const dispatch = useDispatch();
   const history = useHistory();
   const { t } = useTranslation();
-  const { roles, rolesLoading } = useSelector<AppState, ClientState>(state => state.client);
+  const { options, isLoading } = useSelector<AppState, RoleOptionState>(state => state.client.roleSlice);
 
   const formik = useFormik<Client>({
     initialValues: { clientId: '', clientName: '', clientNameEn: '', applicationType: 'web', grantTypes: [] },
     onSubmit: (values: Client) => {
       dispatch(actions.create({
-        client: values, 
-        loadingMessage: t("saveMessage"), 
-        callback: (client: Client) => {
+        values: values, 
+        onSuccess: (client: Client) => {
           history.push(`/ui/client/${client.clientId}/view/`);
         }
       }));
@@ -61,7 +61,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
 
 
   useEffect(() => {
-    dispatch(actions.getRoles({roleName: ""}));
+    dispatch(roleActions.getOptionsStart({roleName: ""}));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -144,11 +144,11 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
             style={{ minWidth: "300px", maxWidth: "500px" }}
             error={formik.errors.scope}>
             <DualList
-              options={roles ? roles : []}
+              options={options}
               placeholder="Введите имя роли"
               name="scope"
-              isLoading={rolesLoading}
-              onInputChange={e => dispatch(actions.getRoles({roleName: e.target.value}))}
+              isLoading={isLoading}
+              onInputChange={e => dispatch(roleActions.getOptionsStart({roleName: e.target.value}))}
               onSelectionChange={formik.setFieldValue}
               touched={formik.touched.scope}
               error={formik.errors.scope}

@@ -12,10 +12,11 @@ import ClientViewPage from './pages/ClientViewPage';
 import { AppState } from '../app/store/reducer';
 import { useSelector, useDispatch } from 'react-redux';
 import { LoadingPanel } from '../app/common/components/mask';
-import { ClientState } from './types';
+import { Client, ClientSearchTemplate } from './types';
 import ClientSearchPage from './pages/ClientSearchPage';
 import { ClientListPage } from './pages/ClientListPage';
-import { actions } from './state/clientSlice';
+import { actions as searchActions } from './state/clientSearchSlice';
+import { actions as crudActions } from './state/clientCrudSlice';
 import { HistoryState } from '../app/common/components/HistoryState';
 import {
   Panel,
@@ -32,6 +33,7 @@ import {
 import { UserPanel } from '@jfront/oauth-ui';
 import { UserContext } from '@jfront/oauth-user'
 import { useTranslation } from 'react-i18next';
+import { EntityState, SearchState } from '@jfront/core-redux-saga';
 
 const ClientRoute: React.FC = () => {
 
@@ -44,7 +46,8 @@ const ClientRoute: React.FC = () => {
   const [hasEditRole, setHasEditRole] = useState(false);
   const [hasDeleteRole, setHasDeleteRole] = useState(false);
   const { t } = useTranslation();
-  const { isLoading, message, current, selectedRecords, searchId, searchRequest } = useSelector<AppState, ClientState>(state => state.client)
+  const { isLoading, currentRecord, selectedRecords } = useSelector<AppState, EntityState<Client>>(state => state.client.crudSlice)
+  const { searchId, searchTemplate } = useSelector<AppState, SearchState<ClientSearchTemplate, Client>>(state => state.client.searchSlice)
   let formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -60,17 +63,17 @@ const ClientRoute: React.FC = () => {
   return (
     <>
       <Panel>
-        {(isLoading || isRoleLoading) && <LoadingPanel text={message || "Загрузка данных"} />}
+        {(isLoading || isRoleLoading) && <LoadingPanel text={t("dataLoadingMessage")} />}
         <Panel.Header>
           <TabPanel>
             <Tab selected>{t('client.moduleName')}</Tab>
-            {current && <Tab onClick={() => history.push(`/ui/client/${current?.clientId}/client-uri/list`, { prevRoute: pathname })}>URL</Tab>}
+            {currentRecord && <Tab onClick={() => history.push(`/ui/client/${currentRecord?.clientId}/client-uri/list`, { prevRoute: pathname })}>URL</Tab>}
             <UserPanel />
           </TabPanel>
           <Toolbar style={{ margin: 0 }}>
             <ToolbarButtonCreate onClick={() => {
-              dispatch(actions.setCurrentRecord({
-                currentRecord: undefined, callback: () => {
+              dispatch(crudActions.setCurrentRecord({
+                currentRecord: undefined as any, callback: () => {
                   history.push('/ui/client/create')
                 }
               }));
@@ -79,19 +82,18 @@ const ClientRoute: React.FC = () => {
               onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }}
               disabled={(!pathname.endsWith('/create') && !pathname.endsWith('/edit')) || (!hasCreateRole && !hasEditRole)} />
             <ToolbarButtonEdit
-              onClick={() => history.push(`/ui/client/${current?.clientId}/edit`)}
-              disabled={!current || pathname.endsWith('/edit') || pathname.endsWith('/edit/') || !hasEditRole} />
+              onClick={() => history.push(`/ui/client/${currentRecord?.clientId}/edit`)}
+              disabled={!currentRecord || pathname.endsWith('/edit') || pathname.endsWith('/edit/') || !hasEditRole} />
             <ToolbarButtonView
-              onClick={() => { history.push(`/ui/client/${current?.clientId}/view`) }}
-              disabled={!current || pathname.endsWith('/view') || pathname.endsWith('/view/')} />
+              onClick={() => { history.push(`/ui/client/${currentRecord?.clientId}/view`) }}
+              disabled={!currentRecord || pathname.endsWith('/view') || pathname.endsWith('/view/')} />
             <ToolbarButtonDelete onClick={() => {
               if (window.confirm(t('delete'))) {
-                dispatch(actions.remove({
-                  clientIds: selectedRecords.map(selectRecord => selectRecord.clientId),
-                  loadingMessage: t('deleteMessage'),
-                  callback: () => {
+                dispatch(crudActions.delete({
+                  primaryKeys: selectedRecords.map(selectRecord => selectRecord.clientId),
+                  onSuccess: () => {
                     if (pathname.endsWith('/list') && searchId) {
-                      dispatch(actions.search({ searchId, pageSize: 25, page: 1, loadingMessage: t('dataLoadingMessage') }));
+                      dispatch(searchActions.search({ searchId, pageSize: 25, page: 1}));
                     } else {
                       history.push('/ui/client/list');
                     }
@@ -101,9 +103,9 @@ const ClientRoute: React.FC = () => {
             }} disabled={selectedRecords.length === 0 || !hasDeleteRole} />
             <ToolbarSplitter />
             <ToolbarButtonBase onClick={() => {
-              dispatch(actions.setCurrentRecord({
-                currentRecord: undefined, callback: () => {
-                  if (searchRequest) {
+              dispatch(crudActions.setCurrentRecord({
+                callback: () => {
+                  if (searchTemplate) {
                     history.push('/ui/client/list');
                   } else {
                     history.push('/ui/client/search');
@@ -112,8 +114,8 @@ const ClientRoute: React.FC = () => {
               }))
             }} disabled={pathname.endsWith('/search') || pathname.endsWith('/list')}>{t('toolbar.list')}</ToolbarButtonBase>
             <ToolbarButtonFind onClick={() => {
-              dispatch(actions.setCurrentRecord({
-                currentRecord: undefined, callback: () => {
+              dispatch(crudActions.setCurrentRecord({
+                callback: () => {
                   history.push('/ui/client/search')
                 }
               }));

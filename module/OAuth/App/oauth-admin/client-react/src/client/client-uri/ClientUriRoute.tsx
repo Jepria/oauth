@@ -12,9 +12,10 @@ import { ClientUriViewPage } from './pages/ClientUriViewPage';
 import { AppState } from '../../app/store/reducer';
 import { useSelector, useDispatch } from 'react-redux';
 import { LoadingPanel } from '../../app/common/components/mask';
-import { ClientUriState } from './types';
+import { ClientUri, ClientUriState } from './types';
 import { ClientUriListPage } from './pages/ClientUriListPage';
-import { actions } from './state/clientUriSlice';
+import { actions as searchActions } from './state/clientUriSearchSlice';
+import { actions as crudActions } from './state/clientUriCrudSlice';
 import { HistoryState } from '../../app/common/components/HistoryState';
 import {
   Panel,
@@ -28,8 +29,9 @@ import {
 } from '@jfront/ui-core';
 import { UserPanel } from '@jfront/oauth-ui';
 import { useTranslation } from 'react-i18next';
-import { ClientState } from '../types';
-import { actions as clientActions } from '../state/clientSlice'
+import { Client } from '../types';
+import { actions as clientActions } from '../state/clientCrudSlice'
+import { EntityState } from '@jfront/core-redux-saga';
 
 const ClientUriRoute: React.FC = () => {
 
@@ -39,20 +41,20 @@ const ClientUriRoute: React.FC = () => {
   const history = useHistory();
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const { isLoading, message, current, selectedRecords } = useSelector<AppState, ClientUriState>(state => state.clientUri)
-  const client = useSelector<AppState, ClientState>(state => state.client)
+  const { currentRecord, isLoading, selectedRecords } = useSelector<AppState, EntityState<ClientUri>>(state => state.clientUri.crudSlice);
+  const client = useSelector<AppState, EntityState<Client>>(state => state.client.crudSlice)
   let formRef = useRef(null) as any;
 
   useEffect(() => {
-    if (!client.current) {
-      dispatch(clientActions.getRecordById({clientId, loadingMessage: t('dataLoadingMessage')}))
+    if (!client.currentRecord) {
+      dispatch(clientActions.getRecordById({ primaryKey: clientId }))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [client, clientId, dispatch])
 
   return (
     <Panel>
-      {isLoading && <LoadingPanel text={message} />}
+      {isLoading && <LoadingPanel text={t("dataLoadingMessage")} />}
       <Panel.Header>
         <TabPanel>
           <Tab onClick={() => history.push(state?.prevRoute ? state.prevRoute : `/ui/client/${clientId}/view`)}>{t('client.moduleName')}</Tab>
@@ -61,7 +63,7 @@ const ClientUriRoute: React.FC = () => {
         </TabPanel>
         <Toolbar style={{ margin: 0 }}>
           <ToolbarButtonCreate onClick={() => {
-            dispatch(actions.setCurrentRecord({
+            dispatch(crudActions.setCurrentRecord({
               currentRecord: undefined,
               callback: () => {
                 history.push(`/ui/client/${clientId}/client-uri/create`, state)
@@ -72,25 +74,25 @@ const ClientUriRoute: React.FC = () => {
             onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }}
             disabled={!pathname.endsWith('/create')} />
           <ToolbarButtonView
-            onClick={() => { history.push(`/ui/client/${clientId}/client-uri/${current?.clientUriId}/view`, state) }}
-            disabled={!current || pathname.endsWith('view')} />
+            onClick={() => { history.push(`/ui/client/${clientId}/client-uri/${currentRecord?.clientUriId}/view`, state) }}
+            disabled={!currentRecord || pathname.endsWith('view')} />
           <ToolbarButtonDelete onClick={() => {
             if (window.confirm(t('delete'))) {
-              dispatch(actions.remove({
-                clientId, clientUriIds: selectedRecords.map(selectedRecord => String(selectedRecord.clientUriId)),
-                loadingMessage: t('deleteMessage'), callback: () => {
+              dispatch(crudActions.delete({
+                primaryKeys: selectedRecords.map(selectedRecord => ({ clientId, clientUriId: selectedRecord.clientUriId })),
+                onSuccess: () => {
                   if (pathname.endsWith('/list')) {
-                    dispatch(actions.search({ clientId, loadingMessage: t('dataLoadingMessage') }));
+                    dispatch(searchActions.search({ clientId }));
                   } else {
                     history.push(`/ui/client/${clientId}/client-uri/list`, state);
                   }
                 }
               }));
             }
-          }} disabled={selectedRecords.length === 0} />
+          }} disabled={currentRecord === undefined} />
           <ToolbarSplitter />
           <ToolbarButtonBase onClick={() => {
-            dispatch(actions.setCurrentRecord({
+            dispatch(crudActions.setCurrentRecord({
               currentRecord: undefined,
               callback: () => {
                 history.push(`/ui/client/${clientId}/client-uri/list`, state)
@@ -101,11 +103,11 @@ const ClientUriRoute: React.FC = () => {
       </Panel.Header>
       <Panel.Content>
         <Panel>
-          {client.current && <Panel.Header
+          {client.currentRecord && <Panel.Header
             style={{ backgroundImage: "linear-gradient(rgb(255, 255, 255), rgb(208, 222, 240))" }}>
             <div
               style={{ margin: "5px", fontSize: "11px", fontWeight: "bold", color: "rgb(21, 66, 139)" }}>
-              {client.current?.clientName}
+              {client.currentRecord?.clientName}
             </div>
           </Panel.Header>}
           <Panel.Content>

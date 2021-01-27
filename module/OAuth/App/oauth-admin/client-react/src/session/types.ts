@@ -7,7 +7,7 @@ export interface Operator {
 }
 
 export interface Session {
-  sessionId?: number
+  sessionId: number
   authorizationCode?: string
   dateIns?: Date
   operator?: {

@@ -2,7 +2,7 @@ import React, { HTMLAttributes, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useFormik } from 'formik';
 import { useDispatch, useSelector } from 'react-redux';
-import { Client, RoleOptionState } from '../types';
+import { Client, Option } from '../types';
 import { actions } from '../state/clientCrudSlice';
 import { actions as roleActions } from '../state/clientRoleSlice';
 import { GrantType, ApplicationGrantType } from '@jfront/oauth-core';
@@ -10,12 +10,13 @@ import { SelectInput, TextInput, CheckBoxGroup, CheckBox, Form, } from '@jfront/
 import { DualList } from '@jfront/ui-dual-list';
 import { AppState } from '../../app/store/reducer';
 import { useTranslation } from 'react-i18next';
+import { OptionState } from '@jfront/core-redux-saga';
 
 const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const { t } = useTranslation();
-  const { options, isLoading } = useSelector<AppState, RoleOptionState>(state => state.client.roleSlice);
+  const { options, isLoading } = useSelector<AppState, OptionState<Option>>(state => state.client.roleSlice);
 
   const formik = useFormik<Client>({
     initialValues: { clientId: '', clientName: '', clientNameEn: '', applicationType: 'web', grantTypes: [] },
@@ -61,7 +62,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
 
 
   useEffect(() => {
-    dispatch(roleActions.getOptionsStart({roleName: ""}));
+    dispatch(roleActions.getOptionsStart({params: ""}));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -148,7 +149,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
               placeholder="Введите имя роли"
               name="scope"
               isLoading={isLoading}
-              onInputChange={e => dispatch(roleActions.getOptionsStart({roleName: e.target.value}))}
+              onInputChange={e => dispatch(roleActions.getOptionsStart({params: e.target.value}))}
               onSelectionChange={formik.setFieldValue}
               touched={formik.touched.scope}
               error={formik.errors.scope}

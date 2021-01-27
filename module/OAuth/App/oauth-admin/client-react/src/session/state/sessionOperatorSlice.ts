@@ -1,29 +1,21 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { OperatorOptionState } from "../types";
-import { GetOperatorsAction, GetOperatorsSuccessAction } from "./sessionActions";
+import { createOptionsSlice, OptionState } from "@jfront/core-redux-saga";
+import { API_PATH } from "../../config";
+import OperatorApi from "../api/OperatorApi";
+import { Operator } from "../types";
 
-export const initialOperatorState: OperatorOptionState = {
+const operatorApi = new OperatorApi(API_PATH + "/session/operators");
+
+export const initialOperatorState: OptionState<Operator> = {
   options: [],
   isLoading: false
 }
 
-const slice = createSlice({
+const slice = createOptionsSlice({
   name: "sessionSlice/operator",
   initialState: initialOperatorState,
-  reducers: {
-    getOptionsStart(state: OperatorOptionState, action: PayloadAction<GetOperatorsAction>) {
-      state.isLoading = true;
-    },
-    getOptionsSuccess(state: OperatorOptionState, action: PayloadAction<GetOperatorsSuccessAction>) {
-      state.options = action.payload.operators;
-      state.isLoading = false;
-    },
-    getOptionsFailure(state: OperatorOptionState, action: PayloadAction<any>) {
-      state.error = action.payload;
-      state.options = [];
-      state.isLoading = false;
-    }
-  },
-});
+  reducers: {}
+})
+
+export const sessionOperatorSaga = slice.createSagaMiddleware((operatorName: string) => operatorApi.getOperators(operatorName))
 
 export const { name, actions, reducer } = slice;

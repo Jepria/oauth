@@ -1,9 +1,9 @@
 import React from 'react'
 import { AppState } from '../../store/reducer';
 import { connect } from 'react-redux';
-import { ACCESS_DENIED, AUTHORIZATION_FAILED, BadRequest, BAD_REQUEST, NetworkError, NotFound, NOT_FOUND, ServerError } from '../rest/types';
-import { ErrorDialog } from './dialog/error-dialog/ErrorDialog';
+import { ErrorDialog } from '@jfront/ui-core'
 import { Translation } from 'react-i18next';
+import { NetworkError, BAD_REQUEST, BadRequest, AUTHORIZATION_FAILED, ACCESS_DENIED, NOT_FOUND, NotFound, ServerError } from '@jfront/core-rest';
 
 
 export interface ErrorNotificationProps {
@@ -13,9 +13,12 @@ export interface ErrorNotificationProps {
 
 const mapStateToProps = (state: AppState, props: ErrorNotificationProps) => ({
   error: state.client.crudSlice.error 
-  || state.session.searchSlice.error 
+  || state.client.searchSlice.error 
+  || state.client.roleSlice.error 
   || state.session.crudSlice.error 
   || state.session.searchSlice.error 
+  || state.session.clientSlice.error 
+  || state.session.operatorSlice.error 
   || state.key.error 
   || state.clientUri.crudSlice.error
   || state.clientUri.searchSlice.error,

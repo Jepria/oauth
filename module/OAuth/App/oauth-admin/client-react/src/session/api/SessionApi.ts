@@ -1,7 +1,7 @@
 import { ConnectorCrud as ConnectorCrudLib, buildError as buildErrorLib, handleAxiosError as handleAxiosErrorLib } from '@jfront/core-rest';
 import { Session } from '../types';
 
-export class SessionCrudApi extends ConnectorCrudLib<Session> {
+export class SessionCrudApi extends ConnectorCrudLib<Session, number> {
 
   /**
    * Удаление всех сессий для выбранного пользователя.

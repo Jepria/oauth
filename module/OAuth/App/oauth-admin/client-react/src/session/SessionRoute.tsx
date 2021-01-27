@@ -46,7 +46,7 @@ const SessionRoute: React.FC = () => {
   const { t } = useTranslation();
   const { currentRecord, selectedRecords, isLoading } = useSelector<AppState, EntityState<Session>>(state => state.session.crudSlice);
   const {
-    searchTemplate,
+    searchRequest,
     searchId
   } = useSelector<AppState, SearchState<SessionSearchTemplate, Session>>(state => state.session.searchSlice);
   let formRef = useRef(null) as any;
@@ -78,15 +78,15 @@ const SessionRoute: React.FC = () => {
               disabled={!currentRecord || pathname.endsWith('view')} />
             <ToolbarButtonDelete onClick={() => {
               if (window.confirm(t('delete'))) {
-                dispatch(crudActions.remove({
-                  sessionIds: selectedRecords.map(selectedRecord => String(selectedRecord.sessionId)),
-                  loadingMessage: t('deleteMessage'),
-                  callback: () => {
+                dispatch(crudActions.delete({
+                  primaryKeys: currentRecord ? [currentRecord.sessionId] 
+                  : selectedRecords.map(selectedRecord => selectedRecord.sessionId),
+                  onSuccess: () => {
                     if (pathname.endsWith('/list') && searchId) {
                       dispatch(searchActions.search({
                         searchId,
                         pageSize: 25,
-                        page: 1
+                        pageNumber: 1
                       }));
                     } else {
                       history.push('/ui/session/list');
@@ -103,7 +103,7 @@ const SessionRoute: React.FC = () => {
               dispatch(crudActions.setCurrentRecord({
                 currentRecord: undefined as any,
                 callback: () => {
-                  if (searchTemplate) {
+                  if (searchRequest) {
                     history.push('/ui/session/list');
                   } else {
                     history.push('/ui/session/search');
@@ -135,7 +135,7 @@ const SessionRoute: React.FC = () => {
             </Route>
           </Switch>
         </Panel.Content>
-        {showDeleteAll && <DeleteAllDialog onCancel={() => setDeleteAll(false)} />}
+        <DeleteAllDialog onCancel={() => setDeleteAll(false)} visible={showDeleteAll} />
       </Panel>}
     </>
   );

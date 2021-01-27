@@ -22,15 +22,15 @@ export const ClientListPage: React.FC = () => {
   const { t } = useTranslation();
   const { ...template } = useQuery();
   const { currentRecord } = useSelector<AppState, EntityState<Client>>(state => state.client.crudSlice);
-  const { records, searchId, searchTemplate, resultSetSize, isLoading } = useSelector<AppState, SearchState<ClientSearchTemplate, Client>>(state => state.client.searchSlice);
-  const [ page, setPage ] = useState({
+  const { records, searchId, searchRequest, resultSetSize, isLoading } = useSelector<AppState, SearchState<ClientSearchTemplate, Client>>(state => state.client.searchSlice);
+  const [page, setPage] = useState({
     pageSize: 25,
     pageNumber: 1
   });
 
   useEffect(() => {
     if (searchId) {
-      dispatch(searchActions.search({searchId, pageSize: page.pageSize, page: page.pageNumber}))
+      dispatch(searchActions.search({ searchId, pageSize: page.pageSize, pageNumber: page.pageNumber }))
     }
   }, [searchId, page, dispatch])
 
@@ -85,19 +85,17 @@ export const ClientListPage: React.FC = () => {
         }
       }}
       onPaging={(pageNumber, pageSize) => {
-        if (pageNumber !== page.pageNumber || pageSize !== page.pageSize) {
-          setPage({
-            pageNumber,
-            pageSize
-          })
-        }
+        setPage({
+          pageNumber,
+          pageSize
+        })
       }}
       onSort={(sortConfig) => {
         const newSearchRequest = {
           template: {
             maxRowCount: 25,
             ...template,
-            ...searchTemplate?.template
+            ...searchRequest?.template
           },
           listSortConfiguration: sortConfig
         }

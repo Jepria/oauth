@@ -1,20 +1,18 @@
+import { buildError, ConnectorBase, handleAxiosError } from '@jfront/core-rest';
 import axios from 'axios';
-import { buildError, handleAxiosError } from '../../app/common/rest/connector/ConnectorCrud';
 import { Operator } from '../types';
 
-export default class OperatorApi {
+export default class OperatorApi extends ConnectorBase {
 
-  private url: string;
 
   constructor(url: string) {
-    this.url = `${url}/session/operators`;
-    axios.defaults.withCredentials = true;
+    super(url, true, axios);
   }
 
   getOperators = (clientName?: string): Promise<Array<Operator>> => {
     return new Promise<Array<Operator>>((resolve, reject) => {
       axios.get(
-        this.url + `?operatorName=${clientName}&maxRowCount=25`,
+        this.baseUrl + `?operatorName=${clientName}&maxRowCount=25`,
         {
           headers: {
             'Accept': 'application/json;charset=utf-8',

@@ -3,7 +3,9 @@ import { useHistory } from 'react-router-dom';
 import { useFormik } from 'formik';
 import { useSelector, useDispatch } from 'react-redux';
 import { ClientOptionState, OperatorOptionState, Session, SessionSearchTemplate } from '../types';
-import { actions } from '../state/sessionSearchSlice';
+import { actions as searchActions } from '../state/sessionSearchSlice';
+import { actions as operatorActions } from '../state/sessionOperatorSlice';
+import { actions as clientActions } from '../state/sessionClientSlice';
 import { AppState } from '../../app/store/reducer';
 import { Form, ComboBox, NumberInput, ComboBoxItem } from '@jfront/ui-core';
 import { useTranslation } from 'react-i18next';
@@ -16,20 +18,20 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
   const { t } = useTranslation();
   const clients = useSelector<AppState, ClientOptionState>(state => state.session.clientSlice);
   const operators = useSelector<AppState, OperatorOptionState>(state => state.session.operatorSlice);
-  const { searchTemplate } = useSelector<AppState, SearchState<SessionSearchTemplate, Session>>(state => state.session.searchSlice);
+  const { searchRequest } = useSelector<AppState, SearchState<SessionSearchTemplate, Session>>(state => state.session.searchSlice);
 
   useEffect(() => {
     if (!clients) {
-      dispatch(actions.getClients({ clientName: "" }));
+      dispatch(clientActions.getOptionsStart({ params: "" }));
     }
     if (!operators) {
-      dispatch(actions.getOperators({ operatorName: "" }));
+      dispatch(operatorActions.getOptionsStart({ params: "" }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const formik = useFormik<SessionSearchTemplate>({
-    initialValues: { maxRowCount: 25, ...searchTemplate?.template, operatorId: undefined, clientId: undefined },
+    initialValues: { maxRowCount: 25, ...searchRequest?.template, operatorId: undefined, clientId: undefined },
     validate: (values) => {
       const errors: { operatorId?: string, maxRowCount?: string } = {};
       if (!values['maxRowCount']) {
@@ -43,13 +45,16 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
       return errors;
     },
     onSubmit: (values: SessionSearchTemplate) => {
-      dispatch(actions.setSearchTemplate({
+      dispatch(searchActions.setSearchTemplate({
         searchTemplate: {
           template: values
         },
         callback: () => {
           const query = queryString.stringify(values)
-          history.push(`/ui/session/list?pageSize=25&page=1${query ? "&" + query : ""}`)
+          history.push({
+            pathname: `/ui/session/list`,
+            search: `?${query ? "&" + query : ""}`
+          })
         }
       }));
     }
@@ -66,7 +71,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
             placeholder={t('session.operator.placeholder')}
             value={formik.values.operatorId}
             error={formik.errors.operatorId}
-            onInputChange={(e: { target: { value: string | undefined; }; }) => dispatch(actions.getOperators({ operatorName: e.target.value }))}
+            onInputChange={(e) => dispatch(operatorActions.getOptionsStart({ params: e.target.value }))}
             onSelectionChange={formik.setFieldValue} style={{ maxWidth: '250px' }}>
             {operators.options?.map(operator => <ComboBoxItem key={operator.value} label={operator.name} value={operator.value} />)}
           </ComboBox>
@@ -82,7 +87,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
             isLoading={clients.isLoading}
             value={formik.values.clientId}
             error={formik.errors.clientId}
-            onInputChange={(e: { target: { value: string | undefined; }; }) => dispatch(actions.getClients({ clientName: e.target.value }))}
+            onInputChange={(e) => dispatch(clientActions.getOptionsStart({ params: e.target.value }))}
             getOptionName={(option: { clientName: any; }) => {
               return option.clientName;
             }}

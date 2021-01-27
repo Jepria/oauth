@@ -1,29 +1,23 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { RoleOptionState } from "../types";
-import { GetRolesAction, GetRolesSuccessAction } from "./clientActions";
+import { createOptionsSlice, OptionState } from '@jfront/core-redux-saga'
+import { ClientOptionsApi } from '../api/ClientApi';
+import { Option } from '../types';
+import axios from 'axios';
+import { API_PATH } from '../../config';
 
-export const initialRoleState: RoleOptionState = {
+const api = new ClientOptionsApi(API_PATH + '/client', true, axios);
+
+export const initialRoleState: OptionState<Option> = {
   options: [],
   isLoading: false
 }
 
-const slice = createSlice({
+const slice = createOptionsSlice({
   name: "clientSlice/role",
   initialState: initialRoleState,
-  reducers: {
-    getOptionsStart(state: RoleOptionState, action: PayloadAction<GetRolesAction>) {
-      state.isLoading = true;
-    },
-    getOptionsSuccess(state: RoleOptionState, action: PayloadAction<GetRolesSuccessAction>) {
-      state.options = action.payload.roles;
-      state.isLoading = false;
-    },
-    getOptionsFailure(state: RoleOptionState, action: PayloadAction<any>) {
-      state.error = action.payload;
-      state.options = [];
-      state.isLoading = false;
-    }
-  },
-});
+  reducers: {}
+})
 
-export const { name, actions, reducer } = slice;
+export const clientRoleSaga = slice.createSagaMiddleware((roleName: string) => api.getRoles(roleName))
+
+export const {name, actions, reducer} = slice;
+

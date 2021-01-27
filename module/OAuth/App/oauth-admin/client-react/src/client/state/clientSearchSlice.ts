@@ -7,6 +7,8 @@ import axios from 'axios';
 export const initialSearchState: SearchState<ClientSearchTemplate, Client> = {
   isLoading: false,
   records: [],
+  pageNumber: 1,
+  pageSize: 25
 }
 
 const api = new ConnectorSearch<Client, ClientSearchTemplate>(API_PATH + '/client', true, axios);

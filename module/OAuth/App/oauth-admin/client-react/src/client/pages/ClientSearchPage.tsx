@@ -14,10 +14,10 @@ const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
   const dispatch = useDispatch();
   const history = useHistory();
   const { t } = useTranslation();
-  const { searchTemplate } = useSelector<AppState, SearchState<ClientSearchTemplate, Client>>(state => state.client.searchSlice);
+  const { searchRequest } = useSelector<AppState, SearchState<ClientSearchTemplate, Client>>(state => state.client.searchSlice);
 
   const formik = useFormik<ClientSearchTemplate>({
-    initialValues: searchTemplate ? searchTemplate.template : { maxRowCount: 25 },
+    initialValues: searchRequest ? searchRequest.template : { maxRowCount: 25 },
     validate: (values) => {
       const errors: { maxRowCount?: string } = {};
       if (!values['maxRowCount']) {
@@ -34,11 +34,12 @@ const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
         },
         callback: () => {
           const query = queryString.stringify(values)
-          history.push(`/ui/client/list?pageSize=25&page=1${query ? "&" + query : ""}`)
+          history.push({
+            pathname: "/ui/client/list",
+            search: `?${query ? "&" + query : ""}`
+          })
         }
       }));
-      // const query = queryString.stringify(values)
-      // history.push(`/ui/client/list?pageSize=25&page=1${query ? "&" + query : ""}`)
     }
   })
 

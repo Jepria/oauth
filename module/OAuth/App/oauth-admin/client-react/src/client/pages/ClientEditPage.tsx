@@ -1,7 +1,7 @@
 import React, { useEffect, HTMLAttributes } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Client, RoleOptionState } from '../types';
+import { Client, Option } from '../types';
 import { AppState } from '../../app/store/reducer';
 import { actions } from '../state/clientCrudSlice';
 import { actions as roleActions } from '../state/clientRoleSlice';
@@ -11,7 +11,7 @@ import { Form, TextInput, CheckBoxGroup, CheckBox, SelectInput, } from '@jfront/
 import { DualList } from '@jfront/ui-dual-list';
 import { Text } from '../../app/common/components/form/Field';
 import { useTranslation } from 'react-i18next';
-import { EntityState } from '@jfront/core-redux-saga';
+import { EntityState, OptionState } from '@jfront/core-redux-saga';
 
 const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();
@@ -19,7 +19,7 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
   const { clientId } = useParams<any>();
   const { t } = useTranslation();
   const { currentRecord } = useSelector<AppState, EntityState<Client>>(state => state.client.crudSlice);
-  const { options, isLoading } = useSelector<AppState, RoleOptionState>(state => state.client.roleSlice);
+  const { options, isLoading } = useSelector<AppState, OptionState<Option>>(state => state.client.roleSlice);
 
   const applicationTypeOptions = [
     { name: "Native", value: "native" },
@@ -29,7 +29,7 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
   ]
 
   useEffect(() => {
-    dispatch(roleActions.getOptionsStart({ roleName: "" }));
+    dispatch(roleActions.getOptionsStart({ params: ""}));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -133,7 +133,7 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
               placeholder="Введите имя роли"
               name="scope"
               isLoading={isLoading}
-              onInputChange={e => dispatch(roleActions.getOptionsStart({roleName: e.target.value}))}
+              onInputChange={e => dispatch(roleActions.getOptionsStart({ params: e.target.value }))}
               onSelectionChange={formik.setFieldValue}
               touched={formik.touched.scope}
               error={formik.errors.scope} />

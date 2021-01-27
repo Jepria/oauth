@@ -14,15 +14,7 @@ export const initialEntityState: EntityState<Session> = {
 
 const api = new SessionCrudApi(API_PATH + '/session', true, axios);
 
-export const crudSelectors = {
-  selectCurrentRecord: (state: AppState) => state.session.crudSlice.currentRecord,
-  selectSelectedRecord: (state: AppState) => state.session.crudSlice.selectedRecords,
-  selectError: (state: AppState) => state.session.crudSlice.error,
-  selectIsLoading: (state: AppState) => state.session.crudSlice.isLoading
-}
-
-
-const slice = createCrudSlice<string, Session>({
+const slice = createCrudSlice<number, Session>({
   name: "sessionSlice",
   initialState: initialEntityState,
   reducers: {

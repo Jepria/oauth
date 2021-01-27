@@ -1,6 +1,5 @@
+import { buildError, ConnectorBase, handleAxiosError } from '@jfront/core-rest';
 import axios from 'axios';
-import { ConnectorBase } from '../../../app/common/rest/connector/ConnectorBase';
-import { buildError, handleAxiosError } from '../../../app/common/rest/connector/ConnectorCrud';
 import { ClientUri, ClientUriCreateDto } from '../types';
 
 export default class ClientUriApi extends ConnectorBase {

@@ -1,5 +1,4 @@
-import { EntityState, SearchState } from "@jfront/core-redux-saga";
-import { SearchRequest } from "@jfront/core-rest";
+import { EntityState, OptionState, SearchState } from "@jfront/core-redux-saga";
 
 export interface Client {
   clientId: string;
@@ -23,14 +22,8 @@ export interface Option {
   value: string;
 }
 
-export interface RoleOptionState {
-  options: Option[];
-  isLoading: boolean;
-  error?: any;
-}
-
 export interface ClientState {
   searchSlice: SearchState<ClientSearchTemplate, Client>
   crudSlice: EntityState<Client>
-  roleSlice: RoleOptionState
+  roleSlice: OptionState<Option>
 }

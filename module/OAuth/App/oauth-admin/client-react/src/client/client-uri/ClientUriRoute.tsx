@@ -12,7 +12,7 @@ import { ClientUriViewPage } from './pages/ClientUriViewPage';
 import { AppState } from '../../app/store/reducer';
 import { useSelector, useDispatch } from 'react-redux';
 import { LoadingPanel } from '../../app/common/components/mask';
-import { ClientUri, ClientUriState } from './types';
+import { ClientUri } from './types';
 import { ClientUriListPage } from './pages/ClientUriListPage';
 import { actions as searchActions } from './state/clientUriSearchSlice';
 import { actions as crudActions } from './state/clientUriCrudSlice';
@@ -79,7 +79,8 @@ const ClientUriRoute: React.FC = () => {
           <ToolbarButtonDelete onClick={() => {
             if (window.confirm(t('delete'))) {
               dispatch(crudActions.delete({
-                primaryKeys: selectedRecords.map(selectedRecord => ({ clientId, clientUriId: selectedRecord.clientUriId })),
+                primaryKeys: currentRecord ? [{ clientId: client.currentRecord?.clientId, clientUriId: currentRecord.clientUriId }] 
+                : selectedRecords.map(selectedRecord => ({ clientId, clientUriId: selectedRecord.clientUriId })),
                 onSuccess: () => {
                   if (pathname.endsWith('/list')) {
                     dispatch(searchActions.search({ clientId }));

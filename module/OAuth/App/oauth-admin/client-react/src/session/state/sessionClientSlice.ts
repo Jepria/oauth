@@ -1,29 +1,23 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ClientOptionState } from "../types";
-import { GetClientsAction, GetClientsSuccessAction } from "./sessionActions";
+import { createOptionsSlice, OptionState } from '@jfront/core-redux-saga'
+import axios from 'axios';
+import { API_PATH } from '../../config';
+import { ClientOptionsApi } from "../../client/api/ClientApi";
+import { Client } from "../../client/types";
 
-export const initialClientState: ClientOptionState = {
+const api = new ClientOptionsApi(API_PATH + '/client', true, axios);
+
+export const initialClientState: OptionState<Client> = {
   options: [],
   isLoading: false
 }
 
-const slice = createSlice({
+const slice = createOptionsSlice({
   name: "sessionSlice/client",
   initialState: initialClientState,
-  reducers: {
-    getOptionsStart(state: ClientOptionState, actions: PayloadAction<GetClientsAction>) {
-      state.isLoading = true;
-    },
-    getOptionsSuccess(state: ClientOptionState, action: PayloadAction<GetClientsSuccessAction>) {
-      state.options = action.payload.clients;
-      state.isLoading = false;
-    },
-    getOptionsFailure(state: ClientOptionState, action: PayloadAction<any>) {
-      state.error = action.payload;
-      state.options = [];
-      state.isLoading = false;
-    }
-  },
-});
+  reducers: {}
+})
 
-export const { name, actions, reducer } = slice;
+export const sessionClientSaga = slice.createSagaMiddleware((clientName: string) => api.getClients(clientName))
+
+export const {name, actions, reducer} = slice;

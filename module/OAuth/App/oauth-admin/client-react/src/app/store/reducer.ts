@@ -1,5 +1,5 @@
 import { combineReducers } from "@reduxjs/toolkit";
-import {  Reducer } from 'redux';
+import { Reducer } from 'redux';
 import { clientReducer, initialState as clientInitialState } from '../../client/state/clientReducer';
 import { clientUriReducer, initialState as clientUriInitialState } from '../../client/client-uri/state/clientUriReducer';
 import { reducer as keyReducer, initialState as keyInitialState } from '../../key/state/keySlice';

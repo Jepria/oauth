@@ -25,19 +25,19 @@ const SessionListPage: React.FC = () => {
   const { currentRecord } = useSelector<AppState, EntityState<Session>>(state => state.session.crudSlice);
   const {
     records,
-    searchTemplate,
+    searchRequest,
     searchId,
     resultSetSize,
     isLoading
   } = useSelector<AppState, SearchState<SessionSearchTemplate, Session>>(state => state.session.searchSlice);
-  const [ page, setPage ] = useState({
+  const [page, setPage] = useState({
     pageSize: 25,
     pageNumber: 1
   });
 
   useEffect(() => {
     if (searchId) {
-      dispatch(searchActions.search({searchId, pageSize: page.pageSize, page: page.pageNumber}))
+      dispatch(searchActions.search({ searchId, pageSize: page.pageSize, pageNumber: page.pageNumber }))
     }
   }, [searchId, page, dispatch])
 
@@ -107,19 +107,17 @@ const SessionListPage: React.FC = () => {
         }
       }}
       onPaging={(pageNumber, pageSize) => {
-        if (pageNumber !== page.pageNumber || pageSize !== page.pageSize) {
-          setPage({
-            pageNumber,
-            pageSize
-          })
-        }
+        setPage({
+          pageNumber,
+          pageSize
+        })
       }}
       onSort={(sortConfig) => {
         const newSearchRequest = {
           template: {
             maxRowCount: 25,
             ...template,
-            ...searchTemplate?.template
+            ...searchRequest?.template
           },
           listSortConfiguration: sortConfig
         }

@@ -47,7 +47,7 @@ const ClientRoute: React.FC = () => {
   const [hasDeleteRole, setHasDeleteRole] = useState(false);
   const { t } = useTranslation();
   const { isLoading, currentRecord, selectedRecords } = useSelector<AppState, EntityState<Client>>(state => state.client.crudSlice)
-  const { searchId, searchTemplate } = useSelector<AppState, SearchState<ClientSearchTemplate, Client>>(state => state.client.searchSlice)
+  const { searchId, searchRequest } = useSelector<AppState, SearchState<ClientSearchTemplate, Client>>(state => state.client.searchSlice)
   let formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -90,10 +90,11 @@ const ClientRoute: React.FC = () => {
             <ToolbarButtonDelete onClick={() => {
               if (window.confirm(t('delete'))) {
                 dispatch(crudActions.delete({
-                  primaryKeys: selectedRecords.map(selectRecord => selectRecord.clientId),
+                  primaryKeys: currentRecord ? [currentRecord.clientId] 
+                  : selectedRecords.map(selectedRecord => selectedRecord.clientId),
                   onSuccess: () => {
                     if (pathname.endsWith('/list') && searchId) {
-                      dispatch(searchActions.search({ searchId, pageSize: 25, page: 1}));
+                      dispatch(searchActions.search({ searchId, pageSize: 25, pageNumber: 1}));
                     } else {
                       history.push('/ui/client/list');
                     }
@@ -105,7 +106,7 @@ const ClientRoute: React.FC = () => {
             <ToolbarButtonBase onClick={() => {
               dispatch(crudActions.setCurrentRecord({
                 callback: () => {
-                  if (searchTemplate) {
+                  if (searchRequest) {
                     history.push('/ui/client/list');
                   } else {
                     history.push('/ui/client/search');

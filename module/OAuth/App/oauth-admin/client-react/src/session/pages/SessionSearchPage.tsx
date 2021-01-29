@@ -2,7 +2,7 @@ import React, { HTMLAttributes, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useFormik } from 'formik';
 import { useSelector, useDispatch } from 'react-redux';
-import { ClientOptionState, OperatorOptionState, Session, SessionSearchTemplate } from '../types';
+import { Operator, Session, SessionSearchTemplate } from '../types';
 import { actions as searchActions } from '../state/sessionSearchSlice';
 import { actions as operatorActions } from '../state/sessionOperatorSlice';
 import { actions as clientActions } from '../state/sessionClientSlice';
@@ -10,28 +10,29 @@ import { AppState } from '../../app/store/reducer';
 import { Form, ComboBox, NumberInput, ComboBoxItem } from '@jfront/ui-core';
 import { useTranslation } from 'react-i18next';
 import queryString from 'query-string';
-import { SearchState } from '@jfront/core-redux-saga';
+import { OptionState, SearchState } from '@jfront/core-redux-saga';
+import { Client } from '../../client/types';
 
 const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const { t } = useTranslation();
-  const clients = useSelector<AppState, ClientOptionState>(state => state.session.clientSlice);
-  const operators = useSelector<AppState, OperatorOptionState>(state => state.session.operatorSlice);
+  const clients = useSelector<AppState, OptionState<Client>>(state => state.session.clientSlice);
+  const operators = useSelector<AppState, OptionState<Operator>>(state => state.session.operatorSlice);
   const { searchRequest } = useSelector<AppState, SearchState<SessionSearchTemplate, Session>>(state => state.session.searchSlice);
 
   useEffect(() => {
-    if (!clients) {
+    if (clients.options.length === 0) {
       dispatch(clientActions.getOptionsStart({ params: "" }));
     }
-    if (!operators) {
+    if (operators.options.length === 0) {
       dispatch(operatorActions.getOptionsStart({ params: "" }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const formik = useFormik<SessionSearchTemplate>({
-    initialValues: { maxRowCount: 25, ...searchRequest?.template, operatorId: undefined, clientId: undefined },
+    initialValues: { maxRowCount: 25, ...searchRequest?.template },
     validate: (values) => {
       const errors: { operatorId?: string, maxRowCount?: string } = {};
       if (!values['maxRowCount']) {
@@ -53,7 +54,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
           const query = queryString.stringify(values)
           history.push({
             pathname: `/ui/session/list`,
-            search: `?${query ? "&" + query : ""}`
+            search: `?${query ? query : ""}`
           })
         }
       }));

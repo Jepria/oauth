@@ -7,13 +7,13 @@ import {
 import KeyViewPage from './pages/KeyViewPage';
 import { AppState } from '../app/store/reducer';
 import { useSelector, useDispatch } from 'react-redux';
-import { LoadingPanel } from '../app/common/components/mask';
 import { KeyState } from './types';
 import { actions } from './state/keySlice';
 import {
   Panel,
   TabPanel, Tab, Toolbar,
-  ToolbarButtonBase
+  ToolbarButtonBase,
+  Loader
 } from '@jfront/ui-core';
 import { UserPanel } from '@jfront/oauth-ui';
 import { UserContext } from '@jfront/oauth-user'
@@ -36,7 +36,7 @@ const KeyRoute: React.FC = () => {
 
   return (
     <Panel>
-      {(isLoading || isRoleLoading) && <LoadingPanel text={message || "Загрузка данных"} />}
+      {(isLoading || isRoleLoading) && <Loader text={message || "Загрузка данных"} />}
       <Panel.Header>
         <TabPanel>
           <Tab selected>{t('key.moduleName')}</Tab>

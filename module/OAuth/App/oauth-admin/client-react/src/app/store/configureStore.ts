@@ -3,7 +3,7 @@ import logger from 'redux-logger';
 import { configureStore as configureStoreRedux } from "@reduxjs/toolkit";
 import { all } from 'redux-saga/effects';
 import { clientUriSaga } from '../../client/client-uri/state/saga/watchers';
-import { sessionSaga } from '../../session/state/saga';
+import { sessionSaga } from '../../session/state/sessionSaga';
 import { keySaga } from '../../key/state/saga/watchers';
 import { initialState, reducer } from './reducer';
 import { clientCrudSaga } from '../../client/state/clientCrudSlice';

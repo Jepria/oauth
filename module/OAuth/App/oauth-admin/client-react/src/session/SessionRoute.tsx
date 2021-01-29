@@ -9,7 +9,6 @@ import {
 import SessionViewPage from './pages/SessionViewPage';
 import { AppState } from '../app/store/reducer';
 import { useSelector, useDispatch } from 'react-redux';
-import { LoadingPanel } from '../app/common/components/mask';
 import { Session, SessionSearchTemplate } from './types';
 import SessionSearchPage from './pages/SessionSearchPage';
 import SessionListPage from './pages/SessionListPage';
@@ -23,12 +22,11 @@ import {
   ToolbarButtonFind,
   ToolbarButtonView,
   ToolbarSplitter,
-  ToolbarButtonBase
+  ToolbarButtonBase,
+  Loader
 } from '@jfront/ui-core';
-import { UserPanel } from '@jfront/oauth-ui';
+import { UserPanel, Loader as OAuthLoader, Forbidden } from '@jfront/oauth-ui';
 import { UserContext } from '@jfront/oauth-user'
-import { Forbidden } from '@jfront/oauth-ui'
-import { Loader } from '@jfront/oauth-ui';
 import { useTranslation } from 'react-i18next';
 import { DeleteAllDialog } from './delete-all-dialog/DeleteAllDialog';
 import { EntityState, SearchState } from '@jfront/core-redux-saga';
@@ -63,10 +61,10 @@ const SessionRoute: React.FC = () => {
 
   return (
     <>
-      {isRoleLoading && <Loader title="OAuth" text="Проверка ролей" />}
+      {isRoleLoading && <OAuthLoader title="OAuth" text="Проверка ролей" />}
       {hasViewRole === false && <Forbidden />}
       {hasViewRole === true && <Panel>
-        {isLoading && <LoadingPanel text={t("dataLoadingMessage")} />}
+        {isLoading && <Loader text={t("dataLoadingMessage")} />}
         <Panel.Header>
           <TabPanel>
             <Tab selected>{t('session.moduleName')}</Tab>
@@ -76,28 +74,31 @@ const SessionRoute: React.FC = () => {
             <ToolbarButtonView
               onClick={() => { history.push(`/ui/session/${currentRecord?.sessionId}/view`) }}
               disabled={!currentRecord || pathname.endsWith('view')} />
-            <ToolbarButtonDelete onClick={() => {
-              if (window.confirm(t('delete'))) {
-                dispatch(crudActions.delete({
-                  primaryKeys: currentRecord ? [currentRecord.sessionId] 
-                  : selectedRecords.map(selectedRecord => selectedRecord.sessionId),
-                  onSuccess: () => {
-                    if (pathname.endsWith('/list') && searchId) {
-                      dispatch(searchActions.search({
-                        searchId,
-                        pageSize: 25,
-                        pageNumber: 1
-                      }));
-                    } else {
-                      history.push('/ui/session/list');
-                    }
+            {hasDeleteRole && (
+              <>
+                <ToolbarButtonDelete onClick={() => {
+                  if (window.confirm(t('delete'))) {
+                    dispatch(crudActions.delete({
+                      primaryKeys: currentRecord ? [currentRecord.sessionId]
+                        : selectedRecords.map(selectedRecord => selectedRecord.sessionId),
+                      onSuccess: () => {
+                        if (pathname.endsWith('/list') && searchId) {
+                          dispatch(searchActions.search({
+                            searchId,
+                            pageSize: 25,
+                            pageNumber: 1
+                          }));
+                        } else {
+                          history.push('/ui/session/list');
+                        }
+                      }
+                    }))
                   }
-                }))
-              }
-            }} disabled={selectedRecords.length === 0 || !hasDeleteRole} />
-            <ToolbarButtonBase onClick={() => setDeleteAll(true)} disabled={!hasDeleteRole}>
-              <img src={process.env.PUBLIC_URL + '/images/deleteAll.png'} alt="" />
-            </ToolbarButtonBase>
+                }} disabled={selectedRecords.length === 0 || !hasDeleteRole} />
+                <ToolbarButtonBase onClick={() => setDeleteAll(true)} disabled={!hasDeleteRole}>
+                  <img src={process.env.PUBLIC_URL + '/images/deleteAll.png'} alt="" />
+                </ToolbarButtonBase>
+              </>)}
             <ToolbarSplitter />
             <ToolbarButtonBase onClick={() => {
               dispatch(crudActions.setCurrentRecord({

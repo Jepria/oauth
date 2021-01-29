@@ -17,7 +17,7 @@ export const ClientUriListPage: React.FC = () => {
   const history = useHistory();
   const { clientId } = useParams<any>();
   const { t } = useTranslation();
-  const { records } = useSelector<AppState, ClientUriSearchState>(state => state.clientUri.searchSlice);
+  const { records, isLoading } = useSelector<AppState, ClientUriSearchState>(state => state.clientUri.searchSlice);
   const { currentRecord } = useSelector<AppState, EntityState<ClientUri>>(state => state.clientUri.crudSlice);
   const { state } = useLocation<HistoryState>();
 
@@ -30,6 +30,7 @@ export const ClientUriListPage: React.FC = () => {
 
   return (
     <Grid<ClientUri>
+      isLoading={isLoading}
       columns={[
         {
           Header: t('clientUri.clientUriId'),
@@ -42,6 +43,9 @@ export const ClientUriListPage: React.FC = () => {
           Cell: ({ value }: any) => <TextCell>{value}</TextCell>
         },
       ]}
+      onRefresh={() => {
+        dispatch(searchActions.search({ clientId }))
+      }}
       data={React.useMemo(() => records, [records])}
       onSelection={(records) => {
         if (records) {

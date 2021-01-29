@@ -6,7 +6,7 @@
   },
   "servers": [
     {
-      "url": "/oauth/api"
+      "url": "/oauth-admin/api"
     }
   ],
   "tags": [
@@ -25,6 +25,11 @@
     {
       "name": "dict",
       "description": "Dictionaries"
+    }
+  ],
+  "security": [
+    {
+      "OAuth": []
     }
   ],
   "paths": {
@@ -606,6 +611,25 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "OAuth": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "/oauth/api/authorize",
+            "tokenUrl": "/oauth/api/token"
+          },
+          "password": {
+            "tokenUrl": "/oauth/api/token",
+            "refreshUrl": "/oauth/api/token"
+          },
+          "clientCredentials": {
+            "tokenUrl": "/oauth/api/token",
+            "refreshUrl": "/oauth/api/token"
+          }
+        }
+      }
+    },
     "schemas": {
       "ColumnSortConfigurationDto": {
         "type": "object",

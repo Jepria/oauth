@@ -36,7 +36,7 @@ const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
           const query = queryString.stringify(values)
           history.push({
             pathname: "/ui/client/list",
-            search: `?${query ? "&" + query : ""}`
+            search: `?${query ? query : ""}`
           })
         }
       }));

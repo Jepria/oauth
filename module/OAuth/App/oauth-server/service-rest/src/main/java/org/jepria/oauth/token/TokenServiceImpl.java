@@ -173,6 +173,8 @@ public class TokenServiceImpl implements TokenService {
         serverCredential);
     if (session == null) throw new OAuthRuntimeException(INVALID_GRANT, "Authorization request not found");
     if (TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - session.getDateIns().getTime()) > 10) {
+      System.out.println(session.getDateIns());
+      System.out.println(new Date());
       throw new OAuthRuntimeException(INVALID_GRANT, "Authorization code active time has expired.");
     }
     if (session.getAccessTokenId() != null) {

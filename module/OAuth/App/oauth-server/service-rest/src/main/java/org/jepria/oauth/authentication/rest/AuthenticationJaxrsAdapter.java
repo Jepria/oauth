@@ -120,7 +120,7 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
             + "&" + REDIRECT_URI + "=" + redirectUriEncoded
             + "&" + CLIENT_ID + "=" + clientId
             + "&" + CLIENT_NAME + "=" + URLEncoder.encode(clientName, StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20")
-            + "&" + STATE + "=" + state
+            + "&" + STATE + "=" + URLEncoder.encode(state, StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20")
             + "&" + ERROR_QUERY_PARAM + ACCESS_DENIED)).build();
       } else {
         throw ex;
@@ -156,7 +156,7 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
           + "#" + ACCESS_TOKEN_QUERY_PARAM + tokenDto.getAccessToken()
           + "&" + TOKEN_TYPE_QUERY_PARAM + tokenDto.getTokenType()
           + "&" + EXPIRES_IN_QUERY_PARAM + tokenDto.getExpiresIn()
-          + "&" + STATE + "=" + state))
+          + "&" + STATE + "=" + URLEncoder.encode(state, StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20")))
           .cookie(new NewCookie(SESSION_ID,
               sessionToken.getToken(),
               null,
@@ -218,10 +218,8 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
     if (uri != null) {
       if (uri.contains("?")) {
         separator = "&";
-      } else if (uri.endsWith("/")) {
-        separator = "?";
       } else {
-        separator = "/?";
+        separator = "?";
       }
     }
     return separator;

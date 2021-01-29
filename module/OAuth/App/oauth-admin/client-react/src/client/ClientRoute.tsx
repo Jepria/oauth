@@ -11,7 +11,6 @@ import ClientEditPage from './pages/ClientEditPage';
 import ClientViewPage from './pages/ClientViewPage';
 import { AppState } from '../app/store/reducer';
 import { useSelector, useDispatch } from 'react-redux';
-import { LoadingPanel } from '../app/common/components/mask';
 import { Client, ClientSearchTemplate } from './types';
 import ClientSearchPage from './pages/ClientSearchPage';
 import { ClientListPage } from './pages/ClientListPage';
@@ -28,7 +27,8 @@ import {
   ToolbarButtonSave,
   ToolbarButtonView,
   ToolbarSplitter,
-  ToolbarButtonBase
+  ToolbarButtonBase,
+  Loader
 } from '@jfront/ui-core';
 import { UserPanel } from '@jfront/oauth-ui';
 import { UserContext } from '@jfront/oauth-user'
@@ -63,7 +63,7 @@ const ClientRoute: React.FC = () => {
   return (
     <>
       <Panel>
-        {(isLoading || isRoleLoading) && <LoadingPanel text={t("dataLoadingMessage")} />}
+        {(isLoading || isRoleLoading) && <Loader text={t("dataLoadingMessage")} />}
         <Panel.Header>
           <TabPanel>
             <Tab selected>{t('client.moduleName')}</Tab>
@@ -71,37 +71,37 @@ const ClientRoute: React.FC = () => {
             <UserPanel />
           </TabPanel>
           <Toolbar style={{ margin: 0 }}>
-            <ToolbarButtonCreate onClick={() => {
+            {hasCreateRole && <ToolbarButtonCreate onClick={() => {
               dispatch(crudActions.setCurrentRecord({
                 currentRecord: undefined as any, callback: () => {
                   history.push('/ui/client/create')
                 }
               }));
-            }} disabled={pathname.endsWith('/create') || !hasCreateRole} />
-            <ToolbarButtonSave
+            }} disabled={pathname.endsWith('/create')} />}
+            {(hasCreateRole || hasEditRole) && <ToolbarButtonSave
               onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }}
-              disabled={(!pathname.endsWith('/create') && !pathname.endsWith('/edit')) || (!hasCreateRole && !hasEditRole)} />
-            <ToolbarButtonEdit
+              disabled={(!pathname.endsWith('/create') && !pathname.endsWith('/edit'))} />}
+            {hasEditRole && <ToolbarButtonEdit
               onClick={() => history.push(`/ui/client/${currentRecord?.clientId}/edit`)}
-              disabled={!currentRecord || pathname.endsWith('/edit') || pathname.endsWith('/edit/') || !hasEditRole} />
+              disabled={!currentRecord || pathname.endsWith('/edit') || pathname.endsWith('/edit/')} />}
             <ToolbarButtonView
               onClick={() => { history.push(`/ui/client/${currentRecord?.clientId}/view`) }}
               disabled={!currentRecord || pathname.endsWith('/view') || pathname.endsWith('/view/')} />
-            <ToolbarButtonDelete onClick={() => {
+            {hasDeleteRole && <ToolbarButtonDelete onClick={() => {
               if (window.confirm(t('delete'))) {
                 dispatch(crudActions.delete({
-                  primaryKeys: currentRecord ? [currentRecord.clientId] 
-                  : selectedRecords.map(selectedRecord => selectedRecord.clientId),
+                  primaryKeys: currentRecord ? [currentRecord.clientId]
+                    : selectedRecords.map(selectedRecord => selectedRecord.clientId),
                   onSuccess: () => {
                     if (pathname.endsWith('/list') && searchId) {
-                      dispatch(searchActions.search({ searchId, pageSize: 25, pageNumber: 1}));
+                      dispatch(searchActions.search({ searchId, pageSize: 25, pageNumber: 1 }));
                     } else {
                       history.push('/ui/client/list');
                     }
                   }
                 }));
               }
-            }} disabled={selectedRecords.length === 0 || !hasDeleteRole} />
+            }} disabled={selectedRecords.length === 0 && currentRecord === undefined} />}
             <ToolbarSplitter />
             <ToolbarButtonBase onClick={() => {
               dispatch(crudActions.setCurrentRecord({

@@ -36,11 +36,11 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
   HttpServletRequest request;
   @Context
   ContainerRequestContext containerRequestContext;
-
+  
   private String getHostContext() {
     return URI.create(request.getRequestURL().toString()).resolve(request.getContextPath()).toString();
   }
-
+  
   @GET
   @Path("/authorize")
   @Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.TEXT_HTML, "text/x-gwt-rpc"})
@@ -51,14 +51,14 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
                             @QueryParam("code_challenge") String codeChallenge,
                             @QueryParam("state") String state,
                             @CookieParam(SESSION_ID) String sessionToken) {
-
+    
     Map<String, Cookie> cookieMap = containerRequestContext.getCookies();
     if (cookieMap.containsKey(CURRENT_ATTEMPT_COUNT)) {
       if (Integer.valueOf(cookieMap.get(CURRENT_ATTEMPT_COUNT).getValue()).compareTo(LoginAttemptLimitFilter.getMaxAttemptCount(request)) > 0) {
         throw new OAuthRuntimeException(ACCESS_DENIED, "Превышено количество неуспешных попыток входа, обратитесь в службу технической поддержки для восстановления доступа.");
       }
     }
-
+    
     String redirectUri = null;
     if (redirectUriEncoded == null) {
       throw new OAuthRuntimeException(INVALID_REQUEST, "redirect_uri is null");
@@ -73,7 +73,7 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
     }
     Response response = null;
     SessionDto sessionDto;
-
+    
     if (sessionToken != null) {
       sessionDto = authorizationServerFactory
           .getService()
@@ -91,28 +91,47 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
               redirectUri,
               codeChallenge);
     }
-    if (sessionDto.getSessionTokenId() != null && new Date().before(sessionDto.getSessionTokenDateFinish()) && sessionDto.getOperator() != null) {
+    if (sessionDto.getSessionTokenId() != null
+        && new Date().before(sessionDto.getSessionTokenDateFinish())
+        && sessionDto.getOperator() != null) {
       if (ResponseType.CODE.equals(responseType)) {
-        response = Response
-            .status(302)
-            .location(URI.create(redirectUri + getSeparator(redirectUri) + CODE + "=" + sessionDto.getAuthorizationCode() + (state != null ? "&" + STATE + "=" + state : "")))
-            .build();
+        try {
+          response = Response
+              .status(302)
+              .location(URI.create(redirectUri +
+                  getSeparator(redirectUri) + CODE + "=" + sessionDto.getAuthorizationCode() +
+                  (state != null ? "&" + STATE + "=" + URLEncoder.encode(state, StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20") : "")))
+              .build();
+        } catch (UnsupportedEncodingException e) {
+          e.printStackTrace();
+        }
       } else {
-        TokenDto tokenDto = tokenServerFactory.getService().create(responseType, clientId, getHostContext(), sessionDto.getAuthorizationCode(), URI.create(redirectUri), 8);
-        response = Response.status(302).location(URI.create(redirectUri
-            + "#" + ACCESS_TOKEN_QUERY_PARAM + tokenDto.getAccessToken()
-            + "&" + TOKEN_TYPE_QUERY_PARAM + tokenDto.getTokenType()
-            + "&" + EXPIRES_IN_QUERY_PARAM + tokenDto.getExpiresIn()
-            + "&" + STATE + "=" + state))
-            .cookie(new NewCookie(SESSION_ID,
-                sessionToken,
-                null,
-                null,
-                null,
-                NewCookie.DEFAULT_MAX_AGE,
-                false,
-                true))
-            .build();
+        TokenDto tokenDto = tokenServerFactory
+            .getService()
+            .create(responseType,
+                clientId,
+                getHostContext(),
+                sessionDto.getAuthorizationCode(),
+                URI.create(redirectUri),
+                8);
+        try {
+          response = Response.status(302).location(URI.create(redirectUri
+              + "#" + ACCESS_TOKEN_QUERY_PARAM + tokenDto.getAccessToken()
+              + "&" + TOKEN_TYPE_QUERY_PARAM + tokenDto.getTokenType()
+              + "&" + EXPIRES_IN_QUERY_PARAM + tokenDto.getExpiresIn()
+              + "&" + STATE + "=" + URLEncoder.encode(state, StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20")))
+              .cookie(new NewCookie(SESSION_ID,
+                  sessionToken,
+                  null,
+                  null,
+                  null,
+                  NewCookie.DEFAULT_MAX_AGE,
+                  false,
+                  true))
+              .build();
+        } catch (UnsupportedEncodingException e) {
+          e.printStackTrace();
+        }
       }
     } else {
       try {
@@ -122,14 +141,14 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
             + "&" + REDIRECT_URI + "=" + redirectUriEncoded
             + "&" + CLIENT_ID + "=" + sessionDto.getClient().getValue()
             + "&" + CLIENT_NAME + "=" + URLEncoder.encode(sessionDto.getClient().getName(), StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20")
-            + "&" + STATE + "=" + state)).build();
+            + "&" + STATE + "=" + URLEncoder.encode(state, StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20"))).build();
       } catch (UnsupportedEncodingException e) {
         e.printStackTrace();
       }
     }
     return response;
-}
-
+  }
+  
   /**
    * Get next separator for URI
    *
@@ -141,15 +160,13 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
     if (uri != null) {
       if (uri.contains("?")) {
         separator = "&";
-      } else if (uri.endsWith("/")) {
-        separator = "?";
       } else {
-        separator = "/?";
+        separator = "?";
       }
     }
     return separator;
   }
-
+  
   /**
    * @param redirectUri
    * @return

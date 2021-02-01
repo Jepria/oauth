@@ -27,7 +27,8 @@ const ClientModuleRoute: React.FC = () => {
 
   return (
     <>
-      {isRoleLoading && <Loader title="OAuth" text="Проверка ролей"/>}
+      {isRoleLoading && <Loader title="OAuth" text="Проверка ролей" />}
+      {hasRoles === false && <Forbidden />}
       {hasRoles === true && <Switch>
         <Route path={`${path}/:clientId/client-uri`}>
           <ClientUriRoute/>
@@ -36,7 +37,6 @@ const ClientModuleRoute: React.FC = () => {
           <ClientRoute/>
         </Route>
       </Switch>}
-      {hasRoles === false && <Forbidden/>}
     </>
   );
 }

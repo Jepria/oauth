@@ -27,7 +27,7 @@ import java.util.UUID;
 import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 public class AuthorizationServiceImpl implements AuthorizationService {
-
+  
   private final SessionService sessionService;
   private final ClientService clientService;
   private final KeyService keyService;
@@ -37,18 +37,18 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     public int getOperatorId() {
       return 1;
     }
-
+    
     @Override
     public String getUsername() {
       return "SERVER";
     }
-
+    
     @Override
     public boolean isUserInRole(String roleShortName) {
       return true;
     }
   };
-
+  
   public AuthorizationServiceImpl(SessionService sessionService, ClientService clientService, KeyService keyService) {
     this.clientService = clientService;
     this.sessionService = sessionService;
@@ -61,7 +61,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
       throw new OAuthRuntimeException(UNAUTHORIZED_CLIENT, "Client not found");
     }
   }
-
+  
   private void checkResponseType(String clientId, String responseType) {
     if (!ResponseType.implies(responseType)) {
       throw new OAuthRuntimeException(UNSUPPORTED_RESPONSE_TYPE);
@@ -71,7 +71,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
       throw new OAuthRuntimeException(UNAUTHORIZED_CLIENT, "Client doesn't have enough permissions to use responseType=" + responseType);
     }
   }
-
+  
   @Override
   public SessionDto authorize(String responseType,
                               String clientId,
@@ -98,7 +98,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
       throw new OAuthRuntimeException(SERVER_ERROR, sqlException.getMessage());
     }
   }
-
+  
   @Override
   public SessionDto authorize(String responseType,
                               String clientId,
@@ -119,7 +119,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         SessionSearchDto sessionSearchDto = new SessionSearchDto();
         sessionSearchDto.setAuthorizationCode(token.getJti());
         List<SessionDto> sessionDtoList = sessionService.find(sessionSearchDto, serverCredential);
-        if (sessionDtoList != null && !sessionDtoList.isEmpty() && sessionDtoList.size() == 1 && sessionDtoList.get(0).getSessionTokenDateFinish().after(new Date())) {
+        if (sessionDtoList != null && !sessionDtoList.isEmpty() && sessionDtoList.size() == 1
+            && sessionDtoList.get(0).getSessionTokenDateFinish().after(new Date())) {
           SessionCreateDto sessionCreateDto = new SessionCreateDto();
           sessionCreateDto.setAuthorizationCode(generateCode());
           sessionCreateDto.setClientId(clientId);
@@ -129,7 +130,11 @@ public class AuthorizationServiceImpl implements AuthorizationService {
           sessionCreateDto.setSessionTokenDateIns(token.getIssueTime());
           sessionCreateDto.setSessionTokenDateFinish(token.getExpirationTime());
           sessionCreateDto.setCodeChallenge(codeChallenge);
-          return (SessionDto) sessionService.getRecordById(String.valueOf(sessionService.create(sessionCreateDto, serverCredential)), serverCredential);
+          return (SessionDto) sessionService
+              .getRecordById(String
+                      .valueOf(sessionService
+                          .create(sessionCreateDto, serverCredential))
+                  , serverCredential);
         } else {
           /**
            * Сессия истекла или не найдена

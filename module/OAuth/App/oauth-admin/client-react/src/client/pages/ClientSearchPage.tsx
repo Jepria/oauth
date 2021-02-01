@@ -2,21 +2,22 @@ import React, { HTMLAttributes } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useFormik } from 'formik';
 import { useSelector, useDispatch } from 'react-redux';
-import { ClientSearchTemplate } from '../types';
-import { actions } from '../state/clientSlice';
+import { Client, ClientSearchTemplate } from '../types';
+import { actions } from '../state/clientSearchSlice';
 import { AppState } from '../../app/store/reducer';
 import { Form, TextInput, NumberInput } from '@jfront/ui-core';
 import { useTranslation } from 'react-i18next';
 import queryString from 'query-string';
+import { SearchState } from '@jfront/core-redux-saga';
 
 const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const { t } = useTranslation();
-  const searchTemplate = useSelector<AppState, ClientSearchTemplate | undefined>(state => state.client.searchRequest?.template);
+  const { searchRequest } = useSelector<AppState, SearchState<ClientSearchTemplate, Client>>(state => state.client.searchSlice);
 
   const formik = useFormik<ClientSearchTemplate>({
-    initialValues: searchTemplate ? searchTemplate : { maxRowCount: 25 },
+    initialValues: searchRequest ? searchRequest.template : { maxRowCount: 25 },
     validate: (values) => {
       const errors: { maxRowCount?: string } = {};
       if (!values['maxRowCount']) {
@@ -27,14 +28,16 @@ const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
       return errors;
     },
     onSubmit: (values: ClientSearchTemplate) => {
-      dispatch(actions.postSearchTemplate({
-        searchRequest: {
+      dispatch(actions.setSearchTemplate({
+        searchTemplate: {
           template: values
         },
-        loadingMessage: t("dataLoadingMessage"),
         callback: () => {
           const query = queryString.stringify(values)
-          history.push(`/ui/client/list?pageSize=25&page=1${query ? "&" + query : ""}`)
+          history.push({
+            pathname: "/ui/client/list",
+            search: `?${query ? query : ""}`
+          })
         }
       }));
     }

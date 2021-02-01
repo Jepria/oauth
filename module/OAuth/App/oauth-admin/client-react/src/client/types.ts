@@ -1,3 +1,5 @@
+import { EntityState, OptionState, SearchState } from "@jfront/core-redux-saga";
+
 export interface Client {
   clientId: string;
   clientName?: string;
@@ -8,16 +10,6 @@ export interface Client {
   scope?: Array<Option>;
 }
 
-export interface ColumnSortConfiguration {
-  columnName: string;
-  sortOrder: string;
-}
-
-export interface SearchRequest<Type> {
-  template: Type;
-  listSortConfiguration?: Array<ColumnSortConfiguration>;
-}
-
 export interface ClientSearchTemplate {
   clientId?: string;
   clientName?: string;
@@ -25,22 +17,13 @@ export interface ClientSearchTemplate {
   maxRowCount: number;
 }
 
-export interface ClientState {
-  isLoading: boolean;
-  recordsLoading: boolean;
-  rolesLoading: boolean;
-  current?: Client;
-  selectedRecords: Array<Client>
-  records: Array<Client>;
-  searchId?: string;
-  resultSetSize?: number;
-  searchRequest?: SearchRequest<ClientSearchTemplate>;
-  message?: string;
-  error?: Error;
-  roles?: Array<Option>
-}
-
 export interface Option {
   name: string;
   value: string;
+}
+
+export interface ClientState {
+  searchSlice: SearchState<ClientSearchTemplate, Client>
+  crudSlice: EntityState<Client>
+  roleSlice: OptionState<Option>
 }

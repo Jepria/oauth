@@ -1,14 +1,16 @@
-import React, { useEffect } from 'react';
-import { actions } from '../state/sessionSlice';
+import React, { useEffect, useState } from 'react';
+import { actions as searchActions } from '../state/sessionSearchSlice';
+import { actions as crudActions } from '../state/sessionCrudSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { AppState } from '../../app/store/reducer';
-import { SessionState, Session, SessionSearchTemplate } from '../types';
+import { Session, SessionSearchTemplate } from '../types';
 import { TextCell } from '../../app/common/components/cell/TextCell';
 import { DateCell } from '../../app/common/components/cell/DateCell';
 import { Grid } from '@jfront/ui-core';
 import { useTranslation } from 'react-i18next';
 import queryString from 'query-string';
+import { EntityState, SearchState } from '@jfront/core-redux-saga';
 
 const useQuery = () => {
   return queryString.parse(useLocation().search);
@@ -19,22 +21,25 @@ const SessionListPage: React.FC = () => {
   const dispatch = useDispatch();
   const history = useHistory();
   const { t } = useTranslation();
-  const { pageSize, page, ...searchTemplate } = useQuery();
-  const { records, current, searchId, searchRequest, resultSetSize, recordsLoading } = useSelector<AppState, SessionState>(state => state.session);
+  const { ...template } = useQuery();
+  const { currentRecord } = useSelector<AppState, EntityState<Session>>(state => state.session.crudSlice);
+  const {
+    records,
+    searchRequest,
+    searchId,
+    resultSetSize,
+    isLoading
+  } = useSelector<AppState, SearchState<SessionSearchTemplate, Session>>(state => state.session.searchSlice);
+  const [page, setPage] = useState({
+    pageSize: 25,
+    pageNumber: 1
+  });
 
   useEffect(() => {
-    if (searchId && searchRequest) {
-      dispatch(actions.search({
-        searchId,
-        pageSize: 25,
-        page: 1,
-        loadingMessage: t('dataLoadingMessage')
-      }));
-    } else if (!searchId && searchRequest) {
-      dispatch(actions.postSearchTemplate({ searchRequest, loadingMessage: t('dataLoadingMessage') }));
+    if (searchId) {
+      dispatch(searchActions.search({ searchId, pageSize: page.pageSize, pageNumber: page.pageNumber }))
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchId, searchRequest, dispatch]);
+  }, [searchId, page, dispatch])
 
   return (
     <Grid<Session>
@@ -86,59 +91,43 @@ const SessionListPage: React.FC = () => {
           Cell: ({ value }: any) => <TextCell>{value}</TextCell>
         },
       ]}
-      isLoading={recordsLoading}
+      isLoading={isLoading}
       data={React.useMemo(() => records, [records])}
       onSelection={(records) => {
         if (records) {
           if (records.length === 1) {
-            if (records[0] !== current) {
-              dispatch(actions.setCurrentRecord({ currentRecord: records[0] }));
-              dispatch(actions.selectRecords({ records }));
+            if (records[0] !== currentRecord) {
+              dispatch(crudActions.setCurrentRecord({ currentRecord: records[0] }));
+              dispatch(crudActions.selectRecords({ selectedRecords: records }));
             }
-          } else if (current) {
-            dispatch(actions.setCurrentRecord({}));
-            dispatch(actions.selectRecords({ records }));
+          } else if (currentRecord) {
+            dispatch(crudActions.setCurrentRecord({} as any));
+            dispatch(crudActions.selectRecords({ selectedRecords: records }));
           }
         }
       }}
       onPaging={(pageNumber, pageSize) => {
-        if (searchId) {
-          dispatch(actions.search({
-            searchId,
-            pageSize,
-            page: pageNumber,
-            loadingMessage: t('dataLoadingMessage')
-          }));
-        }
+        setPage({
+          pageNumber,
+          pageSize
+        })
       }}
       onSort={(sortConfig) => {
-        if (searchRequest) {
-          const newSearchRequest = {
-            ...searchRequest,
-            listSortConfiguration: sortConfig
-          }
-          dispatch(actions.postSearchTemplate({ searchRequest: newSearchRequest, loadingMessage: t('dataLoadingMessage') }));
-        } else
-          if (pageSize && page) {
-            dispatch(actions.postSearchTemplate({
-              searchRequest: { template: searchTemplate as unknown as SessionSearchTemplate, listSortConfiguration: sortConfig },
-              loadingMessage: t('dataLoadingMessage')
-            }));
-          } else {
-            dispatch(actions.postSearchTemplate({
-              searchRequest: {
-                template: { maxRowCount: 25 },
-                listSortConfiguration: sortConfig
-              },
-              loadingMessage: t('dataLoadingMessage')
-            }));
-          }
+        const newSearchRequest = {
+          template: {
+            maxRowCount: 25,
+            ...template,
+            ...searchRequest?.template
+          },
+          listSortConfiguration: sortConfig
+        }
+        dispatch(searchActions.postSearchRequest({ searchTemplate: newSearchRequest }));
       }}
       totalRowCount={resultSetSize}
-      onDoubleClick={currentRecord => current !== currentRecord ? dispatch(actions.setCurrentRecord({
-        currentRecord,
-        callback: () => history.push(`/ui/session/${currentRecord?.sessionId}/view`)
-      })) : history.push(`/ui/session/${currentRecord?.sessionId}/view`)} />
+      onDoubleClick={current => current !== currentRecord ? dispatch(crudActions.setCurrentRecord({
+        currentRecord: current,
+        callback: () => history.push(`/ui/session/${current?.sessionId}/view`)
+      })) : history.push(`/ui/session/${current?.sessionId}/view`)} />
   );
 }
 

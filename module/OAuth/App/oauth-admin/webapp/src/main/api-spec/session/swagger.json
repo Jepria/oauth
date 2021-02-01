@@ -6,7 +6,12 @@
   },
   "servers": [
     {
-      "url": "/oauth/api"
+      "url": "/oauth-admin/api"
+    }
+  ],
+  "security": [
+    {
+      "OAuth": []
     }
   ],
   "tags": [
@@ -22,7 +27,9 @@
   "paths": {
     "/session/{sessionId}": {
       "get": {
-        "tags": ["session: entity"],
+        "tags": [
+          "session: entity"
+        ],
         "summary": "Get record by ID",
         "description": "",
         "operationId": "getRecordById-session",
@@ -52,7 +59,9 @@
     },
     "/session/search/{searchId}/resultset-size": {
       "get": {
-        "tags": ["session: search"],
+        "tags": [
+          "session: search"
+        ],
         "summary": "Get size of a resultset for a search request",
         "description": "",
         "operationId": "getSearchResultsetSize",
@@ -91,7 +100,9 @@
     },
     "/session/search/{searchId}/resultset/paged-by-{pageSize}/{page}": {
       "get": {
-        "tags": ["session: search"],
+        "tags": [
+          "session: search"
+        ],
         "summary": "Get paged resultset for a search request",
         "description": "",
         "operationId": "getResultsetPaged",
@@ -151,7 +162,9 @@
     },
     "/session/{sessionId}/block": {
       "post": {
-        "tags": ["session: entity"],
+        "tags": [
+          "session: entity"
+        ],
         "summary": "Block authorization request",
         "description": "",
         "operationId": "blockSession",
@@ -174,7 +187,9 @@
     },
     "/session/search": {
       "post": {
-        "tags": ["session: search"],
+        "tags": [
+          "session: search"
+        ],
         "summary": "Post search request",
         "description": "",
         "operationId": "postSearch",
@@ -214,7 +229,9 @@
     },
     "/session/search/{searchId}/resultset": {
       "get": {
-        "tags": ["session: search"],
+        "tags": [
+          "session: search"
+        ],
         "summary": "Get resultset for a search request",
         "description": "",
         "operationId": "getResultset",
@@ -273,7 +290,9 @@
     },
     "/session/search/{searchId}": {
       "get": {
-        "tags": ["session: search"],
+        "tags": [
+          "session: search"
+        ],
         "summary": "Get search request by ID",
         "description": "",
         "operationId": "getSearchRequest",
@@ -301,23 +320,26 @@
         }
       }
     },
-    "/session/operator": {
+    "/session/operators": {
       "get": {
-        "tags": ["session: operators"],
+        "tags": [
+          "session: operators"
+        ],
         "summary": "Get operators",
         "description": "",
         "operationId": "getOperators",
         "parameters": [
           {
             "name": "operatorName",
-            "in": "path",
+            "in": "query",
+            "required": true,
             "schema": {
               "type": "string"
             }
           },
           {
             "name": "maxRowCount",
-            "in": "path",
+            "in": "query",
             "required": true,
             "schema": {
               "type": "integer"
@@ -340,6 +362,25 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "OAuth": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "/oauth/api/authorize",
+            "tokenUrl": "/oauth/api/token"
+          },
+          "password": {
+            "tokenUrl": "/oauth/api/token",
+            "refreshUrl": "/oauth/api/token"
+          },
+          "clientCredentials": {
+            "tokenUrl": "/oauth/api/token",
+            "refreshUrl": "/oauth/api/token"
+          }
+        }
+      }
+    },
     "schemas": {
       "ColumnSortConfigurationDto": {
         "type": "object",

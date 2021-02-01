@@ -29,7 +29,7 @@
     <jerseyhk2.version>2.29</jerseyhk2.version>
     <javassist.version>3.25.0-GA</javassist.version>
     <jakartajsonbindapi.version>1.0.1</jakartajsonbindapi.version>
-    <swaggerui.version>3.10.0</swaggerui.version>
+    <swaggerui.version>3.10.1.0</swaggerui.version>
   </properties>
 
   <modules>

@@ -1,7 +1,7 @@
-import { buildError, ConnectorCrud, handleAxiosError } from '../../app/common/rest/connector/ConnectorCrud';
-import { SessionSearchTemplate, Session } from '../types';
+import { ConnectorCrud as ConnectorCrudLib, buildError as buildErrorLib, handleAxiosError as handleAxiosErrorLib } from '@jfront/core-rest';
+import { Session } from '../types';
 
-export default class SessionApi extends ConnectorCrud<Session, any, any, SessionSearchTemplate> {
+export class SessionCrudApi extends ConnectorCrudLib<Session, number> {
 
   /**
    * Удаление всех сессий для выбранного пользователя.
@@ -20,8 +20,8 @@ export default class SessionApi extends ConnectorCrud<Session, any, any, Session
           }
         }
       ).then(response => {
-        response.status === 200 ? resolve() : reject(buildError(response))
-      }).catch(error => reject(handleAxiosError(error)));
+        response.status === 200 ? resolve() : reject(buildErrorLib(response))
+      }).catch(error => reject(handleAxiosErrorLib(error)));
     })
   }
 }

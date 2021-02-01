@@ -5,7 +5,7 @@ import { UserContextProvider } from '@jfront/oauth-user';
 import axios from 'axios'
 import { Provider } from 'react-redux';
 import configureStore from './app/store/configureStore';
-import { ErrorNotification } from './app/common/components/ErrorNotification';
+import ErrorNotification from './app/common/components/ErrorNotification';
 
 function App() {
 

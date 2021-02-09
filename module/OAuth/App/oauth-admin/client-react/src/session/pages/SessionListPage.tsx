@@ -9,12 +9,10 @@ import { TextCell } from '../../app/common/components/cell/TextCell';
 import { DateCell } from '../../app/common/components/cell/DateCell';
 import { Grid } from '@jfront/ui-core';
 import { useTranslation } from 'react-i18next';
-import queryString from 'query-string';
 import { EntityState, SearchState } from '@jfront/core-redux-saga';
+import { useQuery } from '../../app/common/useQuery';
 
-const useQuery = () => {
-  return queryString.parse(useLocation().search);
-}
+
 
 const SessionListPage: React.FC = () => {
 

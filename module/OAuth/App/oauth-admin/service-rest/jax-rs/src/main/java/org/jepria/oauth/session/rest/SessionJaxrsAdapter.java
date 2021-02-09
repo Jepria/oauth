@@ -53,7 +53,7 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
   @GET
   @Path("/{sessionId}")
   @RolesAllowed("OAViewSession")
-  @JsonConfig(dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+  @JsonConfig(dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS")
   public Response getRecordById(@PathParam("sessionId") Integer sessionId) {
     SessionDto result = (SessionDto) entityEndpointAdapter.getRecordById(String.valueOf(sessionId));
     return Response.ok(result).build();
@@ -100,7 +100,7 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
   @GET
   @Path("/search/{searchId}/resultset")
   @RolesAllowed("OAViewSession")
-  @JsonConfig(dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+  @JsonConfig(dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS")
   public Response getResultset(
     @PathParam("searchId") String searchId,
     @QueryParam("pageSize") Integer pageSize,
@@ -117,7 +117,7 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
   @GET
   @Path("/search/{searchId}/resultset/paged-by-{pageSize:\\d+}/{page}")
   @RolesAllowed("OAViewSession")
-  @JsonConfig(dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+  @JsonConfig(dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS")
   public Response getResultsetPaged(
     @PathParam("searchId") String searchId,
     @PathParam("pageSize") Integer pageSize,

@@ -21,7 +21,7 @@ export const ClientUriCreatePage = React.forwardRef<any, HTMLAttributes<HTMLForm
         dispatch(actions.create({
           values,
           onSuccess: (clientUri: ClientUri) => {
-            history.push(`/ui/client/${clientId}/client-uri/${clientUri.clientUriId}/view/`);
+            history.push(`/ui/client/${clientId}/client-uri/${clientUri.clientUriId}/detail`);
           }
         }));
       }

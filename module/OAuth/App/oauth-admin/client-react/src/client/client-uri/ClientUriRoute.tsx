@@ -33,6 +33,7 @@ import { Client } from '../types';
 import { actions as clientActions } from '../state/clientCrudSlice'
 import { EntityState } from '@jfront/core-redux-saga';
 import { UserContext } from '@jfront/oauth-user';
+import { createEvent, useWorkstate, Workstates } from '@jfront/core-common';
 
 const ClientUriRoute: React.FC = () => {
 
@@ -42,6 +43,7 @@ const ClientUriRoute: React.FC = () => {
   const history = useHistory();
   const dispatch = useDispatch();
   const { t } = useTranslation();
+  const workstate = useWorkstate(pathname);
   const { isRoleLoading, isUserInRole } = useContext(UserContext);
   const [hasCreateRole, setHasCreateRole] = useState(false);
   const [hasEditRole, setHasEditRole] = useState(false);
@@ -70,7 +72,7 @@ const ClientUriRoute: React.FC = () => {
       <Panel>
         <Panel.Header>
           <TabPanel>
-            <Tab onClick={() => history.push(state?.prevRoute ? state.prevRoute : `/ui/client/${clientId}/view`)}>{t('client.moduleName')}</Tab>
+            <Tab onClick={() => history.push(state?.prevRoute ? state.prevRoute : `/ui/client/${clientId}/detail`)}>{t('client.moduleName')}</Tab>
             <Tab selected>{t('clientUri.moduleName')}</Tab>
             <UserPanel />
           </TabPanel>
@@ -84,21 +86,20 @@ const ClientUriRoute: React.FC = () => {
                       history.push(`/ui/client/${clientId}/client-uri/create`, state)
                     }
                   }));
-                }} disabled={pathname.endsWith('/create')} />
+                }} disabled={workstate === Workstates.Create} />
                 <ToolbarButtonSave
-                  onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }}
-                  disabled={!pathname.endsWith('/create')} />
+                  onClick={() => { formRef.current?.dispatchEvent(createEvent("submit")) }}
+                  disabled={workstate !== Workstates.Create} />
               </>)}
             <ToolbarButtonView
-              onClick={() => { history.push(`/ui/client/${clientId}/client-uri/${currentRecord?.clientUriId}/view`, state) }}
-              disabled={!currentRecord || pathname.endsWith('view')} />
+              onClick={() => { history.push(`/ui/client/${clientId}/client-uri/${currentRecord?.clientUriId}/detail`, state) }}
+              disabled={!currentRecord || workstate === Workstates.Detail} />
             {(hasCreateRole || hasEditRole) && <ToolbarButtonDelete onClick={() => {
               if (window.confirm(t('delete'))) {
                 dispatch(crudActions.delete({
-                  primaryKeys: currentRecord ? [{ clientId: client.currentRecord?.clientId, clientUriId: currentRecord.clientUriId }]
-                    : selectedRecords.map(selectedRecord => ({ clientId, clientUriId: selectedRecord.clientUriId })),
+                  primaryKeys: selectedRecords.map(selectedRecord => ({ clientId, clientUriId: selectedRecord.clientUriId })),
                   onSuccess: () => {
-                    if (pathname.endsWith('/list')) {
+                    if (workstate === Workstates.List) {
                       dispatch(searchActions.search({ clientId }));
                     } else {
                       history.push(`/ui/client/${clientId}/client-uri/list`, state);
@@ -115,7 +116,7 @@ const ClientUriRoute: React.FC = () => {
                   history.push(`/ui/client/${clientId}/client-uri/list`, state)
                 }
               }));
-            }} disabled={pathname.endsWith('/list')}>{t('toolbar.list')}</ToolbarButtonBase>
+            }} disabled={workstate === Workstates.List}>{t('toolbar.list')}</ToolbarButtonBase>
           </Toolbar>
         </Panel.Header>
         <Panel.Content>
@@ -132,7 +133,7 @@ const ClientUriRoute: React.FC = () => {
                 <Route path={`${path}/create`}>
                   <ClientUriCreatePage ref={formRef} />
                 </Route>
-                <Route path={`${path}/:clientUriId/view`}>
+                <Route path={`${path}/:clientUriId/detail`}>
                   <ClientUriViewPage />
                 </Route>
                 <Route path={`${path}/list`}>

@@ -9,6 +9,7 @@ import ErrorNotification from './app/common/components/ErrorNotification';
 
 function App() {
 
+  axios.defaults.headers['Pragma'] = 'no-cache';
   const store = configureStore();
 
   return (

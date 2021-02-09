@@ -34,11 +34,13 @@ import { UserPanel } from '@jfront/oauth-ui';
 import { UserContext } from '@jfront/oauth-user'
 import { useTranslation } from 'react-i18next';
 import { EntityState, SearchState } from '@jfront/core-redux-saga';
+import { createEvent, useWorkstate, Workstates } from '@jfront/core-common';
 
 const ClientRoute: React.FC = () => {
 
   const { path } = useRouteMatch();
   const { pathname } = useLocation();
+  const workstate = useWorkstate(pathname);
   const history = useHistory<HistoryState>();
   const dispatch = useDispatch();
   const { isRoleLoading, isUserInRole } = useContext(UserContext);
@@ -47,7 +49,7 @@ const ClientRoute: React.FC = () => {
   const [hasDeleteRole, setHasDeleteRole] = useState(false);
   const { t } = useTranslation();
   const { isLoading, currentRecord, selectedRecords } = useSelector<AppState, EntityState<Client>>(state => state.client.crudSlice)
-  const { searchId, searchRequest } = useSelector<AppState, SearchState<ClientSearchTemplate, Client>>(state => state.client.searchSlice)
+  const { searchId, searchRequest, pageSize, pageNumber } = useSelector<AppState, SearchState<ClientSearchTemplate, Client>>(state => state.client.searchSlice)
   let formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -77,31 +79,38 @@ const ClientRoute: React.FC = () => {
                   history.push('/ui/client/create')
                 }
               }));
-            }} disabled={pathname.endsWith('/create')} />}
+            }} disabled={workstate === Workstates.Create} />}
             {(hasCreateRole || hasEditRole) && <ToolbarButtonSave
-              onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }}
-              disabled={(!pathname.endsWith('/create') && !pathname.endsWith('/edit'))} />}
+              onClick={() => { formRef.current?.dispatchEvent(createEvent("submit")) }}
+              disabled={workstate !== Workstates.Create && workstate !== Workstates.Edit} />}
             {hasEditRole && <ToolbarButtonEdit
               onClick={() => history.push(`/ui/client/${currentRecord?.clientId}/edit`)}
-              disabled={!currentRecord || pathname.endsWith('/edit') || pathname.endsWith('/edit/')} />}
+              disabled={!currentRecord || workstate === Workstates.Edit} />}
             <ToolbarButtonView
-              onClick={() => { history.push(`/ui/client/${currentRecord?.clientId}/view`) }}
-              disabled={!currentRecord || pathname.endsWith('/view') || pathname.endsWith('/view/')} />
+              onClick={() => { history.push(`/ui/client/${currentRecord?.clientId}/detail`) }}
+              disabled={!currentRecord || workstate === Workstates.Detail} />
             {hasDeleteRole && <ToolbarButtonDelete onClick={() => {
               if (window.confirm(t('delete'))) {
                 dispatch(crudActions.delete({
-                  primaryKeys: currentRecord ? [currentRecord.clientId]
-                    : selectedRecords.map(selectedRecord => selectedRecord.clientId),
+                  primaryKeys: selectedRecords.map(selectedRecord => selectedRecord.clientId),
                   onSuccess: () => {
-                    if (pathname.endsWith('/list') && searchId) {
-                      dispatch(searchActions.search({ searchId, pageSize: 25, pageNumber: 1 }));
+                    if (workstate === Workstates.List) {
+                      if (searchId) {
+                        dispatch(searchActions.search({
+                          searchId,
+                          pageSize,
+                          pageNumber
+                        }));
+                      } else if (searchRequest) {
+                        dispatch(searchActions.postSearchRequest({ searchTemplate: searchRequest }))
+                      }
                     } else {
                       history.push('/ui/client/list');
                     }
                   }
                 }));
               }
-            }} disabled={selectedRecords.length === 0 && currentRecord === undefined} />}
+            }} disabled={selectedRecords.length === 0} />}
             <ToolbarSplitter />
             <ToolbarButtonBase onClick={() => {
               dispatch(crudActions.setCurrentRecord({
@@ -109,19 +118,23 @@ const ClientRoute: React.FC = () => {
                   if (searchRequest) {
                     history.push('/ui/client/list');
                   } else {
-                    history.push('/ui/client/search');
+                    history.push('/ui/client');
                   }
                 }
               }))
-            }} disabled={pathname.endsWith('/search') || pathname.endsWith('/list')}>{t('toolbar.list')}</ToolbarButtonBase>
+            }} disabled={workstate === Workstates.Search || workstate === Workstates.List}>{t('toolbar.list')}</ToolbarButtonBase>
             <ToolbarButtonFind onClick={() => {
               dispatch(crudActions.setCurrentRecord({
                 callback: () => {
-                  history.push('/ui/client/search')
+                  history.push('/ui/client')
                 }
               }));
             }} />
-            <ToolbarButtonBase onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }} disabled={!pathname.endsWith('/search')}>{t('toolbar.find')}</ToolbarButtonBase>
+            <ToolbarButtonBase
+              onClick={() => { formRef.current?.dispatchEvent(createEvent("submit")) }}
+              disabled={workstate !== Workstates.Search}>
+              {t('toolbar.find')}
+            </ToolbarButtonBase>
           </Toolbar>
         </Panel.Header>
         <Panel.Content>
@@ -132,10 +145,10 @@ const ClientRoute: React.FC = () => {
             <Route path={`${path}/:clientId/edit`}>
               <ClientEditPage ref={formRef} />
             </Route>
-            <Route path={`${path}/:clientId/view`}>
+            <Route path={`${path}/:clientId/detail`}>
               <ClientViewPage />
             </Route>
-            <Route path={`${path}/search`}>
+            <Route path={`${path}`} exact>
               <ClientSearchPage ref={formRef} />
             </Route>
             <Route path={`${path}/list`}>

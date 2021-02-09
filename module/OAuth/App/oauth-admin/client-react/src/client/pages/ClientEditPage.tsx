@@ -48,7 +48,7 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
           primaryKey: clientId,
           values,
           onSuccess: (client: Client) => {
-            history.push(`/ui/client/${client.clientId}/view/`);
+            history.push(`/ui/client/${client.clientId}/detail`);
           }
         }));
       }

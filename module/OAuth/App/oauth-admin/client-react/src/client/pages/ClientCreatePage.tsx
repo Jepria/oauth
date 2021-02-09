@@ -23,7 +23,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
       dispatch(actions.create({
         values: values, 
         onSuccess: (client: Client) => {
-          history.push(`/ui/client/${client.clientId}/view/`);
+          history.push(`/ui/client/${client.clientId}/detail`);
         }
       }));
     },

@@ -30,6 +30,7 @@ import { UserContext } from '@jfront/oauth-user'
 import { useTranslation } from 'react-i18next';
 import { DeleteAllDialog } from './delete-all-dialog/DeleteAllDialog';
 import { EntityState, SearchState } from '@jfront/core-redux-saga';
+import { createEvent, useWorkstate, Workstates } from '@jfront/core-common';
 
 const SessionRoute: React.FC = () => {
 
@@ -42,11 +43,9 @@ const SessionRoute: React.FC = () => {
   const history = useHistory<HistoryState>();
   const dispatch = useDispatch();
   const { t } = useTranslation();
+  const workstate = useWorkstate(pathname);
   const { currentRecord, selectedRecords, isLoading } = useSelector<AppState, EntityState<Session>>(state => state.session.crudSlice);
-  const {
-    searchRequest,
-    searchId
-  } = useSelector<AppState, SearchState<SessionSearchTemplate, Session>>(state => state.session.searchSlice);
+  const { pageNumber, pageSize, searchRequest, searchId } = useSelector<AppState, SearchState<SessionSearchTemplate, Session>>(state => state.session.searchSlice);
   let formRef = useRef(null) as any;
 
   useEffect(() => {
@@ -72,22 +71,25 @@ const SessionRoute: React.FC = () => {
           </TabPanel>
           <Toolbar style={{ margin: 0 }}>
             <ToolbarButtonView
-              onClick={() => { history.push(`/ui/session/${currentRecord?.sessionId}/view`) }}
-              disabled={!currentRecord || pathname.endsWith('view')} />
+              onClick={() => { history.push(`/ui/session/${currentRecord?.sessionId}/detail`) }}
+              disabled={!currentRecord || workstate === Workstates.Detail} />
             {hasDeleteRole && (
               <>
                 <ToolbarButtonDelete onClick={() => {
                   if (window.confirm(t('delete'))) {
                     dispatch(crudActions.delete({
-                      primaryKeys: currentRecord ? [currentRecord.sessionId]
-                        : selectedRecords.map(selectedRecord => selectedRecord.sessionId),
+                      primaryKeys: selectedRecords.map(selectedRecord => selectedRecord.sessionId),
                       onSuccess: () => {
-                        if (pathname.endsWith('/list') && searchId) {
-                          dispatch(searchActions.search({
-                            searchId,
-                            pageSize: 25,
-                            pageNumber: 1
-                          }));
+                        if (workstate === Workstates.List) {
+                          if (searchId) {
+                            dispatch(searchActions.search({
+                              searchId,
+                              pageSize,
+                              pageNumber
+                            }));
+                          } else if (searchRequest) {
+                            dispatch(searchActions.postSearchRequest({ searchTemplate: searchRequest }))
+                          }
                         } else {
                           history.push('/ui/session/list');
                         }
@@ -107,28 +109,28 @@ const SessionRoute: React.FC = () => {
                   if (searchRequest) {
                     history.push('/ui/session/list');
                   } else {
-                    history.push('/ui/session/search');
+                    history.push('/ui/session');
                   }
                 }
               }))
-            }} disabled={pathname.endsWith('/search') || pathname.endsWith('/list')}>{t('toolbar.list')}</ToolbarButtonBase>
+            }} disabled={workstate === Workstates.Search || workstate === Workstates.List}>{t('toolbar.list')}</ToolbarButtonBase>
             <ToolbarButtonFind onClick={() => {
               dispatch(crudActions.setCurrentRecord({
                 currentRecord: undefined as any,
-                callback: () => history.push('/ui/session/search')
+                callback: () => history.push('/ui/session')
               }))
             }} />
             <ToolbarButtonBase
-              onClick={() => { formRef.current?.dispatchEvent(new Event("submit")) }}
-              disabled={!pathname.endsWith('/search')}>{t('toolbar.find')}</ToolbarButtonBase>
+              onClick={() => { formRef.current?.dispatchEvent(createEvent("submit")) }}
+              disabled={workstate !== Workstates.Search}>{t('toolbar.find')}</ToolbarButtonBase>
           </Toolbar>
         </Panel.Header>
         <Panel.Content>
           <Switch>
-            <Route path={`${path}/:sessionId/view`}>
+            <Route path={`${path}/:sessionId/detail`}>
               <SessionViewPage />
             </Route>
-            <Route path={`${path}/search`}>
+            <Route path={`${path}`} exact>
               <SessionSearchPage ref={formRef} />
             </Route>
             <Route path={`${path}/list`}>

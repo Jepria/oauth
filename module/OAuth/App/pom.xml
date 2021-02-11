@@ -6,7 +6,7 @@
 
   <groupId>org.jepria.oauth</groupId>
   <artifactId>OAuth</artifactId>
-  <version>1.0.1</version>
+  <version>1.1.0</version>
   <packaging>pom</packaging>
 
   <properties>
@@ -18,12 +18,10 @@
     <oracle.version>11.2.0.4</oracle.version>
     <jersey.version>2.29</jersey.version>
     <antcontrib.version>1.0b3</antcontrib.version>
-    <jepria.version>12.2.0</jepria.version>
+    <jepria.version>12.3.0-SNAPSHOT</jepria.version>
     <jepriatoolkit.version>7.15.0</jepriatoolkit.version>
     <tomcat.version>7.0.68</tomcat.version>
     <log4j.version>1.2.17</log4j.version>
-    <gwtlog.version>3.2.1</gwtlog.version>
-    <gwt.version>2.8.0</gwt.version>
     <commonsfileupload.version>1.2.2</commonsfileupload.version>
     <commonsio.version>2.4</commonsio.version>
     <jakartawsrsapi.version>2.1.5</jakartawsrsapi.version>
@@ -31,54 +29,16 @@
     <jerseyhk2.version>2.29</jerseyhk2.version>
     <javassist.version>3.25.0-GA</javassist.version>
     <jakartajsonbindapi.version>1.0.1</jakartajsonbindapi.version>
-    <swaggerui.version>3.10.0</swaggerui.version>
+    <swaggerui.version>3.10.1.0</swaggerui.version>
   </properties>
 
   <modules>
-    <module>client-react</module>
-    <module>client-html</module>
-    <module>service-rest</module>
-    <module>webapp</module>
+    <module>oauth-admin</module>
+    <module>oauth-server</module>
   </modules>
 
   <build>
     <plugins>
-      <plugin>
-        <artifactId>maven-clean-plugin</artifactId>
-        <version>3.1.0</version>
-        <executions>
-          <execution>
-            <id>clean-dist</id>
-            <goals>
-              <goal>clean</goal>
-            </goals>
-            <phase>clean</phase>
-            <inherited>false</inherited>
-            <configuration>
-              <filesets>
-                <fileset>
-                  <directory>dist</directory>
-                </fileset>
-              </filesets>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.tomcat.maven</groupId>
-        <artifactId>tomcat7-maven-plugin</artifactId>
-        <version>2.2</version>
-        <inherited>false</inherited>
-        <configuration>
-          <ignorePackaging>true</ignorePackaging>
-          <url>http://vsmlapprfid1:8080/manager/text</url>
-          <username>admin</username>
-          <password>admin0</password>
-          <path>/oauth</path>
-          <warFile>${project.basedir}/dist/oauth.war</warFile>
-          <update>true</update>
-        </configuration>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
@@ -127,6 +87,14 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>2.22.2</version>
+        <configuration>
+          <skipITs>true</skipITs>
+        </configuration>
       </plugin>
     </plugins>
   </build>

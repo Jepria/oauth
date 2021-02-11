@@ -1,0 +1,129 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "OAuth 2.0 Provider API"
+  },
+  "servers": [
+    {
+      "url": "/oauth-admin/api"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Key",
+      "description": "OAuth security key management"
+    }
+  ],
+  "security": [
+    {
+      "OAuth": []
+    }
+  ],
+  "paths": {
+    "/key/{sessionId}": {
+      "get": {
+        "tags": ["Key"],
+        "summary": "Get key by ID",
+        "description": "",
+        "operationId": "getRecordById",
+        "parameters": [
+          {
+            "name": "keyId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json;charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/key": {
+      "get": {
+        "tags": ["Key"],
+        "summary": "Get actual key",
+        "description": "",
+        "operationId": "getKey",
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json;charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/key": {
+      "post": {
+        "tags": ["Key"],
+        "summary": "Update key pair",
+        "description": "",
+        "operationId": "updateKey",
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "OAuth": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "/oauth/api/authorize",
+            "tokenUrl": "/oauth/api/token"
+          },
+          "password": {
+            "tokenUrl": "/oauth/api/token",
+            "refreshUrl": "/oauth/api/token"
+          },
+          "clientCredentials": {
+            "tokenUrl": "/oauth/api/token",
+            "refreshUrl": "/oauth/api/token"
+          }
+        }
+      }
+    },
+    "schemas": {
+      "KeyDto": {
+        "type": "object",
+        "properties": {
+          "keyId": {
+            "type": "string"
+          },
+          "publicKey": {
+            "type": "string"
+          },
+          "dateIns": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "isActual": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

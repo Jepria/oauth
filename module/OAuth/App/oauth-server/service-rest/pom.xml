@@ -6,20 +6,20 @@
 
   <groupId>org.jepria.oauth</groupId>
   <artifactId>oauth-server-service-rest</artifactId>
-  <version>1.0.1</version>
+  <version>1.1.0</version>
   <packaging>war</packaging>
 
   <parent>
     <groupId>org.jepria.oauth</groupId>
     <artifactId>oauth-server</artifactId>
-    <version>1.0.1</version>
+    <version>1.1.0</version>
   </parent>
 
   <dependencies>
     <dependency>
       <groupId>org.jepria.oauth</groupId>
       <artifactId>oauth-admin-core</artifactId>
-      <version>1.0.1</version>
+      <version>1.1.0</version>
     </dependency>
     <!-- OAuth -->
     <dependency>

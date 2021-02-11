@@ -6,33 +6,25 @@ import {
 } from "react-router-dom";
 import KeyViewPage from './pages/KeyViewPage';
 import { AppState } from '../app/store/reducer';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { KeyState } from './types';
-import { actions } from './state/keySlice';
 import {
   Panel,
-  TabPanel, Tab, Toolbar,
-  ToolbarButtonBase,
+  TabPanel, 
+  Tab,
   Loader
 } from '@jfront/ui-core';
 import { UserPanel } from '@jfront/oauth-ui';
 import { UserContext } from '@jfront/oauth-user'
 import { useTranslation } from 'react-i18next';
+import { KeyToolbar } from './components/KeyToolbar';
 
 const KeyRoute: React.FC = () => {
 
   const { path } = useRouteMatch();
-  const dispatch = useDispatch();
   const { t } = useTranslation();
-  const { isRoleLoading, isUserInRole } = useContext(UserContext);
-  const [hasUpdateRole, setHasUpdateRole] = useState(false);
+  const { isRoleLoading } = useContext(UserContext);
   const { isLoading, message } = useSelector<AppState, KeyState>(state => state.key);
-
-  useEffect(() => {
-    isUserInRole("OAUpdateKey")
-      .then(setHasUpdateRole);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   return (
     <Panel>
@@ -42,18 +34,7 @@ const KeyRoute: React.FC = () => {
           <Tab selected>{t('key.moduleName')}</Tab>
           <UserPanel />
         </TabPanel>
-        <Toolbar>
-          <ToolbarButtonBase onClick={() => {
-            if (window.confirm(t('key.toolbar.updateMessage'))) {
-              dispatch(actions.update({
-                loadingMessage: t('dataLoadingMessage'),
-                callback: () => dispatch(actions.getRecordById({ loadingMessage: t('dataLoadingMessage') }))
-              }))
-            }
-          }} title={t('key.toolbar.update')} disabled={!hasUpdateRole}>
-            <img src={process.env.PUBLIC_URL + '/images/change_password.png'} alt={t('key.toolbar.update')} title={t('key.toolbar.update')} />
-          </ToolbarButtonBase>
-        </Toolbar>
+        <KeyToolbar/>
       </Panel.Header>
       <Panel.Content>
         <Switch>

@@ -84,7 +84,9 @@ export const DeleteAllDialog = ({ visible, onCancel }: DeleteAllDialogProps) => 
       withCloseButton>
       <Form.Field>
         <Form.Label style={{ minWidth: 'unset', width: 'unset' }}>{t('session.operator.legend')}</Form.Label>
-        <Form.Control>
+        <Form.Control style={{
+          maxWidth: "300px"
+        }}>
           <ComboBox
             name="operatorId"
             isLoading={operators.isLoading}

@@ -6,7 +6,7 @@
 
   <groupId>org.jepria.oauth</groupId>
   <artifactId>OAuth</artifactId>
-  <version>1.0.1</version>
+  <version>1.1.0</version>
   <packaging>pom</packaging>
 
   <properties>
@@ -39,21 +39,6 @@
 
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.apache.tomcat.maven</groupId>
-        <artifactId>tomcat7-maven-plugin</artifactId>
-        <version>2.2</version>
-        <inherited>false</inherited>
-        <configuration>
-          <ignorePackaging>true</ignorePackaging>
-          <url>http://vsmlapprfid1:8080/manager/text</url>
-          <username>admin</username>
-          <password>admin0</password>
-          <path>/oauth</path>
-          <warFile>${project.basedir}/dist/oauth.war</warFile>
-          <update>true</update>
-        </configuration>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
@@ -102,6 +87,14 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>2.22.2</version>
+        <configuration>
+          <skipITs>true</skipITs>
+        </configuration>
       </plugin>
     </plugins>
   </build>

@@ -22,7 +22,7 @@
     "@jfront/core-redux-saga": "0.2.2",
     "@jfront/core-rest": "0.1.4",
     "@jfront/core-common": "0.1.0",
-    "@jfront/ui-core": "0.8.1",
+    "@jfront/ui-core": "0.9.0",
     "@reduxjs/toolkit": "^1.5.0",
     "axios": "0.20.0",
     "core-js": "3.8.3",

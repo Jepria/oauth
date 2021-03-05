@@ -47,7 +47,10 @@ public class LoginAttemptLimitFilter implements ContainerRequestFilter, Containe
       cookie.setMaxAge(0);
       httpServletResponse.addCookie(cookie);
     } else {
-      httpServletResponse.addCookie(new javax.servlet.http.Cookie(CURRENT_ATTEMPT_COUNT, currentAttemptCount.toString()));
+      javax.servlet.http.Cookie cookie = new javax.servlet.http.Cookie(CURRENT_ATTEMPT_COUNT, currentAttemptCount.toString());
+      cookie.setHttpOnly(true);
+      cookie.setMaxAge(60*60*24);
+      httpServletResponse.addCookie(cookie);
     }
   }
 }

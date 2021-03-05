@@ -34,8 +34,6 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
   TokenServerFactory tokenServerFactory;
   @Context
   HttpServletRequest request;
-  @Context
-  ContainerRequestContext containerRequestContext;
   
   private String getHostContext() {
     return URI.create(request.getRequestURL().toString()).resolve(request.getContextPath()).toString();
@@ -50,11 +48,11 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
                             @QueryParam("redirect_uri") String redirectUriEncoded,
                             @QueryParam("code_challenge") String codeChallenge,
                             @QueryParam("state") String state,
-                            @CookieParam(SESSION_ID) String sessionToken) {
+                            @CookieParam(SESSION_ID) String sessionToken,
+                            @CookieParam(CURRENT_ATTEMPT_COUNT) String currentAttemptCount) {
     
-    Map<String, Cookie> cookieMap = containerRequestContext.getCookies();
-    if (cookieMap.containsKey(CURRENT_ATTEMPT_COUNT)) {
-      if (Integer.valueOf(cookieMap.get(CURRENT_ATTEMPT_COUNT).getValue()).compareTo(LoginAttemptLimitFilter.getMaxAttemptCount(request)) > 0) {
+    if (currentAttemptCount != null && currentAttemptCount.length() > 0) {
+      if (Integer.valueOf(currentAttemptCount).compareTo(LoginAttemptLimitFilter.getMaxAttemptCount(request)) > 0) {
         throw new OAuthRuntimeException(ACCESS_DENIED, "Превышено количество неуспешных попыток входа, обратитесь в службу технической поддержки для восстановления доступа.");
       }
     }

@@ -24,12 +24,10 @@ import java.net.URI;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.Date;
 
 import static org.jepria.oauth.main.OAuthConstants.*;
 import static org.jepria.oauth.main.rest.jersey.LoginAttemptLimitFilter.CURRENT_ATTEMPT_COUNT;
-import static org.jepria.oauth.main.rest.jersey.LoginAttemptLimitFilter.DEFAULT_MAX_ATTEMPT_COUNT;
 import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 /**

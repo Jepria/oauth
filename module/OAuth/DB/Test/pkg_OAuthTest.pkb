@@ -2026,6 +2026,7 @@ is
       , clientName          => testClientSName
       , clientNameEn        => testClientSName
       , applicationType     => 'native'
+      , loginModuleUri      => null
       , grantTypeList       => null
       , roleShortNameList   => null
       , operatorId          => testOperId

@@ -9,6 +9,10 @@
 -- Определяет табличное пространство для индексов
 @oms-set-indexTablespace.sql
 
+@oms-run remove-mlog.sql
+@oms-run oa_client.sql
+@oms-run create-mlog.sql
+
 -- обновляем пакеты для последующего использования
 @oms-run Common/pkg_OAuthCommon.pks
 show errors
@@ -19,7 +23,3 @@ show errors
 show errors
 @oms-run ./pkg_OAuth.pkb
 show errors
-
-@oms-run remove-mlog.sql
-@oms-run oa_client.sql
-@oms-run create-mlog.sql

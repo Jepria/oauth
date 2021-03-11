@@ -667,8 +667,6 @@ is
 
   rec oa_client%rowtype;
 
-
-
   /*
     Заполняет поля записи для oa_client.
   */
@@ -680,6 +678,7 @@ is
     blockFlag integer;
 
   begin
+    dbms_output.put_line(loginModuleUri);
     if applicationType in ( Web_AppType, Service_AppType) then
       if rec.client_secret is null then
         rec.client_secret := pkg_OAuthCommon.encrypt(
@@ -806,6 +805,7 @@ begin
     , d.client_name             = rec.client_name
     , d.client_name_en          = rec.client_name_en
     , d.application_type        = rec.application_type
+    , d.login_module_uri        = rec.login_module_uri
     , d.change_date             = rec.change_date
     , d.change_operator_id      = rec.change_operator_id
     , d.operator_id             = rec.operator_id

@@ -115,6 +115,13 @@ begin
     , roleNameEn  =>
         'OAuth: OAViewKey'
   );
+  mergeRole(
+    roleShortName => pkg_OAuthCommon.OALoginModule_RoleSName
+    , roleName    =>
+        'OAuth: логин модуль'
+    , roleNameEn  =>
+        'OAuth: OALoginModule'
+  );
 
   dbms_output.put_line(
     'roles changed: ' || nChanged

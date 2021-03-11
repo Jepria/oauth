@@ -464,6 +464,7 @@ end addClientGrant;
   applicationType             - Тип клиентского приложения
   grantTypeList               - Список грантов через разделитель ","
   roleShortNameList           - Список ролей из op_role через разделитель ","
+  loginModuleUri              - URI логин модуля
   operatorId                  - Id оператора, выполняющего операцию
 
   Возврат:
@@ -476,6 +477,7 @@ function createClient(
   , applicationType varchar2
   , grantTypeList varchar2
   , roleShortNameList varchar2
+  , loginModuleUri varchar2
   , operatorId integer
 )
 return integer
@@ -509,6 +511,7 @@ is
     rec.application_type          := applicationType;
     rec.date_ins                  := curTime;
     rec.operator_id_ins           := operatorId;
+    rec.login_module_uri          := loginModuleUri;
     rec.change_date               := curTime;
     rec.change_operator_id        := operatorId;
     if applicationType in ( Web_AppType, Service_AppType)
@@ -574,6 +577,7 @@ exception when others then
           || ', clientName="' || clientName || '"'
           || ', applicationType="' || applicationType || '"'
           || ', grantTypeList="' || grantTypeList || '"'
+          || ', loginModuleUri="' || loginModuleUri || '"'
           || ', operatorId=' || operatorId
           || ').'
         )
@@ -640,6 +644,7 @@ end lockClient;
   applicationType             - Тип клиентского приложения
   grantTypeList               - Список грантов через разделитель ","
   roleShortNameList           - Список ролей из op_role через разделитель ","
+  loginModuleUri              - URI логин модуля
   operatorId                  - Id оператора, выполняющего операцию
 */
 procedure updateClient(
@@ -649,6 +654,7 @@ procedure updateClient(
   , applicationType varchar2
   , grantTypeList varchar2
   , roleShortNameList varchar2
+  , loginModuleUri varchar2
   , operatorId integer
 )
 is
@@ -686,6 +692,7 @@ is
     rec.client_name               := clientName;
     rec.client_name_en            := clientNameEn;
     rec.application_type          := applicationType;
+    rec.login_module_uri          := loginModuleUri;
     rec.change_date               := curTime;
     rec.change_operator_id        := operatorId;
     if applicationType in ( Web_AppType, Service_AppType)

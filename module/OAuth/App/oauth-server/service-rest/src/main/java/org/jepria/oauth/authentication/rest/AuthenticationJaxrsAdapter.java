@@ -1,13 +1,14 @@
 package org.jepria.oauth.authentication.rest;
 
 import org.jepria.oauth.authentication.AuthenticationServerFactory;
+import org.jepria.oauth.authentication.AuthenticationService;
 import org.jepria.oauth.authentication.dto.SessionTokenDto;
 import org.jepria.oauth.exception.OAuthRuntimeException;
 import org.jepria.oauth.main.rest.jersey.LoginAttempt;
 import org.jepria.oauth.main.rest.jersey.LoginAttemptLimitFilter;
 import org.jepria.oauth.token.TokenServerFactory;
+import org.jepria.oauth.token.TokenService;
 import org.jepria.oauth.token.dto.TokenDto;
-import org.jepria.server.env.EnvironmentPropertySupport;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
 
 import javax.inject.Inject;
@@ -26,7 +27,8 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
-import static org.jepria.oauth.main.OAuthConstants.*;
+import static org.jepria.oauth.main.OAuthConstants.SID;
+import static org.jepria.oauth.main.Utils.*;
 import static org.jepria.oauth.main.rest.jersey.LoginAttemptLimitFilter.CURRENT_ATTEMPT_COUNT;
 import static org.jepria.oauth.sdk.OAuthConstants.*;
 
@@ -34,56 +36,25 @@ import static org.jepria.oauth.sdk.OAuthConstants.*;
  * Authentication Endpoint takes care of authentication business logic part for Authorization Code Flow and Implicit Flow.
  */
 public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
-  @Inject
-  AuthenticationServerFactory authenticationServerFactory;
-  @Inject
-  TokenServerFactory tokenServerFactory;
-  @Context
-  HttpServletRequest request;
+  
+  private final AuthenticationService authenticationService;
+  private final TokenService tokenService;
   @Context
   ContainerRequestContext containerRequestContext;
-
-  private String getHostContext() {
-    return URI.create(request.getRequestURL().toString()).resolve(request.getContextPath()).toString();
+  
+  @Inject
+  public AuthenticationJaxrsAdapter(AuthenticationServerFactory authenticationServerFactory, TokenServerFactory tokenServerFactory) {
+    this.authenticationService = authenticationServerFactory.getService();
+    this.tokenService = tokenServerFactory.getService();
   }
-
-  private Integer getAccessTokenLifeTime() {
-    HttpSession session = request.getSession(false);
-    String tokenLifeTime = null;
-    if (session != null) {
-      tokenLifeTime = (String) session.getAttribute(OAUTH_ACCESS_TOKEN_LIFE_TIME);
-    }
-    if (tokenLifeTime == null) {
-      tokenLifeTime = EnvironmentPropertySupport.getInstance(request).getProperty(OAUTH_ACCESS_TOKEN_LIFE_TIME, OAUTH_ACCESS_TOKEN_LIFE_TIME_DEFAULT);
-      if (session != null) {
-        session.setAttribute(OAUTH_ACCESS_TOKEN_LIFE_TIME, tokenLifeTime);
-      }
-    }
-    return Integer.valueOf(tokenLifeTime);
-  }
-
-  private Integer getSessionTokenLifeTime() {
-    HttpSession session = request.getSession(false);
-    String tokenLifeTime = null;
-    if (session != null) {
-      tokenLifeTime = (String) session.getAttribute(OAUTH_SSO_TOKEN_LIFE_TIME);
-    }
-    if (tokenLifeTime == null) {
-      tokenLifeTime = EnvironmentPropertySupport.getInstance(request).getProperty(OAUTH_SSO_TOKEN_LIFE_TIME, OAUTH_SSO_TOKEN_LIFE_TIME_DEFAULT);
-      if (session != null) {
-        session.setAttribute(OAUTH_SSO_TOKEN_LIFE_TIME, tokenLifeTime);
-      }
-    }
-    return Integer.valueOf(tokenLifeTime);
-  }
-
+  
   @POST
   @Path("/authenticate")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   @LoginAttempt
   public Response authenticate(
       @QueryParam("response_type") String responseType,
-      @QueryParam("authId") String authId,
+      @QueryParam("session_id") String sessionId,
       @QueryParam("redirect_uri") String redirectUriEncoded,
       @QueryParam("client_id") String clientId,
       @QueryParam("client_name") String clientName,
@@ -91,7 +62,7 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
       @FormParam("username") String username,
       @FormParam("password") String password) throws UnsupportedEncodingException {
     String redirectUri = null;
-
+    
     try {
       redirectUri = URLDecoder.decode(redirectUriEncoded.replaceAll("%20", "\\+"), StandardCharsets.UTF_8.name());
     } catch (UnsupportedEncodingException e) {
@@ -102,19 +73,19 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
     }
     SessionTokenDto sessionToken;
     try {
-      sessionToken = authenticationServerFactory.getService()
-          .authenticate(authId,
+      sessionToken = authenticationService
+          .authenticate(sessionId,
               redirectUri,
               clientId,
               username,
               password,
-              getHostContext(),
-              getSessionTokenLifeTime());
+              getHostContextPath(request),
+              getSessionTokenLifeTime(request));
     } catch (OAuthRuntimeException ex) {
       if (ex.getExceptionCode().equals(ACCESS_DENIED)) {
         return Response.status(302).location(URI.create("/oauth/login/?"
             + RESPONSE_TYPE + "=" + responseType
-            + "&" + AUTH_ID + "=" + authId
+            + "&" + SID + "=" + sessionId
             + "&" + REDIRECT_URI + "=" + redirectUriEncoded
             + "&" + CLIENT_ID + "=" + clientId
             + "&" + CLIENT_NAME + "=" + URLEncoder.encode(clientName, StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20")
@@ -144,12 +115,12 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
               true))
           .build();
     } else if (TOKEN.equalsIgnoreCase(responseType)) {
-      TokenDto tokenDto = tokenServerFactory.getService().create(responseType,
-          getHostContext(),
+      TokenDto tokenDto = tokenService.create(responseType,
+          getHostContextPath(request),
           sessionToken.getAuthorizationCode(),
           clientId,
           URI.create(redirectUri),
-          getAccessTokenLifeTime());
+          getAccessTokenLifeTime(request));
       response = Response.status(302).location(URI.create(redirectUri
           + "#" + ACCESS_TOKEN_QUERY_PARAM + tokenDto.getAccessToken()
           + "&" + TOKEN_TYPE_QUERY_PARAM + tokenDto.getTokenType()
@@ -169,10 +140,10 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
     } else {
       response = Response.status(302).location(URI.create(redirectUri + getSeparator(redirectUri) + ERROR_QUERY_PARAM + UNSUPPORTED_RESPONSE_TYPE)).build();
     }
-
+    
     return response;
   }
-
+  
   @GET
   @Path("/logout")
   public Response logout(
@@ -188,12 +159,10 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
       e.printStackTrace();
     }
     if (sessionToken != null) {
-      authenticationServerFactory
-          .getService()
-          .logout(clientId,
+      authenticationService.logout(clientId,
               redirectUri,
               sessionToken,
-              getHostContext());
+              getHostContextPath(request));
     }
     HttpSession session = request.getSession(false);
     if (session != null) {
@@ -204,23 +173,5 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
         .cookie(new NewCookie(SESSION_ID, "", null, null, NewCookie.DEFAULT_VERSION, null, 0, new Date(), false, true))
         .build();
   }
-
-  /**
-   * Get next separator for URI
-   *
-   * @param uri
-   * @return
-   */
-  private static String getSeparator(String uri) {
-    String separator = "";
-    if (uri != null) {
-      if (uri.contains("?")) {
-        separator = "&";
-      } else {
-        separator = "?";
-      }
-    }
-    return separator;
-  }
-
+  
 }

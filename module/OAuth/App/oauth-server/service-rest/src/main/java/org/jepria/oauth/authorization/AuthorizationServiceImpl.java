@@ -5,6 +5,7 @@ import org.jepria.oauth.client.dto.ClientDto;
 import org.jepria.oauth.exception.OAuthRuntimeException;
 import org.jepria.oauth.key.KeyService;
 import org.jepria.oauth.key.dto.KeyDto;
+import org.jepria.oauth.main.Utils;
 import org.jepria.oauth.sdk.ResponseType;
 import org.jepria.oauth.sdk.token.Decryptor;
 import org.jepria.oauth.sdk.token.Token;
@@ -32,23 +33,6 @@ public class AuthorizationServiceImpl implements AuthorizationService {
   private final ClientService clientService;
   private final KeyService keyService;
   
-  private Credential serverCredential = new Credential() {
-    @Override
-    public int getOperatorId() {
-      return 1;
-    }
-    
-    @Override
-    public String getUsername() {
-      return "SERVER";
-    }
-    
-    @Override
-    public boolean isUserInRole(String roleShortName) {
-      return true;
-    }
-  };
-  
   public AuthorizationServiceImpl(SessionService sessionService, ClientService clientService, KeyService keyService) {
     this.clientService = clientService;
     this.sessionService = sessionService;
@@ -56,7 +40,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
   }
   
   private void checkClient(String clientId) {
-    List<ClientDto> result = clientService.getClient(clientId, null, serverCredential.getOperatorId());
+    List<ClientDto> result = clientService.getClient(clientId, null, Utils.serverCredential.getOperatorId());
     if (result.size() != 1) {
       throw new OAuthRuntimeException(UNAUTHORIZED_CLIENT, "Client not found");
     }
@@ -85,8 +69,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     sessionDto.setRedirectUri(redirectUri);
     sessionDto.setCodeChallenge(codeChallenge);
     try {
-      String sessionId = String.valueOf(sessionService.create(sessionDto, serverCredential));
-      return (SessionDto) sessionService.getRecordById(sessionId, serverCredential);
+      String sessionId = String.valueOf(sessionService.create(sessionDto, Utils.serverCredential));
+      return (SessionDto) sessionService.getRecordById(sessionId, Utils.serverCredential);
     } catch (RuntimeSQLException ex) {
       SQLException sqlException = ex.getSQLException();
       if (sqlException.getErrorCode() == 20001) {
@@ -109,7 +93,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     checkClient(clientId);
     checkResponseType(clientId, responseType);
     try {
-      KeyDto keyDto = keyService.getKeys(null, serverCredential);
+      KeyDto keyDto = keyService.getKeys(null, Utils.serverCredential);
       Token token = TokenImpl.parseFromString(sessionToken);
       Decryptor decryptor = new DecryptorRSA(keyDto.getPrivateKey());
       token = decryptor.decrypt(token);
@@ -118,7 +102,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         String[] subject = token.getSubject().split(":");
         SessionSearchDto sessionSearchDto = new SessionSearchDto();
         sessionSearchDto.setAuthorizationCode(token.getJti());
-        List<SessionDto> sessionDtoList = sessionService.find(sessionSearchDto, serverCredential);
+        List<SessionDto> sessionDtoList = sessionService.find(sessionSearchDto, Utils.serverCredential);
         if (sessionDtoList != null && !sessionDtoList.isEmpty() && sessionDtoList.size() == 1
             && sessionDtoList.get(0).getSessionTokenDateFinish().after(new Date())) {
           SessionCreateDto sessionCreateDto = new SessionCreateDto();
@@ -133,8 +117,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
           return (SessionDto) sessionService
               .getRecordById(String
                       .valueOf(sessionService
-                          .create(sessionCreateDto, serverCredential))
-                  , serverCredential);
+                          .create(sessionCreateDto, Utils.serverCredential))
+                  , Utils.serverCredential);
         } else {
           /**
            * Сессия истекла или не найдена

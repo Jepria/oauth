@@ -1,42 +1,49 @@
 package org.jepria.oauth.authorization.rest;
 
 import org.jepria.oauth.authorization.AuthorizationServerFactory;
+import org.jepria.oauth.authorization.AuthorizationService;
 import org.jepria.oauth.exception.OAuthRuntimeException;
 import org.jepria.oauth.main.rest.jersey.LoginAttemptLimitFilter;
 import org.jepria.oauth.sdk.ResponseType;
 import org.jepria.oauth.session.dto.SessionDto;
 import org.jepria.oauth.token.TokenServerFactory;
+import org.jepria.oauth.token.TokenService;
 import org.jepria.oauth.token.dto.TokenDto;
+import org.jepria.server.env.EnvironmentPropertySupport;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
+import javax.ws.rs.core.Response;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.Map;
 
-import static org.jepria.oauth.main.OAuthConstants.AUTH_ID;
+import static org.jepria.oauth.main.OAuthConstants.*;
+import static org.jepria.oauth.main.Utils.*;
 import static org.jepria.oauth.main.rest.jersey.LoginAttemptLimitFilter.CURRENT_ATTEMPT_COUNT;
 import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
-  @Inject
-  AuthorizationServerFactory authorizationServerFactory;
-  @Inject
-  TokenServerFactory tokenServerFactory;
-  @Context
-  HttpServletRequest request;
   
-  private String getHostContext() {
-    return URI.create(request.getRequestURL().toString()).resolve(request.getContextPath()).toString();
+  private final AuthorizationService authorizationService;
+  private final TokenService tokenService;
+  
+  @Inject
+  public AuthorizationJaxrsAdapter(AuthorizationServerFactory authorizationServerFactory, TokenServerFactory tokenServerFactory) {
+    this.authorizationService = authorizationServerFactory.getService();
+    this.tokenService = tokenServerFactory.getService();
+  }
+  
+  private String getLoginModuleUri() {
+    return EnvironmentPropertySupport.getInstance(request).getProperty(LOGIN_MODULE, DEFAULT_LOGIN_MODULE);
   }
   
   @GET
@@ -56,7 +63,6 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
         throw new OAuthRuntimeException(ACCESS_DENIED, "Превышено количество неуспешных попыток входа, обратитесь в службу технической поддержки для восстановления доступа.");
       }
     }
-    
     String redirectUri = null;
     if (redirectUriEncoded == null) {
       throw new OAuthRuntimeException(INVALID_REQUEST, "redirect_uri is null");
@@ -73,17 +79,15 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
     SessionDto sessionDto;
     
     if (sessionToken != null) {
-      sessionDto = authorizationServerFactory
-          .getService()
+      sessionDto = authorizationService
           .authorize(responseType,
               clientId,
               redirectUri,
               codeChallenge,
               sessionToken,
-              getHostContext());
+              getHostContextPath(request));
     } else {
-      sessionDto = authorizationServerFactory
-          .getService()
+      sessionDto = authorizationService
           .authorize(responseType,
               clientId,
               redirectUri,
@@ -104,11 +108,10 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
           e.printStackTrace();
         }
       } else {
-        TokenDto tokenDto = tokenServerFactory
-            .getService()
+        TokenDto tokenDto = tokenService
             .create(responseType,
                 clientId,
-                getHostContext(),
+                getHostContextPath(request),
                 sessionDto.getAuthorizationCode(),
                 URI.create(redirectUri),
                 8);
@@ -133,9 +136,9 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
       }
     } else {
       try {
-        response = Response.status(302).location(URI.create("/oauth/login/?"
+        response = Response.status(302).location(URI.create(getLoginModuleUri() + "?"
             + RESPONSE_TYPE + "=" + responseType
-            + "&" + AUTH_ID + "=" + sessionDto.getSessionId()
+            + "&" + SID + "=" + sessionDto.getSessionId()
             + "&" + REDIRECT_URI + "=" + redirectUriEncoded
             + "&" + CLIENT_ID + "=" + sessionDto.getClient().getValue()
             + "&" + CLIENT_NAME + "=" + URLEncoder.encode(sessionDto.getClient().getName(), StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20")
@@ -145,40 +148,5 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
       }
     }
     return response;
-  }
-  
-  /**
-   * Get next separator for URI
-   *
-   * @param uri
-   * @return
-   */
-  private static String getSeparator(String uri) {
-    String separator = "";
-    if (uri != null) {
-      if (uri.contains("?")) {
-        separator = "&";
-      } else {
-        separator = "?";
-      }
-    }
-    return separator;
-  }
-  
-  /**
-   * @param redirectUri
-   * @return
-   */
-  private boolean isValidUri(String redirectUri) {
-    if (redirectUri == null) {
-      return false;
-    }
-    try {
-      new URI(redirectUri);
-      return true;
-    } catch (URISyntaxException | NullPointerException e) {
-      e.printStackTrace();
-      return false;
-    }
   }
 }

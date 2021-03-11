@@ -14,6 +14,7 @@ import org.jepria.oauth.sdk.token.Token;
 import org.jepria.oauth.sdk.token.TokenImpl;
 import org.jepria.oauth.sdk.token.rsa.EncryptorRSA;
 import org.jepria.oauth.sdk.token.rsa.SignerRSA;
+import org.jepria.oauth.session.LoginConfirmService;
 import org.jepria.oauth.session.SessionService;
 import org.jepria.oauth.session.dto.SessionDto;
 import org.jepria.oauth.session.dto.SessionSearchDto;
@@ -57,7 +58,7 @@ public class AuthenticationServiceTest {
   
   @BeforeAll
   public static void init(@Mock AuthenticationDao dao,
-                          @Mock SessionService sessionService,
+                          @Mock LoginConfirmService sessionService,
                           @Mock ClientUriService clientUriService,
                           @Mock KeyService keyService) throws NoSuchAlgorithmException {
     AuthenticationServiceTest.dao = dao;
@@ -153,20 +154,6 @@ public class AuthenticationServiceTest {
       authenticationService.loginByAuthorizationCode("test", "test", "wrongCodeVerifier");
     });
     assertDoesNotThrow(() -> authenticationService.loginByAuthorizationCode("test", "test", "testCodeVerifier"));
-  }
-  
-  @Test
-  public void authenticationTest() {
-    SessionTokenDto sessionTokenDto = authenticationService.authenticate("1",
-        "http://redirecturi",
-        "testClient",
-        "testUser",
-        "testPassword",
-        "issuer",
-        8);
-    assertNotNull(sessionTokenDto);
-    verify(sessionService, atLeast(1)).find(any(SessionSearchDto.class), any());
-    verify(sessionService, times(1)).update(isA(String.class), any(SessionUpdateDto.class), any());
   }
   
   @Test

@@ -180,7 +180,7 @@ public class ClientDaoImpl implements ClientDao {
       , OptionDto.class
       , clientId
       , operatorId);
-    return grantTypes.stream().map(OptionDto::getValue).collect(Collectors.toList());
+    return grantTypes.stream().map(option -> option.getValue()).collect(Collectors.toList());
   }
 
   @Override

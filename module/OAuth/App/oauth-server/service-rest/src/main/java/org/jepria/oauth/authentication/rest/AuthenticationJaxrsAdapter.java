@@ -49,7 +49,7 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
     return URI.create(request.getRequestURL().toString()).resolve(request.getContextPath()).toString();
   }
 
-  private Integer getAccessTokenLifeTime() {
+  private Long getAccessTokenLifeTime() {
     HttpSession session = request.getSession(false);
     String tokenLifeTime = null;
     if (session != null) {
@@ -61,10 +61,10 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
         session.setAttribute(OAUTH_ACCESS_TOKEN_LIFE_TIME, tokenLifeTime);
       }
     }
-    return Integer.valueOf(tokenLifeTime);
+    return Long.valueOf(tokenLifeTime);
   }
 
-  private Integer getSessionTokenLifeTime() {
+  private Long getSessionTokenLifeTime() {
     HttpSession session = request.getSession(false);
     String tokenLifeTime = null;
     if (session != null) {
@@ -76,7 +76,7 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
         session.setAttribute(OAUTH_SSO_TOKEN_LIFE_TIME, tokenLifeTime);
       }
     }
-    return Integer.valueOf(tokenLifeTime);
+    return Long.valueOf(tokenLifeTime);
   }
 
   @POST

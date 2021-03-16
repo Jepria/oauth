@@ -22,7 +22,7 @@ public interface TokenService {
                   String issuer,
                   String authCode,
                   URI redirectUri,
-                  Integer accessTokenLifeTime);
+                  Long accessTokenLifeTime);
   /**
    * Создание токена для OAuth GrantType Authorization Code
    *
@@ -37,7 +37,7 @@ public interface TokenService {
                   String authCode,
                   String issuer,
                   URI redirectUri,
-                  Integer accessTokenLifeTime);
+                  Long accessTokenLifeTime);
   /**
    * Создание токена для OAuth GrantType Resource owner credentials
    *
@@ -53,8 +53,8 @@ public interface TokenService {
                   String username,
                   Integer userId,
                   String issuer,
-                  Integer accessTokenLifeTime,
-                  Integer refreshTokenLifeTime);
+                  Long accessTokenLifeTime,
+                  Long refreshTokenLifeTime);
   
   /**
    * Создание токена для всех OAuth GrantType Refresh token
@@ -69,8 +69,8 @@ public interface TokenService {
   TokenDto create(String clientId,
                   String refreshToken,
                   String issuer,
-                  Integer accessTokenLifeTime,
-                  Integer refreshTokenLifeTime);
+                  Long accessTokenLifeTime,
+                  Long refreshTokenLifeTime);
   
   /**
    * Создание токена для всех OAuth GrantType Client credentials
@@ -85,8 +85,8 @@ public interface TokenService {
   TokenDto create(String clientId,
                   Integer clientOperatorId,
                   String issuer,
-                  Integer accessTokenLifeTime,
-                  Integer refreshTokenLifeTime);
+                  Long accessTokenLifeTime,
+                  Long refreshTokenLifeTime);
   
   /**
    * Получение информации о токене

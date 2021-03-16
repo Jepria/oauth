@@ -10,6 +10,7 @@ public class UriValidator implements ConstraintValidator<ValidURI, String> {
 
   @Override
   public boolean isValid(String s, ConstraintValidatorContext constraintValidatorContext) {
+    if (s == null) return true;
     try {
       URI uri = URI.create(s);
       if (uri.getFragment() != null) {

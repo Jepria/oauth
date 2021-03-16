@@ -8,14 +8,15 @@ import java.net.URI;
 public interface TokenService {
 
   /**
-   * Создание токена при входе в OAuth через IMPLICIT flow (responseType = token)
-   * @param responseType тип ответа
-   * @param clientId ID клиентского приложения
-   * @param issuer имя сервера
-   * @param authCode одноразовый код
-   * @param redirectUri URI для перенаправления
-   * @param accessTokenLifeTime Время жизни токена доступа
-   * @return токен
+   * create token for implicit flow (response_type=token)
+   *
+   * @param responseType response type
+   * @param clientId client application id
+   * @param issuer issuer server name
+   * @param authCode otp
+   * @param redirectUri client redirect uri
+   * @param accessTokenLifeTime life time of access token in hours
+   * @return token
    */
   TokenDto create(String responseType,
                   String clientId,
@@ -24,30 +25,31 @@ public interface TokenService {
                   URI redirectUri,
                   Integer accessTokenLifeTime);
   /**
-   * Создание токена для OAuth GrantType Authorization Code
+   * create token for authorization code flow (response_type=code, grant_type=authorization_code)
    *
-   * @param clientId ID клиентского приложения
-   * @param authCode  одноразовый код
-   * @param redirectUri URL для перенаправления
-   * @param issuer имя сервера
-   * @param accessTokenLifeTime Время жизни токена доступа
-   * @return токен
+   * @param clientId client application id
+   * @param authCode otp
+   * @param redirectUri client redirect uri
+   * @param issuer issuer server name
+   * @param accessTokenLifeTime life time of access token in hours
+   * @return token
    */
   TokenDto create(String clientId,
                   String authCode,
                   String issuer,
                   URI redirectUri,
                   Integer accessTokenLifeTime);
+  
   /**
-   * Создание токена для OAuth GrantType Resource owner credentials
+   * create token for user password flow (grant_type=password)
    *
-   * @param clientId ID клиентского приложения
-   * @param username имя пользователя
-   * @param userId ID пользователя
-   * @param issuer имя сервера
-   * @param accessTokenLifeTime Время жизни токена доступа
-   * @param refreshTokenLifeTime Время жизни токена обновления
-   * @return токен
+   * @param clientId client application id
+   * @param username user name
+   * @param userId user id
+   * @param issuer issuer server name
+   * @param accessTokenLifeTime life time of access token in hours
+   * @param refreshTokenLifeTime life time of refresh token in hours
+   * @return token
    */
   TokenDto create(String clientId,
                   String username,
@@ -57,14 +59,14 @@ public interface TokenService {
                   Integer refreshTokenLifeTime);
   
   /**
-   * Создание токена для всех OAuth GrantType Refresh token
+   * create token for refresh token flow (grant_type=refresh_token)
    *
-   * @param clientId ID клиентского приложения
+   * @param clientId client application id
    * @param refreshToken refresh токен
-   * @param issuer имя сервера
-   * @param accessTokenLifeTime Время жизни токена доступа
-   * @param refreshTokenLifeTime Время жизни токена обновления
-   * @return токен
+   * @param issuer issuer server name
+   * @param accessTokenLifeTime life time of access token in hours
+   * @param refreshTokenLifeTime life time of refresh token in hours
+   * @return token
    */
   TokenDto create(String clientId,
                   String refreshToken,
@@ -73,14 +75,14 @@ public interface TokenService {
                   Integer refreshTokenLifeTime);
   
   /**
-   * Создание токена для всех OAuth GrantType Client credentials
+   * create token for client credentials flow (grant_type=client_credentials)
    *
-   * @param clientId ID клиентского приложения
-   * @param clientOperatorId operator id приложения
-   * @param issuer имя сервера
-   * @param accessTokenLifeTime Время жизни токена доступа
-   * @param refreshTokenLifeTime Время жизни токена обновления
-   * @return токен
+   * @param clientId client application id
+   * @param clientOperatorId client application operator id
+   * @param issuer issuer server name
+   * @param accessTokenLifeTime life time of access token in hours
+   * @param refreshTokenLifeTime life time of refresh token in hours
+   * @return token
    */
   TokenDto create(String clientId,
                   Integer clientOperatorId,
@@ -89,19 +91,19 @@ public interface TokenService {
                   Integer refreshTokenLifeTime);
   
   /**
-   * Получение информации о токене
+   * get token info
    *
-   * @param hostContext имя сервера
-   * @param tokenString токен
-   * @return информация о токене
+   * @param issuer issuer server name
+   * @param tokenString token
+   * @return token info meta
    */
-  TokenInfoDto getTokenInfo(String hostContext, String tokenString);
+  TokenInfoDto getTokenInfo(String issuer, String tokenString);
   
   /**
-   * Удаление выданного токена
+   * delete issued token
    *
-   * @param clientId ID клиентского приложения
-   * @param tokenString токен
+   * @param clientId client application id
+   * @param tokenString token
    */
   void delete(String clientId, String tokenString);
   

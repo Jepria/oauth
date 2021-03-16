@@ -5,6 +5,7 @@ import org.jepria.oauth.key.KeyService;
 import org.jepria.oauth.key.dto.KeyDto;
 import org.jepria.oauth.main.Utils;
 import org.jepria.oauth.session.dao.SessionDao;
+import org.jepria.oauth.session.dto.SessionCreateDto;
 import org.jepria.oauth.session.dto.SessionDto;
 import org.jepria.oauth.session.dto.SessionSearchDto;
 import org.jepria.oauth.session.dto.SessionUpdateDto;
@@ -20,10 +21,7 @@ import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -65,6 +63,7 @@ public class LoginConfirmServiceTest {
       }
     });
     doNothing().when(dao).update(any(), isA(SessionUpdateDto.class), any());
+    when(dao.create(isA(SessionCreateDto.class), any())).thenReturn(new Random().nextInt());
     //keyServiceMocks
     KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
     kpg.initialize(2048);

@@ -65,9 +65,18 @@ public class LoginConfirmService extends SessionServiceImpl {
       sessionUpdateDto.setOperatorId(operatorId);
       sessionUpdateDto.setCodeChallenge(sessionDto.getCodeChallenge());
       sessionUpdateDto.setSessionTokenId(sessionToken.getJti());
-      sessionUpdateDto.setAccessTokenDateIns(sessionToken.getIssueTime());
-      sessionUpdateDto.setAccessTokenDateFinish(sessionToken.getExpirationTime());
+      sessionUpdateDto.setSessionTokenDateIns(sessionToken.getIssueTime());
+      sessionUpdateDto.setSessionTokenDateFinish(sessionToken.getExpirationTime());
       update(sessionId, sessionUpdateDto, credential);
+      
+      SessionCreateDto sessionCreateDto = new SessionCreateDto();
+      sessionCreateDto.setAuthorizationCode(sessionToken.getJti());
+      sessionCreateDto.setClientId(sessionDto.getClient().getValue());
+      sessionCreateDto.setOperatorId(operatorId);
+      sessionCreateDto.setSessionTokenId(sessionToken.getJti());
+      sessionCreateDto.setSessionTokenDateIns(sessionToken.getIssueTime());
+      sessionCreateDto.setSessionTokenDateFinish(sessionToken.getExpirationTime());
+      create(sessionCreateDto, Utils.serverCredential);
     
       SessionTokenDto sessionTokenDto = new SessionTokenDto();
       sessionTokenDto.setExpirationDate(sessionToken.getExpirationTime());

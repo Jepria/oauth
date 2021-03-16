@@ -2,7 +2,7 @@ Format: 1.5
 
 
 Title: OAuth
-SubTitle: Версия 1.1.0
+SubTitle: Версия 1.2.0
 
 # You can add a footer to your documentation like this:
 # Footer: [text]

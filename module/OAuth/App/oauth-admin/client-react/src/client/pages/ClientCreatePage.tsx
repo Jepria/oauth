@@ -10,6 +10,7 @@ import { SelectInput, TextInput, CheckBoxGroup, CheckBox, Form, DualList } from 
 import { AppState } from '../../app/store/reducer';
 import { useTranslation } from 'react-i18next';
 import { OptionState } from '@jfront/core-redux-saga';
+import { isUri } from 'valid-url'
 
 const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();
@@ -28,24 +29,30 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
       }));
     },
     validate: (values) => {
-      const errors: { clientId?: string, clientName?: string, applicationType?: string, grantTypes?: string } = {};
-      if (!values['clientId']) {
+      const errors: { clientId?: string, clientName?: string, clientNameEn?: string, loginModuleUri?: string, applicationType?: string, grantTypes?: string } = {};
+      if (!values.clientId) {
         errors.clientId = t('validation.notEmpty')
       } else {
-        if (!/[A-Za-z0-9]/.test(values['clientId'])) {
+        if (!/[A-Za-z0-9]/.test(values.clientId)) {
           errors.clientId = t('validation.onlySymbolsAndDigits')
         }
-        if (values['clientId'].length > 32) {
+        if (values.clientId.length > 32) {
           errors.clientId = t('validation.maxLength')
         }
       }
-      if (!values['clientName']) {
+      if (!values.clientName) {
         errors.clientName = t('validation.notEmpty')
       }
-      if (!values['applicationType']) {
+      if (!values.clientNameEn) {
+        errors.clientNameEn = t('validation.notEmpty')
+      }
+      if (values.loginModuleUri && !isUri(values.loginModuleUri)) {
+        errors.loginModuleUri = t('validation.invalidUriFormat')
+      }
+      if (!values.applicationType) {
         errors.applicationType = t('validation.notEmpty')
       }
-      if (!values['grantTypes'] || values['grantTypes'].length === 0) {
+      if (!values.grantTypes || values.grantTypes.length === 0) {
         errors.grantTypes = t('validation.notEmpty')
       }
       return errors;
@@ -94,7 +101,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
         </Form.Control>
       </Form.Field>
       <Form.Field>
-        <Form.Label>{t('client.clientNameEn')}:</Form.Label>
+        <Form.Label required>{t('client.clientNameEn')}:</Form.Label>
         <Form.Control
           style={{ maxWidth: "200px" }}
           error={formik.errors.clientNameEn}>
@@ -103,6 +110,18 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
             value={formik.values.clientNameEn}
             onChange={formik.handleChange}
             error={formik.errors.clientNameEn} />
+        </Form.Control>
+      </Form.Field>
+      <Form.Field>
+        <Form.Label>{t('client.loginModuleUri')}:</Form.Label>
+        <Form.Control
+          style={{ maxWidth: "200px" }}
+          error={formik.errors.loginModuleUri}>
+          <TextInput
+            name="loginModuleUri"
+            value={formik.values.loginModuleUri}
+            onChange={formik.handleChange}
+            error={formik.errors.loginModuleUri} />
         </Form.Control>
       </Form.Field>
       <Form.Field>

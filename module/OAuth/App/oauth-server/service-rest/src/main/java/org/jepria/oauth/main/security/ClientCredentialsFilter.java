@@ -6,6 +6,7 @@ import org.jepria.oauth.authentication.AuthenticationService;
 import org.jepria.server.data.RuntimeSQLException;
 import org.jepria.server.service.security.HttpBasicDynamicFeature;
 import org.jepria.server.service.security.SecurityContext;
+import org.jepria.server.service.security.oauth.OAuthDbHelper;
 import org.jepria.server.service.security.pkg_Operator;
 
 import javax.annotation.Priority;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Base64;
 
+import static org.jepria.compat.server.JepRiaServerConstant.DEFAULT_DATA_SOURCE_JNDI_NAME;
 import static org.jepria.compat.server.JepRiaServerConstant.DEFAULT_OAUTH_DATA_SOURCE_JNDI_NAME;
 import static org.jepria.server.service.security.HttpBasic.PASSWORD;
 
@@ -28,10 +30,8 @@ import static org.jepria.server.service.security.HttpBasic.PASSWORD;
 @Priority(Priorities.AUTHENTICATION)
 public class ClientCredentialsFilter implements ContainerRequestFilter {
   
-  @Inject
-  AuthenticationServerFactory serverFactory;
   @Context
-  HttpServletRequest request;
+  private HttpServletRequest request;
   
   @Override
   public void filter(ContainerRequestContext requestContext) throws IOException {
@@ -44,9 +44,26 @@ public class ClientCredentialsFilter implements ContainerRequestFilter {
     try {
       authString = authString.replaceFirst("[Bb]asic ", "");
       String[] credentials = new String(Base64.getDecoder().decode(authString)).split(":");
-      AuthenticationService service = serverFactory.getService();
-      Integer operatorId = service.loginByClientSecret(credentials[0], credentials[1]);
-      requestContext.setSecurityContext(new ClientSecurityContext(request, credentials[0], operatorId));
+      Db db = new Db(DEFAULT_OAUTH_DATA_SOURCE_JNDI_NAME);
+      Integer operatorId;
+      try {
+        operatorId = OAuthDbHelper.loginByClientSecret(db, credentials[0], credentials[1]);
+      } catch (Throwable ex) {
+        if (ex.getMessage().contains("DataSource 'java:/comp/env/" + DEFAULT_OAUTH_DATA_SOURCE_JNDI_NAME + "' not found")) {
+          db = new Db(DEFAULT_DATA_SOURCE_JNDI_NAME);
+          operatorId = OAuthDbHelper.loginByClientSecret(db, credentials[0], credentials[1]);
+        } else {
+          throw ex;
+        }
+      } finally {
+        db.closeAll();
+      }
+      if (operatorId != null) {
+        requestContext.setSecurityContext(new ClientSecurityContext(request, credentials[0], operatorId));
+      } else {
+        requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED)
+          .header(HttpHeaders.WWW_AUTHENTICATE, "Basic").build());
+      }
     } catch (Throwable th) {
       requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED)
           .header(HttpHeaders.WWW_AUTHENTICATE, "Basic").build());

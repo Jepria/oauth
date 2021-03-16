@@ -94,17 +94,26 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     checkResponseType(clientId, responseType);
     try {
       KeyDto keyDto = keyService.getKeys(null, Utils.serverCredential);
+      /*
+       * Parse and decrypt session token
+       */
       Token token = TokenImpl.parseFromString(sessionToken);
       Decryptor decryptor = new DecryptorRSA(keyDto.getPrivateKey());
       token = decryptor.decrypt(token);
       Verifier verifier = new VerifierRSA(null, issuer, new Date(), keyDto.getPublicKey());
       if (verifier.verify(token)) {
+        /*
+         * if token is valid try to find session with JTI
+         */
         String[] subject = token.getSubject().split(":");
         SessionSearchDto sessionSearchDto = new SessionSearchDto();
         sessionSearchDto.setAuthorizationCode(token.getJti());
         List<SessionDto> sessionDtoList = sessionService.find(sessionSearchDto, Utils.serverCredential);
         if (sessionDtoList != null && !sessionDtoList.isEmpty() && sessionDtoList.size() == 1
-            && sessionDtoList.get(0).getSessionTokenDateFinish().after(new Date())) {
+          && sessionDtoList.get(0).getSessionTokenDateFinish().after(new Date())) {
+          /*
+           * create new auth session with same token JTI
+           */
           SessionCreateDto sessionCreateDto = new SessionCreateDto();
           sessionCreateDto.setAuthorizationCode(generateCode());
           sessionCreateDto.setClientId(clientId);
@@ -115,19 +124,19 @@ public class AuthorizationServiceImpl implements AuthorizationService {
           sessionCreateDto.setSessionTokenDateFinish(token.getExpirationTime());
           sessionCreateDto.setCodeChallenge(codeChallenge);
           return (SessionDto) sessionService
-              .getRecordById(String
-                      .valueOf(sessionService
-                          .create(sessionCreateDto, Utils.serverCredential))
-                  , Utils.serverCredential);
+            .getRecordById(String
+                .valueOf(sessionService
+                  .create(sessionCreateDto, Utils.serverCredential))
+              , Utils.serverCredential);
         } else {
-          /**
-           * Сессия истекла или не найдена
+          /*
+           * Session is expired or not found
            */
           return authorize(responseType, clientId, redirectUri, codeChallenge);
         }
       } else {
-        /**
-         * Сессия истекла или не валидна
+        /*
+         * Session is expired or not valid
          */
         return authorize(responseType, clientId, redirectUri, codeChallenge);
       }
@@ -143,6 +152,18 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     } catch (Throwable ex) {
       return authorize(responseType, clientId, redirectUri, codeChallenge);
     }
+  }
+  
+  @Override
+  public String getClientLoginUri(String clientId) {
+    if (clientId == null) {
+      return null;
+    }
+    List<ClientDto> result = clientService.getClient(clientId, null, Utils.serverCredential.getOperatorId());
+    if (result.isEmpty()) {
+      return null;
+    }
+    return result.get(0).getLoginModuleUri();
   }
   
   private String generateCode() {

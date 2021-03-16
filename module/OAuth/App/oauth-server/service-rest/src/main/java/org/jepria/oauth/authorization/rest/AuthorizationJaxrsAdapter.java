@@ -13,12 +13,11 @@ import org.jepria.server.env.EnvironmentPropertySupport;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
 
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
@@ -26,7 +25,12 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
-import static org.jepria.oauth.main.OAuthConstants.*;
+import static org.jepria.oauth.main.OAuthConstants.ACCESS_TOKEN_QUERY_PARAM;
+import static org.jepria.oauth.main.OAuthConstants.EXPIRES_IN_QUERY_PARAM;
+import static org.jepria.oauth.main.OAuthConstants.TOKEN_TYPE_QUERY_PARAM;
+import static org.jepria.oauth.main.OAuthConstants.LOGIN_MODULE;
+import static org.jepria.oauth.main.OAuthConstants.DEFAULT_LOGIN_MODULE;
+import static org.jepria.oauth.main.OAuthConstants.SID;
 import static org.jepria.oauth.main.Utils.*;
 import static org.jepria.oauth.main.rest.jersey.LoginAttemptLimitFilter.CURRENT_ATTEMPT_COUNT;
 import static org.jepria.oauth.sdk.OAuthConstants.*;
@@ -60,7 +64,8 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
     
     if (currentAttemptCount != null && currentAttemptCount.length() > 0) {
       if (Integer.valueOf(currentAttemptCount).compareTo(LoginAttemptLimitFilter.getMaxAttemptCount(request)) > 0) {
-        throw new OAuthRuntimeException(ACCESS_DENIED, "Превышено количество неуспешных попыток входа, обратитесь в службу технической поддержки для восстановления доступа.");
+        throw new OAuthRuntimeException(ACCESS_DENIED, "Превышено количество неуспешных попыток входа, " +
+          "обратитесь в службу технической поддержки для восстановления доступа.");
       }
     }
     String redirectUri = null;
@@ -79,70 +84,101 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
     SessionDto sessionDto;
     
     if (sessionToken != null) {
+      /*
+       * if SID is present in cookies lookup for existing session
+       */
       sessionDto = authorizationService
-          .authorize(responseType,
-              clientId,
-              redirectUri,
-              codeChallenge,
-              sessionToken,
-              getHostContextPath(request));
+        .authorize(responseType,
+          clientId,
+          redirectUri,
+          codeChallenge,
+          sessionToken,
+          getHostContextPath(request));
     } else {
+      /*
+       * create new auth session
+       */
       sessionDto = authorizationService
-          .authorize(responseType,
-              clientId,
-              redirectUri,
-              codeChallenge);
+        .authorize(responseType,
+          clientId,
+          redirectUri,
+          codeChallenge);
     }
     if (sessionDto.getSessionTokenId() != null
-        && new Date().before(sessionDto.getSessionTokenDateFinish())
-        && sessionDto.getOperator() != null) {
+      && new Date().before(sessionDto.getSessionTokenDateFinish())
+      && sessionDto.getOperator() != null) {
+      /*
+       * continue if session is alive
+       */
       if (ResponseType.CODE.equals(responseType)) {
+        /*
+         * redirect back to application with authorization code
+         */
         try {
           response = Response
-              .status(302)
-              .location(URI.create(redirectUri +
-                  getSeparator(redirectUri) + CODE + "=" + sessionDto.getAuthorizationCode() +
-                  (state != null ? "&" + STATE + "=" + URLEncoder.encode(state, StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20") : "")))
-              .build();
+            .status(302)
+            .location(UriBuilder.fromUri(redirectUri)
+              .queryParam(CODE, sessionDto.getAuthorizationCode())
+              .queryParam(STATE, URLEncoder.encode(state, StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20")).build())
+            .build();
         } catch (UnsupportedEncodingException e) {
           e.printStackTrace();
         }
       } else {
+        /*
+         * redirect back to application with token in hash fragment
+         */
         TokenDto tokenDto = tokenService
-            .create(responseType,
-                clientId,
-                getHostContextPath(request),
-                sessionDto.getAuthorizationCode(),
-                URI.create(redirectUri),
-                8);
+          .create(responseType,
+            clientId,
+            getHostContextPath(request),
+            sessionDto.getAuthorizationCode(),
+            URI.create(redirectUri),
+            8);
         try {
-          response = Response.status(302).location(URI.create(redirectUri
-              + "#" + ACCESS_TOKEN_QUERY_PARAM + tokenDto.getAccessToken()
+          response = Response.status(302).location(UriBuilder.fromUri(redirectUri)
+            .fragment(ACCESS_TOKEN_QUERY_PARAM + tokenDto.getAccessToken()
               + "&" + TOKEN_TYPE_QUERY_PARAM + tokenDto.getTokenType()
               + "&" + EXPIRES_IN_QUERY_PARAM + tokenDto.getExpiresIn()
-              + "&" + STATE + "=" + URLEncoder.encode(state, StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20")))
-              .cookie(new NewCookie(SESSION_ID,
-                  sessionToken,
-                  null,
-                  null,
-                  null,
-                  NewCookie.DEFAULT_MAX_AGE,
-                  false,
-                  true))
-              .build();
+              + "&" + STATE + "=" + URLEncoder.encode(state, StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20")).build())
+            .cookie(new NewCookie(SESSION_ID,
+              sessionToken,
+              null,
+              null,
+              null,
+              NewCookie.DEFAULT_MAX_AGE,
+              false,
+              true))
+            .build();
         } catch (UnsupportedEncodingException e) {
           e.printStackTrace();
         }
       }
     } else {
+      /*
+       * redirect to login module (basic or custom)
+       */
       try {
-        response = Response.status(302).location(URI.create(getLoginModuleUri() + "?"
-            + RESPONSE_TYPE + "=" + responseType
-            + "&" + SID + "=" + sessionDto.getSessionId()
-            + "&" + REDIRECT_URI + "=" + redirectUriEncoded
-            + "&" + CLIENT_ID + "=" + sessionDto.getClient().getValue()
-            + "&" + CLIENT_NAME + "=" + URLEncoder.encode(sessionDto.getClient().getName(), StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20")
-            + "&" + STATE + "=" + URLEncoder.encode(state, StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20"))).build();
+        /*
+         * Try to get login uri from client meta
+         */
+        String loginModuleUri = authorizationService.getClientLoginUri(clientId);
+        if (loginModuleUri == null) {
+          /*
+           * If it's null lookup for env properties
+           */
+          loginModuleUri = getLoginModuleUri();
+        }
+        response = Response.status(302).location(UriBuilder.fromUri(loginModuleUri)
+          .queryParam(RESPONSE_TYPE, responseType)
+          .queryParam(SID, sessionDto.getSessionId())
+          .queryParam(REDIRECT_URI, redirectUriEncoded)
+          .queryParam(CLIENT_ID, sessionDto.getClient().getValue())
+          .queryParam(CLIENT_NAME, URLEncoder.encode(sessionDto.getClient().getName(),
+            StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20"))
+          .queryParam(STATE,
+            URLEncoder.encode(state, StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20"))
+          .build()).build();
       } catch (UnsupportedEncodingException e) {
         e.printStackTrace();
       }

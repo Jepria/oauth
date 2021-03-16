@@ -55,6 +55,11 @@ export const ClientListPage: React.FC = () => {
           Cell: ({ value }: any) => <TextCell>{value}</TextCell>
         },
         {
+          Header: t('client.loginModuleUri'),
+          accessor: "loginModuleUri",
+          Cell: ({ value }: any) => <TextCell>{value}</TextCell>
+        },
+        {
           Header: t('client.applicationType'),
           accessor: "applicationType",
           Cell: ({ value }: any) => <TextCell>{ApplicationType[value]}</TextCell>

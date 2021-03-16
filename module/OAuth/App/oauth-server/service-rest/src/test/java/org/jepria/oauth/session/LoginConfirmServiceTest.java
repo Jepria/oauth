@@ -89,7 +89,7 @@ public class LoginConfirmServiceTest {
         "testClient",
         "testPassword",
         Utils.serverCredential,
-        8);
+        new Long(3600));
     assertNotNull(sessionTokenDto);
     verify(dao, atLeast(1)).find(any(SessionSearchDto.class), any());
     verify(dao, times(1)).update(any(), any(SessionUpdateDto.class), any());

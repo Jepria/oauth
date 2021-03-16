@@ -123,7 +123,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     String username,
     String password,
     String host,
-    Integer sessionTokenLifeTime) {
+    Long sessionTokenLifeTime) {
     Integer operatorId = loginByPassword(username, password);
     return sessionService.confirm(sessionId, username, operatorId, redirectUri, clientId, host, Utils.serverCredential, sessionTokenLifeTime);
   }

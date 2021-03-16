@@ -103,7 +103,7 @@ public class TokenServiceTest {
   
   @Test
   public void authCodeTokenTest() {
-    TokenDto tokenDto = tokenService.create("testClient", "authCode", "issuer", URI.create("http://testuri.com"), 8);
+    TokenDto tokenDto = tokenService.create("testClient", "authCode", "issuer", URI.create("http://testuri.com"), new Long(3600));
     assertNotNull(tokenDto);
     verify(sessionService, atLeast(1)).find(any(), any());
     verify(sessionService, atLeast(1)).update(any(), any(), any());
@@ -112,7 +112,7 @@ public class TokenServiceTest {
   
   @Test
   public void implicitTokenTest() {
-    TokenDto tokenDto = tokenService.create(ResponseType.TOKEN, "testClient", "authCode", "issuer", URI.create("http://testuri.com"), 8);
+    TokenDto tokenDto = tokenService.create(ResponseType.TOKEN, "testClient", "authCode", "issuer", URI.create("http://testuri.com"), new Long(3600));
     assertNotNull(tokenDto);
     verify(sessionService, atLeast(1)).find(any(), any());
     verify(sessionService, atLeast(1)).update(any(), any(), any());
@@ -121,7 +121,7 @@ public class TokenServiceTest {
   
   @Test
   public void passwordTokenTest() {
-    TokenDto tokenDto = tokenService.create("testClient", "testUser", 1, "issuer", 8, 24);
+    TokenDto tokenDto = tokenService.create("testClient", "testUser", 1, "issuer", new Long(3600), new Long(10000));
     assertNotNull(tokenDto);
     verify(sessionService, atLeast(1)).find(any(), any());
     verify(sessionService, atLeast(1)).update(any(), any(), any());
@@ -130,7 +130,7 @@ public class TokenServiceTest {
   
   @Test
   public void clientCredentialsTokenTest() {
-    TokenDto tokenDto = tokenService.create("testClient", 1, "issuer", 8, 24);
+    TokenDto tokenDto = tokenService.create("testClient", 1, "issuer", new Long(3600), new Long(10000));
     assertNotNull(tokenDto);
     verify(sessionService, atLeast(1)).create(any(), any());
     verify(keyService, atLeast(1)).getKeys(any(), any());
@@ -138,8 +138,8 @@ public class TokenServiceTest {
   
   @Test
   public void refreshTokenTest() {
-    TokenDto tokenDto = tokenService.create("testClient", "testUser", 1, "issuer", 8, 24);
-    TokenDto result = tokenService.create("testClient", tokenDto.getRefreshToken(), "issuer", 8, 24);
+    TokenDto tokenDto = tokenService.create("testClient", "testUser", 1, "issuer", new Long(3600), new Long(10000));
+    TokenDto result = tokenService.create("testClient", tokenDto.getRefreshToken(), "issuer", new Long(3600), new Long(10000));
     assertNotNull(result);
     verify(sessionService, atLeast(1)).find(any(), any());
     verify(sessionService, atLeast(1)).create(any(), any());
@@ -148,14 +148,14 @@ public class TokenServiceTest {
   
   @Test
   public void deleteTokenTest() {
-    TokenDto tokenDto = tokenService.create("testClient", "testUser", 1, "issuer", 8, 24);
+    TokenDto tokenDto = tokenService.create("testClient", "testUser", 1, "issuer", new Long(3600), new Long(10000));
     tokenService.delete("testClient", tokenDto.getAccessToken());
     verify(sessionService, atLeast(1)).deleteRecord(any(), any());
   }
   
   @Test
   public void getTokenInfoTest() {
-    TokenDto tokenDto = tokenService.create("testClient", "testUser", 1, "issuer", 8, 24);
+    TokenDto tokenDto = tokenService.create("testClient", "testUser", 1, "issuer", new Long(3600), new Long(10000));
     TokenInfoDto tokenInfoDto = tokenService.getTokenInfo("issuer", tokenDto.getAccessToken());
     assertNotNull(tokenInfoDto);
     verify(sessionService, atLeast(1)).find(any(), any());

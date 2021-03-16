@@ -35,7 +35,7 @@ public class LoginConfirmService extends SessionServiceImpl {
                                  String clientId,
                                  String host,
                                  Credential credential,
-                                 Integer sessionTokenLifeTime) {
+                                 Long sessionTokenLifeTime) {
     SessionSearchDto sessionSearchDto = new SessionSearchDto();
     sessionSearchDto.setSessionId(sessionId);
     sessionSearchDto.setRedirectUri(redirectUri);
@@ -99,7 +99,7 @@ public class LoginConfirmService extends SessionServiceImpl {
                                  LoginConfirmDto dto,
                                  String host,
                                  Credential credential,
-                                 Integer sessionTokenLifeTime) {
+                                 Long sessionTokenLifeTime) {
     return confirm(sessionId, dto.getUsername(), dto.getOperatorId(), dto.getRedirectUri(), dto.getClientId(), host, credential, sessionTokenLifeTime);
   }
   

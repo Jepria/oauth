@@ -15,7 +15,7 @@ public interface TokenService {
    * @param issuer issuer server name
    * @param authCode otp
    * @param redirectUri client redirect uri
-   * @param accessTokenLifeTime life time of access token in hours
+   * @param accessTokenLifeTime life time of access token in seconds
    * @return token
    */
   TokenDto create(String responseType,
@@ -23,7 +23,7 @@ public interface TokenService {
                   String issuer,
                   String authCode,
                   URI redirectUri,
-                  Integer accessTokenLifeTime);
+                  Long accessTokenLifeTime);
   /**
    * create token for authorization code flow (response_type=code, grant_type=authorization_code)
    *
@@ -31,14 +31,14 @@ public interface TokenService {
    * @param authCode otp
    * @param redirectUri client redirect uri
    * @param issuer issuer server name
-   * @param accessTokenLifeTime life time of access token in hours
+   * @param accessTokenLifeTime life time of access token in seconds
    * @return token
    */
   TokenDto create(String clientId,
                   String authCode,
                   String issuer,
                   URI redirectUri,
-                  Integer accessTokenLifeTime);
+                  Long accessTokenLifeTime);
   
   /**
    * create token for user password flow (grant_type=password)
@@ -47,16 +47,16 @@ public interface TokenService {
    * @param username user name
    * @param userId user id
    * @param issuer issuer server name
-   * @param accessTokenLifeTime life time of access token in hours
-   * @param refreshTokenLifeTime life time of refresh token in hours
+   * @param accessTokenLifeTime life time of access token in seconds
+   * @param refreshTokenLifeTime life time of refresh token in seconds
    * @return token
    */
   TokenDto create(String clientId,
                   String username,
                   Integer userId,
                   String issuer,
-                  Integer accessTokenLifeTime,
-                  Integer refreshTokenLifeTime);
+                  Long accessTokenLifeTime,
+                  Long refreshTokenLifeTime);
   
   /**
    * create token for refresh token flow (grant_type=refresh_token)
@@ -64,15 +64,15 @@ public interface TokenService {
    * @param clientId client application id
    * @param refreshToken refresh токен
    * @param issuer issuer server name
-   * @param accessTokenLifeTime life time of access token in hours
-   * @param refreshTokenLifeTime life time of refresh token in hours
+   * @param accessTokenLifeTime life time of access token in seconds
+   * @param refreshTokenLifeTime life time of refresh token in seconds
    * @return token
    */
   TokenDto create(String clientId,
                   String refreshToken,
                   String issuer,
-                  Integer accessTokenLifeTime,
-                  Integer refreshTokenLifeTime);
+                  Long accessTokenLifeTime,
+                  Long refreshTokenLifeTime);
   
   /**
    * create token for client credentials flow (grant_type=client_credentials)
@@ -80,15 +80,15 @@ public interface TokenService {
    * @param clientId client application id
    * @param clientOperatorId client application operator id
    * @param issuer issuer server name
-   * @param accessTokenLifeTime life time of access token in hours
-   * @param refreshTokenLifeTime life time of refresh token in hours
+   * @param accessTokenLifeTime life time of access token in seconds
+   * @param refreshTokenLifeTime life time of refresh token in seconds
    * @return token
    */
   TokenDto create(String clientId,
                   Integer clientOperatorId,
                   String issuer,
-                  Integer accessTokenLifeTime,
-                  Integer refreshTokenLifeTime);
+                  Long accessTokenLifeTime,
+                  Long refreshTokenLifeTime);
   
   /**
    * get token info

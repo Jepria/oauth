@@ -91,7 +91,7 @@ public class TokenServiceImpl implements TokenService {
                          String authCode,
                          String clientId,
                          URI redirectUri,
-                         Integer accessTokenLifeTime) {
+                         Long accessTokenLifeTime) {
     checkClient(clientId);
     if (ResponseType.TOKEN.equals(responseType)) {
       KeyDto keyDto = keyService.getKeys(null, Utils.serverCredential);
@@ -138,7 +138,7 @@ public class TokenServiceImpl implements TokenService {
                          String authCode,
                          String issuer,
                          URI redirectUri,
-                         Integer accessTokenLifeTime) {
+                         Long accessTokenLifeTime) {
     checkClient(clientId);
     KeyDto keyDto = keyService.getKeys(null, Utils.serverCredential);
     if (authCode == null) {
@@ -195,8 +195,8 @@ public class TokenServiceImpl implements TokenService {
                          String username,
                          Integer userId,
                          String issuer,
-                         Integer accessTokenLifeTime,
-                         Integer refreshTokenLifeTime) {
+                         Long accessTokenLifeTime,
+                         Long refreshTokenLifeTime) {
     checkClient(clientId);
     checkClientGrantTypes(clientId, GrantType.PASSWORD);
     KeyDto keyDto = keyService.getKeys(null, Utils.serverCredential);
@@ -207,8 +207,8 @@ public class TokenServiceImpl implements TokenService {
   public TokenDto create(String clientId,
                          String refreshTokenString,
                          String issuer,
-                         Integer accessTokenLifeTime,
-                         Integer refreshTokenLifeTime) {
+                         Long accessTokenLifeTime,
+                         Long refreshTokenLifeTime) {
     checkClient(clientId);
     checkClientGrantTypes(clientId, GrantType.REFRESH_TOKEN);
     KeyDto keyDto = keyService.getKeys(null, Utils.serverCredential);
@@ -245,8 +245,8 @@ public class TokenServiceImpl implements TokenService {
   public TokenDto create(String clientId,
                          Integer clientOperatorId,
                          String issuer,
-                         Integer accessTokenLifeTime,
-                         Integer refreshTokenLifeTime) {
+                         Long accessTokenLifeTime,
+                         Long refreshTokenLifeTime) {
     checkClient(clientId);
     checkClientGrantTypes(clientId, GrantType.CLIENT_CREDENTIALS);
     KeyDto keyDto = keyService.getKeys(null, Utils.serverCredential);
@@ -258,8 +258,8 @@ public class TokenServiceImpl implements TokenService {
                                    String clientId,
                                    String username,
                                    Integer userId,
-                                   Integer accessTokenLifeHours,
-                                   Integer refreshTokenLifeHours) {
+                                   Long accessTokenLifeHours,
+                                   Long refreshTokenLifeHours) {
     Token accessToken = Utils.generateToken(username, Collections.singletonList(clientId), userId, issuer, privateKeyString, accessTokenLifeHours);
     Token refreshToken = Utils.generateToken(username, Collections.singletonList(clientId), userId, issuer, privateKeyString, refreshTokenLifeHours);
     TokenDto tokenDto = new TokenDto();

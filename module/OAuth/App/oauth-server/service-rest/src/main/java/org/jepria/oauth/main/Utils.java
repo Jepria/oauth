@@ -13,6 +13,7 @@ import javax.servlet.http.HttpSession;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static org.jepria.oauth.main.OAuthConstants.*;
 import static org.jepria.oauth.main.OAuthConstants.OAUTH_SSO_TOKEN_LIFE_TIME;
@@ -71,7 +72,7 @@ public class Utils {
                                          Integer userId,
                                          String issuer,
                                          String privateKeyString,
-                                         Integer expiresIn) {
+                                         Long expiresIn) {
     try {
       /**
        * Generate uuid for token ID
@@ -82,7 +83,7 @@ public class Utils {
        * TODO пересмотреть концепцию передачи данных пользователя
        */
       Token token = new TokenImpl(tokenId, audience != null ? audience : Collections.singletonList("RFInfo"), username + ":" + userId,
-          issuer, addHours(new Date(), expiresIn), new Date());
+          issuer, addTime(new Date(), expiresIn), new Date());
       /**
        * Sign token with private key
        */
@@ -94,14 +95,11 @@ public class Utils {
     }
   }
   
-  private static Date addHours(Date date, int hours) {
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTime(date);
-    calendar.add(Calendar.HOUR_OF_DAY, hours);
-    return calendar.getTime();
+  private static Date addTime(Date date, long seconds) {
+    return new Date(date.getTime() + TimeUnit.SECONDS.toMillis(seconds));
   }
   
-  public static Integer getAccessTokenLifeTime(HttpServletRequest request) {
+  public static Long getAccessTokenLifeTime(HttpServletRequest request) {
     HttpSession session = request.getSession(false);
     String tokenLifeTime = null;
     if (session != null) {
@@ -113,10 +111,10 @@ public class Utils {
         session.setAttribute(OAUTH_ACCESS_TOKEN_LIFE_TIME, tokenLifeTime);
       }
     }
-    return Integer.valueOf(tokenLifeTime);
+    return Long.valueOf(tokenLifeTime);
   }
   
-  public static Integer getSessionTokenLifeTime(HttpServletRequest request) {
+  public static Long getSessionTokenLifeTime(HttpServletRequest request) {
     HttpSession session = request.getSession(false);
     String tokenLifeTime = null;
     if (session != null) {
@@ -128,10 +126,10 @@ public class Utils {
         session.setAttribute(OAUTH_SSO_TOKEN_LIFE_TIME, tokenLifeTime);
       }
     }
-    return Integer.valueOf(tokenLifeTime);
+    return Long.valueOf(tokenLifeTime);
   }
   
-  public static Integer getRefreshTokenLifeTime(HttpServletRequest request) {
+  public static Long getRefreshTokenLifeTime(HttpServletRequest request) {
     HttpSession session = request.getSession(false);
     String tokenLifeTime = null;
     if (session != null) {
@@ -143,6 +141,6 @@ public class Utils {
         session.setAttribute(OAUTH_REFRESH_TOKEN_LIFE_TIME, tokenLifeTime);
       }
     }
-    return Integer.valueOf(tokenLifeTime);
+    return Long.valueOf(tokenLifeTime);
   }
 }

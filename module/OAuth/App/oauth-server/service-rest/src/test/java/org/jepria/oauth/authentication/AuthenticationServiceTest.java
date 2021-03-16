@@ -163,7 +163,7 @@ public class AuthenticationServiceTest {
         "testUser",
         "testPassword",
         "issuer",
-        8);
+        new Long(3600));
     assertNotNull(sessionTokenDto);
     verify(sessionService, atLeast(1)).find(any(SessionSearchDto.class), any());
     verify(sessionService, times(1)).update(isA(String.class), any(SessionUpdateDto.class), any());

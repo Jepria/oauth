@@ -142,7 +142,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     String username,
     String password,
     String host,
-    Integer sessionTokenLifeTime) {
+    Long sessionTokenLifeTime) {
     SessionDto session = getSession(sessionId, clientId, redirectUri);
     if (TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - session.getDateIns().getTime()) > 10) {
       throw new OAuthRuntimeException(ACCESS_DENIED, "Authorization code not found or has expired");
@@ -256,7 +256,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     sessionService.update(String.valueOf(updateDto.getSessionId()), updateDto, serverCredential);
   }
 
-  private Token generateSessionToken(String username, Integer operatorId, String issuer, String privateKey, Integer expiresIn) {
+  private Token generateSessionToken(String username, Integer operatorId, String issuer, String privateKey,
+                                     long expiresIn) {
     try {
       /**
        * Generate uuid for token ID
@@ -266,7 +267,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
        * Create token with JWT lib
        */
       Token token = new TokenImpl(tokenId, Collections.EMPTY_LIST, username + ":" + operatorId,
-        issuer, addHours(new Date(), expiresIn), new Date());
+        issuer, addSeconds(new Date(), expiresIn), new Date());
       /**
        * Sign token with private key
        */
@@ -278,10 +279,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
   }
 
-  private Date addHours(Date date, int hours) {
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTime(date);
-    calendar.add(Calendar.HOUR_OF_DAY, hours);
-    return calendar.getTime();
+  private Date addSeconds(Date date, long seconds) {
+    return new Date(date.getTime() + TimeUnit.SECONDS.toMillis(seconds));
   }
 }

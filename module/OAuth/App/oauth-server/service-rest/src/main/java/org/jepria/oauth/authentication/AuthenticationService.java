@@ -62,7 +62,7 @@ public interface AuthenticationService {
     String username,
     String password,
     String host,
-    Integer sessionTokenLifeTime);
+    Long sessionTokenLifeTime);
 
   /**
    * @param clientId ID клиентского приложения

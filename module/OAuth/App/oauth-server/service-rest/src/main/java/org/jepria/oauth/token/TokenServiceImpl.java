@@ -106,7 +106,7 @@ public class TokenServiceImpl implements TokenService {
                          String authCode,
                          String clientId,
                          URI redirectUri,
-                         Integer accessTokenLifeTime) {
+                         Long accessTokenLifeTime) {
     checkClient(clientId);
     if (ResponseType.TOKEN.equals(responseType)) {
       KeyDto keyDto = keyService.getKeys(null, serverCredential);
@@ -153,7 +153,7 @@ public class TokenServiceImpl implements TokenService {
                          String authCode,
                          String issuer,
                          URI redirectUri,
-                         Integer accessTokenLifeTime) {
+                         Long accessTokenLifeTime) {
     checkClient(clientId);
     KeyDto keyDto = keyService.getKeys(null, serverCredential);
     if (authCode == null) {
@@ -212,8 +212,8 @@ public class TokenServiceImpl implements TokenService {
                          String username,
                          Integer userId,
                          String issuer,
-                         Integer accessTokenLifeTime,
-                         Integer refreshTokenLifeTime) {
+                         Long accessTokenLifeTime,
+                         Long refreshTokenLifeTime) {
     checkClient(clientId);
     checkClientGrantTypes(clientId, GrantType.PASSWORD);
     KeyDto keyDto = keyService.getKeys(null, serverCredential);
@@ -224,8 +224,8 @@ public class TokenServiceImpl implements TokenService {
   public TokenDto create(String clientId,
                          String refreshTokenString,
                          String issuer,
-                         Integer accessTokenLifeTime,
-                         Integer refreshTokenLifeTime) {
+                         Long accessTokenLifeTime,
+                         Long refreshTokenLifeTime) {
     checkClient(clientId);
     checkClientGrantTypes(clientId, GrantType.REFRESH_TOKEN);
     KeyDto keyDto = keyService.getKeys(null, serverCredential);
@@ -262,8 +262,8 @@ public class TokenServiceImpl implements TokenService {
   public TokenDto create(String clientId,
                          Integer clientOperatorId,
                          String issuer,
-                         Integer accessTokenLifeTime,
-                         Integer refreshTokenLifeTime) {
+                         Long accessTokenLifeTime,
+                         Long refreshTokenLifeTime) {
     checkClient(clientId);
     checkClientGrantTypes(clientId, GrantType.CLIENT_CREDENTIALS);
     KeyDto keyDto = keyService.getKeys(null, serverCredential);
@@ -275,8 +275,8 @@ public class TokenServiceImpl implements TokenService {
                                    String clientId,
                                    String username,
                                    Integer userId,
-                                   Integer accessTokenLifeHours,
-                                   Integer refreshTokenLifeHours) {
+                                   Long accessTokenLifeHours,
+                                   Long refreshTokenLifeHours) {
     Token accessToken = generateToken(username, Collections.singletonList(clientId), userId, issuer, privateKeyString, accessTokenLifeHours);
     Token refreshToken = generateToken(username, Collections.singletonList(clientId), userId, issuer, privateKeyString, refreshTokenLifeHours);
     TokenDto tokenDto = new TokenDto();
@@ -361,7 +361,7 @@ public class TokenServiceImpl implements TokenService {
                               Integer userId,
                               String issuer,
                               String privateKeyString,
-                              Integer expiresIn) {
+                              long expiresIn) {
     try {
       /**
        * Generate uuid for token ID
@@ -372,7 +372,7 @@ public class TokenServiceImpl implements TokenService {
        * TODO пересмотреть концепцию передачи данных пользователя
        */
       Token token = new TokenImpl(tokenId, audience != null ? audience : Collections.singletonList("RFInfo"), username + ":" + userId,
-        issuer, addHours(new Date(), expiresIn), new Date());
+        issuer, addSeconds(new Date(), expiresIn), new Date());
       /**
        * Sign token with private key
        */
@@ -383,12 +383,9 @@ public class TokenServiceImpl implements TokenService {
       throw new OAuthRuntimeException(SERVER_ERROR, th);
     }
   }
-
-  private Date addHours(Date date, int hours) {
-    Calendar calendar = Calendar.getInstance();
-    calendar.setTime(date);
-    calendar.add(Calendar.HOUR_OF_DAY, hours);
-    return calendar.getTime();
+  
+  private Date addSeconds(Date date, long seconds) {
+    return new Date(date.getTime() + TimeUnit.SECONDS.toMillis(seconds));
   }
   
   private String generateCode() {

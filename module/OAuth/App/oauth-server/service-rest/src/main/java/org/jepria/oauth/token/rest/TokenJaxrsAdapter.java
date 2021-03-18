@@ -1,12 +1,14 @@
 package org.jepria.oauth.token.rest;
 
 import org.jepria.oauth.authentication.AuthenticationServerFactory;
+import org.jepria.oauth.authentication.AuthenticationService;
 import org.jepria.oauth.exception.OAuthRuntimeException;
+import org.jepria.oauth.main.security.ClientCredentials;
 import org.jepria.oauth.sdk.GrantType;
 import org.jepria.oauth.token.TokenServerFactory;
+import org.jepria.oauth.token.TokenService;
 import org.jepria.oauth.token.dto.TokenDto;
 import org.jepria.oauth.token.dto.TokenInfoDto;
-import org.jepria.server.env.EnvironmentPropertySupport;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
 import org.jepria.server.service.security.JepSecurityContext;
 
@@ -23,7 +25,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import static org.jepria.oauth.main.OAuthConstants.*;
+import static org.jepria.oauth.main.Utils.*;
 import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 /**
@@ -34,50 +36,16 @@ import static org.jepria.oauth.sdk.OAuthConstants.*;
  */
 @Path("/token")
 public class TokenJaxrsAdapter extends JaxrsAdapterBase {
-
-  @Context
-  HttpServletRequest request;
-  @Context
-  JepSecurityContext securityContext;
+  
+  private final AuthenticationService authenticationService;
+  private final TokenService tokenService;
+  
   @Inject
-  AuthenticationServerFactory authenticationServerFactory;
-  @Inject
-  TokenServerFactory tokenServerFactory;
-
-  private String getHostContext() {
-    return URI.create(request.getRequestURL().toString()).resolve(request.getContextPath()).toString();
+  public TokenJaxrsAdapter(AuthenticationServerFactory authenticationServerFactory, TokenServerFactory tokenServerFactory) {
+    this.authenticationService = authenticationServerFactory.getService();
+    this.tokenService = tokenServerFactory.getService();
   }
-
-  private Long getAccessTokenLifeTime() {
-    HttpSession session = request.getSession(false);
-    String tokenLifeTime = null;
-    if (session != null) {
-      tokenLifeTime = (String) session.getAttribute(OAUTH_ACCESS_TOKEN_LIFE_TIME);
-    }
-    if (tokenLifeTime == null) {
-      tokenLifeTime = EnvironmentPropertySupport.getInstance(request).getProperty(OAUTH_ACCESS_TOKEN_LIFE_TIME, OAUTH_ACCESS_TOKEN_LIFE_TIME_DEFAULT);
-      if (session != null) {
-        session.setAttribute(OAUTH_ACCESS_TOKEN_LIFE_TIME, tokenLifeTime);
-      }
-    }
-    return Long.valueOf(tokenLifeTime);
-  }
-
-  private Long getRefreshTokenLifeTime() {
-    HttpSession session = request.getSession(false);
-    String tokenLifeTime = null;
-    if (session != null) {
-      tokenLifeTime = (String) session.getAttribute(OAUTH_REFRESH_TOKEN_LIFE_TIME);
-    }
-    if (tokenLifeTime == null) {
-      tokenLifeTime = EnvironmentPropertySupport.getInstance(request).getProperty(OAUTH_REFRESH_TOKEN_LIFE_TIME, OAUTH_REFRESH_TOKEN_LIFE_TIME_DEFAULT);
-      if (session != null) {
-        session.setAttribute(OAUTH_REFRESH_TOKEN_LIFE_TIME, tokenLifeTime);
-      }
-    }
-    return Long.valueOf(tokenLifeTime);
-  }
-
+  
   @POST
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   public Response createToken(
@@ -105,56 +73,63 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
     switch (grantType) {
       case GrantType.AUTHORIZATION_CODE: {
         if (clientId != null && clientSecret != null) {
-          authenticationServerFactory.getService().loginByClientSecret(clientId, clientSecret);
+          authenticationService.loginByClientSecret(clientId, clientSecret);
         } else if (clientId != null && clientSecret == null && codeVerifier != null) {
-          authenticationServerFactory.getService().loginByAuthorizationCode(authCode, clientId, codeVerifier);
+          authenticationService.loginByAuthorizationCode(authCode, clientId, codeVerifier);
         } else {
           throw new OAuthRuntimeException(ACCESS_DENIED, "Client authorization failed");
         }
-
+        
         String redirectUriDecoded = null;
         try {
-          redirectUriDecoded = URLDecoder.decode(redirectUriEncoded.replaceAll("%20", "\\+"), StandardCharsets.UTF_8.name());
+          redirectUriDecoded = URLDecoder.decode(redirectUriEncoded.replaceAll("%20", "\\+"),
+              StandardCharsets.UTF_8.name());
         } catch (UnsupportedEncodingException e) {
           e.printStackTrace();
         }
-
+        
         URI redirectUri = URI.create(redirectUriDecoded);
-        result = tokenServerFactory.getService().create(clientId, authCode, getHostContext(), redirectUri, getAccessTokenLifeTime());
+        result = tokenService.create(clientId, authCode, getHostContextPath(request), redirectUri,
+            getAccessTokenLifeTime(request));
         break;
       }
       case GrantType.CLIENT_CREDENTIALS: {
         Integer userId;
         if (clientId != null && clientSecret != null) {
-          userId = authenticationServerFactory.getService().loginByClientSecret(clientId, clientSecret);
+          userId = authenticationService.loginByClientSecret(clientId, clientSecret);
         } else {
           throw new OAuthRuntimeException(ACCESS_DENIED, "Client authorization failed");
         }
-        result = tokenServerFactory.getService().create(clientId, userId, getHostContext(), getAccessTokenLifeTime(), getRefreshTokenLifeTime());
+        result = tokenService.create(clientId, userId, getHostContextPath(request),
+            getAccessTokenLifeTime(request), getRefreshTokenLifeTime(request));
         break;
       }
       case GrantType.PASSWORD: {
         if (clientId != null && clientSecret != null) {
-          authenticationServerFactory.getService().loginByClientSecret(clientId, clientSecret);
+          authenticationService.loginByClientSecret(clientId, clientSecret);
         } else {
           throw new OAuthRuntimeException(ACCESS_DENIED, "Client authorization failed");
         }
         Integer userId = null;
         if (password != null) {
-          userId = authenticationServerFactory.getService().loginByPassword(username, password);
+          userId = authenticationService.loginByPassword(username, password);
         } else if (passwordHash != null) {
-          userId = authenticationServerFactory.getService().loginByPasswordHash(username, passwordHash);
+          userId = authenticationService.loginByPasswordHash(username, passwordHash);
         }
-        result = tokenServerFactory.getService().create(clientId, username, userId, getHostContext(), getAccessTokenLifeTime(), getRefreshTokenLifeTime());
+        result = tokenService.create(clientId,
+            username, userId, getHostContextPath(request),
+            getAccessTokenLifeTime(request), getRefreshTokenLifeTime(request));
         break;
       }
       case GrantType.REFRESH_TOKEN: {
         if (clientId != null && clientSecret != null) {
-          authenticationServerFactory.getService().loginByClientSecret(clientId, clientSecret);
+          authenticationService.loginByClientSecret(clientId, clientSecret);
         } else {
-          authenticationServerFactory.getService().loginByClientId(clientId);
+          authenticationService.loginByClientId(clientId);
         }
-        result = tokenServerFactory.getService().create(clientId, refreshToken, getHostContext(), getAccessTokenLifeTime(), getRefreshTokenLifeTime());
+        result = tokenService.create(clientId,
+            refreshToken, getHostContextPath(request),
+            getAccessTokenLifeTime(request), getRefreshTokenLifeTime(request));
         break;
       }
       default: {
@@ -163,44 +138,25 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
     }
     return Response.ok(result).build();
   }
-
+  
   @POST
   @Path("/introspect")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-  public Response getTokenInfo(
-      @HeaderParam("Authorization") String authHeader,
-      @FormParam("client_id") String clientId,
-      @FormParam("client_secret") String clientSecret,
-      @FormParam("token") String token) {
-    if (authHeader != null) {
-      authHeader = authHeader.replaceFirst("[Bb]asic ", "");
-      String[] clientCredentials = new String(Base64.getUrlDecoder().decode(authHeader)).split(":");
-      clientId = clientCredentials[0];
-      clientSecret = clientCredentials[1];
-    }
-    authenticationServerFactory.getService().loginByClientSecret(clientId, clientSecret);
-    TokenInfoDto result = tokenServerFactory.getService().getTokenInfo(getHostContext(), token);
+  @ClientCredentials
+  public Response getTokenInfo(@FormParam("token") String token) {
+    TokenInfoDto result = tokenService.getTokenInfo(getHostContextPath(request), token);
     return Response.ok(result).build();
   }
-
+  
   @POST
   @Path("/revoke")
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+  @ClientCredentials
   public Response deleteToken(
       @HeaderParam("Authorization") String authHeader,
-      @FormParam("client_id") String clientId,
-      @FormParam("client_secret") String clientSecret,
       @FormParam("token") String token) {
-    if (authHeader != null) {
-      authHeader = authHeader.replaceFirst("[Bb]asic ", "");
-      String[] clientCredentials = new String(Base64.getUrlDecoder().decode(authHeader)).split(":");
-      clientId = clientCredentials[0];
-      clientSecret = clientCredentials[1];
-    }
-    authenticationServerFactory.getService().loginByClientSecret(clientId, clientSecret);
-
-    tokenServerFactory.getService().delete(
-        clientId,
+    tokenService.delete(
+        new String(Base64.getUrlDecoder().decode(authHeader.replaceFirst("[Bb]asic ", ""))).split(":")[0],
         token);
     HttpSession session = request.getSession(false);
     if (session != null) {
@@ -208,5 +164,5 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
     }
     return Response.ok().build();
   }
-
+  
 }

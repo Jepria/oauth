@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 import static org.jepria.oauth.client.ClientFieldNames.*;
 
 public class ClientDaoImpl implements ClientDao {
-
+  
   @Override
   public List<?> find(Object template, Integer operatorId) {
     ClientSearchDto searchTemplate = (ClientSearchDto) template;
@@ -42,6 +42,7 @@ public class ClientDaoImpl implements ClientDao {
           dto.setClientName(rs.getString(CLIENT_NAME));
           dto.setClientNameEn(rs.getString(CLIENT_NAME_EN));
           dto.setApplicationType(rs.getString(APPLICATION_TYPE));
+          dto.setLoginModuleUri(rs.getString(LOGIN_MODULE_URI));
           dto.setGrantTypes(getClientGrantTypes(dto.getClientId(), operatorId));
           Integer clientOperatorId = getInteger(rs, OPERATOR_ID);
           if (clientOperatorId != null) dto.setScope(getClientRoles(clientOperatorId, operatorId));
@@ -55,7 +56,7 @@ public class ClientDaoImpl implements ClientDao {
       , operatorId);
     return records;
   }
-
+  
   @Override
   public List<ClientDto> findByPrimaryKey(Map<String, ?> primaryKeyMap, final Integer operatorId) {
     String sqlQuery =
@@ -78,6 +79,7 @@ public class ClientDaoImpl implements ClientDao {
           dto.setClientName(rs.getString(CLIENT_NAME));
           dto.setClientNameEn(rs.getString(CLIENT_NAME_EN));
           dto.setApplicationType(rs.getString(APPLICATION_TYPE));
+          dto.setLoginModuleUri(rs.getString(LOGIN_MODULE_URI));
           dto.setGrantTypes(getClientGrantTypes(dto.getClientId(), operatorId));
           Integer clientOperatorId = getInteger(rs, OPERATOR_ID);
           if (clientOperatorId != null) dto.setScope(getClientRoles(getInteger(rs, OPERATOR_ID), operatorId));
@@ -91,7 +93,7 @@ public class ClientDaoImpl implements ClientDao {
       , operatorId);
     return records;
   }
-
+  
   @Override
   public Object create(Object record, Integer operatorId) {
     ClientCreateDto dto = (ClientCreateDto) record;
@@ -102,6 +104,7 @@ public class ClientDaoImpl implements ClientDao {
         + ", clientName => ? "
         + ", clientNameEn => ? "
         + ", applicationType => ? "
+        + ", loginModuleUri => ? "
         + ", grantTypeList => ? "
         + ", roleShortNameList => ? "
         + ", operatorId => ? "
@@ -113,13 +116,14 @@ public class ClientDaoImpl implements ClientDao {
       , dto.getClientName()
       , dto.getClientNameEn()
       , dto.getApplicationType()
+      , dto.getLoginModuleUri()
       , dto.getGrantTypes() != null ? dto.getGrantTypes().stream().collect(Collectors.joining(",")) : null
       , dto.getScope() != null ? dto.getScope().stream().collect(Collectors.joining(",")) : null
       , operatorId
     );
     return dto.getClientId();
   }
-
+  
   @Override
   public void update(Map<String, ?> primaryKey, Object record, Integer operatorId) {
     ClientUpdateDto dto = (ClientUpdateDto) record;
@@ -130,6 +134,7 @@ public class ClientDaoImpl implements ClientDao {
         + ", clientName => ? "
         + ", clientNameEn => ? "
         + ", applicationType => ? "
+        + ", loginModuleUri => ? "
         + ", grantTypeList => ? "
         + ", roleShortNameList => ? "
         + ", operatorId => ? "
@@ -140,12 +145,13 @@ public class ClientDaoImpl implements ClientDao {
       , dto.getClientName()
       , dto.getClientNameEn()
       , dto.getApplicationType()
+      , dto.getLoginModuleUri()
       , dto.getGrantTypes() != null ? dto.getGrantTypes().stream().collect(Collectors.joining(",")) : null
       , dto.getScope() != null ? dto.getScope().stream().collect(Collectors.joining(",")) : null
       , operatorId
     );
   }
-
+  
   @Override
   public void delete(Map<String, ?> primaryKey, Integer operatorId) {
     String sqlQuery =
@@ -160,7 +166,7 @@ public class ClientDaoImpl implements ClientDao {
       , operatorId
     );
   }
-
+  
   @Override
   public List<String> getClientGrantTypes(String clientId, Integer operatorId) {
     String sqlQuery =
@@ -182,7 +188,7 @@ public class ClientDaoImpl implements ClientDao {
       , operatorId);
     return grantTypes.stream().map(option -> option.getValue()).collect(Collectors.toList());
   }
-
+  
   @Override
   public List<OptionDto<String>> getRoles(String roleName, String roleNameEn, Integer maxRowCount, Integer operatorId) {
     String sqlQuery =
@@ -210,12 +216,12 @@ public class ClientDaoImpl implements ClientDao {
       , operatorId);
     return result;
   }
-
+  
   private List<OptionDto<String>> getClientRoles(Integer clientOperatorId, Integer operatorId) {
     String sqlQuery =
       "begin  "
         + "? := pkg_operator.getRoles("
-          + "operatorId => ? "
+        + "operatorId => ? "
         + ");"
         + " end;";
     List<OptionDto<String>> result;

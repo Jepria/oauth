@@ -13,7 +13,8 @@
     "notEmpty": "Must be not empty",
     "onlyDigits": "Must contain only digits",
     "onlySymbolsAndDigits": "Must contain only english characters and digits",
-    "maxLength": "Maximum length 32 symbols"
+    "maxLength": "Maximum length 32 symbols",
+    "invalidUriFormat": "Invalid URI format"
   },
   "client": {
     "moduleName": "Client",
@@ -21,6 +22,7 @@
     "clientSecret": "Client secret",
     "clientName": "Client name",
     "clientNameEn": "CLient name en.",
+    "loginModuleUri": "Login module URI",
     "applicationType": "Application type",
     "grantTypes": "Grant type",
     "scopes": "Scopes"

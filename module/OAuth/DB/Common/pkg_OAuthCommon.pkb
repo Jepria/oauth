@@ -255,6 +255,7 @@ end verifyClientCredentials;
   change_operator_name        - Имя оператора, изменившего запись
   change_operator_name_en     - Имя оператора, изменившего запись на англ.
   client_operator_id          - ID оператора клиентского приложения
+  login_module_uri            - URL логин модуля
 
   (сортировка по date_ins в обратном порядке)
 */
@@ -288,6 +289,7 @@ select
   , a.change_operator_name
   , a.change_operator_name_en
   , a.client_operator_id
+  , a.login_module_uri
 from
   (
   select
@@ -305,6 +307,7 @@ from
     , cop.operator_name as change_operator_name
     , cop.operator_name_en as change_operator_name_en
     , t.operator_id as client_operator_id
+    , t.login_module_uri
   from
     oa_client t
     inner join op_operator iop

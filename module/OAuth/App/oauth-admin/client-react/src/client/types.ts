@@ -6,6 +6,7 @@ export interface Client {
   clientNameEn?: string;
   clientSecret?: string;
   applicationType?: string;
+  loginModuleUri?: string;
   grantTypes?: Array<string>;
   scope?: Array<Option>;
 }

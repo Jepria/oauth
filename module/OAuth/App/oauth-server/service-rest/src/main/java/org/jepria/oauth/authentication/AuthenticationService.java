@@ -6,29 +6,29 @@ import org.jepria.oauth.sdk.token.Token;
 public interface AuthenticationService {
   
   /**
-   * Проверка логина/пароля пользователя в системе
+   * Authenticate user with login/password
    *
-   * @param username имя пользователя
-   * @param password пароль пользователя
-   * @return уникальный ID пользователя
+   * @param username login
+   * @param password password
+   * @return operator id
    */
   Integer loginByPassword(String username, String password);
 
   Integer loginByPasswordHash(String username, String passwordHash);
 
   /**
-   * Проверка секретного слова клиентского приложения в системе
+   * authenticate client with clientId/clientSecret
    *
-   * @param clientId ID клиентского приложения
-   * @param clientSecret секретное слово клиенского приложения
+   * @param clientId client application id
+   * @param clientSecret client application secret
    * @return уникальный ID клиенского приложения
    */
   Integer loginByClientSecret(String clientId, String clientSecret);
 
   /**
-   * Проверка ID клиентского приложения в системе
+   * Check client id validity
    *
-   * @param clientId ID клиентского приложения
+   * @param clientId client application id
    */
   void loginByClientId(String clientId);
 
@@ -42,18 +42,17 @@ public interface AuthenticationService {
 
   /**
    * <pre>
-   * Аутентификация OAuth, по логину/паролю пользвателя.
-   * Результат созданная SSO сессия OAuth
+   * Authenticate user by logn/password
    * </pre>
    *
-   * @param sessionId id авторизационной сессии
-   * @param redirectUri URL для перенаправления
-   * @param clientId ID клиентского приложения
-   * @param username имя пользователя
-   * @param password пароль пользователя
-   * @param host имя сервера
-   * @param sessionTokenLifeTime время жизни сессии
-   * @return Session Token
+   * @param sessionId auth session id
+   * @param redirectUri client redirect uri
+   * @param clientId client application id
+   * @param username username
+   * @param password password
+   * @param host issuer server name
+   * @param sessionTokenLifeTime session token life time
+   * @return session token
    */
   SessionTokenDto authenticate(
     String sessionId,
@@ -65,10 +64,10 @@ public interface AuthenticationService {
     Long sessionTokenLifeTime);
 
   /**
-   * @param clientId ID клиентского приложения
-   * @param redirectUri URL для перенаправления
-   * @param sessionToken токен сессии
-   * @param issuer имя сервера
+   * @param clientId client application id
+   * @param redirectUri client redirect uri
+   * @param sessionToken session token
+   * @param issuer issuer server name
    */
   void logout(String clientId,
               String redirectUri,

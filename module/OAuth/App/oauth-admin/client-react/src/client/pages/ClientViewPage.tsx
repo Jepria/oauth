@@ -56,6 +56,10 @@ const ClientViewPage: React.FC = () => {
         <Text>{currentRecord?.clientNameEn}</Text>
       </Form.Field>
       <Form.Field>
+        <Form.Label>{t('client.loginModuleUri')}:</Form.Label>
+        <Text>{currentRecord?.loginModuleUri}</Text>
+      </Form.Field>
+      <Form.Field>
         <Form.Label>{t('client.applicationType')}:</Form.Label>
         <Text>{currentRecord && currentRecord.applicationType ? ApplicationType[currentRecord.applicationType] : ''}</Text>
       </Form.Field>

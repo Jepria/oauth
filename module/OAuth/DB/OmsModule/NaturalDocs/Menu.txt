@@ -2,7 +2,7 @@ Format: 1.5
 
 
 Title: OAuth
-SubTitle: Версия 1.1.0
+SubTitle: Версия 1.2.0
 
 # You can add a footer to your documentation like this:
 # Footer: [text]
@@ -71,6 +71,10 @@ Group: Пакеты  {
 
       File: Спецификация  (no auto-title, pkg_OAuth.pks)
       File: Реализация  (no auto-title, pkg_OAuth.pkb)
+      File: Install/Grant/1....0/link-user.sql  (Install/Grant/1.2.0/link-user.sql)
+      File: Install/Grant/1....0/ReserveDb/MViewSchema/run.sql  (Install/Grant/1.2.0/ReserveDb/MViewSchema/run.sql)
+      File: Install/Schema/1....0/run.sql  (Install/Schema/1.2.0/run.sql)
+      File: OA_CLIENT  (Install/Schema/1.2.0/oa_client.sql)
       }  # Group: pkg_OAuth
 
    Group: pkg_OAuthInternal  {

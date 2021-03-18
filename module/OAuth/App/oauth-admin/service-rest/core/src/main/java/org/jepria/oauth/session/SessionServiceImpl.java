@@ -13,7 +13,7 @@ import java.util.List;
 
 public class SessionServiceImpl extends EntityServiceImpl implements SessionService {
 
-  private final SessionDao dao;
+  protected final SessionDao dao;
 
   public SessionServiceImpl(SessionDao dao, RecordDefinition recordDefinition) {
     super(dao, recordDefinition);

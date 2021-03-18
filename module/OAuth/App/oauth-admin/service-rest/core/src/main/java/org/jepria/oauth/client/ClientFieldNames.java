@@ -11,4 +11,5 @@ public class ClientFieldNames {
   public static final String SHORT_NAME = "short_name";
   public static final String ROLE_NAME = "role_name";
   public static final String APPLICATION_TYPE = "application_type";
+  public static final String LOGIN_MODULE_URI = "login_module_uri";
 }

@@ -6,6 +6,7 @@ import { ClientUri, ClientUriCreateDto } from '../types';
 import { actions } from '../state/clientUriCrudSlice';
 import { Form, TextInput } from '@jfront/ui-core';
 import { useTranslation } from 'react-i18next';
+import { isUri } from "valid-url";
 
 export const ClientUriCreatePage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();
@@ -28,9 +29,11 @@ export const ClientUriCreatePage = React.forwardRef<any, HTMLAttributes<HTMLForm
     },
     validate: (values) => {
       const errors: { clientUri?: string } = {};
-
-      if (!values['clientUri']) {
+      if (!values.clientUri) {
         errors.clientUri = t('validation.notEmpty')
+      }
+      if (values.clientUri && !isUri(values.clientUri)) {
+        errors.clientUri = t('validation.invalidUriFormat')
       }
       return errors;
     }
@@ -41,7 +44,7 @@ export const ClientUriCreatePage = React.forwardRef<any, HTMLAttributes<HTMLForm
       <Form.Field>
         <Form.Label required>{t('clientUri.clientUri')}:</Form.Label>
         <Form.Control
-          style={{ maxWidth: "200px" }}
+          style={{ maxWidth: "400px" }}
           error={formik.errors.clientUri}>
           <TextInput
             name="clientUri"

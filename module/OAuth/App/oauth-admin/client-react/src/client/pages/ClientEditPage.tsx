@@ -11,6 +11,7 @@ import { Form, TextInput, CheckBoxGroup, CheckBox, SelectInput, DualList } from 
 import { Text } from '../../app/common/components/form/Field';
 import { useTranslation } from 'react-i18next';
 import { EntityState, OptionState } from '@jfront/core-redux-saga';
+import {isUri} from "valid-url";
 
 const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();
@@ -54,9 +55,15 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
       }
     },
     validate: (values) => {
-      const errors: { clientName?: string, applicationType?: string, grantTypes?: string } = {};
+      const errors: { clientName?: string, clientNameEn?: string, applicationType?: string, loginModuleUri?: string, grantTypes?: string } = {};
       if (!values['clientName']) {
         errors.clientName = t('validation.notEmpty')
+      }
+      if (!values['clientNameEn']) {
+        errors.clientNameEn = t('validation.notEmpty')
+      }
+      if (values.loginModuleUri && !isUri(values.loginModuleUri)) {
+        errors.loginModuleUri = t('validation.invalidUriFormat')
       }
       if (!values['applicationType']) {
         errors.applicationType = t('validation.notEmpty')
@@ -84,7 +91,7 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
             error={formik.errors.clientName} />
         </Form.Control>
       </Form.Field>
-      <Form.Field>
+      <Form.Field required>
         <Form.Label>{t('client.clientNameEn')}:</Form.Label>
         <Form.Control style={{ maxWidth: "200px" }}>
           <TextInput
@@ -92,6 +99,16 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
             value={formik.values.clientNameEn}
             onChange={formik.handleChange}
             error={formik.errors.clientNameEn} />
+        </Form.Control>
+      </Form.Field>
+      <Form.Field>
+        <Form.Label>{t('client.loginModuleUri')}:</Form.Label>
+        <Form.Control style={{ maxWidth: "200px" }}>
+          <TextInput
+            name="loginModuleUri"
+            value={formik.values.loginModuleUri}
+            onChange={formik.handleChange}
+            error={formik.errors.loginModuleUri} />
         </Form.Control>
       </Form.Field>
       <Form.Field>

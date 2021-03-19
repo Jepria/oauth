@@ -1,6 +1,5 @@
 package org.jepria.oauth.client.rest;
 
-import org.hibernate.validator.constraints.NotEmpty;
 import org.jepria.oauth.client.ClientServerFactory;
 import org.jepria.oauth.client.dto.ClientCreateDto;
 import org.jepria.oauth.client.dto.ClientDto;
@@ -16,6 +15,7 @@ import org.jepria.server.service.security.oauth.OAuth;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;

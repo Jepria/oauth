@@ -50,7 +50,7 @@ export const SessionToolbar = ({ formRef, openDeleteAllDialog }: SessionToolbarP
                 onSuccess: () => {
                   if (workstate === Workstates.List) {
                     if (searchId) {
-                      dispatch(searchActions.search({
+                      dispatch(searchActions.getResultSet({
                         searchId,
                         pageSize,
                         pageNumber
@@ -89,7 +89,9 @@ export const SessionToolbar = ({ formRef, openDeleteAllDialog }: SessionToolbarP
         }))
       }} />
       <ToolbarButtonBase
-        onClick={() => { formRef.current?.dispatchEvent(createEvent("submit")) }}
+        onClick={() => { 
+          formRef.current?.dispatchEvent(createEvent("submit")) 
+        }}
         disabled={workstate !== Workstates.Search}>{t('toolbar.find')}</ToolbarButtonBase>
     </Toolbar>
   )

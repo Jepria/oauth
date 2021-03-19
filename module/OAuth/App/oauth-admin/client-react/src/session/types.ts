@@ -12,7 +12,7 @@ export interface Session {
   dateIns?: Date
   operator?: {
     name: string
-    value: string
+    value: number
   }
   operatorLogin?: string
   accessTokenId?: string

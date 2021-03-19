@@ -161,7 +161,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
           <Form.Label>{t('client.scopes')}:</Form.Label>
           <Form.Control
             style={{ minWidth: "300px", maxWidth: "500px" }}
-            error={formik.errors.scope}>
+            error={formik.errors.scope as string}>
             <DualList
               options={options}
               placeholder="Введите имя роли"
@@ -169,8 +169,8 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
               isLoading={isLoading}
               onInputChange={e => dispatch(roleActions.getOptionsStart({params: e.target.value}))}
               onSelectionChange={formik.setFieldValue}
-              touched={formik.touched.scope}
-              error={formik.errors.scope}
+              // touched={formik.touched.scope}
+              error={formik.errors.scope as string}
               style={{ height: "200px" }} />
           </Form.Control>
         </Form.Field>

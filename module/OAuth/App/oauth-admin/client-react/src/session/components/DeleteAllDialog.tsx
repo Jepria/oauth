@@ -44,7 +44,7 @@ export const DeleteAllDialog = ({ visible, onCancel }: DeleteAllDialogProps) => 
             callback: () => {
               onCancel();
               if (pathname.endsWith('/list') && searchId) {
-                dispatch(searchActions.search({
+                dispatch(searchActions.getResultSet({
                   searchId,
                   pageSize: 25,
                   pageNumber: 1
@@ -93,7 +93,7 @@ export const DeleteAllDialog = ({ visible, onCancel }: DeleteAllDialogProps) => 
             value={formik.values.operatorId}
             error={formik.errors.operatorId}
             onInputChange={(e: { target: { value: string | undefined; }; }) => dispatch(operatorActions.getOptionsStart({ params: e.target.value }))}
-            onSelectionChange={formik.setFieldValue} style={{ maxWidth: '250px' }}>
+            onSelectionChange={(name, value) => formik.setFieldValue(name, value)} style={{ maxWidth: '250px' }}>
             {operators.options.map(operator => <ComboBoxItem key={operator.value} label={operator.name} value={operator.value} />)}
           </ComboBox>
         </Form.Control>

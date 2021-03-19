@@ -142,7 +142,9 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
       {formik.values["grantTypes"]?.includes('client_credentials') &&
         <Form.Field>
           <Form.Label>{t('client.scopes')}:</Form.Label>
-          <Form.Control style={{ minWidth: "300px", maxWidth: "500px" }}>
+          <Form.Control 
+            style={{ minWidth: "300px", maxWidth: "500px" }}
+            error={formik.errors.scope as string}>
             <DualList
               options={options}
               initialValues={formik.initialValues.scope}
@@ -151,8 +153,8 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
               isLoading={isLoading}
               onInputChange={e => dispatch(roleActions.getOptionsStart({ params: e.target.value }))}
               onSelectionChange={formik.setFieldValue}
-              touched={formik.touched.scope}
-              error={formik.errors.scope} />
+              // touched={formik.touched.scope}
+              error={formik.errors.scope as string} />
           </Form.Control>
         </Form.Field>
       }

@@ -43,7 +43,7 @@ export const ClientUriListPage: React.FC = () => {
           Cell: ({ value }: any) => <TextCell>{value}</TextCell>
         },
       ]}
-      onRefresh={() => {
+      fetchData={() => {
         dispatch(searchActions.search({ clientId }))
       }}
       data={React.useMemo(() => records, [records])}

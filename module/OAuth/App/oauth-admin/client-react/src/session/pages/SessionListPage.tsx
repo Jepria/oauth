@@ -35,7 +35,7 @@ const SessionListPage: React.FC = () => {
 
   useEffect(() => {
     if (searchId) {
-      dispatch(searchActions.search({ searchId, pageSize: page.pageSize, pageNumber: page.pageNumber }))
+      dispatch(searchActions.getResultSet({ searchId, pageSize: page.pageSize, pageNumber: page.pageNumber }))
     }
   }, [searchId, page, dispatch])
 

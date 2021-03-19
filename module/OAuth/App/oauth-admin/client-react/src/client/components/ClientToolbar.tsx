@@ -74,7 +74,7 @@ export const ClientToolbar = ({ formRef }: ClientToolbarProps) => {
             onSuccess: () => {
               if (workstate === Workstates.List) {
                 if (searchId) {
-                  dispatch(searchActions.search({
+                  dispatch(searchActions.getResultSet({
                     searchId,
                     pageSize,
                     pageNumber

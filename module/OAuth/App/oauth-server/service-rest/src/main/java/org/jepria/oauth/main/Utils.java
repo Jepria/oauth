@@ -68,11 +68,12 @@ public class Utils {
   }
   
   public static Token generateToken(String username,
-                                         List<String> audience,
-                                         Integer userId,
-                                         String issuer,
-                                         String privateKeyString,
-                                         Long expiresIn) {
+                                    List<String> audience,
+                                    Integer userId,
+                                    String issuer,
+                                    String privateKeyString,
+                                    Long expiresIn,
+                                    String scope) {
     try {
       /**
        * Generate uuid for token ID
@@ -80,10 +81,9 @@ public class Utils {
       String tokenId = UUID.randomUUID().toString().replaceAll("-", "");
       /**
        * Create token with JWT lib
-       * TODO пересмотреть концепцию передачи данных пользователя
        */
-      Token token = new TokenImpl(tokenId, audience != null ? audience : Collections.singletonList("RFInfo"), username + ":" + userId,
-          issuer, addTime(new Date(), expiresIn), new Date());
+      Token token = new TokenImpl(tokenId, audience != null ? audience : Collections.singletonList("RFInfo"), userId.toString(),
+        issuer, addTime(new Date(), expiresIn), new Date(), username, scope);
       /**
        * Sign token with private key
        */

@@ -2,10 +2,7 @@ package org.jepria.oauth.client;
 
 import org.jepria.oauth.client.dao.ClientDao;
 import org.jepria.server.ServerFactory;
-import org.jepria.server.service.rest.EntityService;
-import org.jepria.server.service.rest.EntityServiceImpl;
-import org.jepria.server.service.rest.SearchService;
-import org.jepria.server.service.rest.SearchServiceImpl;
+import org.jepria.server.service.rest.*;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpSession;
@@ -32,8 +29,8 @@ public class ClientServerFactory extends ServerFactory<ClientDao> {
   /**
    * @return сервис, воплощающий логику поиска объектов сущности
    */
-  public SearchService getSearchService(Supplier<HttpSession> session) {
-    return new SearchServiceImpl(getDao(), new ClientRecordDefinition(), session);
+  public PostGetSearchService getSearchService(Supplier<HttpSession> session) {
+    return new PostGetSearchServiceImpl(getDao(), new ClientRecordDefinition(), session);
   }
 
 }

@@ -178,7 +178,7 @@ public class AuthenticationServiceTest {
      * Create token with JWT lib
      */
     Token token = new TokenImpl("sessionToken", Collections.EMPTY_LIST, "testUser" + ":" + 1,
-        "issuer", new Date(new Date().getTime() + 10000), new Date());
+        "issuer", new Date(new Date().getTime() + 10000), new Date(),null, null);
     /**
      * Sign token with private key
      */

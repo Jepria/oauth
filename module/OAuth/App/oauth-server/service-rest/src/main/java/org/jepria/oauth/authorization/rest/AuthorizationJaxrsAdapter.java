@@ -129,12 +129,13 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
          * redirect back to application with token in hash fragment
          */
         TokenDto tokenDto = tokenService
-          .create(responseType,
+          .create(
             clientId,
             getHostContextPath(request),
             sessionDto.getAuthorizationCode(),
             URI.create(redirectUri),
-            getAccessTokenLifeTime(request));
+            getAccessTokenLifeTime(request),
+            getRefreshTokenLifeTime(request));
         try {
           response = Response.status(302).location(UriBuilder.fromUri(redirectUri)
             .fragment(ACCESS_TOKEN_QUERY_PARAM + tokenDto.getAccessToken()

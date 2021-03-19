@@ -7,38 +7,24 @@ import java.net.URI;
 
 public interface TokenService {
 
+
   /**
-   * create token for implicit flow (response_type=token)
-   *
-   * @param responseType response type
-   * @param clientId client application id
-   * @param issuer issuer server name
-   * @param authCode otp
-   * @param redirectUri client redirect uri
-   * @param accessTokenLifeTime life time of access token in seconds
-   * @return token
-   */
-  TokenDto create(String responseType,
-                  String clientId,
-                  String issuer,
-                  String authCode,
-                  URI redirectUri,
-                  Long accessTokenLifeTime);
-  /**
-   * create token for authorization code flow (response_type=code, grant_type=authorization_code)
+   * create token for authorization code flow (response_type=code/token, grant_type=authorization_code)
    *
    * @param clientId client application id
    * @param authCode otp
    * @param redirectUri client redirect uri
    * @param issuer issuer server name
    * @param accessTokenLifeTime life time of access token in seconds
+   * @param refreshTokenLifeTime life time of refresh token in seconds
    * @return token
    */
   TokenDto create(String clientId,
                   String authCode,
                   String issuer,
                   URI redirectUri,
-                  Long accessTokenLifeTime);
+                  Long accessTokenLifeTime,
+                  Long refreshTokenLifeTime);
   
   /**
    * create token for user password flow (grant_type=password)

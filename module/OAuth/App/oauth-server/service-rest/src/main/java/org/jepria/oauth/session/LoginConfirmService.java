@@ -56,7 +56,7 @@ public class LoginConfirmService extends SessionServiceImpl {
       }
     
       KeyDto keyDto = keyService.getKeys(null, Utils.serverCredential);
-      Token sessionToken = Utils.generateToken(username, null, operatorId, host, keyDto.getPrivateKey(), sessionTokenLifeTime);
+      Token sessionToken = Utils.generateToken(username, null, operatorId, host, keyDto.getPrivateKey(), sessionTokenLifeTime, null);
     
       SessionUpdateDto sessionUpdateDto = new SessionUpdateDto();
       sessionUpdateDto.setAuthorizationCode(sessionDto.getAuthorizationCode());

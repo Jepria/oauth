@@ -49,17 +49,17 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
   @POST
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   public Response createToken(
-      @HeaderParam("Authorization") String authHeader,
-      @FormParam("grant_type") String grantType,
-      @FormParam("client_id") String clientId,
-      @FormParam("client_secret") String clientSecret,
-      @FormParam("redirect_uri") String redirectUriEncoded,
-      @FormParam("code") String authCode,
-      @FormParam("username") String username,
-      @FormParam("password") String password,
-      @FormParam("password_hash") String passwordHash,
-      @FormParam("code_verifier") String codeVerifier,
-      @FormParam("refresh_token") String refreshToken) {
+    @HeaderParam("Authorization") String authHeader,
+    @FormParam("grant_type") String grantType,
+    @FormParam("client_id") String clientId,
+    @FormParam("client_secret") String clientSecret,
+    @FormParam("redirect_uri") String redirectUriEncoded,
+    @FormParam("code") String authCode,
+    @FormParam("username") String username,
+    @FormParam("password") String password,
+    @FormParam("password_hash") String passwordHash,
+    @FormParam("code_verifier") String codeVerifier,
+    @FormParam("refresh_token") String refreshToken) {
     if (authHeader != null) {
       authHeader = authHeader.replaceFirst("[Bb]asic ", "");
       String[] clientCredentials = new String(Base64.getUrlDecoder().decode(authHeader)).split(":");
@@ -83,14 +83,14 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
         String redirectUriDecoded = null;
         try {
           redirectUriDecoded = URLDecoder.decode(redirectUriEncoded.replaceAll("%20", "\\+"),
-              StandardCharsets.UTF_8.name());
+            StandardCharsets.UTF_8.name());
         } catch (UnsupportedEncodingException e) {
           e.printStackTrace();
         }
         
         URI redirectUri = URI.create(redirectUriDecoded);
         result = tokenService.create(clientId, authCode, getHostContextPath(request), redirectUri,
-            getAccessTokenLifeTime(request));
+          getAccessTokenLifeTime(request), getRefreshTokenLifeTime(request));
         break;
       }
       case GrantType.CLIENT_CREDENTIALS: {
@@ -101,7 +101,7 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
           throw new OAuthRuntimeException(ACCESS_DENIED, "Client authorization failed");
         }
         result = tokenService.create(clientId, userId, getHostContextPath(request),
-            getAccessTokenLifeTime(request), getRefreshTokenLifeTime(request));
+          getAccessTokenLifeTime(request), getRefreshTokenLifeTime(request));
         break;
       }
       case GrantType.PASSWORD: {
@@ -117,8 +117,8 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
           userId = authenticationService.loginByPasswordHash(username, passwordHash);
         }
         result = tokenService.create(clientId,
-            username, userId, getHostContextPath(request),
-            getAccessTokenLifeTime(request), getRefreshTokenLifeTime(request));
+          username, userId, getHostContextPath(request),
+          getAccessTokenLifeTime(request), getRefreshTokenLifeTime(request));
         break;
       }
       case GrantType.REFRESH_TOKEN: {
@@ -128,8 +128,8 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
           authenticationService.loginByClientId(clientId);
         }
         result = tokenService.create(clientId,
-            refreshToken, getHostContextPath(request),
-            getAccessTokenLifeTime(request), getRefreshTokenLifeTime(request));
+          refreshToken, getHostContextPath(request),
+          getAccessTokenLifeTime(request), getRefreshTokenLifeTime(request));
         break;
       }
       default: {
@@ -153,11 +153,11 @@ public class TokenJaxrsAdapter extends JaxrsAdapterBase {
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   @ClientCredentials
   public Response deleteToken(
-      @HeaderParam("Authorization") String authHeader,
-      @FormParam("token") String token) {
+    @HeaderParam("Authorization") String authHeader,
+    @FormParam("token") String token) {
     tokenService.delete(
-        new String(Base64.getUrlDecoder().decode(authHeader.replaceFirst("[Bb]asic ", ""))).split(":")[0],
-        token);
+      new String(Base64.getUrlDecoder().decode(authHeader.replaceFirst("[Bb]asic ", ""))).split(":")[0],
+      token);
     HttpSession session = request.getSession(false);
     if (session != null) {
       session.invalidate();

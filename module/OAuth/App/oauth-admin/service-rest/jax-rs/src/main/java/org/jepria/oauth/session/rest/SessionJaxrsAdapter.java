@@ -30,7 +30,8 @@ public class SessionJaxrsAdapter extends JaxrsAdapterBase {
 
   protected final EntityEndpointAdapter entityEndpointAdapter = new EntityEndpointAdapter(() -> sessionServerFactory.getEntityService());
 
-  protected final SearchEndpointAdapter searchEndpointAdapter = new SearchEndpointAdapter(() -> sessionServerFactory.getSearchService(() -> request.getSession()));
+  protected final PostGetSearchEndpointAdapter searchEndpointAdapter =
+    new PostGetSearchEndpointAdapter(() -> sessionServerFactory.getSearchService(() -> request.getSession()));
 
   //------------ entity methods ------------//
 

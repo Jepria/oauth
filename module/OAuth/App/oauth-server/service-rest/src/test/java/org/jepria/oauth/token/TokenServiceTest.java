@@ -103,7 +103,7 @@ public class TokenServiceTest {
   
   @Test
   public void authCodeTokenTest() {
-    TokenDto tokenDto = tokenService.create("testClient", "authCode", "issuer", URI.create("http://testuri.com"), new Long(3600));
+    TokenDto tokenDto = tokenService.create("testClient", "authCode", "issuer", URI.create("http://testuri.com"), new Long(3600), new Long(3600));
     assertNotNull(tokenDto);
     verify(sessionService, atLeast(1)).find(any(), any());
     verify(sessionService, atLeast(1)).update(any(), any(), any());
@@ -112,7 +112,7 @@ public class TokenServiceTest {
   
   @Test
   public void implicitTokenTest() {
-    TokenDto tokenDto = tokenService.create(ResponseType.TOKEN, "testClient", "authCode", "issuer", URI.create("http://testuri.com"), new Long(3600));
+    TokenDto tokenDto = tokenService.create("testClient", "authCode", "issuer", URI.create("http://testuri.com"), new Long(3600), new Long(3600));
     assertNotNull(tokenDto);
     verify(sessionService, atLeast(1)).find(any(), any());
     verify(sessionService, atLeast(1)).update(any(), any(), any());

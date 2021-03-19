@@ -30,9 +30,10 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
   @Context
   JepSecurityContext securityContext;
 
-  protected final EntityEndpointAdapter entityEndpointAdapter = new EntityEndpointAdapter(() -> clientServerFactory.getEntityService());
+  protected final EntityEndpointAdapter entityEndpointAdapter =
+    new EntityEndpointAdapter(() -> clientServerFactory.getEntityService());
 
-  protected final SearchEndpointAdapter searchEndpointAdapter = new SearchEndpointAdapter(() -> clientServerFactory.getSearchService(() -> request.getSession()));
+  protected final PostGetSearchEndpointAdapter searchEndpointAdapter = new PostGetSearchEndpointAdapter(() -> clientServerFactory.getSearchService(() -> request.getSession()));
 
   //------------ application-specific methods ------------//
   @GET

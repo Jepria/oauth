@@ -121,12 +121,13 @@ public class AuthenticationJaxrsAdapter extends JaxrsAdapterBase {
       /*
        * redirect to client with token in hash fragment
        */
-      TokenDto tokenDto = tokenService.create(responseType,
+      TokenDto tokenDto = tokenService.create(
         getHostContextPath(request),
         sessionToken.getAuthorizationCode(),
         clientId,
         URI.create(redirectUri),
-        getAccessTokenLifeTime(request));
+        getAccessTokenLifeTime(request),
+        getRefreshTokenLifeTime(request));
       response = Response.status(302)
         .location(UriBuilder.fromUri(redirectUri).fragment(ACCESS_TOKEN_QUERY_PARAM + tokenDto.getAccessToken()
           + "&" + TOKEN_TYPE_QUERY_PARAM + tokenDto.getTokenType()

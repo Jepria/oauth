@@ -105,7 +105,6 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         /*
          * if token is valid try to find session with JTI
          */
-        String[] subject = token.getSubject().split(":");
         SessionSearchDto sessionSearchDto = new SessionSearchDto();
         sessionSearchDto.setAuthorizationCode(token.getJti());
         List<SessionDto> sessionDtoList = sessionService.find(sessionSearchDto, Utils.serverCredential);
@@ -118,7 +117,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
           sessionCreateDto.setAuthorizationCode(generateCode());
           sessionCreateDto.setClientId(clientId);
           sessionCreateDto.setRedirectUri(redirectUri);
-          sessionCreateDto.setOperatorId(Integer.valueOf(subject[1]));
+          sessionCreateDto.setOperatorId(Integer.valueOf(token.getSubject()));
           sessionCreateDto.setSessionTokenId(token.getJti());
           sessionCreateDto.setSessionTokenDateIns(token.getIssueTime());
           sessionCreateDto.setSessionTokenDateFinish(token.getExpirationTime());

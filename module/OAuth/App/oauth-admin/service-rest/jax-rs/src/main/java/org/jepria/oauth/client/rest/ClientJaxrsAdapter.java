@@ -1,13 +1,14 @@
 package org.jepria.oauth.client.rest;
 
 import org.jepria.oauth.client.ClientServerFactory;
+import org.jepria.oauth.client.ClientService;
 import org.jepria.oauth.client.dto.ClientCreateDto;
 import org.jepria.oauth.client.dto.ClientDto;
 import org.jepria.oauth.client.dto.ClientSearchDto;
 import org.jepria.oauth.client.dto.ClientUpdateDto;
+import org.jepria.server.data.ColumnSortConfigurationDto;
 import org.jepria.server.data.OptionDto;
-import org.jepria.server.data.SearchRequestDto;
-import org.jepria.server.service.rest.ExtendedResponse;
+import org.jepria.server.data.SearchResultDto;
 import org.jepria.server.service.rest.JaxrsAdapterBase;
 import org.jepria.server.service.security.JepSecurityContext;
 import org.jepria.server.service.security.oauth.OAuth;
@@ -25,21 +26,24 @@ import java.util.List;
 @Path("/client")
 @OAuth
 public class ClientJaxrsAdapter extends JaxrsAdapterBase {
+  
+  protected final ClientService service;
+  protected final EntityEndpointAdapter entityEndpointAdapter;
+  protected final SearchEndpointAdapter searchEndpointAdapter;
+  
   @Inject
-  ClientServerFactory clientServerFactory;
-  @Context
-  JepSecurityContext securityContext;
-
-  protected final EntityEndpointAdapter entityEndpointAdapter =
-    new EntityEndpointAdapter(() -> clientServerFactory.getEntityService());
-
-  protected final PostGetSearchEndpointAdapter searchEndpointAdapter = new PostGetSearchEndpointAdapter(() -> clientServerFactory.getSearchService(() -> request.getSession()));
+  public ClientJaxrsAdapter(ClientServerFactory clientServerFactory) {
+    this.service = clientServerFactory.getService();
+    this.entityEndpointAdapter = new EntityEndpointAdapter(() -> clientServerFactory.getEntityService());
+    this.searchEndpointAdapter =
+      new SearchEndpointAdapter(() -> clientServerFactory.getSearchService(() -> request.getSession()));
+  }
 
   //------------ application-specific methods ------------//
   @GET
   @Path("/grant-types")
   public Response getGrantType() {
-    List<String> result = clientServerFactory.getService().getGrantType();
+    List<String> result = service.getGrantType();
     return Response.ok(result).build();
   }
 
@@ -51,28 +55,28 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
     } else if (grantTypeCodes.size() == 1 && grantTypeCodes.get(0).contains(";")) {
       grantTypeCodes = Arrays.asList(grantTypeCodes.get(0).split(";"));
     }
-    List<String> result = clientServerFactory.getService().getGrantResponseType(grantTypeCodes);
+    List<String> result = service.getGrantResponseType(grantTypeCodes);
     return Response.ok(result).build();
   }
 
   @GET
   @Path("/application-types")
   public Response getApplicationType() {
-    List<String> result = clientServerFactory.getService().getApplicationTypes();
+    List<String> result = service.getApplicationTypes();
     return Response.ok(result).build();
   }
 
   @GET
   @Path("/application-grant-types")
   public Response getApplicationGrantType(@NotEmpty @QueryParam("applicationType") String applicationTypeCode) {
-    List<String> result = clientServerFactory.getService().getApplicationGrantTypes(applicationTypeCode);
+    List<String> result = service.getApplicationGrantTypes(applicationTypeCode);
     return Response.ok(result).build();
   }
 
   @GET
   @RolesAllowed({"OAViewClient", "OAViewSession"})
   public Response getClients(@QueryParam("clientName") String clientName) {
-    List<ClientDto> result = clientServerFactory.getService().getClient(null, clientName, securityContext.getCredential().getOperatorId());
+    List<ClientDto> result = service.getClient(null, clientName, securityContext.getCredential().getOperatorId());
     if (result.isEmpty()) {
       return Response.noContent().build();
     } else {
@@ -113,64 +117,21 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
   }
 
   //------------ search methods ------------//
-
-  @POST
-  @Path("search")
-  @RolesAllowed("OAViewClient")
-  public Response postSearch(SearchRequestDto<ClientSearchDto> searchRequestDto,
-                             @HeaderParam(ExtendedResponse.REQUEST_HEADER_NAME) String extendedResponse,
-                             @HeaderParam("Cache-Control") String cacheControl) {
-    return searchEndpointAdapter.postSearch(searchRequestDto, extendedResponse, cacheControl);
-  }
-
+  
+  
   @GET
-  @Path("search/{searchId}")
+  @Path("/search")
   @RolesAllowed("OAViewClient")
-  public Response getSearchRequest(
-    @PathParam("searchId") String searchId) {
-    SearchRequestDto<ClientSearchDto> result = (SearchRequestDto<ClientSearchDto>) searchEndpointAdapter.getSearchRequest(searchId);
-    return Response.ok(result).build();
-  }
-
-  @GET
-  @Path("search/{searchId}/resultset-size")
-  @RolesAllowed("OAViewClient")
-  public Response getSearchResultsetSize(@PathParam("searchId") String searchId,
-                                         @HeaderParam("Cache-Control") String cacheControl) {
-    int result = searchEndpointAdapter.getSearchResultsetSize(searchId, cacheControl);
-    return Response.ok(result).build();
-  }
-
-  @GET
-  @Path("search/{searchId}/resultset")
-  @RolesAllowed("OAViewClient")
-  public Response getResultset(
-    @PathParam("searchId") String searchId,
+  public Response search(
     @QueryParam("pageSize") Integer pageSize,
     @QueryParam("page") Integer page,
-    @HeaderParam("Cache-Control") String cacheControl) {
-    List<ClientDto> result = (List<ClientDto>) searchEndpointAdapter.getResultset(searchId, pageSize, page, cacheControl);
-    if (result != null && result.size() > 0) {
-      return Response.ok(result).build();
-    } else {
-      return Response.status(Response.Status.NO_CONTENT).build();
-    }
-  }
-
-  @GET
-  @Path("search/{searchId}/resultset/paged-by-{pageSize:\\d+}/{page}")
-  @RolesAllowed("OAViewClient")
-  public Response getResultsetPaged(
-    @PathParam("searchId") String searchId,
-    @PathParam("pageSize") Integer pageSize,
-    @PathParam("page") Integer page,
-    @HeaderParam("Cache-Control") String cacheControl) {
-    List<ClientDto> result = (List<ClientDto>) searchEndpointAdapter.getResultsetPaged(searchId, pageSize, page, cacheControl);
-    if (result != null && result.size() > 0) {
-      return Response.ok(result).build();
-    } else {
-      return Response.status(Response.Status.NO_CONTENT).build();
-    }
+    @QueryParam("sort") List<ColumnSortConfigurationDto> sortConfiguration,
+    @BeanParam ClientSearchDto searchRequestDto,
+    @HeaderParam("Cache-Control") String cacheControl
+  ) {
+    SearchResultDto<ClientDto> result = searchEndpointAdapter.search(pageSize, page, sortConfiguration, searchRequestDto,
+      cacheControl);
+    return Response.ok(result).build();
   }
 
   @GET
@@ -181,7 +142,7 @@ public class ClientJaxrsAdapter extends JaxrsAdapterBase {
     @QueryParam("roleNameEn") String roleNameEn,
     @QueryParam("maxRowCount") Integer maxRowCount
   ) {
-    List<OptionDto<String>> result = clientServerFactory.getService().getRoles(roleName, roleNameEn, maxRowCount, securityContext.getCredential().getOperatorId());
+    List<OptionDto<String>> result = service.getRoles(roleName, roleNameEn, maxRowCount, securityContext.getCredential().getOperatorId());
     return Response.ok(result).build();
   }
 }

@@ -26,7 +26,7 @@ public class SessionServerFactory extends ServerFactory<SessionDao> {
     return new SessionServiceImpl(getDao(), new SessionRecordDefinition());
   }
 
-  public PostGetSearchService getSearchService(Supplier<HttpSession> session) {
-    return new PostGetSearchServiceImpl(getDao(), new SessionRecordDefinition(), session);
+  public SearchService getSearchService(Supplier<HttpSession> session) {
+    return new SearchServiceImpl(getDao(), new SessionRecordDefinition(), session);
   }
 }

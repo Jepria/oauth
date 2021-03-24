@@ -1,17 +1,27 @@
 package org.jepria.oauth.session.dto;
 
+import javax.ws.rs.QueryParam;
 import java.io.Serializable;
 
 public class SessionSearchDto implements Serializable {
-
+  
+  @QueryParam("sessionId")
   String sessionId;
+  @QueryParam("authorizationCode")
   String authorizationCode;
+  @QueryParam("operatorId")
   Integer operatorId;
+  @QueryParam("clientId")
   String clientId;
+  @QueryParam("sessionTokenId")
   String sessionTokenId;
+  @QueryParam("accessTokenId")
   String accessTokenId;
+  @QueryParam("refreshTokenId")
   String refreshTokenId;
+  @QueryParam("redirectUri")
   String redirectUri;
+  @QueryParam("maxRowCount")
   Integer maxRowCount;
 
   public String getSessionId() {

@@ -1,19 +1,19 @@
-import { createSessionSearchSlice, SessionSearchState } from "@jfront/core-redux-saga";
-import { ConnectorSessionSearch } from "@jfront/core-rest";
+import { createSearchSlice, SearchState } from "@jfront/core-redux-saga";
+import { ConnectorSearch } from "@jfront/core-rest";
 import { API_PATH } from "../../config";
 import { Client, ClientSearchTemplate } from "../types";
 import axios from 'axios';
 
-export const initialSearchState: SessionSearchState<ClientSearchTemplate, Client> = {
+export const initialSearchState: SearchState<ClientSearchTemplate, Client> = {
   isLoading: false,
   records: [],
   pageNumber: 1,
   pageSize: 25
 }
 
-const api = new ConnectorSessionSearch<Client, ClientSearchTemplate>(API_PATH + '/client', true, axios);
+const api = new ConnectorSearch<Client>(API_PATH + '/client', true, axios);
 
-const slice = createSessionSearchSlice<ClientSearchTemplate, Client>({
+const slice = createSearchSlice<ClientSearchTemplate, Client>({
   name: "clientSlice",
   initialState: initialSearchState,
 });

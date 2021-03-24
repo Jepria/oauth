@@ -20,12 +20,16 @@ import javax.ws.rs.core.Response;
 @OAuth
 public class KeyJaxrsAdapter extends JaxrsAdapterBase {
 
+  protected final KeyService service;
+  
   @Inject
-  KeyServerFactory keyServerFactory;
+  public KeyJaxrsAdapter(KeyServerFactory keyServerFactory) {
+    this.service = keyServerFactory.getService();
+  }
   
   @GET
   public Response getKey() {
-    KeyDto keyDto = keyServerFactory.getService().getKeys(null, securityContext.getCredential());
+    KeyDto keyDto = service.getKeys(null, securityContext.getCredential());
     if (keyDto != null) {
       keyDto.setPrivateKey("");
       return Response.ok(keyDto).build();
@@ -37,7 +41,7 @@ public class KeyJaxrsAdapter extends JaxrsAdapterBase {
   @POST
   @RolesAllowed("OAUpdateKey")
   public Response updateKeys() {
-    keyServerFactory.getService().setKeys(securityContext.getCredential());
+    service.setKeys(securityContext.getCredential());
     return Response.ok().build();
   }
 

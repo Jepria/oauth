@@ -1,4 +1,4 @@
-import { EntityState, SessionSearchState } from "@jfront/core-redux-saga";
+import { EntityState, SearchState } from "@jfront/core-redux-saga";
 import { Client } from "../client/types";
 
 export interface Operator {
@@ -32,16 +32,6 @@ export interface Session {
   isBlocked?: boolean
 }
 
-export interface ColumnSortConfiguration {
-  columnName: string;
-  sortOrder: string;
-}
-
-export interface SearchRequest<Type> {
-  template: Type;
-  listSortConfiguration?: Array<ColumnSortConfiguration>;
-}
-
 export interface SessionSearchTemplate {
   sessionId?: number
   operatorId?: number
@@ -62,7 +52,7 @@ export interface OperatorOptionState {
 }
 
 export interface SessionState {
-  searchSlice: SessionSearchState<SessionSearchTemplate, Session>
+  searchSlice: SearchState<SessionSearchTemplate, Session>
   crudSlice: EntityState<Session>
   clientSlice: ClientOptionState
   operatorSlice: OperatorOptionState

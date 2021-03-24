@@ -9,7 +9,7 @@ import { GrantType, ApplicationType } from '@jfront/oauth-core';
 import { TextCell } from '../../app/common/components/cell/TextCell';
 import { Grid } from '@jfront/ui-core';
 import { useTranslation } from 'react-i18next';
-import { EntityState, SessionSearchState } from '@jfront/core-redux-saga';
+import { EntityState, SearchState } from '@jfront/core-redux-saga';
 import { useQuery } from '../../app/common/useQuery';
 
 
@@ -19,17 +19,7 @@ export const ClientListPage: React.FC = () => {
   const { t } = useTranslation();
   const { ...template } = useQuery();
   const { currentRecord } = useSelector<AppState, EntityState<Client>>(state => state.client.crudSlice);
-  const { records, searchId, searchRequest, resultSetSize, isLoading } = useSelector<AppState, SessionSearchState<ClientSearchTemplate, Client>>(state => state.client.searchSlice);
-  const [page, setPage] = useState({
-    pageSize: 25,
-    pageNumber: 1
-  });
-
-  useEffect(() => {
-    if (searchId) {
-      dispatch(searchActions.getResultSet({ searchId, pageSize: page.pageSize, pageNumber: page.pageNumber }))
-    }
-  }, [searchId, page, dispatch])
+  const { records, searchRequest, resultSetSize, isLoading } = useSelector<AppState, SearchState<ClientSearchTemplate, Client>>(state => state.client.searchSlice);
 
   return (
     <Grid<Client>
@@ -86,22 +76,24 @@ export const ClientListPage: React.FC = () => {
           }
         }
       }}
-      onPaging={(pageNumber, pageSize) => {
-        setPage({
-          pageNumber,
-          pageSize
-        })
-      }}
-      onSort={(sortConfig) => {
+      manualPaging
+      manualSort
+      fetchData={(pageNumber, pageSize, sortConfigs) => {
         const newSearchRequest = {
           template: {
             maxRowCount: 25,
             ...template,
-            ...searchRequest?.template
+            ...searchRequest?.template,
           },
-          listSortConfiguration: sortConfig
-        }
-        dispatch(searchActions.postSearchRequest({ searchTemplate: newSearchRequest }));
+          listSortConfiguration: sortConfigs,
+        };
+        dispatch(
+          searchActions.search({
+            searchTemplate: newSearchRequest,
+            pageNumber,
+            pageSize,
+          })
+        );
       }}
       totalRowCount={resultSetSize}
       onDoubleClick={(record) => currentRecord !== record ? dispatch(crudActions.setCurrentRecord({

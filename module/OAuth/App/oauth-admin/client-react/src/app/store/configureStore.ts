@@ -38,9 +38,15 @@ export default function configureStore() {
   
   const sagaMiddleware = createSagaMiddleware();
 
+  const middleware: any[] = [sagaMiddleware];
+
+  if (process.env.NODE_ENV === "development") {
+    middleware.push(logger)
+  }
+
   const store = configureStoreRedux({
       reducer,
-      middleware: [sagaMiddleware, logger],
+      middleware: middleware,
       preloadedState: initialState,
       devTools: process.env.NODE_ENV === 'development'
     }

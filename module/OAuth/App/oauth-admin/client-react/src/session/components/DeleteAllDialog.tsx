@@ -12,7 +12,7 @@ import { OperatorOptionState, Session, SessionSearchTemplate } from '../types';
 import { useTranslation } from 'react-i18next';
 import { useHistory, useLocation } from 'react-router-dom';
 import { HistoryState } from '../../app/common/components/HistoryState';
-import { EntityState, SessionSearchState } from '@jfront/core-redux-saga';
+import { EntityState, SearchState } from '@jfront/core-redux-saga';
 
 interface DeleteAllForm {
   operatorId?: number
@@ -27,7 +27,7 @@ export const DeleteAllDialog = ({ visible, onCancel }: DeleteAllDialogProps) => 
 
   const dispatch = useDispatch();
   const { currentRecord } = useSelector<AppState, EntityState<Session>>(state => state.session.crudSlice);
-  const { searchId } = useSelector<AppState, SessionSearchState<SessionSearchTemplate, Session>>(state => state.session.searchSlice);
+  const { searchRequest } = useSelector<AppState, SearchState<SessionSearchTemplate, Session>>(state => state.session.searchSlice);
   const operators = useSelector<AppState, OperatorOptionState>(state => state.session.operatorSlice);
   const { t } = useTranslation();
   const history = useHistory<HistoryState>();
@@ -43,9 +43,9 @@ export const DeleteAllDialog = ({ visible, onCancel }: DeleteAllDialogProps) => 
             loadingMessage: t("deleteMessage"),
             callback: () => {
               onCancel();
-              if (pathname.endsWith('/list') && searchId) {
-                dispatch(searchActions.getResultSet({
-                  searchId,
+              if (pathname.endsWith('/list') && searchRequest) {
+                dispatch(searchActions.search({
+                  searchTemplate: searchRequest,
                   pageSize: 25,
                   pageNumber: 1
                 }));

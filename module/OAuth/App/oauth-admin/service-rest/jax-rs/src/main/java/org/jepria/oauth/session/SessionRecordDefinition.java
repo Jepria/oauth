@@ -24,12 +24,6 @@ public class SessionRecordDefinition extends RecordDefinitionDtoImpl {
       case "operatorId": {
         return Comparator.comparing(o -> ((OptionDto<Integer>) o).getValue());
       }
-      case "clientName": {
-        return Comparator.comparing(o -> ((OptionDto) o).getName());
-      }
-      case "clientId": {
-        return Comparator.comparing(o -> ((OptionDto<String>) o).getValue());
-      }
       default: return null;
     }
   }

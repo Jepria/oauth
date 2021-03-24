@@ -2,6 +2,7 @@ package org.jepria.oauth.clienturi.rest;
 
 import org.jepria.oauth.clienturi.ClientUriFieldNames;
 import org.jepria.oauth.clienturi.ClientUriServerFactory;
+import org.jepria.oauth.clienturi.ClientUriService;
 import org.jepria.oauth.clienturi.dto.ClientUriCreateDto;
 import org.jepria.oauth.clienturi.dto.ClientUriDto;
 import org.jepria.oauth.clienturi.dto.ClientUriSearchDto;
@@ -21,21 +22,22 @@ import java.util.List;
 @Path("/client/{clientId}/client-uri")
 @OAuth
 public class ClientUriJaxrsAdapter extends JaxrsAdapterBase {
-
+  
+  protected final ClientUriService service;
+  protected final EntityEndpointAdapter entityEndpointAdapter;
+  
   @Inject
-  ClientUriServerFactory clientUriServerFactory;
-
-  @Context
-  protected HttpServletRequest request;
-
-  protected final EntityEndpointAdapter entityEndpointAdapter = new EntityEndpointAdapter(() -> clientUriServerFactory.getEntityService());
+  public ClientUriJaxrsAdapter(ClientUriServerFactory clientUriServerFactory) {
+    this.service = clientUriServerFactory.getService();
+    this.entityEndpointAdapter = new EntityEndpointAdapter(() -> clientUriServerFactory.getEntityService());
+  }
 
   @GET
   @RolesAllowed("OAViewClient")
   public Response getAllRecords(@PathParam("clientId") String clientId){
     ClientUriSearchDto dto = new ClientUriSearchDto();
     dto.setClientId(clientId);
-    List<ClientUriDto> result = clientUriServerFactory.getService().findClientUri(dto, securityContext.getCredential().getOperatorId());
+    List<ClientUriDto> result = service.findClientUri(dto, securityContext.getCredential().getOperatorId());
     if (result.size() > 0) {
       return Response.ok().entity(result).build();
     } else {

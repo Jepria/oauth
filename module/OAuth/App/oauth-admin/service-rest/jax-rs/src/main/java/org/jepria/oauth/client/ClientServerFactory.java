@@ -29,8 +29,8 @@ public class ClientServerFactory extends ServerFactory<ClientDao> {
   /**
    * @return сервис, воплощающий логику поиска объектов сущности
    */
-  public PostGetSearchService getSearchService(Supplier<HttpSession> session) {
-    return new PostGetSearchServiceImpl(getDao(), new ClientRecordDefinition(), session);
+  public SearchService getSearchService(Supplier<HttpSession> session) {
+    return new SearchServiceImpl(getDao(), new ClientRecordDefinition(), session);
   }
 
 }

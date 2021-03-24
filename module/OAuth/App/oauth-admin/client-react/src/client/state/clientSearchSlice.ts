@@ -11,7 +11,7 @@ export const initialSearchState: SearchState<ClientSearchTemplate, Client> = {
   pageSize: 25
 }
 
-const api = new ConnectorSearch<Client, ClientSearchTemplate>(API_PATH + '/client', true, axios);
+const api = new ConnectorSearch<Client>(API_PATH + '/client', true, axios);
 
 const slice = createSearchSlice<ClientSearchTemplate, Client>({
   name: "clientSlice",

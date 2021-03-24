@@ -12,7 +12,7 @@ export interface Session {
   dateIns?: Date
   operator?: {
     name: string
-    value: string
+    value: number
   }
   operatorLogin?: string
   accessTokenId?: string
@@ -30,16 +30,6 @@ export interface Session {
   clientName?: string
   clientNameEn?: string
   isBlocked?: boolean
-}
-
-export interface ColumnSortConfiguration {
-  columnName: string;
-  sortOrder: string;
-}
-
-export interface SearchRequest<Type> {
-  template: Type;
-  listSortConfiguration?: Array<ColumnSortConfiguration>;
 }
 
 export interface SessionSearchTemplate {

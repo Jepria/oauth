@@ -1,12 +1,17 @@
 package org.jepria.oauth.client.dto;
 
+import javax.ws.rs.QueryParam;
 import java.io.Serializable;
 
 public class ClientSearchDto implements Serializable {
 
+  @QueryParam("clientId")
   String clientId;
+  @QueryParam("clientName")
   String clientName;
+  @QueryParam("clientNameEn")
   String clientNameEn;
+  @QueryParam("maxRowCount")
   Integer maxRowCount;
 
   public String getClientId() {

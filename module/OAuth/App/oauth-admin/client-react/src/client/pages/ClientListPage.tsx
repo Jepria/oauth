@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { actions as searchActions } from '../state/clientSearchSlice';
 import { actions as crudActions } from '../state/clientCrudSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { AppState } from '../../app/store/reducer';
 import { Client, ClientSearchTemplate } from '../types';
 import { GrantType, ApplicationType } from '@jfront/oauth-core';
@@ -19,17 +19,7 @@ export const ClientListPage: React.FC = () => {
   const { t } = useTranslation();
   const { ...template } = useQuery();
   const { currentRecord } = useSelector<AppState, EntityState<Client>>(state => state.client.crudSlice);
-  const { records, searchId, searchRequest, resultSetSize, isLoading } = useSelector<AppState, SearchState<ClientSearchTemplate, Client>>(state => state.client.searchSlice);
-  const [page, setPage] = useState({
-    pageSize: 25,
-    pageNumber: 1
-  });
-
-  useEffect(() => {
-    if (searchId) {
-      dispatch(searchActions.search({ searchId, pageSize: page.pageSize, pageNumber: page.pageNumber }))
-    }
-  }, [searchId, page, dispatch])
+  const { records, searchRequest, resultSetSize, isLoading } = useSelector<AppState, SearchState<ClientSearchTemplate, Client>>(state => state.client.searchSlice);
 
   return (
     <Grid<Client>
@@ -86,22 +76,24 @@ export const ClientListPage: React.FC = () => {
           }
         }
       }}
-      onPaging={(pageNumber, pageSize) => {
-        setPage({
-          pageNumber,
-          pageSize
-        })
-      }}
-      onSort={(sortConfig) => {
+      manualPaging
+      manualSort
+      fetchData={(pageNumber, pageSize, sortConfigs) => {
         const newSearchRequest = {
           template: {
             maxRowCount: 25,
             ...template,
-            ...searchRequest?.template
+            ...searchRequest?.template,
           },
-          listSortConfiguration: sortConfig
-        }
-        dispatch(searchActions.postSearchRequest({ searchTemplate: newSearchRequest }));
+          listSortConfiguration: sortConfigs,
+        };
+        dispatch(
+          searchActions.search({
+            searchTemplate: newSearchRequest,
+            pageNumber,
+            pageSize,
+          })
+        );
       }}
       totalRowCount={resultSetSize}
       onDoubleClick={(record) => currentRecord !== record ? dispatch(crudActions.setCurrentRecord({

@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { actions as searchActions } from '../state/clientSearchSlice';
 import { actions as crudActions } from '../state/clientCrudSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { AppState } from '../../app/store/reducer';
 import { Client, ClientSearchTemplate } from '../types';
 import { GrantType, ApplicationType } from '@jfront/oauth-core';
 import { TextCell } from '../../app/common/components/cell/TextCell';
 import { Grid } from '@jfront/ui-core';
 import { useTranslation } from 'react-i18next';
-import { EntityState, SearchState } from '@jfront/core-redux-saga';
+import { EntityState, SessionSearchState } from '@jfront/core-redux-saga';
 import { useQuery } from '../../app/common/useQuery';
 
 
@@ -19,7 +19,7 @@ export const ClientListPage: React.FC = () => {
   const { t } = useTranslation();
   const { ...template } = useQuery();
   const { currentRecord } = useSelector<AppState, EntityState<Client>>(state => state.client.crudSlice);
-  const { records, searchId, searchRequest, resultSetSize, isLoading } = useSelector<AppState, SearchState<ClientSearchTemplate, Client>>(state => state.client.searchSlice);
+  const { records, searchId, searchRequest, resultSetSize, isLoading } = useSelector<AppState, SessionSearchState<ClientSearchTemplate, Client>>(state => state.client.searchSlice);
   const [page, setPage] = useState({
     pageSize: 25,
     pageNumber: 1

@@ -8,13 +8,13 @@ import { AppState } from '../../app/store/reducer';
 import { Form, TextInput, NumberInput } from '@jfront/ui-core';
 import { useTranslation } from 'react-i18next';
 import queryString from 'query-string';
-import { SearchState } from '@jfront/core-redux-saga';
+import { SessionSearchState } from '@jfront/core-redux-saga';
 
 const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const { t } = useTranslation();
-  const { searchRequest } = useSelector<AppState, SearchState<ClientSearchTemplate, Client>>(state => state.client.searchSlice);
+  const { searchRequest } = useSelector<AppState, SessionSearchState<ClientSearchTemplate, Client>>(state => state.client.searchSlice);
 
   const formik = useFormik<ClientSearchTemplate>({
     initialValues: searchRequest ? searchRequest.template : { maxRowCount: 25 },

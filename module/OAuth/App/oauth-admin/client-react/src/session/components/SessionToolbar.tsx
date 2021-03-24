@@ -1,5 +1,5 @@
 import { Workstates, createEvent, useWorkstate } from "@jfront/core-common";
-import { EntityState, SearchState } from "@jfront/core-redux-saga";
+import { EntityState, SessionSearchState } from "@jfront/core-redux-saga";
 import { UserContext } from "@jfront/oauth-user";
 import { Toolbar, ToolbarButtonView, ToolbarButtonDelete, ToolbarButtonBase, ToolbarSplitter, ToolbarButtonFind } from "@jfront/ui-core";
 import React, { useContext, useEffect, useState } from "react";
@@ -26,7 +26,7 @@ export const SessionToolbar = ({ formRef, openDeleteAllDialog }: SessionToolbarP
   const workstate = useWorkstate(pathname);
   const { t } = useTranslation();
   const { currentRecord, selectedRecords } = useSelector<AppState, EntityState<Session>>(state => state.session.crudSlice);
-  const { pageNumber, pageSize, searchRequest, searchId } = useSelector<AppState, SearchState<SessionSearchTemplate, Session>>(state => state.session.searchSlice);
+  const { pageNumber, pageSize, searchRequest, searchId } = useSelector<AppState, SessionSearchState<SessionSearchTemplate, Session>>(state => state.session.searchSlice);
 
   useEffect(() => {
     if (currentUser.username !== "Guest") {

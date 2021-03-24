@@ -1,4 +1,4 @@
-import { EntityState, SearchState } from "@jfront/core-redux-saga";
+import { EntityState, SessionSearchState } from "@jfront/core-redux-saga";
 import { Client } from "../client/types";
 
 export interface Operator {
@@ -62,7 +62,7 @@ export interface OperatorOptionState {
 }
 
 export interface SessionState {
-  searchSlice: SearchState<SessionSearchTemplate, Session>
+  searchSlice: SessionSearchState<SessionSearchTemplate, Session>
   crudSlice: EntityState<Session>
   clientSlice: ClientOptionState
   operatorSlice: OperatorOptionState

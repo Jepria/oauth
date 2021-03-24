@@ -1,5 +1,5 @@
 import { Workstates, createEvent, useWorkstate } from "@jfront/core-common";
-import { EntityState, SearchState } from "@jfront/core-redux-saga";
+import { EntityState, SessionSearchState } from "@jfront/core-redux-saga";
 import { UserContext } from "@jfront/oauth-user";
 import {
   Toolbar,
@@ -37,7 +37,7 @@ export const ClientToolbar = ({ formRef }: ClientToolbarProps) => {
   const { isUserInRole } = useContext(UserContext);
   const { t } = useTranslation();
   const { currentRecord, selectedRecords } = useSelector<AppState, EntityState<Client>>(state => state.client.crudSlice)
-  const { searchId, searchRequest, pageSize, pageNumber } = useSelector<AppState, SearchState<ClientSearchTemplate, Client>>(state => state.client.searchSlice)
+  const { searchId, searchRequest, pageSize, pageNumber } = useSelector<AppState, SessionSearchState<ClientSearchTemplate, Client>>(state => state.client.searchSlice)
 
   useEffect(() => {
     isUserInRole("OACreateClient")

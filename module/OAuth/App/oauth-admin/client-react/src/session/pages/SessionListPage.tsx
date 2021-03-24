@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { actions as searchActions } from '../state/sessionSearchSlice';
 import { actions as crudActions } from '../state/sessionCrudSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { AppState } from '../../app/store/reducer';
 import { Session, SessionSearchTemplate } from '../types';
 import { TextCell } from '../../app/common/components/cell/TextCell';
 import { DateCell } from '../../app/common/components/cell/DateCell';
 import { Grid } from '@jfront/ui-core';
 import { useTranslation } from 'react-i18next';
-import { EntityState, SearchState } from '@jfront/core-redux-saga';
+import { EntityState, SessionSearchState } from '@jfront/core-redux-saga';
 import { useQuery } from '../../app/common/useQuery';
 
 
@@ -27,7 +27,7 @@ const SessionListPage: React.FC = () => {
     searchId,
     resultSetSize,
     isLoading
-  } = useSelector<AppState, SearchState<SessionSearchTemplate, Session>>(state => state.session.searchSlice);
+  } = useSelector<AppState, SessionSearchState<SessionSearchTemplate, Session>>(state => state.session.searchSlice);
   const [page, setPage] = useState({
     pageSize: 25,
     pageNumber: 1

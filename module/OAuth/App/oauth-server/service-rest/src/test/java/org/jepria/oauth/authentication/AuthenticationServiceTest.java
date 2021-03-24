@@ -86,10 +86,10 @@ public class AuthenticationServiceTest {
       OptionDto<String> client = new OptionDto<>();
       client.setName("testClientName");
       client.setValue("testClient");
-      sessionDto.setClient(client);
+      sessionDto.setClientId("testClient");
       if (sessionDto.getSessionId().equals(template.getSessionId())
           && sessionDto.getRedirectUri().equals(template.getRedirectUri())
-          && sessionDto.getClient().getValue().equals(template.getClientId())) {
+          && sessionDto.getClientId().equals(template.getClientId())) {
         return Collections.singletonList(sessionDto);
       } else if ("sessionToken".equals(template.getSessionTokenId())) {
         sessionDto.setSessionTokenId("sessionToken");

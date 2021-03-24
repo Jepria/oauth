@@ -25,7 +25,8 @@
     "loginModuleUri": "URI логин модуля",
     "applicationType": "Тип приложения",
     "grantTypes": "Типы авторизации",
-    "scopes": "Права доступа"
+    "scopes": "Права доступа",
+    "clientNameField": "clientName"
   },
   "clientUri": {
     "moduleName": "URL",
@@ -44,6 +45,7 @@
       "placeholder": "Введите наименование приложения",
       "id": "ID",
       "name": "Наименование",
+      "nameEn": "Наименование англ.",
       "redirectUri": "URL переадресации"
     },
     "operatorId": "ID пользователя",

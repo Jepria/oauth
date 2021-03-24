@@ -72,7 +72,7 @@ public class TokenServiceImpl implements TokenService {
     SessionUpdateDto updateDto = new SessionUpdateDto();
     updateDto.setSessionId(session.getSessionId());
     updateDto.setAuthorizationCode(session.getAuthorizationCode());
-    updateDto.setClientId(session.getClient().getValue());
+    updateDto.setClientId(session.getClientId());
     updateDto.setRedirectUri(session.getRedirectUri());
     updateDto.setCodeChallenge(session.getCodeChallenge());
     updateDto.setOperatorId(session.getOperator().getValue());
@@ -266,7 +266,7 @@ public class TokenServiceImpl implements TokenService {
         result.setActive(false);
         return result;
       }
-      result.setClient_id(sessionDto.getClient().getValue());
+      result.setClient_id(sessionDto.getClientId());
     } catch (Throwable e) {
       e.printStackTrace();
       result.setActive(false);

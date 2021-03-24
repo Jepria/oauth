@@ -1,6 +1,7 @@
 package org.jepria.oauth.main.rest.jersey;
 
 import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.process.internal.RequestScoped;
 import org.jepria.oauth.authentication.AuthenticationServerFactory;
 import org.jepria.oauth.authentication.dao.AuthenticationDao;
 import org.jepria.oauth.authentication.dao.AuthenticationDaoImpl;
@@ -17,6 +18,7 @@ import org.jepria.oauth.key.KeyServerFactory;
 import org.jepria.oauth.key.dao.KeyDao;
 import org.jepria.oauth.key.dao.KeyDaoImpl;
 import org.jepria.oauth.main.exception.OAuthExceptionMapper;
+import org.jepria.oauth.main.rest.jersey.inject.ClientLocaleFactory;
 import org.jepria.oauth.main.security.ClientCredentialsFilter;
 import org.jepria.oauth.session.SessionServerFactory;
 import org.jepria.oauth.session.dao.SessionDao;
@@ -26,10 +28,19 @@ import org.jepria.oauth.token.TokenServerFactory;
 import org.jepria.oauth.token.rest.TokenJaxrsAdapter;
 import org.jepria.server.service.rest.jersey.ApplicationConfigBase;
 
+import java.util.Locale;
+
 public class Application extends ApplicationConfigBase {
   
   public Application() {
     super();
+    register(new org.glassfish.hk2.utilities.binding.AbstractBinder() {
+      @Override
+      protected void configure() {
+        bindFactory(ClientLocaleFactory.class).to(Locale.class)
+          .proxy(true).proxyForSameScope(false).in(RequestScoped.class);
+      }
+    });
     register(LoginAttemptLimitFilter.class);
     register(ClientDaoImpl.class);
     register(new AbstractBinder() {

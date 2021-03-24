@@ -60,7 +60,7 @@ public class LoginConfirmService extends SessionServiceImpl {
     
       SessionUpdateDto sessionUpdateDto = new SessionUpdateDto();
       sessionUpdateDto.setAuthorizationCode(sessionDto.getAuthorizationCode());
-      sessionUpdateDto.setClientId(sessionDto.getClient().getValue());
+      sessionUpdateDto.setClientId(sessionDto.getClientId());
       sessionUpdateDto.setRedirectUri(sessionDto.getRedirectUri());
       sessionUpdateDto.setOperatorId(operatorId);
       sessionUpdateDto.setCodeChallenge(sessionDto.getCodeChallenge());
@@ -71,7 +71,7 @@ public class LoginConfirmService extends SessionServiceImpl {
       
       SessionCreateDto sessionCreateDto = new SessionCreateDto();
       sessionCreateDto.setAuthorizationCode(sessionToken.getJti());
-      sessionCreateDto.setClientId(sessionDto.getClient().getValue());
+      sessionCreateDto.setClientId(sessionDto.getClientId());
       sessionCreateDto.setOperatorId(operatorId);
       sessionCreateDto.setSessionTokenId(sessionToken.getJti());
       sessionCreateDto.setSessionTokenDateIns(sessionToken.getIssueTime());

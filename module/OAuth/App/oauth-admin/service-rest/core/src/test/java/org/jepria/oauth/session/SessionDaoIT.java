@@ -76,7 +76,7 @@ public class SessionDaoIT extends DaoTestBase {
         put(SESSION_ID, sessionId);
       }}, 1).get(0);
       assertEquals(sessionDto.getAuthorizationCode(), sessionCreateDto.getAuthorizationCode());
-      assertEquals(sessionDto.getClient().getValue(), sessionCreateDto.getClientId());
+      assertEquals(sessionDto.getClientId(), sessionCreateDto.getClientId());
       assertEquals(sessionDto.getOperator().getValue(), sessionCreateDto.getOperatorId());
       assertEquals(sessionDto.getRedirectUri(), sessionCreateDto.getRedirectUri());
       assertEquals(sessionDto.getAccessTokenId(), sessionCreateDto.getAccessTokenId());
@@ -89,7 +89,7 @@ public class SessionDaoIT extends DaoTestBase {
       sessionUpdateDto.setAuthorizationCode(sessionDto.getAuthorizationCode());
       sessionUpdateDto.setCodeChallenge(sessionDto.getCodeChallenge());
       sessionUpdateDto.setRedirectUri(sessionDto.getRedirectUri());
-      sessionUpdateDto.setClientId(sessionDto.getClient().getValue());
+      sessionUpdateDto.setClientId(sessionDto.getClientId());
       sessionUpdateDto.setAuthorizationCode(sessionDto.getAuthorizationCode());
       sessionUpdateDto.setOperatorId(7);
       byte[] newAccessTokenId = new byte[16];

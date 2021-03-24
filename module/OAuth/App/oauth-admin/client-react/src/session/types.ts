@@ -26,10 +26,9 @@ export interface Session {
   sessionTokenDateFinish?: Date
   codeChallenge?: string
   redirectUri?: string
-  client?: {
-    name: string
-    value: string
-  }
+  clientId?: string
+  clientName?: string
+  clientNameEn?: string
   isBlocked?: boolean
 }
 

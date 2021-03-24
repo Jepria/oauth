@@ -44,6 +44,7 @@
       "placeholder": "Введите наименование приложения",
       "id": "ID",
       "name": "Наименование",
+      "nameEn": "Наименование англ.",
       "redirectUri": "URL переадресации"
     },
     "operatorId": "ID пользователя",
@@ -66,7 +67,8 @@
     "sessionToken": "Токен сессии",
     "deleteAllMessage": "Вы уверены, что хотите удалить все сессии пользователя?",
     "deleteAllDialogHeader": "Удаление всех активных сессий пользователя",
-    "deleteAllDialogCancel": "Отмена"
+    "deleteAllDialogCancel": "Отмена",
+    "clientNameField": "clientName"
   },
   "key": {
     "toolbar": {

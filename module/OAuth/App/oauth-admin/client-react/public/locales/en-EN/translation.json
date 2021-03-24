@@ -25,7 +25,8 @@
     "loginModuleUri": "Login module URI",
     "applicationType": "Application type",
     "grantTypes": "Grant type",
-    "scopes": "Scopes"
+    "scopes": "Scopes",
+    "clientNameField": "clientNameEn"
   },
   "clientUri": {
     "moduleName": "URL",
@@ -50,6 +51,7 @@
       "placeholder": "Enter application name",
       "id": "ID",
       "name": "Name",
+      "nameEn": "Name En",
       "redirectUri": "Redirect URL"
     },
     "operator": {

@@ -24,13 +24,12 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.Locale;
 
 import static org.jepria.oauth.main.OAuthConstants.ACCESS_TOKEN_QUERY_PARAM;
 import static org.jepria.oauth.main.OAuthConstants.EXPIRES_IN_QUERY_PARAM;
 import static org.jepria.oauth.main.OAuthConstants.TOKEN_TYPE_QUERY_PARAM;
-import static org.jepria.oauth.main.OAuthConstants.LOGIN_MODULE;
-import static org.jepria.oauth.main.OAuthConstants.DEFAULT_LOGIN_MODULE;
-import static org.jepria.oauth.main.OAuthConstants.SID;
+import static org.jepria.oauth.main.OAuthConstants.*;
 import static org.jepria.oauth.main.Utils.*;
 import static org.jepria.oauth.main.rest.jersey.LoginAttemptLimitFilter.CURRENT_ATTEMPT_COUNT;
 import static org.jepria.oauth.sdk.OAuthConstants.*;
@@ -39,11 +38,14 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
   
   private final AuthorizationService authorizationService;
   private final TokenService tokenService;
+  private final Locale clientLocale;
   
   @Inject
-  public AuthorizationJaxrsAdapter(AuthorizationServerFactory authorizationServerFactory, TokenServerFactory tokenServerFactory) {
+  public AuthorizationJaxrsAdapter(AuthorizationServerFactory authorizationServerFactory,
+                                   TokenServerFactory tokenServerFactory, Locale locale) {
     this.authorizationService = authorizationServerFactory.getService();
     this.tokenService = tokenServerFactory.getService();
+    clientLocale = locale;
   }
   
   private String getLoginModuleUri() {
@@ -60,7 +62,8 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
                             @QueryParam("code_challenge") String codeChallenge,
                             @QueryParam("state") String state,
                             @CookieParam(SESSION_ID) String sessionToken,
-                            @CookieParam(CURRENT_ATTEMPT_COUNT) String currentAttemptCount) {
+                            @CookieParam(CURRENT_ATTEMPT_COUNT) String currentAttemptCount
+                            ) {
     
     if (currentAttemptCount != null && currentAttemptCount.length() > 0) {
       if (Integer.valueOf(currentAttemptCount).compareTo(LoginAttemptLimitFilter.getMaxAttemptCount(request)) > 0) {
@@ -174,8 +177,9 @@ public class AuthorizationJaxrsAdapter extends JaxrsAdapterBase {
           .queryParam(RESPONSE_TYPE, responseType)
           .queryParam(SID, sessionDto.getSessionId())
           .queryParam(REDIRECT_URI, redirectUriEncoded)
-          .queryParam(CLIENT_ID, sessionDto.getClient().getValue())
-          .queryParam(CLIENT_NAME, URLEncoder.encode(sessionDto.getClient().getName(),
+          .queryParam(CLIENT_ID, sessionDto.getClientId())
+          .queryParam(CLIENT_NAME, URLEncoder.encode(clientLocale.getLanguage().equals("ru") ?
+              sessionDto.getClientName() : sessionDto.getClientNameEn(),
             StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20"))
           .queryParam(STATE,
             URLEncoder.encode(state, StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20"))

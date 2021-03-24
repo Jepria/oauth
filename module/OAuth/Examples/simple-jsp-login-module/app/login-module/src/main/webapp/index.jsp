@@ -12,18 +12,21 @@
   <title>Login</title>
 </head>
 <body>
-<form action="login?<%=query%>" method="post">
-  <div class="container">
-    <h5><%=clientName%></h5>
-    <label>
-      <b>Username</b>
-      <input type="text" placeholder="Enter Username" name="username" required></label>
-    <label>
-      <b>Password</b>
-      <input type="password" placeholder="Enter Password" name="password" required>
-    </label>
-    <button type="submit">Login</button>
-  </div>
-</form>
+<main>
+  <form action="login?<%=query%>" method="post">
+    <div class="container">
+      <h5><%=clientName%>
+      </h5>
+      <label>
+        <b>Username</b>
+        <input type="text" placeholder="Enter Username" name="username" required></label>
+      <label>
+        <b>Password</b>
+        <input type="password" placeholder="Enter Password" name="password" required>
+      </label>
+      <button type="submit">Login</button>
+    </div>
+  </form>
+</main>
 </body>
 </html>

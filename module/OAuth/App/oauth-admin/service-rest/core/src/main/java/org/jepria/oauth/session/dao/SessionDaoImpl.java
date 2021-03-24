@@ -52,10 +52,9 @@ public class SessionDaoImpl implements SessionDao {
           operator.setValue(getInteger(rs, OPERATOR_ID));
           dto.setOperator(operator.getValue() != null ? operator : null);
           dto.setOperatorLogin(rs.getString(OPERATOR_LOGIN));
-          OptionDto<String> client = new OptionDto<>();
-          client.setValue(rs.getString(CLIENT_SHORT_NAME));
-          client.setName(rs.getString(CLIENT_NAME));
-          dto.setClient(client);
+          dto.setClientId(rs.getString(CLIENT_SHORT_NAME));
+          dto.setClientName(rs.getString(CLIENT_NAME));
+          dto.setClientNameEn(rs.getString(CLIENT_NAME_EN));
           dto.setAccessTokenId(rs.getString(ACCESS_TOKEN_ID));
           dto.setAccessTokenDateIns(getTimestamp(rs, ACCESS_TOKEN_DATE_INS));
           dto.setAccessTokenDateFinish(getTimestamp(rs, ACCESS_TOKEN_DATE_FINiSH));
@@ -115,10 +114,9 @@ public class SessionDaoImpl implements SessionDao {
           operator.setValue(getInteger(rs, OPERATOR_ID));
           dto.setOperator(operator.getValue() != null ? operator : null);
           dto.setOperatorLogin(rs.getString(OPERATOR_LOGIN));
-          OptionDto<String> client = new OptionDto<>();
-          client.setValue(rs.getString(CLIENT_SHORT_NAME));
-          client.setName(rs.getString(CLIENT_NAME));
-          dto.setClient(client);
+          dto.setClientId(rs.getString(CLIENT_SHORT_NAME));
+          dto.setClientName(rs.getString(CLIENT_NAME));
+          dto.setClientNameEn(rs.getString(CLIENT_NAME_EN));
           dto.setAccessTokenId(rs.getString(ACCESS_TOKEN_ID));
           dto.setAccessTokenDateIns(getTimestamp(rs, ACCESS_TOKEN_DATE_INS));
           dto.setAccessTokenDateFinish(getTimestamp(rs, ACCESS_TOKEN_DATE_FINiSH));

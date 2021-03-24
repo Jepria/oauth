@@ -25,8 +25,10 @@ public class SessionDto implements Serializable {
   Date refreshTokenDateFinish;
   String codeChallenge;
   String redirectUri;
-  OptionDto<String> client;
-
+  String clientId;
+  String clientName;
+  String clientNameEn;
+  
   public String getSessionId() {
     return sessionId;
   }
@@ -154,12 +156,28 @@ public class SessionDto implements Serializable {
   public void setRedirectUri(String redirectUri) {
     this.redirectUri = redirectUri;
   }
-
-  public OptionDto<String> getClient() {
-    return client;
+  
+  public String getClientId() {
+    return clientId;
   }
-
-  public void setClient(OptionDto<String> client) {
-    this.client = client;
+  
+  public void setClientId(String clientId) {
+    this.clientId = clientId;
+  }
+  
+  public String getClientName() {
+    return clientName;
+  }
+  
+  public void setClientName(String clientName) {
+    this.clientName = clientName;
+  }
+  
+  public String getClientNameEn() {
+    return clientNameEn;
+  }
+  
+  public void setClientNameEn(String clientNameEn) {
+    this.clientNameEn = clientNameEn;
   }
 }

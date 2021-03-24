@@ -47,13 +47,12 @@ public class LoginConfirmServiceTest {
       sessionDto.setAuthorizationCode("authCode");
       sessionDto.setRedirectUri("http://redirecturi");
       sessionDto.setDateIns(new Date((new Date().getTime() - 1000)));
-      OptionDto<String> client = new OptionDto<>();
-      client.setName("testClientName");
-      client.setValue("testClient");
-      sessionDto.setClient(client);
+      sessionDto.setClientId("testClient");
+      sessionDto.setClientName("testClientName");
+      sessionDto.setClientNameEn("testClientName");
       if (sessionDto.getSessionId().equals(template.getSessionId())
           && sessionDto.getRedirectUri().equals(template.getRedirectUri())
-          && sessionDto.getClient().getValue().equals(template.getClientId())) {
+          && sessionDto.getClientId().equals(template.getClientId())) {
         return Collections.singletonList(sessionDto);
       } else if ("sessionToken".equals(template.getSessionTokenId())) {
         sessionDto.setSessionTokenId("sessionToken");

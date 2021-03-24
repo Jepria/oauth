@@ -57,10 +57,9 @@ public class TokenServiceTest {
       sessionDto.setAuthorizationCode(template.getAuthorizationCode());
       sessionDto.setRedirectUri(template.getRedirectUri());
       sessionDto.setDateIns(new Date((new Date().getTime() - 1000)));
-      OptionDto<String> client = new OptionDto<>();
-      client.setName(template.getClientId());
-      client.setValue(template.getClientId());
-      sessionDto.setClient(client);
+      sessionDto.setClientId(template.getClientId());
+      sessionDto.setClientName(template.getClientId());
+      sessionDto.setClientNameEn(template.getClientId());
       OptionDto<Integer> operator = new OptionDto<>();
       operator.setValue(1);
       operator.setName("testUser");

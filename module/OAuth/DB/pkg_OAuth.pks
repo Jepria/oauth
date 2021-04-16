@@ -40,7 +40,7 @@ function createClient(
   , applicationType varchar2
   , grantTypeList varchar2
   , roleShortNameList varchar2
-  , loginModuleUri varchar2
+  , loginModuleUri varchar2 default null
   , operatorId integer
 )
 return integer;

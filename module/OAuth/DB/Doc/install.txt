@@ -68,6 +68,11 @@ group: 1.2.0
 
 > make install INSTALL_VERSION=1.2.0 LOAD_USERID2=???/???@??? LOAD_OPERATORID=???/???
 
+Выдача прав на объекты модуля для внешних пользователей (по требованию):
+
+> make grant INSTALL_VERSION=Last LOAD_USERID=???/???@??? LOAD_OPERATORID=???/??? TO_USERNAME=??? GRANT_SCRIPT=grant-external.sql
+
+
 
 group: 1.1.0
 

@@ -4,6 +4,7 @@ import org.jepria.compat.server.db.Db;
 import org.jepria.oauth.authentication.AuthenticationServerFactory;
 import org.jepria.oauth.authentication.AuthenticationService;
 import org.jepria.server.data.RuntimeSQLException;
+import org.jepria.server.env.EnvironmentPropertySupport;
 import org.jepria.server.service.security.HttpBasicDynamicFeature;
 import org.jepria.server.service.security.SecurityContext;
 import org.jepria.server.service.security.oauth.OAuthDbHelper;
@@ -22,8 +23,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Base64;
 
-import static org.jepria.compat.server.JepRiaServerConstant.DEFAULT_DATA_SOURCE_JNDI_NAME;
-import static org.jepria.compat.server.JepRiaServerConstant.DEFAULT_OAUTH_DATA_SOURCE_JNDI_NAME;
+import static org.jepria.compat.server.JepRiaServerConstant.*;
 import static org.jepria.server.service.security.HttpBasic.PASSWORD;
 
 @ClientCredentials
@@ -32,6 +32,10 @@ public class ClientCredentialsFilter implements ContainerRequestFilter {
   
   @Context
   private HttpServletRequest request;
+  
+  private String getBackupDatasourceJndiName() {
+    return EnvironmentPropertySupport.getInstance(request).getProperty(BACK_UP_DATA_SOURCE, DEFAULT_DATA_SOURCE_JNDI_NAME);
+  }
   
   @Override
   public void filter(ContainerRequestContext requestContext) throws IOException {
@@ -50,7 +54,7 @@ public class ClientCredentialsFilter implements ContainerRequestFilter {
         operatorId = OAuthDbHelper.loginByClientSecret(db, credentials[0], credentials[1]);
       } catch (Throwable ex) {
         if (ex.getMessage().contains("DataSource 'java:/comp/env/" + DEFAULT_OAUTH_DATA_SOURCE_JNDI_NAME + "' not found")) {
-          db = new Db(DEFAULT_DATA_SOURCE_JNDI_NAME);
+          db = new Db(getBackupDatasourceJndiName());
           operatorId = OAuthDbHelper.loginByClientSecret(db, credentials[0], credentials[1]);
         } else {
           throw ex;

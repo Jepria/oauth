@@ -17,7 +17,7 @@ const SessionListPage: React.FC = () => {
   const history = useHistory();
   const { t } = useTranslation();
   const { ...template } = useQuery();
-  const { currentRecord } = useSelector<AppState, EntityState<Session>>(
+  const { currentRecord, selectedRecords } = useSelector<AppState, EntityState<Session>>(
     (state) => state.session.crudSlice
   );
   const { records, searchRequest, resultSetSize, isLoading } = useSelector<
@@ -79,16 +79,15 @@ const SessionListPage: React.FC = () => {
       data={React.useMemo(() => records, [records])}
       onSelection={(records) => {
         if (records) {
-          if (records.length === 1) {
-            if (records[0] !== currentRecord) {
-              dispatch(
-                crudActions.setCurrentRecord({ currentRecord: records[0] })
-              );
-              dispatch(crudActions.selectRecords({ selectedRecords: records }));
-            }
-          } else if (currentRecord) {
+          if (records.join() !== selectedRecords.join()){
             dispatch(crudActions.setCurrentRecord({} as any));
             dispatch(crudActions.selectRecords({ selectedRecords: records }));
+          }
+          if (records.length === 1) {
+            if (records[0] !== currentRecord) {
+              dispatch(crudActions.setCurrentRecord({ currentRecord: records[0] }));
+              dispatch(crudActions.selectRecords({ selectedRecords: records }));
+            }
           }
         }
       }}
@@ -118,10 +117,10 @@ const SessionListPage: React.FC = () => {
               crudActions.setCurrentRecord({
                 currentRecord: current,
                 callback: () =>
-                  history.push(`/ui/session/${current?.sessionId}/view`),
+                  history.push(`/session/${current?.sessionId}/view`),
               })
             )
-          : history.push(`/ui/session/${current?.sessionId}/view`)
+          : history.push(`/session/${current?.sessionId}/view`)
       }
     />
   );

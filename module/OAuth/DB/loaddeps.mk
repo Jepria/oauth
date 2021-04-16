@@ -43,6 +43,11 @@ pkg_OAuthInternal.pkb.$(lu): \
   Install/Schema/Last/v_oa_session.vw.$(lu) \
 
 
+pkg_OAuthExternal.pkb.$(lu): \
+  pkg_OAuthExternal.pks.$(lu) \
+  pkg_OAuth.pks.$(lu) \
+
+
 Install/Schema/Last/v_oa_session.vw.$(lu): \
   Install/Schema/Last/set-session-comment.sql \
 

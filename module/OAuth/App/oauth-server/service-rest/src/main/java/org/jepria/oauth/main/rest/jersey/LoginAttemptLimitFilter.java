@@ -32,7 +32,7 @@ public class LoginAttemptLimitFilter implements ContainerRequestFilter, Containe
   public void filter(ContainerRequestContext containerRequestContext) throws IOException {
     Map<String, Cookie> cookieMap = containerRequestContext.getCookies();
     if (cookieMap.containsKey(CURRENT_ATTEMPT_COUNT)) {
-      Integer currentAttemptCount = Integer.valueOf(cookieMap.get(CURRENT_ATTEMPT_COUNT).getValue()) + 1;
+      Integer currentAttemptCount = Integer.parseInt(cookieMap.get(CURRENT_ATTEMPT_COUNT).getValue()) + 1;
       containerRequestContext.setProperty(CURRENT_ATTEMPT_COUNT, currentAttemptCount);
     } else {
       containerRequestContext.setProperty(CURRENT_ATTEMPT_COUNT, 1);
@@ -42,15 +42,16 @@ public class LoginAttemptLimitFilter implements ContainerRequestFilter, Containe
   @Override
   public void filter(ContainerRequestContext containerRequestContext, ContainerResponseContext containerResponseContext) throws IOException {
     Integer currentAttemptCount = (Integer) containerRequestContext.getProperty(CURRENT_ATTEMPT_COUNT);
+    javax.servlet.http.Cookie cookie;
     if (currentAttemptCount == 0) {
-      javax.servlet.http.Cookie cookie = new javax.servlet.http.Cookie(CURRENT_ATTEMPT_COUNT, "");
-      cookie.setMaxAge(0);
-      httpServletResponse.addCookie(cookie);
+      cookie = new javax.servlet.http.Cookie(CURRENT_ATTEMPT_COUNT, "");
+      cookie.setHttpOnly(true);
+      cookie.setMaxAge(-1);
     } else {
-      javax.servlet.http.Cookie cookie = new javax.servlet.http.Cookie(CURRENT_ATTEMPT_COUNT, currentAttemptCount.toString());
+      cookie = new javax.servlet.http.Cookie(CURRENT_ATTEMPT_COUNT, currentAttemptCount.toString());
       cookie.setHttpOnly(true);
       cookie.setMaxAge(60*60*24);
-      httpServletResponse.addCookie(cookie);
     }
+    httpServletResponse.addCookie(cookie);
   }
 }

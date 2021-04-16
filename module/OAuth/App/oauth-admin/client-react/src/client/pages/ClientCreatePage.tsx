@@ -10,7 +10,6 @@ import { SelectInput, TextInput, CheckBoxGroup, CheckBox, Form, DualList } from 
 import { AppState } from '../../app/store/reducer';
 import { useTranslation } from 'react-i18next';
 import { OptionState } from '@jfront/core-redux-saga';
-import { isUri } from 'valid-url'
 import styled from 'styled-components';
 
 const StyledLabel = styled(Form.Label)`
@@ -29,7 +28,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
       dispatch(actions.create({
         values: values, 
         onSuccess: (client: Client) => {
-          history.push(`/ui/client/${client.clientId}/detail`);
+          history.push(`/client/${client.clientId}/detail`);
         }
       }));
     },
@@ -50,9 +49,6 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
       }
       if (!values.clientNameEn) {
         errors.clientNameEn = t('validation.notEmpty')
-      }
-      if (values.loginModuleUri && !isUri(values.loginModuleUri)) {
-        errors.loginModuleUri = t('validation.invalidUriFormat')
       }
       if (!values.applicationType) {
         errors.applicationType = t('validation.notEmpty')

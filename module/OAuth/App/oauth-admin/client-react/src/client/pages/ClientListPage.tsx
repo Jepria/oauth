@@ -18,7 +18,7 @@ export const ClientListPage: React.FC = () => {
   const history = useHistory();
   const { t } = useTranslation();
   const { ...template } = useQuery();
-  const { currentRecord } = useSelector<AppState, EntityState<Client>>(state => state.client.crudSlice);
+  const { currentRecord, selectedRecords } = useSelector<AppState, EntityState<Client>>(state => state.client.crudSlice);
   const { records, searchRequest, resultSetSize, isLoading } = useSelector<AppState, SearchState<ClientSearchTemplate, Client>>(state => state.client.searchSlice);
 
   return (
@@ -65,14 +65,15 @@ export const ClientListPage: React.FC = () => {
       data={React.useMemo(() => records, [records])}
       onSelection={(records) => {
         if (records) {
+          if (records.join() !== selectedRecords.join()){
+            dispatch(crudActions.setCurrentRecord({} as any));
+            dispatch(crudActions.selectRecords({ selectedRecords: records }));
+          }
           if (records.length === 1) {
             if (records[0] !== currentRecord) {
               dispatch(crudActions.setCurrentRecord({ currentRecord: records[0] }));
               dispatch(crudActions.selectRecords({ selectedRecords: records }));
             }
-          } else if (currentRecord) {
-            dispatch(crudActions.setCurrentRecord({} as any));
-            dispatch(crudActions.selectRecords({ selectedRecords: records }));
           }
         }
       }}
@@ -98,8 +99,8 @@ export const ClientListPage: React.FC = () => {
       totalRowCount={resultSetSize}
       onDoubleClick={(record) => currentRecord !== record ? dispatch(crudActions.setCurrentRecord({
         currentRecord: record,
-        callback: () => history.push(`/ui/client/${record?.clientId}/detail`)
-      })) : history.push(`/ui/client/${record?.clientId}/detail`)}
+        callback: () => history.push(`/client/${record?.clientId}/detail`)
+      })) : history.push(`/client/${record?.clientId}/detail`)}
     />
   );
 }

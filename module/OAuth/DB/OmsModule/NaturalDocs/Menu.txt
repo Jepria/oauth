@@ -71,11 +71,13 @@ Group: Пакеты  {
 
       File: Спецификация  (no auto-title, pkg_OAuth.pks)
       File: Реализация  (no auto-title, pkg_OAuth.pkb)
-      File: Install/Grant/1....0/link-user.sql  (Install/Grant/1.2.0/link-user.sql)
-      File: Install/Grant/1....0/ReserveDb/MViewSchema/run.sql  (Install/Grant/1.2.0/ReserveDb/MViewSchema/run.sql)
-      File: Install/Schema/1....0/run.sql  (Install/Schema/1.2.0/run.sql)
-      File: OA_CLIENT  (Install/Schema/1.2.0/oa_client.sql)
       }  # Group: pkg_OAuth
+
+   Group: pkg_OAuthExternal  {
+
+      File: Спецификация  (no auto-title, pkg_OAuthExternal.pks)
+      File: Реализация  (no auto-title, pkg_OAuthExternal.pkb)
+      }  # Group: pkg_OAuthExternal
 
    Group: pkg_OAuthInternal  {
 
@@ -148,9 +150,24 @@ Group: Скрипты  {
 
                }  # Group: ReserveDb
 
+            File: grant-external  (no auto-title, Install/Grant/Last/grant-external.sql)
             File: link-user  (no auto-title, Install/Grant/Last/link-user.sql)
             File: master-table  (no auto-title, Install/Grant/Last/master-table.sql)
             }  # Group: Last
+
+         Group: 1.2.0  {
+
+            Group: ReserveDb  {
+
+               Group: MViewSchema  {
+
+                  File: run  (no auto-title, Install/Grant/1.2.0/ReserveDb/MViewSchema/run.sql)
+                  }  # Group: MViewSchema
+
+               }  # Group: ReserveDb
+
+            File: link-user  (no auto-title, Install/Grant/1.2.0/link-user.sql)
+            }  # Group: 1.2.0
 
          }  # Group: Grant
 
@@ -192,6 +209,22 @@ Group: Скрипты  {
             File: set-session-comment  (no auto-title, Install/Schema/Last/set-session-comment.sql)
             File: v_oa_session  (no auto-title, Install/Schema/Last/v_oa_session.vw)
             }  # Group: Last
+
+         Group: 1.2.0  {
+
+            Group: ReserveDb  {
+
+               Group: MViewSchema  {
+
+                  File: run  (no auto-title, Install/Schema/1.2.0/ReserveDb/MViewSchema/run.sql)
+                  File: mv_oa_client  (no auto-title, Install/Schema/1.2.0/ReserveDb/MViewSchema/mv_oa_client.snp)
+                  }  # Group: MViewSchema
+
+               }  # Group: ReserveDb
+
+            File: run  (no auto-title, Install/Schema/1.2.0/run.sql)
+            File: oa_client  (no auto-title, Install/Schema/1.2.0/oa_client.sql)
+            }  # Group: 1.2.0
 
          Group: 1.1.0  {
 

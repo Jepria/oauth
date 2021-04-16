@@ -44,7 +44,7 @@ export const ClientUriToolbar = ({ formRef }: ClientUriToolbarProps) => {
             dispatch(crudActions.setCurrentRecord({
               currentRecord: undefined,
               callback: () => {
-                history.push(`/ui/client/${clientId}/client-uri/create`, state)
+                history.push(`/client/${clientId}/client-uri/create`, state)
               }
             }));
           }} disabled={workstate === Workstates.Create} />
@@ -53,7 +53,7 @@ export const ClientUriToolbar = ({ formRef }: ClientUriToolbarProps) => {
             disabled={workstate !== Workstates.Create} />
         </>)}
       <ToolbarButtonView
-        onClick={() => { history.push(`/ui/client/${clientId}/client-uri/${currentRecord?.clientUriId}/detail`, state) }}
+        onClick={() => { history.push(`/client/${clientId}/client-uri/${currentRecord?.clientUriId}/detail`, state) }}
         disabled={!currentRecord || workstate === Workstates.Detail} />
       {(hasCreateRole || hasEditRole) && <ToolbarButtonDelete onClick={() => {
         if (window.confirm(t('delete'))) {
@@ -63,7 +63,7 @@ export const ClientUriToolbar = ({ formRef }: ClientUriToolbarProps) => {
               if (workstate === Workstates.List) {
                 dispatch(searchActions.search({ clientId }));
               } else {
-                history.push(`/ui/client/${clientId}/client-uri/list`, state);
+                history.push(`/client/${clientId}/client-uri/list`, state);
               }
             }
           }));
@@ -74,7 +74,7 @@ export const ClientUriToolbar = ({ formRef }: ClientUriToolbarProps) => {
         dispatch(crudActions.setCurrentRecord({
           currentRecord: undefined,
           callback: () => {
-            history.push(`/ui/client/${clientId}/client-uri/list`, state)
+            history.push(`/client/${clientId}/client-uri/list`, state)
           }
         }));
       }} disabled={workstate === Workstates.List}>{t('toolbar.list')}</ToolbarButtonBase>

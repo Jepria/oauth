@@ -64,10 +64,10 @@ export const ClientUriListPage: React.FC = () => {
         if (currentRecord !== record) {
           dispatch(crudActions.setCurrentRecord({
             currentRecord: record,
-            callback: () => history.push(`/ui/client/${clientId}/client-uri/${record?.clientUriId}/detail`, state)
+            callback: () => history.push(`/client/${clientId}/client-uri/${record?.clientUriId}/detail`, state)
           }))
         } else {
-          history.push(`/ui/client/${clientId}/client-uri/${record?.clientUriId}/detail`, state)
+          history.push(`/client/${clientId}/client-uri/${record?.clientUriId}/detail`, state)
         }
       }} />
   );

@@ -39,7 +39,7 @@ export const SessionToolbar = ({ formRef, openDeleteAllDialog }: SessionToolbarP
   return (
     <Toolbar style={{ margin: 0 }}>
       <ToolbarButtonView
-        onClick={() => { history.push(`/ui/session/${currentRecord?.sessionId}/detail`) }}
+        onClick={() => { history.push(`/session/${currentRecord?.sessionId}/detail`) }}
         disabled={!currentRecord || workstate === Workstates.Detail} />
       {hasDeleteRole && (
         <>
@@ -59,7 +59,7 @@ export const SessionToolbar = ({ formRef, openDeleteAllDialog }: SessionToolbarP
                       dispatch(searchActions.postSearchRequest({ searchTemplate: searchRequest }))
                     }
                   } else {
-                    history.push('/ui/session/list');
+                    history.push('/session/list');
                   }
                 }
               }))
@@ -75,9 +75,9 @@ export const SessionToolbar = ({ formRef, openDeleteAllDialog }: SessionToolbarP
           currentRecord: undefined as any,
           callback: () => {
             if (searchRequest) {
-              history.push('/ui/session/list');
+              history.push('/session/list');
             } else {
-              history.push('/ui/session');
+              history.push('/session');
             }
           }
         }))
@@ -85,7 +85,7 @@ export const SessionToolbar = ({ formRef, openDeleteAllDialog }: SessionToolbarP
       <ToolbarButtonFind onClick={() => {
         dispatch(crudActions.setCurrentRecord({
           currentRecord: undefined as any,
-          callback: () => history.push('/ui/session')
+          callback: () => history.push('/session')
         }))
       }} />
       <ToolbarButtonBase

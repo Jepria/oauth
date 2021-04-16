@@ -53,7 +53,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
         callback: () => {
           const query = queryString.stringify(values)
           history.push({
-            pathname: `/ui/session/list`,
+            pathname: `/session/list`,
             search: `?${query ? query : ""}`
           })
         }

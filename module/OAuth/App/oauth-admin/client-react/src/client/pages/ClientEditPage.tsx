@@ -11,7 +11,6 @@ import { Form, TextInput, CheckBoxGroup, CheckBox, SelectInput, DualList } from 
 import { Text } from '../../app/common/components/form/Field';
 import { useTranslation } from 'react-i18next';
 import { EntityState, OptionState } from '@jfront/core-redux-saga';
-import {isUri} from "valid-url";
 
 const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();
@@ -49,7 +48,7 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
           primaryKey: clientId,
           values,
           onSuccess: (client: Client) => {
-            history.push(`/ui/client/${client.clientId}/detail`);
+            history.push(`/client/${client.clientId}/detail`);
           }
         }));
       }
@@ -61,9 +60,6 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
       }
       if (!values['clientNameEn']) {
         errors.clientNameEn = t('validation.notEmpty')
-      }
-      if (values.loginModuleUri && !isUri(values.loginModuleUri)) {
-        errors.loginModuleUri = t('validation.invalidUriFormat')
       }
       if (!values['applicationType']) {
         errors.applicationType = t('validation.notEmpty')

@@ -1,5 +1,5 @@
 import { Workstates, createEvent, useWorkstate } from "@jfront/core-common";
-import { EntityState, SessionSearchState } from "@jfront/core-redux-saga";
+import { EntityState, SearchState } from "@jfront/core-redux-saga";
 import { UserContext } from "@jfront/oauth-user";
 import {
   Toolbar,
@@ -37,7 +37,7 @@ export const ClientToolbar = ({ formRef }: ClientToolbarProps) => {
   const { isUserInRole } = useContext(UserContext);
   const { t } = useTranslation();
   const { currentRecord, selectedRecords } = useSelector<AppState, EntityState<Client>>(state => state.client.crudSlice)
-  const { searchId, searchRequest, pageSize, pageNumber } = useSelector<AppState, SessionSearchState<ClientSearchTemplate, Client>>(state => state.client.searchSlice)
+  const { searchRequest, pageSize, pageNumber } = useSelector<AppState, SearchState<ClientSearchTemplate, Client>>(state => state.client.searchSlice)
 
   useEffect(() => {
     isUserInRole("OACreateClient")
@@ -54,7 +54,7 @@ export const ClientToolbar = ({ formRef }: ClientToolbarProps) => {
       {hasCreateRole && <ToolbarButtonCreate onClick={() => {
         dispatch(crudActions.setCurrentRecord({
           currentRecord: undefined as any, callback: () => {
-            history.push('/ui/client/create')
+            history.push('/client/create')
           }
         }));
       }} disabled={workstate === Workstates.Create} />}
@@ -62,10 +62,10 @@ export const ClientToolbar = ({ formRef }: ClientToolbarProps) => {
         onClick={() => { formRef.current?.dispatchEvent(createEvent("submit")) }}
         disabled={workstate !== Workstates.Create && workstate !== Workstates.Edit} />}
       {hasEditRole && <ToolbarButtonEdit
-        onClick={() => history.push(`/ui/client/${currentRecord?.clientId}/edit`)}
+        onClick={() => history.push(`/client/${currentRecord?.clientId}/edit`)}
         disabled={!currentRecord || workstate === Workstates.Edit} />}
       <ToolbarButtonView
-        onClick={() => { history.push(`/ui/client/${currentRecord?.clientId}/detail`) }}
+        onClick={() => { history.push(`/client/${currentRecord?.clientId}/detail`) }}
         disabled={!currentRecord || workstate === Workstates.Detail} />
       {hasDeleteRole && <ToolbarButtonDelete onClick={() => {
         if (window.confirm(t('delete'))) {
@@ -73,17 +73,13 @@ export const ClientToolbar = ({ formRef }: ClientToolbarProps) => {
             primaryKeys: selectedRecords.map(selectedRecord => selectedRecord.clientId),
             onSuccess: () => {
               if (workstate === Workstates.List) {
-                if (searchId) {
-                  dispatch(searchActions.getResultSet({
-                    searchId,
+                  dispatch(searchActions.search({
+                    searchTemplate: searchRequest,
                     pageSize,
                     pageNumber
                   }));
-                } else if (searchRequest) {
-                  dispatch(searchActions.postSearchRequest({ searchTemplate: searchRequest }))
-                }
               } else {
-                history.push('/ui/client/list');
+                history.push('/client/list');
               }
             }
           }));
@@ -94,9 +90,9 @@ export const ClientToolbar = ({ formRef }: ClientToolbarProps) => {
         dispatch(crudActions.setCurrentRecord({
           callback: () => {
             if (searchRequest) {
-              history.push('/ui/client/list');
+              history.push('/client/list');
             } else {
-              history.push('/ui/client');
+              history.push('/client');
             }
           }
         }))
@@ -104,7 +100,7 @@ export const ClientToolbar = ({ formRef }: ClientToolbarProps) => {
       <ToolbarButtonFind onClick={() => {
         dispatch(crudActions.setCurrentRecord({
           callback: () => {
-            history.push('/ui/client')
+            history.push('/client')
           }
         }));
       }} />

@@ -50,7 +50,7 @@ export const DeleteAllDialog = ({ visible, onCancel }: DeleteAllDialogProps) => 
                   pageNumber: 1
                 }));
               } else if (pathname.endsWith('/view') && values.operatorId === currentRecord?.operator?.value) {
-                history.push('/ui/session/list');
+                history.push('/session/list');
               } else if (pathname.endsWith('/search')) {
                 dispatch(operatorActions.getOptionsStart({ params: "" }));
                 dispatch(clientActions.getOptionsStart({ params: "" }));

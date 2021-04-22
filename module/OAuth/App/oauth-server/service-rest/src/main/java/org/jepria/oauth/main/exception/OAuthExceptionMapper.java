@@ -26,7 +26,7 @@ import java.util.Base64;
 import static org.jepria.oauth.sdk.OAuthConstants.*;
 
 public class OAuthExceptionMapper implements ExceptionMapper<Throwable> {
-
+  
   @Context
   ResourceInfo resourceInfo;
   @Context
@@ -34,7 +34,7 @@ public class OAuthExceptionMapper implements ExceptionMapper<Throwable> {
   @Context
   HttpServletRequest request;
   ExceptionManager exceptionManager = new ExceptionManagerImpl();
-
+  
   @Override
   public Response toResponse(Throwable th) {
     String errorId = exceptionManager.registerException(th), exceptionCode, error;
@@ -42,45 +42,47 @@ public class OAuthExceptionMapper implements ExceptionMapper<Throwable> {
       OAuthRuntimeException exception = (OAuthRuntimeException) th;
       exceptionCode = exception.getExceptionCode();
       error = ERROR_QUERY_PARAM + exceptionCode + "&"
-          + ERROR_DESCRIPTION_QUERY_PARAM + URIUtil.encodeURIComponent(exception.getMessage()) + "&"
-          + ERROR_ID_QUERY_PARAM + errorId;
+        + ERROR_DESCRIPTION_QUERY_PARAM + URIUtil.encodeURIComponent(exception.getMessage()) + "&"
+        + ERROR_ID_QUERY_PARAM + errorId;
     } else {
       exceptionCode = SERVER_ERROR;
       error = ERROR_QUERY_PARAM + exceptionCode + "&"
-          + ERROR_DESCRIPTION_QUERY_PARAM + URIUtil.encodeURIComponent(th.getMessage()) + "&"
-          + ERROR_ID_QUERY_PARAM + errorId;
+        + ERROR_DESCRIPTION_QUERY_PARAM + URIUtil.encodeURIComponent(th.getMessage()) + "&"
+        + ERROR_ID_QUERY_PARAM + errorId;
     }
     if (resourceInfo.getResourceClass().equals(AuthorizationJaxrsAdapter.class)
-        || resourceInfo.getResourceClass().equals(AuthenticationJaxrsAdapter.class)) {
+      || resourceInfo.getResourceClass().equals(AuthenticationJaxrsAdapter.class)) {
       MultivaluedMap<String, String> params = uriInfo.getQueryParameters(true);
       String encodedRedirectUri = params.getFirst(REDIRECT_URI);
       String state = params.getFirst(STATE);
-
-      if (encodedRedirectUri != null) {
-        String redirectUri = null;
-        try {
-          redirectUri = URLDecoder.decode(encodedRedirectUri.replaceAll("%20", "\\+"), StandardCharsets.UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-          e.printStackTrace();
-        }
-        String escapedRedirectUri = URIUtil.encodeURIComponent(URI.create(redirectUri + getSeparator(redirectUri)
+      try {
+        if (encodedRedirectUri != null) {
+          String redirectUri = null;
+          try {
+            redirectUri = URLDecoder.decode(encodedRedirectUri.replaceAll("%20", "\\+"), StandardCharsets.UTF_8.name());
+          } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+          }
+          String escapedRedirectUri = URIUtil.encodeURIComponent(URI.create(redirectUri + getSeparator(redirectUri)
             + error + "&"
             + STATE + "=" + state).toString());
-        return Response.status(302).location(
+          return Response.status(302).location(
             URI.create(OAUTH_ERROR_CONTEXT_PATH + "?"
-                + error + "&"
-                + REDIRECT_URI + "=" + escapedRedirectUri)).build();
-      } else {
-        return Response.status(302).location(
-            URI.create(OAUTH_ERROR_CONTEXT_PATH + "?" + error)).build();
+              + error + "&"
+              + REDIRECT_URI + "=" + escapedRedirectUri)).build();
+        }
+      } catch (Throwable th2) {
+        th2.printStackTrace();
       }
+      return Response.status(302).location(
+        URI.create(OAUTH_ERROR_CONTEXT_PATH + "?" + error)).build();
     } else {
       ErrorDto errorDto = new ErrorDto();
       errorDto.setErrorId(errorId);
       errorDto.setError(exceptionCode);
       errorDto.setErrorDescription(th.getMessage());
       errorDto.setErrorUri(URI.create(request.getRequestURL().toString().replaceFirst(request.getRequestURI(), OAUTH_ERROR_CONTEXT_PATH) + "?" + error).toString());
-
+      
       switch (exceptionCode) {
         case SERVER_ERROR: {
           return Response.serverError().entity(errorDto).build();
@@ -94,7 +96,7 @@ public class OAuthExceptionMapper implements ExceptionMapper<Throwable> {
       }
     }
   }
-
+  
   /**
    * Get next separator for URI
    *

@@ -35,7 +35,7 @@ const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
         callback: () => {
           const query = queryString.stringify(values)
           history.push({
-            pathname: "/ui/client/list",
+            pathname: "/client/list",
             search: `?${query ? query : ""}`
           })
         }
@@ -72,7 +72,7 @@ const ClientSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>(
             name="clientNameEn"
             value={formik.values.clientNameEn}
             onChange={formik.handleChange}
-            error={formik.errors.clientId} />
+            error={formik.errors.clientNameEn} />
         </Form.Control>
       </Form.Field>
       <Form.Field>

@@ -25,7 +25,7 @@
     <dependency>
       <groupId>org.jepria</groupId>
       <artifactId>oauth-sdk</artifactId>
-      <version>1.0.0</version>
+      <version>${oauth-sdk.version}</version>
     </dependency>
     <dependency>
       <groupId>com.nimbusds</groupId>

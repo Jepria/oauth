@@ -17,6 +17,7 @@ create table
   , change_operator_id            integer                             not null
   , operator_id                   integer
   , is_deleted                    integer         default 0           not null
+  , login_module_uri              varchar2(4000)                      not null
   , constraint oa_client_pk primary key
     ( client_id)
     using index tablespace &indexTablespace

@@ -28,6 +28,9 @@ comment on column &tableName..client_name_en is
 comment on column &tableName..application_type is
   'Тип клиентского приложения'
 /
+comment on column &tableName..login_module_uri is
+  'URI логин модуля'
+/
 comment on column &tableName..date_ins is
   'Дата создания записи'
 /

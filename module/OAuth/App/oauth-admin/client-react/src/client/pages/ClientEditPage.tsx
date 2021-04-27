@@ -48,15 +48,18 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
           primaryKey: clientId,
           values,
           onSuccess: (client: Client) => {
-            history.push(`/ui/client/${client.clientId}/detail`);
+            history.push(`/client/${client.clientId}/detail`);
           }
         }));
       }
     },
     validate: (values) => {
-      const errors: { clientName?: string, applicationType?: string, grantTypes?: string } = {};
+      const errors: { clientName?: string, clientNameEn?: string, applicationType?: string, loginModuleUri?: string, grantTypes?: string } = {};
       if (!values['clientName']) {
         errors.clientName = t('validation.notEmpty')
+      }
+      if (!values['clientNameEn']) {
+        errors.clientNameEn = t('validation.notEmpty')
       }
       if (!values['applicationType']) {
         errors.applicationType = t('validation.notEmpty')
@@ -84,7 +87,7 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
             error={formik.errors.clientName} />
         </Form.Control>
       </Form.Field>
-      <Form.Field>
+      <Form.Field required>
         <Form.Label>{t('client.clientNameEn')}:</Form.Label>
         <Form.Control style={{ maxWidth: "200px" }}>
           <TextInput
@@ -92,6 +95,16 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
             value={formik.values.clientNameEn}
             onChange={formik.handleChange}
             error={formik.errors.clientNameEn} />
+        </Form.Control>
+      </Form.Field>
+      <Form.Field>
+        <Form.Label>{t('client.loginModuleUri')}:</Form.Label>
+        <Form.Control style={{ maxWidth: "200px" }}>
+          <TextInput
+            name="loginModuleUri"
+            value={formik.values.loginModuleUri}
+            onChange={formik.handleChange}
+            error={formik.errors.loginModuleUri} />
         </Form.Control>
       </Form.Field>
       <Form.Field>
@@ -125,7 +138,9 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
       {formik.values["grantTypes"]?.includes('client_credentials') &&
         <Form.Field>
           <Form.Label>{t('client.scopes')}:</Form.Label>
-          <Form.Control style={{ minWidth: "300px", maxWidth: "500px" }}>
+          <Form.Control 
+            style={{ minWidth: "300px", maxWidth: "500px" }}
+            error={formik.errors.scope as string}>
             <DualList
               options={options}
               initialValues={formik.initialValues.scope}
@@ -134,8 +149,8 @@ const ClientEditPage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLForm
               isLoading={isLoading}
               onInputChange={e => dispatch(roleActions.getOptionsStart({ params: e.target.value }))}
               onSelectionChange={formik.setFieldValue}
-              touched={formik.touched.scope}
-              error={formik.errors.scope} />
+              // touched={formik.touched.scope}
+              error={formik.errors.scope as string} />
           </Form.Control>
         </Form.Field>
       }

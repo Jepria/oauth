@@ -40,6 +40,39 @@ indexTablespace               - Табличное пространство дл
                                 OraMakeSystem)
 
 
+group: 1.2.0
+
+Порядок установки:
+
+- установка в основную схему
+
+> make install INSTALL_VERSION=1.2.0 LOAD_USERID=???/???@??? LOAD_OPERATORID=???/???
+
+Установка в резервную БД:
+
+- выдача в основной БД прав пользователю, под которым работает линк из
+  резервной БД
+
+> make grant INSTALL_VERSION=1.2.0 LOAD_USERID=???/???@??? LOAD_OPERATORID=???/??? TO_USERNAME=??? GRANT_SCRIPT=link-user.sql
+
+- обновление материализованных представлений в резервной БД
+
+> make install INSTALL_VERSION=1.2.0 LOAD_USERID3=???/???@??? LOAD_OPERATORID=???/??? SOURCE_DBLINK=??? SOURCE_SCHEMA=???
+
+- выдача прав на материализованные представления основному пользователю
+  резервной БД
+
+> make grant INSTALL_VERSION=1.2.0 LOAD_USERID3=???/???@??? LOAD_OPERATORID=???/??? TO_USERNAME=???
+
+- установка в основную схему резервной БД
+
+> make install INSTALL_VERSION=1.2.0 LOAD_USERID2=???/???@??? LOAD_OPERATORID=???/???
+
+Выдача прав на объекты модуля для внешних пользователей (по требованию):
+
+> make grant INSTALL_VERSION=Last LOAD_USERID=???/???@??? LOAD_OPERATORID=???/??? TO_USERNAME=??? GRANT_SCRIPT=grant-external.sql
+
+
 
 group: 1.1.0
 

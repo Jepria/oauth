@@ -22,6 +22,7 @@ import { useTranslation } from 'react-i18next';
 import { DeleteAllDialog } from './components/DeleteAllDialog';
 import { EntityState } from '@jfront/core-redux-saga';
 import { SessionToolbar } from './components/SessionToolbar';
+import SessionErrorBoundary from './components/SessionErrorBoundary';
 
 const SessionRoute: React.FC = () => {
 
@@ -42,7 +43,7 @@ const SessionRoute: React.FC = () => {
   }, [currentUser])
 
   return (
-    <>
+    <SessionErrorBoundary>
       {isRoleLoading && <OAuthLoader title="OAuth" text="Проверка ролей" />}
       {hasViewRole === false && <Forbidden />}
       {hasViewRole === true && <Panel>
@@ -69,7 +70,7 @@ const SessionRoute: React.FC = () => {
         </Panel.Content>
         <DeleteAllDialog onCancel={() => setDeleteAll(false)} visible={showDeleteAll} />
       </Panel>}
-    </>
+    </SessionErrorBoundary>
   );
 }
 

@@ -72,10 +72,9 @@ public class AuthorizationServiceTest {
       sessionDto.setDateIns((new Date()));
       sessionDto.setCodeChallenge(sessionCreateDto.getCodeChallenge());
       sessionDto.setAuthorizationCode(sessionCreateDto.getAuthorizationCode());
-      OptionDto<String> client = new OptionDto<>();
-      client.setValue(sessionCreateDto.getClientId());
-      client.setName(sessionCreateDto.getClientId());
-      sessionDto.setClient(client);
+      sessionDto.setClientId(sessionCreateDto.getClientId());
+      sessionDto.setClientName(sessionCreateDto.getClientId());
+      sessionDto.setClientNameEn(sessionCreateDto.getClientId());
       OptionDto<Integer> operator = new OptionDto<>();
       operator.setValue(sessionCreateDto.getOperatorId());
       operator.setName("testUser");
@@ -113,7 +112,7 @@ public class AuthorizationServiceTest {
   public void codeAuthorizeTest() {
     SessionDto result = authorizationService.authorize(ResponseType.CODE, "testClient", "http://testuri", "codeChallenge");
     assertNotNull(result);
-    assertEquals(result.getClient().getValue(), "testClient");
+    assertEquals(result.getClientId(), "testClient");
     assertEquals(result.getRedirectUri(), "http://testuri");
     assertEquals(result.getCodeChallenge(), "codeChallenge");
     verify(sessionService, atLeast(1)).create(isA(SessionCreateDto.class), any());
@@ -125,7 +124,7 @@ public class AuthorizationServiceTest {
   public void implicitAuthorizeTest() {
     SessionDto result = authorizationService.authorize(ResponseType.CODE, "testClient", "http://testuri", "codeChallenge");
     assertNotNull(result);
-    assertEquals(result.getClient().getValue(), "testClient");
+    assertEquals(result.getClientId(), "testClient");
     assertEquals(result.getRedirectUri(), "http://testuri");
     assertEquals(result.getCodeChallenge(), "codeChallenge");
     verify(sessionService, atLeast(1)).create(isA(SessionCreateDto.class), any());
@@ -155,7 +154,7 @@ public class AuthorizationServiceTest {
      * Create token with JWT lib
      */
     Token token = new TokenImpl("sessionToken", Collections.EMPTY_LIST, "testUser" + ":" + 1,
-        "issuer", new Date(new Date().getTime() + 10000), new Date());
+        "issuer", new Date(new Date().getTime() + 10000), new Date(), null, null);
     /**
      * Sign token with private key
      */
@@ -169,7 +168,7 @@ public class AuthorizationServiceTest {
     }
     SessionDto result = authorizationService.authorize(ResponseType.CODE, "testClient", "http://testuri", "codeChallenge", token.asString(), "issuer");
     assertNotNull(result);
-    assertEquals(result.getClient().getValue(), "testClient");
+    assertEquals(result.getClientId(), "testClient");
     assertEquals(result.getRedirectUri(), "http://testuri");
     assertEquals(result.getCodeChallenge(), "codeChallenge");
     verify(sessionService, atLeast(1)).create(isA(SessionCreateDto.class), any());
@@ -200,7 +199,7 @@ public class AuthorizationServiceTest {
      * Create token with JWT lib
      */
     Token token = new TokenImpl("sessionToken", Collections.EMPTY_LIST, "testUser" + ":" + 1,
-        "issuer", new Date(new Date().getTime() + 10000), new Date());
+        "issuer", new Date(new Date().getTime() + 10000), new Date(), null, null);
     /**
      * Sign token with private key
      */

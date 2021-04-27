@@ -53,7 +53,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
         callback: () => {
           const query = queryString.stringify(values)
           history.push({
-            pathname: `/ui/session/list`,
+            pathname: `/session/list`,
             search: `?${query ? query : ""}`
           })
         }
@@ -75,7 +75,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
             value={formik.values.operatorId}
             error={formik.errors.operatorId}
             onInputChange={(e) => dispatch(operatorActions.getOptionsStart({ params: e.target.value }))}
-            onSelectionChange={formik.setFieldValue} style={{ maxWidth: '250px' }}>
+            onSelectionChange={(name, value) => formik.setFieldValue(name, value)} style={{ maxWidth: '400px' }}>
             {operators.options?.map(operator => <ComboBoxItem key={operator.value} label={operator.name} value={operator.value} />)}
           </ComboBox>
         </Form.Control>
@@ -97,7 +97,7 @@ const SessionSearchPage = React.forwardRef<any, HTMLAttributes<HTMLFormElement>>
               return option.clientName;
             }}
             getOptionValue={(option: { clientId: any; }) => option.clientId}
-            onSelectionChange={formik.setFieldValue} style={{ maxWidth: '250px' }} />
+            onSelectionChange={(name, value) => formik.setFieldValue(name, value)} style={{ maxWidth: '250px' }}/>
         </Form.Control>
       </Form.Field>
       <Form.Field>

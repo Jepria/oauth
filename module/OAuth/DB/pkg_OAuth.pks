@@ -25,6 +25,7 @@ create or replace package pkg_OAuth is
   applicationType             - Тип клиентского приложения
   grantTypeList               - Список грантов через разделитель ","
   roleShortNameList           - Список ролей из op_role через разделитель ","
+  loginModuleUri              - URI логин модуля
   operatorId                  - Id оператора, выполняющего операцию
 
   Возврат:
@@ -39,6 +40,7 @@ function createClient(
   , applicationType varchar2
   , grantTypeList varchar2
   , roleShortNameList varchar2
+  , loginModuleUri varchar2 default null
   , operatorId integer
 )
 return integer;
@@ -55,6 +57,7 @@ return integer;
   applicationType             - Тип клиентского приложения
   grantTypeList               - Список грантов через разделитель ","
   roleShortNameList           - Список ролей из op_role через разделитель ","
+  loginModuleUri              - URI логин модуля
   operatorId                  - Id оператора, выполняющего операцию
 
   ( <body::updateClient>)
@@ -66,6 +69,7 @@ procedure updateClient(
   , applicationType varchar2
   , grantTypeList varchar2
   , roleShortNameList varchar2
+  , loginModuleUri varchar2
   , operatorId integer
 );
 

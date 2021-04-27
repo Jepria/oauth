@@ -1,5 +1,5 @@
 import { Workstates, createEvent, useWorkstate } from "@jfront/core-common";
-import { EntityState, SearchState } from "@jfront/core-redux-saga";
+import { EntityState, SessionSearchState } from "@jfront/core-redux-saga";
 import { UserContext } from "@jfront/oauth-user";
 import { Toolbar, ToolbarButtonView, ToolbarButtonDelete, ToolbarButtonBase, ToolbarSplitter, ToolbarButtonFind } from "@jfront/ui-core";
 import React, { useContext, useEffect, useState } from "react";
@@ -26,7 +26,7 @@ export const SessionToolbar = ({ formRef, openDeleteAllDialog }: SessionToolbarP
   const workstate = useWorkstate(pathname);
   const { t } = useTranslation();
   const { currentRecord, selectedRecords } = useSelector<AppState, EntityState<Session>>(state => state.session.crudSlice);
-  const { pageNumber, pageSize, searchRequest, searchId } = useSelector<AppState, SearchState<SessionSearchTemplate, Session>>(state => state.session.searchSlice);
+  const { pageNumber, pageSize, searchRequest, searchId } = useSelector<AppState, SessionSearchState<SessionSearchTemplate, Session>>(state => state.session.searchSlice);
 
   useEffect(() => {
     if (currentUser.username !== "Guest") {
@@ -39,7 +39,7 @@ export const SessionToolbar = ({ formRef, openDeleteAllDialog }: SessionToolbarP
   return (
     <Toolbar style={{ margin: 0 }}>
       <ToolbarButtonView
-        onClick={() => { history.push(`/ui/session/${currentRecord?.sessionId}/detail`) }}
+        onClick={() => { history.push(`/session/${currentRecord?.sessionId}/detail`) }}
         disabled={!currentRecord || workstate === Workstates.Detail} />
       {hasDeleteRole && (
         <>
@@ -50,7 +50,7 @@ export const SessionToolbar = ({ formRef, openDeleteAllDialog }: SessionToolbarP
                 onSuccess: () => {
                   if (workstate === Workstates.List) {
                     if (searchId) {
-                      dispatch(searchActions.search({
+                      dispatch(searchActions.getResultSet({
                         searchId,
                         pageSize,
                         pageNumber
@@ -59,7 +59,7 @@ export const SessionToolbar = ({ formRef, openDeleteAllDialog }: SessionToolbarP
                       dispatch(searchActions.postSearchRequest({ searchTemplate: searchRequest }))
                     }
                   } else {
-                    history.push('/ui/session/list');
+                    history.push('/session/list');
                   }
                 }
               }))
@@ -75,9 +75,9 @@ export const SessionToolbar = ({ formRef, openDeleteAllDialog }: SessionToolbarP
           currentRecord: undefined as any,
           callback: () => {
             if (searchRequest) {
-              history.push('/ui/session/list');
+              history.push('/session/list');
             } else {
-              history.push('/ui/session');
+              history.push('/session');
             }
           }
         }))
@@ -85,11 +85,13 @@ export const SessionToolbar = ({ formRef, openDeleteAllDialog }: SessionToolbarP
       <ToolbarButtonFind onClick={() => {
         dispatch(crudActions.setCurrentRecord({
           currentRecord: undefined as any,
-          callback: () => history.push('/ui/session')
+          callback: () => history.push('/session')
         }))
       }} />
       <ToolbarButtonBase
-        onClick={() => { formRef.current?.dispatchEvent(createEvent("submit")) }}
+        onClick={() => { 
+          formRef.current?.dispatchEvent(createEvent("submit")) 
+        }}
         disabled={workstate !== Workstates.Search}>{t('toolbar.find')}</ToolbarButtonBase>
     </Toolbar>
   )

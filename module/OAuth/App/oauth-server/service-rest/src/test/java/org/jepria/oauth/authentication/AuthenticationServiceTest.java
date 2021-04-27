@@ -14,6 +14,7 @@ import org.jepria.oauth.sdk.token.Token;
 import org.jepria.oauth.sdk.token.TokenImpl;
 import org.jepria.oauth.sdk.token.rsa.EncryptorRSA;
 import org.jepria.oauth.sdk.token.rsa.SignerRSA;
+import org.jepria.oauth.session.LoginConfirmService;
 import org.jepria.oauth.session.SessionService;
 import org.jepria.oauth.session.dto.SessionDto;
 import org.jepria.oauth.session.dto.SessionSearchDto;
@@ -57,7 +58,7 @@ public class AuthenticationServiceTest {
   
   @BeforeAll
   public static void init(@Mock AuthenticationDao dao,
-                          @Mock SessionService sessionService,
+                          @Mock LoginConfirmService sessionService,
                           @Mock ClientUriService clientUriService,
                           @Mock KeyService keyService) throws NoSuchAlgorithmException {
     AuthenticationServiceTest.dao = dao;
@@ -85,10 +86,10 @@ public class AuthenticationServiceTest {
       OptionDto<String> client = new OptionDto<>();
       client.setName("testClientName");
       client.setValue("testClient");
-      sessionDto.setClient(client);
+      sessionDto.setClientId("testClient");
       if (sessionDto.getSessionId().equals(template.getSessionId())
           && sessionDto.getRedirectUri().equals(template.getRedirectUri())
-          && sessionDto.getClient().getValue().equals(template.getClientId())) {
+          && sessionDto.getClientId().equals(template.getClientId())) {
         return Collections.singletonList(sessionDto);
       } else if ("sessionToken".equals(template.getSessionTokenId())) {
         sessionDto.setSessionTokenId("sessionToken");
@@ -156,20 +157,6 @@ public class AuthenticationServiceTest {
   }
   
   @Test
-  public void authenticationTest() {
-    SessionTokenDto sessionTokenDto = authenticationService.authenticate("1",
-        "http://redirecturi",
-        "testClient",
-        "testUser",
-        "testPassword",
-        "issuer",
-        new Long(3600));
-    assertNotNull(sessionTokenDto);
-    verify(sessionService, atLeast(1)).find(any(SessionSearchDto.class), any());
-    verify(sessionService, times(1)).update(isA(String.class), any(SessionUpdateDto.class), any());
-  }
-  
-  @Test
   public void logoutTest() throws ParseException, InvalidKeySpecException, NoSuchAlgorithmException {
     KeyDto keyDto = keyService.getKeys(null, new Credential() {
           @Override
@@ -191,7 +178,7 @@ public class AuthenticationServiceTest {
      * Create token with JWT lib
      */
     Token token = new TokenImpl("sessionToken", Collections.EMPTY_LIST, "testUser" + ":" + 1,
-        "issuer", new Date(new Date().getTime() + 10000), new Date());
+        "issuer", new Date(new Date().getTime() + 10000), new Date(),null, null);
     /**
      * Sign token with private key
      */

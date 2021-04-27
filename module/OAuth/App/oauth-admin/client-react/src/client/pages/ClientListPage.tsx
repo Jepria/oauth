@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { actions as searchActions } from '../state/clientSearchSlice';
 import { actions as crudActions } from '../state/clientCrudSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { AppState } from '../../app/store/reducer';
 import { Client, ClientSearchTemplate } from '../types';
 import { GrantType, ApplicationType } from '@jfront/oauth-core';
@@ -18,18 +18,8 @@ export const ClientListPage: React.FC = () => {
   const history = useHistory();
   const { t } = useTranslation();
   const { ...template } = useQuery();
-  const { currentRecord } = useSelector<AppState, EntityState<Client>>(state => state.client.crudSlice);
-  const { records, searchId, searchRequest, resultSetSize, isLoading } = useSelector<AppState, SearchState<ClientSearchTemplate, Client>>(state => state.client.searchSlice);
-  const [page, setPage] = useState({
-    pageSize: 25,
-    pageNumber: 1
-  });
-
-  useEffect(() => {
-    if (searchId) {
-      dispatch(searchActions.search({ searchId, pageSize: page.pageSize, pageNumber: page.pageNumber }))
-    }
-  }, [searchId, page, dispatch])
+  const { currentRecord, selectedRecords } = useSelector<AppState, EntityState<Client>>(state => state.client.crudSlice);
+  const { records, searchRequest, resultSetSize, isLoading } = useSelector<AppState, SearchState<ClientSearchTemplate, Client>>(state => state.client.searchSlice);
 
   return (
     <Grid<Client>
@@ -55,6 +45,11 @@ export const ClientListPage: React.FC = () => {
           Cell: ({ value }: any) => <TextCell>{value}</TextCell>
         },
         {
+          Header: t('client.loginModuleUri'),
+          accessor: "loginModuleUri",
+          Cell: ({ value }: any) => <TextCell>{value}</TextCell>
+        },
+        {
           Header: t('client.applicationType'),
           accessor: "applicationType",
           Cell: ({ value }: any) => <TextCell>{ApplicationType[value]}</TextCell>
@@ -70,39 +65,42 @@ export const ClientListPage: React.FC = () => {
       data={React.useMemo(() => records, [records])}
       onSelection={(records) => {
         if (records) {
+          if (records.join() !== selectedRecords.join()){
+            dispatch(crudActions.setCurrentRecord({} as any));
+            dispatch(crudActions.selectRecords({ selectedRecords: records }));
+          }
           if (records.length === 1) {
             if (records[0] !== currentRecord) {
               dispatch(crudActions.setCurrentRecord({ currentRecord: records[0] }));
               dispatch(crudActions.selectRecords({ selectedRecords: records }));
             }
-          } else if (currentRecord) {
-            dispatch(crudActions.setCurrentRecord({} as any));
-            dispatch(crudActions.selectRecords({ selectedRecords: records }));
           }
         }
       }}
-      onPaging={(pageNumber, pageSize) => {
-        setPage({
-          pageNumber,
-          pageSize
-        })
-      }}
-      onSort={(sortConfig) => {
+      manualPaging
+      manualSort
+      fetchData={(pageNumber, pageSize, sortConfigs) => {
         const newSearchRequest = {
           template: {
             maxRowCount: 25,
             ...template,
-            ...searchRequest?.template
+            ...searchRequest?.template,
           },
-          listSortConfiguration: sortConfig
-        }
-        dispatch(searchActions.postSearchRequest({ searchTemplate: newSearchRequest }));
+          listSortConfiguration: sortConfigs,
+        };
+        dispatch(
+          searchActions.search({
+            searchTemplate: newSearchRequest,
+            pageNumber,
+            pageSize,
+          })
+        );
       }}
       totalRowCount={resultSetSize}
       onDoubleClick={(record) => currentRecord !== record ? dispatch(crudActions.setCurrentRecord({
         currentRecord: record,
-        callback: () => history.push(`/ui/client/${record?.clientId}/detail`)
-      })) : history.push(`/ui/client/${record?.clientId}/detail`)}
+        callback: () => history.push(`/client/${record?.clientId}/detail`)
+      })) : history.push(`/client/${record?.clientId}/detail`)}
     />
   );
 }

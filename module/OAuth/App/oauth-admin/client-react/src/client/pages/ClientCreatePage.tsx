@@ -10,6 +10,11 @@ import { SelectInput, TextInput, CheckBoxGroup, CheckBox, Form, DualList } from 
 import { AppState } from '../../app/store/reducer';
 import { useTranslation } from 'react-i18next';
 import { OptionState } from '@jfront/core-redux-saga';
+import styled from 'styled-components';
+
+const StyledLabel = styled(Form.Label)`
+  max-width: 250px;
+`
 
 const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFormElement>>((props, ref) => {
   const dispatch = useDispatch();
@@ -23,29 +28,32 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
       dispatch(actions.create({
         values: values, 
         onSuccess: (client: Client) => {
-          history.push(`/ui/client/${client.clientId}/detail`);
+          history.push(`/client/${client.clientId}/detail`);
         }
       }));
     },
     validate: (values) => {
-      const errors: { clientId?: string, clientName?: string, applicationType?: string, grantTypes?: string } = {};
-      if (!values['clientId']) {
+      const errors: { clientId?: string, clientName?: string, clientNameEn?: string, loginModuleUri?: string, applicationType?: string, grantTypes?: string } = {};
+      if (!values.clientId) {
         errors.clientId = t('validation.notEmpty')
       } else {
-        if (!/[A-Za-z0-9]/.test(values['clientId'])) {
+        if (!/[A-Za-z0-9]/.test(values.clientId)) {
           errors.clientId = t('validation.onlySymbolsAndDigits')
         }
-        if (values['clientId'].length > 32) {
+        if (values.clientId.length > 32) {
           errors.clientId = t('validation.maxLength')
         }
       }
-      if (!values['clientName']) {
+      if (!values.clientName) {
         errors.clientName = t('validation.notEmpty')
       }
-      if (!values['applicationType']) {
+      if (!values.clientNameEn) {
+        errors.clientNameEn = t('validation.notEmpty')
+      }
+      if (!values.applicationType) {
         errors.applicationType = t('validation.notEmpty')
       }
-      if (!values['grantTypes'] || values['grantTypes'].length === 0) {
+      if (!values.grantTypes || values.grantTypes.length === 0) {
         errors.grantTypes = t('validation.notEmpty')
       }
       return errors;
@@ -69,7 +77,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
   return (
     <Form onSubmit={formik.handleSubmit} ref={ref}>
       <Form.Field>
-        <Form.Label required>{t('client.clientId')}:</Form.Label>
+        <StyledLabel required>{t('client.clientId')}:</StyledLabel>
         <Form.Control
           style={{ maxWidth: "200px" }}
           error={formik.errors.clientId}>
@@ -82,7 +90,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
         </Form.Control>
       </Form.Field>
       <Form.Field>
-        <Form.Label required>{t('client.clientName')}:</Form.Label>
+        <StyledLabel required>{t('client.clientName')}:</StyledLabel>
         <Form.Control
           style={{ maxWidth: "200px" }}
           error={formik.errors.clientName}>
@@ -94,7 +102,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
         </Form.Control>
       </Form.Field>
       <Form.Field>
-        <Form.Label>{t('client.clientNameEn')}:</Form.Label>
+        <StyledLabel required>{t('client.clientNameEn')}:</StyledLabel>
         <Form.Control
           style={{ maxWidth: "200px" }}
           error={formik.errors.clientNameEn}>
@@ -106,7 +114,19 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
         </Form.Control>
       </Form.Field>
       <Form.Field>
-        <Form.Label>{t('client.applicationType')}:</Form.Label>
+        <StyledLabel>{t('client.loginModuleUri')}:</StyledLabel>
+        <Form.Control
+          style={{ maxWidth: "200px" }}
+          error={formik.errors.loginModuleUri}>
+          <TextInput
+            name="loginModuleUri"
+            value={formik.values.loginModuleUri}
+            onChange={formik.handleChange}
+            error={formik.errors.loginModuleUri} />
+        </Form.Control>
+      </Form.Field>
+      <Form.Field>
+        <StyledLabel>{t('client.applicationType')}:</StyledLabel>
         <Form.Control
           style={{ maxWidth: "200px" }}
           error={formik.errors.applicationType}>
@@ -119,7 +139,7 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
         </Form.Control>
       </Form.Field>
       {formik.values["applicationType"] && <Form.Field>
-        <Form.Label required>{t('client.grantTypes')}:</Form.Label>
+        <StyledLabel required>{t('client.grantTypes')}:</StyledLabel>
         <Form.Control
           style={{ maxWidth: "200px" }}
           error={Array.isArray(formik.errors.grantTypes) ? formik.errors.grantTypes.join(", ") : formik.errors.grantTypes}>
@@ -139,10 +159,10 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
       </Form.Field>}
       {formik.values["grantTypes"]?.includes('client_credentials') &&
         <Form.Field>
-          <Form.Label>{t('client.scopes')}:</Form.Label>
+          <StyledLabel>{t('client.scopes')}:</StyledLabel>
           <Form.Control
             style={{ minWidth: "300px", maxWidth: "500px" }}
-            error={formik.errors.scope}>
+            error={formik.errors.scope as string}>
             <DualList
               options={options}
               placeholder="Введите имя роли"
@@ -150,8 +170,8 @@ const ClientCreatePage = React.forwardRef<HTMLFormElement, HTMLAttributes<HTMLFo
               isLoading={isLoading}
               onInputChange={e => dispatch(roleActions.getOptionsStart({params: e.target.value}))}
               onSelectionChange={formik.setFieldValue}
-              touched={formik.touched.scope}
-              error={formik.errors.scope}
+              // touched={formik.touched.scope}
+              error={formik.errors.scope as string}
               style={{ height: "200px" }} />
           </Form.Control>
         </Form.Field>

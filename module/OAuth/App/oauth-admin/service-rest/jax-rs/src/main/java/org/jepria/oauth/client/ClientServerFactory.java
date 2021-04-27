@@ -2,10 +2,7 @@ package org.jepria.oauth.client;
 
 import org.jepria.oauth.client.dao.ClientDao;
 import org.jepria.server.ServerFactory;
-import org.jepria.server.service.rest.EntityService;
-import org.jepria.server.service.rest.EntityServiceImpl;
-import org.jepria.server.service.rest.SearchService;
-import org.jepria.server.service.rest.SearchServiceImpl;
+import org.jepria.server.service.rest.*;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpSession;

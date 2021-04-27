@@ -21,15 +21,14 @@ export const ClientUriCreatePage = React.forwardRef<any, HTMLAttributes<HTMLForm
         dispatch(actions.create({
           values,
           onSuccess: (clientUri: ClientUri) => {
-            history.push(`/ui/client/${clientId}/client-uri/${clientUri.clientUriId}/detail`);
+            history.push(`/client/${clientId}/client-uri/${clientUri.clientUriId}/detail`);
           }
         }));
       }
     },
     validate: (values) => {
       const errors: { clientUri?: string } = {};
-
-      if (!values['clientUri']) {
+      if (!values.clientUri) {
         errors.clientUri = t('validation.notEmpty')
       }
       return errors;
@@ -41,7 +40,7 @@ export const ClientUriCreatePage = React.forwardRef<any, HTMLAttributes<HTMLForm
       <Form.Field>
         <Form.Label required>{t('clientUri.clientUri')}:</Form.Label>
         <Form.Control
-          style={{ maxWidth: "200px" }}
+          style={{ maxWidth: "400px" }}
           error={formik.errors.clientUri}>
           <TextInput
             name="clientUri"

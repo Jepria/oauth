@@ -3,6 +3,7 @@ import { ConnectorSearch } from "@jfront/core-rest";
 import { API_PATH } from "../../config";
 import { Client, ClientSearchTemplate } from "../types";
 import axios from 'axios';
+import {PayloadAction} from "@reduxjs/toolkit";
 
 export const initialSearchState: SearchState<ClientSearchTemplate, Client> = {
   isLoading: false,
@@ -11,7 +12,7 @@ export const initialSearchState: SearchState<ClientSearchTemplate, Client> = {
   pageSize: 25
 }
 
-const api = new ConnectorSearch<Client, ClientSearchTemplate>(API_PATH + '/client', true, axios);
+const api = new ConnectorSearch<Client>(API_PATH + '/client', true, axios);
 
 const slice = createSearchSlice<ClientSearchTemplate, Client>({
   name: "clientSlice",
@@ -20,4 +21,4 @@ const slice = createSearchSlice<ClientSearchTemplate, Client>({
 
 export const { name, actions, reducer } = slice;
 
-export const clientSearchSaga = slice.createSagaMiddleware(api);
+ export const clientSearchSaga = slice.createSagaMiddleware(api);

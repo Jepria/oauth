@@ -400,6 +400,7 @@ is
           return
             replace( replace( replace( replace( replace( replace( replace(
             replace( replace( replace( replace( replace( replace( replace(
+            replace(
               srcCsv
               , '$(client_short_name)'
                 , client1.client_short_name)
@@ -425,6 +426,8 @@ is
               , '$(change_operator_name_en)', client1chgOpNameEn)
               , '$(client_operator_id)'
                 , client1.operator_id)
+              , '$(login_module_uri)'
+                , client1.login_module_uri)
           ;
         end replaceMacros;
 
@@ -586,9 +589,9 @@ is
         , maxRowCount           => 50
         , resultCsv             =>
 '
-CLIENT_SHORT_NAME    ; CLIENT_SECRET      ; CLIENT_NAME      ; CLIENT_NAME_EN     ; APPLICATION_TYPE     ; DATE_INS     ; CREATE_OPERATOR_ID    ; CREATE_OPERATOR_NAME     ; CREATE_OPERATOR_NAME_EN     ; CHANGE_DATE    ; CHANGE_OPERATOR_ID    ; CHANGE_OPERATOR_NAME     ; CHANGE_OPERATOR_NAME_EN    ; CLIENT_OPERATOR_ID
--------------------- ; ------------------ ; ---------------- ; ------------------ ; -------------------- ; ------------ ; --------------------- ; ------------------------ ; --------------------------- ; -------------- ; --------------------- ; ------------------------ ; -------------------------- ; ----------------------
-$(client_short_name) ; $(clientSecretDec) ; $(client_name)   ; $(client_name_en)  ; $(application_type)  ; $(date_ins)  ; $(create_operator_id) ; $(create_operator_name)  ; $(create_operator_name_en)  ; $(change_date) ; $(change_operator_id) ; $(change_operator_name)  ; $(change_operator_name_en) ; $(client_operator_id)
+CLIENT_SHORT_NAME    ; CLIENT_SECRET      ; CLIENT_NAME      ; CLIENT_NAME_EN     ; APPLICATION_TYPE     ; DATE_INS     ; CREATE_OPERATOR_ID    ; CREATE_OPERATOR_NAME     ; CREATE_OPERATOR_NAME_EN     ; CHANGE_DATE    ; CHANGE_OPERATOR_ID    ; CHANGE_OPERATOR_NAME     ; CHANGE_OPERATOR_NAME_EN    ; CLIENT_OPERATOR_ID     ; LOGIN_MODULE_URI
+-------------------- ; ------------------ ; ---------------- ; ------------------ ; -------------------- ; ------------ ; --------------------- ; ------------------------ ; --------------------------- ; -------------- ; --------------------- ; ------------------------ ; -------------------------- ; ---------------------- ; -------------------
+$(client_short_name) ; $(clientSecretDec) ; $(client_name)   ; $(client_name_en)  ; $(application_type)  ; $(date_ins)  ; $(create_operator_id) ; $(create_operator_name)  ; $(create_operator_name_en)  ; $(change_date) ; $(change_operator_id) ; $(change_operator_name)  ; $(change_operator_name_en) ; $(client_operator_id)  ; $(login_module_uri)
 '
     );
     checkCase(

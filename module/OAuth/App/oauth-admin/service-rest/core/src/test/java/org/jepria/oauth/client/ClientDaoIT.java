@@ -30,8 +30,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ClientDaoIT extends DaoTestBase {
 
-  Logger logger = Logger.getLogger(ClientDaoIT.class.getCanonicalName());
-
   private ClientDao clientDao;
   private Dao clientUriDao;
 
@@ -64,6 +62,7 @@ public class ClientDaoIT extends DaoTestBase {
       clientCreateDto.setClientName("created" + new Date().getTime());
       clientCreateDto.setClientNameEn("createdEn" + new Date().getTime());
       clientCreateDto.setApplicationType(ApplicationType.WEB);
+      clientCreateDto.setLoginModuleUri("/login");
       clientCreateDto.setGrantTypes(ApplicationType.getApplicationGrantTypes(ApplicationType.WEB));
       clientDao.create(clientCreateDto, 1);
       ClientDto clientDto = (ClientDto) clientDao.findByPrimaryKey(new HashMap<String, String>() {{
@@ -74,6 +73,7 @@ public class ClientDaoIT extends DaoTestBase {
       assertEquals(clientCreateDto.getClientName(), clientDto.getClientName());
       assertEquals(clientCreateDto.getClientNameEn(), clientDto.getClientNameEn());
       assertEquals(clientCreateDto.getApplicationType(), clientDto.getApplicationType());
+      assertEquals(clientCreateDto.getLoginModuleUri(), clientDto.getLoginModuleUri());
       assertTrue(clientCreateDto.getGrantTypes().size() == clientDto.getGrantTypes().size()
         && clientCreateDto.getGrantTypes().containsAll(clientDto.getGrantTypes())
         && clientDto.getGrantTypes().containsAll(clientCreateDto.getGrantTypes()));
@@ -107,6 +107,7 @@ public class ClientDaoIT extends DaoTestBase {
       clientUpdateDto.setClientName("updated" + new Date().getTime());
       clientUpdateDto.setClientNameEn("updatedEn" + new Date().getTime());
       clientUpdateDto.setApplicationType(ApplicationType.NATIVE);
+      clientUpdateDto.setLoginModuleUri("/new-login");
       clientUpdateDto.setGrantTypes(ApplicationType.getApplicationGrantTypes(ApplicationType.NATIVE));
       clientDao.update(new HashMap<String, String>() {{
         put(ClientFieldNames.CLIENT_ID, properties.getProperty("client.id"));
@@ -118,6 +119,7 @@ public class ClientDaoIT extends DaoTestBase {
       assertEquals(clientUpdateDto.getClientName(), clientDto.getClientName());
       assertEquals(clientUpdateDto.getClientNameEn(), clientDto.getClientNameEn());
       assertEquals(clientUpdateDto.getApplicationType(), clientDto.getApplicationType());
+      assertEquals(clientUpdateDto.getLoginModuleUri(), clientDto.getLoginModuleUri());
       assertTrue(clientUpdateDto.getGrantTypes().size() == clientDto.getGrantTypes().size()
         && clientUpdateDto.getGrantTypes().containsAll(clientDto.getGrantTypes())
         && clientDto.getGrantTypes().containsAll(clientUpdateDto.getGrantTypes()));

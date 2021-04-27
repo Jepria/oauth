@@ -78,6 +78,11 @@ OAUpdateKey_RoleSName constant varchar2(50) := 'OAUpdateKey';
 */
 OAViewKey_RoleSName constant varchar2(50) := 'OAViewKey';
 
+/* const: OALoginModule_RoleSName
+  Краткое имя роли "Логин модуль".
+*/
+OALoginModule_RoleSName constant varchar2(50) := 'OALoginModule';
+
 
 
 /* group: Коды ошибок */
@@ -235,6 +240,7 @@ return integer;
   change_operator_name        - Имя оператора, изменившего запись
   change_operator_name_en     - Имя оператора, изменившего запись на англ.
   client_operator_id          - ID оператора клиентского приложения
+  login_module_uri            - URL логин модуля
 
   (сортировка по date_ins в обратном порядке)
 

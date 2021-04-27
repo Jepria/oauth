@@ -44,7 +44,7 @@ const ClientRoute: React.FC = () => {
         <Panel.Header>
           <TabPanel>
             <Tab selected>{t('client.moduleName')}</Tab>
-            {currentRecord && <Tab onClick={() => history.push(`/ui/client/${currentRecord?.clientId}/client-uri/list`, { prevRoute: pathname })}>URL</Tab>}
+            {currentRecord && <Tab onClick={() => history.push(`/client/${currentRecord?.clientId}/client-uri/list`, { prevRoute: pathname })}>URL</Tab>}
             <UserPanel />
           </TabPanel>
           <ClientToolbar formRef={formRef}/>

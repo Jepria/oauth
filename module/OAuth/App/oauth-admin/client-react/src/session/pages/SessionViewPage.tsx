@@ -39,11 +39,15 @@ const SessionViewPage: React.FC = () => {
         <Form.FieldSet legend={t('session.client.legend')} style={{ flexGrow: 1, margin: "0 5px", flexBasis: "50%" }}>
           <Form.Field>
             <Form.Label>{t('session.client.id')}:</Form.Label>
-            <Text>{currentRecord?.client?.value}</Text>
+            <Text>{currentRecord?.clientId}</Text>
           </Form.Field>
           <Form.Field>
             <Form.Label>{t('session.client.name')}:</Form.Label>
-            <Text>{currentRecord?.client?.name}</Text>
+            <Text>{currentRecord?.clientName}</Text>
+          </Form.Field>
+          <Form.Field>
+            <Form.Label>{t('session.client.nameEn')}:</Form.Label>
+            <Text>{currentRecord?.clientNameEn}</Text>
           </Form.Field>
           <Form.Field>
             <Form.Label>{t('session.client.redirectUri')}:</Form.Label>

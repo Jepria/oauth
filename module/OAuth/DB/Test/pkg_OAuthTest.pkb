@@ -150,6 +150,7 @@ is
       , clientName varchar2 := null
       , clientNameEn varchar2 := null
       , applicationType varchar2 := null
+      , loginModuleUri varchar2 := null
       , grantTypeList varchar2 := null
       , roleShortNameList varchar2 := null
       , maxRowCount integer := null
@@ -243,6 +244,7 @@ is
               , clientName                  => Test_Pr || clientName
               , clientNameEn                => Test_Pr || clientNameEn
               , applicationType             => applicationType
+              , loginModuleUri              => loginModuleUri
               , grantTypeList               => grantTypeList
               , roleShortNameList           => roleShortNameList
               , operatorId                  => operatorId
@@ -254,6 +256,7 @@ is
               , clientName                  => Test_Pr || clientName
               , clientNameEn                => Test_Pr || clientNameEn
               , applicationType             => applicationType
+              , loginModuleUri              => loginModuleUri
               , grantTypeList               => grantTypeList
               , roleShortNameList           => roleShortNameList
               , operatorId                  => operatorId
@@ -509,15 +512,16 @@ order by
       , clientName            => 'Тестовый клиент 1'
       , clientNameEn          => 'Test client 1'
       , applicationType       => 'web'
+      , loginModuleUri        => '/login'
       , grantTypeList         =>
           'authorization_code,implicit,client_credentials,password,refresh_token'
       , roleShortNameList     => 'OAViewSession,OACreateSession'
       , nextCaseUsedCount     => 99
       , clientCsv =>
 '
-CLIENT_SHORT_NAME          ; is_CLIENT_SECRET  ; CLIENT_NAME                  ; CLIENT_NAME_EN            ; APPLICATION_TYPE  ; OPERATOR_ID_INS   ; CHANGE_OPERATOR_ID ; is_OPERATOR_ID  ; IS_DELETED
--------------------------- ; ----------------- ; ---------------------------- ; ------------------------- ; ----------------- ; ----------------- ; ------------------ ; --------------- ; ----------
-$(Test_Pr)client1          ;                 1 ; $(Test_Pr)Тестовый клиент 1  ; $(Test_Pr)Test client 1   ; web               ; $(testOperId)     ;  $(testOperId)     ;               1 ;          0
+CLIENT_SHORT_NAME          ; is_CLIENT_SECRET  ; CLIENT_NAME                  ; CLIENT_NAME_EN            ; APPLICATION_TYPE  ; OPERATOR_ID_INS   ; CHANGE_OPERATOR_ID ; is_OPERATOR_ID  ; IS_DELETED  ; LOGIN_MODULE_URI
+-------------------------- ; ----------------- ; ---------------------------- ; ------------------------- ; ----------------- ; ----------------- ; ------------------ ; --------------- ; ----------- ; ----------------
+$(Test_Pr)client1          ;                 1 ; $(Test_Pr)Тестовый клиент 1  ; $(Test_Pr)Test client 1   ; web               ; $(testOperId)     ;  $(testOperId)     ;               1 ;           0 ; /login  
 '
       , clientGrantCsv =>
 '
@@ -565,9 +569,9 @@ $(Test_Pr)client1  ; refresh_token
       , maxRowCount           => 50
       , resultCsv             =>
 '
-CLIENT_SHORT_NAME  ; CLIENT_SECRET      ; CLIENT_NAME                  ; CLIENT_NAME_EN            ; APPLICATION_TYPE  ; DATE_INS    ; CREATE_OPERATOR_ID ; CREATE_OPERATOR_NAME  ; CREATE_OPERATOR_NAME_EN  ; CHANGE_DATE    ; CHANGE_OPERATOR_ID ; CHANGE_OPERATOR_NAME        ; CHANGE_OPERATOR_NAME_EN    ; CLIENT_OPERATOR_ID
------------------- ; ------------------ ; ---------------------------- ; ------------------------- ; ----------------- ; ----------- ; ------------------ ; --------------------- ; ------------------------ ; -------------- ; ------------------ ; --------------------------- ; -------------------------- ; ----------------------
-$(Test_Pr)client1  ; $(clientSecretDec) ; $(Test_Pr)Тестовый клиент 1  ; $(Test_Pr)Test client 1   ; web               ; $(dateIns)  ;      $(testOperId) ; $(testOperName)       ; $(testOperNameEn)        ; $(changeDate)  ;      $(testOperId) ; $(testOperName)             ; $(testOperNameEn)          ; $(lastRec.operator_id)
+CLIENT_SHORT_NAME  ; CLIENT_SECRET      ; CLIENT_NAME                  ; CLIENT_NAME_EN            ; APPLICATION_TYPE  ; DATE_INS    ; CREATE_OPERATOR_ID ; CREATE_OPERATOR_NAME  ; CREATE_OPERATOR_NAME_EN  ; CHANGE_DATE    ; CHANGE_OPERATOR_ID ; CHANGE_OPERATOR_NAME        ; CHANGE_OPERATOR_NAME_EN    ; CLIENT_OPERATOR_ID      ; LOGIN_MODULE_URI
+------------------ ; ------------------ ; ---------------------------- ; ------------------------- ; ----------------- ; ----------- ; ------------------ ; --------------------- ; ------------------------ ; -------------- ; ------------------ ; --------------------------- ; -------------------------- ; ----------------------- ; ----------------
+$(Test_Pr)client1  ; $(clientSecretDec) ; $(Test_Pr)Тестовый клиент 1  ; $(Test_Pr)Test client 1   ; web               ; $(dateIns)  ;      $(testOperId) ; $(testOperName)       ; $(testOperNameEn)        ; $(changeDate)  ;      $(testOperId) ; $(testOperName)             ; $(testOperNameEn)          ; $(lastRec.operator_id)  ; /login
 '
     );
     checkCase(
@@ -619,14 +623,15 @@ $(Test_Pr)client1  ; $(clientSecretDec) ; $(Test_Pr)Тестовый клиен�
       , clientName            => 'Тестовый клиент 1_1'
       , clientNameEn          => 'Test client 1_1'
       , applicationType       => 'web'
+      , loginModuleUri        => '/new-login'
       , grantTypeList         =>
           'authorization_code,implicit,client_credentials'
       , roleShortNameList     => ''
       , clientCsv =>
 '
-CLIENT_SHORT_NAME          ; is_CLIENT_SECRET  ; CLIENT_NAME                   ; CLIENT_NAME_EN            ; APPLICATION_TYPE  ; OPERATOR_ID_INS   ; CHANGE_OPERATOR_ID ; is_OPERATOR_ID  ; IS_DELETED
--------------------------- ; ----------------- ; ----------------------------- ; ------------------------- ; ----------------- ; ----------------- ; ------------------ ; --------------- ; ----------
-$(Test_Pr)client1          ;                 1 ; $(Test_Pr)Тестовый клиент 1_1 ; $(Test_Pr)Test client 1_1 ; web               ; $(testOperId)     ;  $(testOperId)     ;               1 ;          0
+CLIENT_SHORT_NAME          ; is_CLIENT_SECRET  ; CLIENT_NAME                   ; CLIENT_NAME_EN            ; APPLICATION_TYPE  ; OPERATOR_ID_INS   ; CHANGE_OPERATOR_ID ; is_OPERATOR_ID  ; IS_DELETED  ; LOGIN_MODULE_URI
+-------------------------- ; ----------------- ; ----------------------------- ; ------------------------- ; ----------------- ; ----------------- ; ------------------ ; --------------- ; ----------- ; ----------------
+$(Test_Pr)client1          ;                 1 ; $(Test_Pr)Тестовый клиент 1_1 ; $(Test_Pr)Test client 1_1 ; web               ; $(testOperId)     ;  $(testOperId)     ;               1 ;           0 ; /new-login
 '
       , clientGrantCsv =>
 '
@@ -654,14 +659,15 @@ ROLE_SHORT_NAME
       , clientName            => 'Тестовый клиент 1_3'
       , clientNameEn          => 'Test client 1_3'
       , applicationType       => 'native'
+      , loginModuleUri        => '/new-login'
       , grantTypeList         =>
           'authorization_code'
       , roleShortNameList     => ''
       , clientCsv =>
 '
-CLIENT_SHORT_NAME          ; is_CLIENT_SECRET  ; CLIENT_NAME                   ; CLIENT_NAME_EN            ; APPLICATION_TYPE  ; OPERATOR_ID_INS   ; CHANGE_OPERATOR_ID ; is_OPERATOR_ID  ; IS_DELETED
--------------------------- ; ----------------- ; ----------------------------- ; ------------------------- ; ----------------- ; ----------------- ; ------------------ ; --------------- ; ----------
-$(Test_Pr)client1          ;                 0 ; $(Test_Pr)Тестовый клиент 1_3 ; $(Test_Pr)Test client 1_3 ; native            ; $(testOperId)     ;  $(testOperId)     ;               1 ;          0
+CLIENT_SHORT_NAME          ; is_CLIENT_SECRET  ; CLIENT_NAME                   ; CLIENT_NAME_EN            ; APPLICATION_TYPE  ; OPERATOR_ID_INS   ; CHANGE_OPERATOR_ID ; is_OPERATOR_ID  ; IS_DELETED  ; LOGIN_MODULE_URI
+-------------------------- ; ----------------- ; ----------------------------- ; ------------------------- ; ----------------- ; ----------------- ; ------------------ ; --------------- ; ----------- ; ----------------
+$(Test_Pr)client1          ;                 0 ; $(Test_Pr)Тестовый клиент 1_3 ; $(Test_Pr)Test client 1_3 ; native            ; $(testOperId)     ;  $(testOperId)     ;               1 ;           0 ; /new-login
 '
       , clientGrantCsv =>
 '
@@ -688,14 +694,15 @@ $(Test_Pr)client1         ;              1
       , clientName            => 'Тестовый клиент 1_4'
       , clientNameEn          => 'Test client 1_4'
       , applicationType       => 'service'
+      , loginModuleUri        => '/new-login'
       , grantTypeList         =>
           'authorization_code,client_credentials'
       , roleShortNameList     => ''
       , clientCsv =>
 '
-CLIENT_SHORT_NAME          ; is_CLIENT_SECRET  ; CLIENT_NAME                   ; CLIENT_NAME_EN            ; APPLICATION_TYPE  ; OPERATOR_ID_INS   ; CHANGE_OPERATOR_ID ; is_OPERATOR_ID  ; IS_DELETED
--------------------------- ; ----------------- ; ----------------------------- ; ------------------------- ; ----------------- ; ----------------- ; ------------------ ; --------------- ; ----------
-$(Test_Pr)client1          ;                 1 ; $(Test_Pr)Тестовый клиент 1_4 ; $(Test_Pr)Test client 1_4 ; service           ; $(testOperId)     ;  $(testOperId)     ;               1 ;          0
+CLIENT_SHORT_NAME          ; is_CLIENT_SECRET  ; CLIENT_NAME                   ; CLIENT_NAME_EN            ; APPLICATION_TYPE  ; OPERATOR_ID_INS   ; CHANGE_OPERATOR_ID ; is_OPERATOR_ID  ; IS_DELETED  ; LOGIN_MODULE_URI
+-------------------------- ; ----------------- ; ----------------------------- ; ------------------------- ; ----------------- ; ----------------- ; ------------------ ; --------------- ; ----------- ; ----------------
+$(Test_Pr)client1          ;                 1 ; $(Test_Pr)Тестовый клиент 1_4 ; $(Test_Pr)Test client 1_4 ; service           ; $(testOperId)     ;  $(testOperId)     ;               1 ;           0 ; /new-login
 '
       , clientGrantCsv =>
 '
@@ -757,6 +764,7 @@ $(Test_Pr)client1         ;              1
       , clientName            => 'Тестовый web-клиент'
       , clientNameEn          => 'Test web-client'
       , applicationType       => 'web'
+      , loginModuleUri        => '/login'
       , grantTypeList         =>
           'authorization_code,implicit,client_credentials,password,refresh_token'
       , roleShortNameList     => 'OAViewSession,OACreateSession'
@@ -2018,6 +2026,7 @@ is
       , clientName          => testClientSName
       , clientNameEn        => testClientSName
       , applicationType     => 'native'
+      , loginModuleUri      => null
       , grantTypeList       => null
       , roleShortNameList   => null
       , operatorId          => testOperId

@@ -1,11 +1,12 @@
-package org.jepria.oauth.main.rest.jersey.inject;
+package org.jepria.oauth.main.security;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.PARAMETER, ElementType.FIELD})
+@javax.ws.rs.NameBinding
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ClientLocale {
+@Target({ElementType.TYPE, ElementType.METHOD})
+public @interface ClientCredentials {
 }

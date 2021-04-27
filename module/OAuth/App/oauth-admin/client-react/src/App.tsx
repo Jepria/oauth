@@ -1,35 +1,53 @@
-import React from 'react';
-import { OAuthWebContext } from '@jfront/oauth-ui';
-import AppRouter from './app/AppRouter';
-import { UserContextProvider } from '@jfront/oauth-user';
-import axios from 'axios'
-import { Provider } from 'react-redux';
-import configureStore from './app/store/configureStore';
-import ErrorNotification from './app/common/components/ErrorNotification';
+import React, {Suspense, useContext, useEffect} from 'react';
+import ClientRoute from "./client/ClientModuleRoute";
+import KeyRoute from "./key/KeyRoute";
+import SessionRoute from "./session/SessionRoute";
+import {UserContext} from "@jfront/oauth-user";
+import {Loader, OAuthSecuredFragment} from "@jfront/oauth-ui";
+import {BrowserRouter as Router, Switch, Route} from "react-router-dom";
+import {useTranslation} from "react-i18next";
 
-function App() {
+function Main() {
+  const {i18n, t} = useTranslation();
+  const language = new URLSearchParams(window.location.search).get("locale");
+  const {currentUser, isUserLoading} = useContext(UserContext);
 
-  if (process.env.NODE_ENV !== 'development') {
-    axios.defaults.headers['Pragma'] = 'no-cache';
-  }
-  const store = configureStore();
+
+  useEffect(() => {
+    if (language) {
+      i18n.changeLanguage(language);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [language]);
 
   return (
-    <OAuthWebContext
-      clientId={'OAuthClient'}
-      redirectUri={`${process.env.NODE_ENV === 'development' ? "http://localhost:3000/oauth" : `/oauth-admin/oauth`}`}
-      oauthContextPath={`${process.env.NODE_ENV === 'development' ? 'http://localhost:8080/oauth/api' : `/oauth/api`}`}
-      axiosInstance={axios}
-      configureAxios>
-      <Provider store={store}>
-        <UserContextProvider baseUrl={`${process.env.NODE_ENV === 'development' ? 'http://localhost:8080/oauth-admin/api' : `/oauth-admin/api`}`}>
-          <ErrorNotification>
-            <AppRouter />
-          </ErrorNotification>
-        </UserContextProvider>
-      </Provider>
-    </OAuthWebContext>
+    <OAuthSecuredFragment>
+      {currentUser.username !== "Guest" && !isUserLoading &&
+      <Router basename={`${process.env.PUBLIC_URL}/ui`}>
+        <Switch>
+          <Route path="/client">
+            <ClientRoute/>
+          </Route>
+          <Route path="/key">
+            <KeyRoute/>
+          </Route>
+          <Route path="/session">
+            <SessionRoute/>
+          </Route>
+        </Switch>
+      </Router>}
+      {isUserLoading && <Loader title="OAuth" text="Загрузка данных о пользователе"/>}
+    </OAuthSecuredFragment>
   );
 }
+
+
+const App = () => {
+  return (
+    <Suspense fallback={<Loader title="OAuth" text="Загрузка приложения..." />}>
+      <Main />
+    </Suspense>
+  );
+};
 
 export default App;

@@ -54,7 +54,7 @@ const ClientUriRoute: React.FC = () => {
       <Panel>
         <Panel.Header>
           <TabPanel>
-            <Tab onClick={() => history.push(state?.prevRoute ? state.prevRoute : `/ui/client/${clientId}/detail`)}>{t('client.moduleName')}</Tab>
+            <Tab onClick={() => history.push(state?.prevRoute ? state.prevRoute : `/client/${clientId}/detail`)}>{t('client.moduleName')}</Tab>
             <Tab selected>{t('clientUri.moduleName')}</Tab>
             <UserPanel />
           </TabPanel>

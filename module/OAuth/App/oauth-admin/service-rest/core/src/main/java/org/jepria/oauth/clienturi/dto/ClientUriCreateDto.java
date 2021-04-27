@@ -2,9 +2,12 @@ package org.jepria.oauth.clienturi.dto;
 
 import org.jepria.oauth.clienturi.constraint.ValidURI;
 
+import javax.validation.constraints.NotBlank;
+
 public class ClientUriCreateDto {
 
   String clientId;
+  @NotBlank
   @ValidURI
   String clientUri;
 

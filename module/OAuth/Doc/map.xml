@@ -3,7 +3,7 @@
   <map_version>1.3</map_version>
   <name>OAuth</name>
   <description>Авторизация пользователей по стандарту OAuth 2.0</description>
-  <version>1.1.0</version>
+  <version>1.2.0</version>
   <prefix>oa</prefix>
   <team>
     <programmerDB></programmerDB>

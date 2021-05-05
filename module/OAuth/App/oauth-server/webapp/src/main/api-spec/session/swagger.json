@@ -27,7 +27,9 @@
   "paths": {
     "/session/{sessionId}": {
       "put": {
-        "tags": ["session: entity"],
+        "tags": [
+          "session: entity"
+        ],
         "summary": "Update record by ID",
         "description": "",
         "operationId": "updateRecord-session",
@@ -69,8 +71,9 @@
   "components": {
     "securitySchemes": {
       "Basic": {
-        "type": "basic",
-        "description": "Client credentials Basic auth"
+        "type": "http",
+        "scheme": "basic",
+        "description": "client_id/client_secret"
       }
     },
     "schemas": {

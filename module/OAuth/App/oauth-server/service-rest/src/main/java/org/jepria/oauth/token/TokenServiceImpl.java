@@ -125,7 +125,8 @@ public class TokenServiceImpl implements TokenService {
       session.getOperator().getValue(), issuer, keyDto.getPrivateKey(), refreshTokenLifeTime, null);
     TokenDto tokenDto = new TokenDto();
     tokenDto.setAccessToken(accessToken.asString());
-    tokenDto.setExpiresIn(new Long(accessTokenLifeTime * 3600));
+    tokenDto.setRefreshToken(refreshToken.asString());
+    tokenDto.setExpiresIn(new Long(accessTokenLifeTime));
     tokenDto.setTokenType(TOKEN_TYPE);
     updateSession(session,
       accessToken.getJti(),
@@ -219,14 +220,14 @@ public class TokenServiceImpl implements TokenService {
                                    String clientId,
                                    String username,
                                    Integer userId,
-                                   Long accessTokenLifeHours,
-                                   Long refreshTokenLifeHours) {
+                                   Long accessTokenLifeTime,
+                                   Long refreshTokenLifeTime) {
     Token accessToken = Utils.generateToken(username, Collections.singletonList(clientId), userId, issuer,
-      privateKeyString, accessTokenLifeHours, null);
-    Token refreshToken = Utils.generateToken(username, Collections.singletonList(clientId), userId, issuer, privateKeyString, refreshTokenLifeHours, null);
+      privateKeyString, accessTokenLifeTime, null);
+    Token refreshToken = Utils.generateToken(username, Collections.singletonList(clientId), userId, issuer, privateKeyString, refreshTokenLifeTime, null);
     TokenDto tokenDto = new TokenDto();
     tokenDto.setAccessToken(accessToken.asString());
-    tokenDto.setExpiresIn(new Long(accessTokenLifeHours * 3600));
+    tokenDto.setExpiresIn(accessTokenLifeTime);
     tokenDto.setTokenType("Bearer");
     tokenDto.setRefreshToken(refreshToken.asString());
     
